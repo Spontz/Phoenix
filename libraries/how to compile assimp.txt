@@ -1,0 +1,59 @@
+How to compile ASSIMP by Spontz!!
+==============================================================
+
+Instructions fusilated and adapted from here:
+https://shot511.github.io/2018-05-29-how-to-setup-opengl-project-with-cmake/
+
+Download sources
+----------------
+To be able to load 3D models with the pre-made project we need Assimp library.
+Authors of this library don’t distribute binary files. Therefore, we have to
+build it from given source files. You can download Assimp’s source files from 
+the original page (http://www.assimp.org/). Then just simply click the Download
+button, and you will be redirected to their download page. Then, go ahead and
+download Source code (zip).
+
+At the time, when this article was written, the newest version of Assimp was 4.1.0.
+
+
+Building Assimp
+---------------
+When we have downloaded the source files, we can extract them. Now, in the location
+where the extracted files are, create new folder and call it build. This folder will
+contain the CMake generated Visual Studio files.
+
+
+Create Visual Stusio using command line
+Simply open command line tool inside the newly created build directory and type:
+
+cmake -G "Visual Studio 15" -DLIBRARY_SUFFIX="" ..
+
+And that’s it. Generated Visual Studio solution files should be inside the build folder.
+
+or.... use the BAT file that is provided :)
+
+Building binaries
+-----------------
+If you generated Visual Studio solution files using one of the above methods, go to
+the build folder and open Assimp.sln. Then, right click on the assimp project and select
+Set as StartUp project.
+
+Now select the build configuration to Release and platform to Win32 and build the project
+(press F7 or choose Build->Build solution).
+
+You should see something like:
+"========== Build: 8 succeeded, 0 failed, 0 up-to-date, 7 skipped =========="
+
+One more step
+-------------
+When you have successfully built Assimp binaries, you can do the following steps:
+
+- Copy assimp.lib from build_XX/code/Release to lib/libXX folder of our Demo project.
+- Create dlls/dllXX folder in the root directory of our Demo project.
+- Copy assimp.dll from build_XX/code/Release to dlls/dllXX folder of our Demo project.
+- Copy build_XX/include/assimp folder to include folder of our Demo project.
+- Copy include/assimp folder to include folder of our Demo project.
+
+That’s it. We can now proceed build the engine with the new Assimp libraries!
+
+xphere :)
