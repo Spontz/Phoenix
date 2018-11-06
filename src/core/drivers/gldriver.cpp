@@ -81,12 +81,8 @@ void glDriver::init() {
 
 	// Initialize glad
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		std::cout << "Failed to initialize GLAD" << std::endl;
+		LOG->Error("Failed to initialize GLAD");
 	}
-
-	// Initialize BASS
-//	if (!BASS_Init(-1, 44100, 0, 0, NULL))
-//		std::cout << "Failed to initialize BASS" << std::endl;
 
 	// Load content
 	loadcontent();

@@ -9,6 +9,8 @@
 #include "sectionmanager.h"
 #include "sections/sections.h"
 
+// ******************************************************************
+
 #define SECTION_PARAMS		32
 #define SECTION_STRINGS		32
 #define SECTION_SPLINES		32
@@ -17,8 +19,21 @@
 #define RENDERING_BUFFERS	10
 #define FBO_BUFFERS			25
 
-#define DEMO demokernel::getInstance()
+// Warning! 'FBO_BUFFERS' should not be less than 25, if you want to set less than 25,
+// please check the variable 'scriptCommand' contents in 'demokernel.cpp' file.
 
+// ******************************************************************
+
+// demo states
+#define DEMO_LOADING		0
+#define DEMO_PLAY			2
+#define DEMO_PAUSE			4
+#define DEMO_REWIND			8
+#define DEMO_FASTFORWARD	16
+
+// ******************************************************************
+
+#define DEMO demokernel::getInstance()
 
 // ******************************************************************
 
@@ -50,6 +65,11 @@ public:
 	float endTime;								// last demo second (0 = unlimited)
 
 	SectionManager sectionManager;
+
+	// loading information
+	int numSections;
+	int numReadySections;
+	int loadedSections;
 
 	// realtime information
 	float runTime;								// seconds ellapsed since 0.0 <- demo init, not SDL init
@@ -108,9 +128,13 @@ public:
 	// Scripts (SPO files) management
 	void load_spos();
 
+	
 private:
 
 	static demokernel* m_pThis;
+	
+	void initControlVars();			//Init control vars
+	void initSectionQueues();		// Init Section Queues
 	// Scripts (SPO files) management
 	void load_spo(string sFile);
 	string load_file(string sFile);

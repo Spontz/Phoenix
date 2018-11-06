@@ -15,7 +15,7 @@ typedef struct {
 tSectionID sectionID[] = {
 	{"loading", SectionType::Loading },
 
-	{"efxAccum", SectionType::Efx_Accum},
+	{"efxAccum",			SectionType::Efx_Accum},
 	{"efxBlackWhite",		SectionType::Efx_BlackWhite},
 	{"efxBoxBlur",			SectionType::Efx_BoxBlur},
 	{"efxFader",			SectionType::Efx_Fader},
@@ -98,8 +98,12 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 	if (mySection != NULL) {
 		mySection->loaded = FALSE;	// By default, the section is not loaded
 		mySection->enabled = enabled;
+		mySection->DataSource = DataSource;
 		section.push_back(dynamic_cast<Section*>(mySection));
 		sec_id = (int)section.size() - 1;
+		readySection.push_back(-1);	// Increment the Ready Section list
+		runSection.push_back(-1);	// Increment the Run Section list
+
 	}
 	return sec_id;
 }

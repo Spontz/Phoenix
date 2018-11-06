@@ -11,7 +11,7 @@
 using namespace std;
 
 enum SectionType {
-	NOT_FOUND,	// No seciton found
+	NOT_FOUND,	// No section found
 
 	Loading,
 
@@ -67,11 +67,13 @@ enum SectionType {
 
 class SectionManager {
 public:
-	std::vector<Section*> section;
+	std::vector<Section*> section;	// Sections list, script order
+	std::vector<int> readySection;	// Ready section list, ascendent order by start time
+	std::vector<int> runSection;	// Run section list, ascendent order by layer
 
 	SectionManager();
 	void init();
-	int addSection(string key, string DataSource, int enabled);
+	int addSection(string key, string DataSource, int enabled);		// Adds a Section of a given type
 private:
 	SectionType getSectionType(string key);
 
