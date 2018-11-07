@@ -1,11 +1,7 @@
 #include "main.h"
 
-void sGLSLShaderBind::preload() {
-		
-}
-
 void sGLSLShaderBind::load() {
-	DataSource = "Load method from GLSLShaderBind has been called!";
+	LOG->Info("  > glgshShaderBind loader has been called!");
 }
 
 void sGLSLShaderBind::init() {

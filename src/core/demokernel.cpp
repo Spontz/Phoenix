@@ -353,7 +353,6 @@ void demokernel::initSectionQueues() {
 	float startTime = 0.0f;
 	int i;
 	int sec_id;
-	char isLast;
 
 	// Set the demo state to loading
 	this->state = DEMO_LOADING;
@@ -384,171 +383,57 @@ void demokernel::initSectionQueues() {
 	this->drawTiming = 1;
 	this->drawSound = 0;
 
-	// Section accounting
-	this->numSections = 0;
-	this->numReadySections = 0;
-	this->loadedSections = 0;
 	
 	// preload, load and init loading section
-	ds_loading->preload();
 	ds_loading->load();
 	ds_loading->init();
 	ds_loading->exec();
 
-	// reset section queues. TODO: Not needed right?
-	//demoSystem.readySection = NULL;
-	//demoSystem.runSection = NULL;
+	LOG->Info("  Loading section loaded, inited and executed for first time");
 
-	LOG->Info("Loading: section setup complete, %.2f seconds\n", ((float)glfwGetTime() - startTime));
+	// Clear the ready and run section lists
+	this->sectionManager.readySection.clear();
+	this->sectionManager.runSection.clear();
 
+	// Populate Ready Section: The sections that need to be loaded
 	for (i = 0; i < this->sectionManager.section.size(); i++) {
 		ds = this->sectionManager.section[i];
+		// If we are in slave mode, we load all the sections but if not, we will load only the ones that are inside the demo time
 		if ((DEMO->slaveMode == 1) || (((ds->startTime < DEMO->endTime) || fabs(DEMO->endTime) < FLT_EPSILON) && (ds->endTime > DEMO->startTime))) {
-			DEMO->numReadySections++;
-
-			// TODO: SPLINES Support
-			// load section splines (to avoid code load in the sections)
-			//loadSplines(ds);
-
-			// first list element
-			if (!DEMO->readySection) {
-				demoSystem.readySection = ds;
-
-				// ordered insert on ready list
-			}
-			else {
-				ds_tmp = demoSystem.readySection;
-				isLast = FALSE;
-				while ((!isLast) && (ds_tmp->startTime < ds->startTime)) {
-					if (ds_tmp->nextRdy) ds_tmp = (tDemoSection*)ds_tmp->nextRdy;
-					else isLast = TRUE;
-				}
-
-				if (isLast) {
-					ds_tmp->nextRdy = ds;
-					ds->priorRdy = ds_tmp;
-				}
-				else {
-					if (ds_tmp->priorRdy) (*(tDemoSection*)ds_tmp->priorRdy).nextRdy = ds;
-					else demoSystem.readySection = ds;
-					ds->priorRdy = ds_tmp->priorRdy;
-					ds->nextRdy = ds_tmp;
-					ds_tmp->priorRdy = ds;
-				}
+			// If the section is not the "loading", then we add id to the Ready Section lst
+			if (this->sectionManager.section[i]->type != SectionType::Loading) {
+				this->sectionManager.readySection.push_back(i);
+				// TODO: SPLINES Support
+				// load section splines (to avoid code load in the sections)
+				//loadSplines(ds);
 			}
 		}
-		//ds = (tDemoSection*)ds->next;
+	}
+
+	LOG->Info("  Ready Section queue complete: %d sections to be loaded", this->sectionManager.readySection.size());
+
+	// Start Loading the sections of the Ready List
+	this->loadedSections = 0;
+	for (i = 0; i < this->sectionManager.readySection.size(); i++) {
+		sec_id = this->sectionManager.readySection[i];
+		this->sectionManager.section[sec_id]->load();
+		++this->loadedSections;
 		
-	}
+		// Update loading
+		ds_loading->exec();
+		LOG->Info("  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, this->sectionManager.section[sec_id]->identifier.c_str(), this->sectionManager.section[sec_id]->DataSource.c_str());
 
-	/*
-	// view all sections looking for ready sections
-	ds = demoSystem.demoSection;
-	while (ds != NULL) {
-
-		if (    (  demoSystem.slaveMode == 1  ) || (  ( (ds->startTime < demoSystem.endTime) || fabs(demoSystem.endTime) < FLT_EPSILON ) && ( ds->endTime > demoSystem.startTime )  )    )
-			{
-			demoSystem.numReadySections++;
-
-			// load section splines (to avoid code load in the sections)
-			loadSplines(ds);
-
-			// first list element
-			if (!demoSystem.readySection) {
-				demoSystem.readySection = ds;
-
-			// ordered insert on ready list
-			} else {
-				ds_tmp = demoSystem.readySection;
-				isLast = FALSE;
-				while ((!isLast) && (ds_tmp->startTime < ds->startTime)) {
-					if (ds_tmp->nextRdy) ds_tmp = (tDemoSection*) ds_tmp->nextRdy;
-					else isLast = TRUE;
-				}
-
-				if (isLast) {
-					ds_tmp->nextRdy = ds;
-					ds->priorRdy = ds_tmp;
-				} else {
-					if (ds_tmp->priorRdy) (*(tDemoSection*)ds_tmp->priorRdy).nextRdy = ds;
-					else demoSystem.readySection = ds;
-					ds->priorRdy = ds_tmp->priorRdy;
-					ds->nextRdy = ds_tmp;
-					ds_tmp->priorRdy = ds;
-				}
-			}
-		}
-		ds = (tDemoSection*) ds->next;
-	}
-
-	// all sections will be preloaded except loading section
-	demoSystem.numSections += SECTIONS_NUMBER-1;
-
-#ifdef _DEBUG
-	dkernel_trace("Loading: build ready queue, %.2f seconds\n", 0.001f * ((float) SDL_GetTicks() - startTime));
-	dkernel_trace("Loading: %d sections to be preloaded\n", demoSystem.numSections);
-#endif
-
-	// preload all used demo sections
-	for (i = 1; i < SECTIONS_NUMBER; ++i) {
-		sectionFunction[i].preload();
-		++demoSystem.loadedSections;
-
-		// update loading
-		loading->exec();
-
-		// event handler
-		if (SDL_PollEvent(&event)) eventHandler(event);
-
-		if (demoSystem.exitDemo) {
-			dkernel_closeDemo();
+		if (this->exitDemo) {
+			this->closeDemo();
 			exit(EXIT_SUCCESS);
 		}
 	}
 
-	#ifdef _DEBUG
-		dkernel_trace("Loading: sections preloaded! %.2f seconds", 0.001f * ((float) SDL_GetTicks() - startTime));
-	#endif	
-
-	#ifdef _DEBUG
-		dkernel_trace("Running Load(.load()) functions... %d sections to be loaded", demoSystem.numReadySections);
-	#endif	
-	// load all ready sections
-	ds = demoSystem.readySection;
-	while (ds != NULL) {
-		#ifdef _DEBUG
-		dkernel_trace(" Section Loaded: %s", sectionFunction[ds->staticSectionIndex].scriptName);
-		#endif
-
-		// section load
-		mySection = ds;
-		sectionFunction[ds->staticSectionIndex].load();
-		demoSystem.loadedSections++;
-
-		ds = ds->nextRdy;
-
-		// update loading
-		mySection = loadingSection;
-		loading->exec();
-
-		// event handler
-		if (SDL_PollEvent(&event)) eventHandler(event);
-
-		if (demoSystem.exitDemo) {
-			dkernel_closeDemo();
-			exit(EXIT_SUCCESS);
-		}
-	}
-
-#ifdef _DEBUG
-	dkernel_trace("Loading: sections loaded, %.2f seconds\n", 0.001f * ((float)SDL_GetTicks() - startTime));
-#endif		
-
-	// end loading
-	loading->end();
+	LOG->Info("Loading complete, %d sections have been loaded", this->loadedSections);
 	
-	*/
-
+	// End loading
+	ds_loading->end();
+	
 }
 
 void demokernel::load_spo(string sFile) {

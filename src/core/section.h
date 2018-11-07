@@ -56,8 +56,7 @@ public:
 
 	// ******************************************************************
 
-	virtual void preload()	{};	// load static data from disk
-	virtual void load()		{};	// load parametrized data from disk
+	virtual void load()		{};	// load data from disk
 	virtual void init()		{};	// set up local variables before execution
 	virtual void exec()		{};	// render a new frame
 	virtual void end ()		{};	// destroy allocated memory

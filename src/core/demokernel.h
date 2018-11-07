@@ -67,8 +67,8 @@ public:
 	SectionManager sectionManager;
 
 	// loading information
-	int numSections;
-	int numReadySections;
+	//int numSections;
+	//int numReadySections;
 	int loadedSections;
 
 	// realtime information
