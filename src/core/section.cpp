@@ -7,7 +7,7 @@
 Section::Section() {
 	int i = 0;
 	type = 0;
-	identifier = "not_loaded";
+	identifier = "No ID defined";
 	DataSource = "";
 	//staticSectionIndex = 0;
 	startTime	= 0;

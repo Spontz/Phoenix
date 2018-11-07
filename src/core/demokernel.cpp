@@ -244,34 +244,35 @@ void demokernel::getArguments(int argc, char *argv[]) {
 
 void demokernel::initDemo() {
 	
-	// Load all the scripts (spo files)
-	this->load_spos();
-
 	// initialize graphics driver
 	GLDRV->init();
 	LOG->Info("OpenGL environment created");
 	
-	this->sectionManager.init();
-
-	
-
-/*	// initialize fast events
-	if (FE_Init() != 0)
-		dkernel_error(FE_GetError());
-
 	// initialize sound driver
-	if (demoSystem.sound) sound_init();
+	if (this->sound)
+		BASSDRV->init();
 
+
+	//TODO: Gestionar el section manager mejor
+	//this->sectionManager.init();
+
+	/*
+	// TODO: Implement network management
 	if (demoSystem.slaveMode) {
 		// initialize network driver
 		network_init();
 	}
+	*/
 
 	// initialize global control variables
-	init_control_vars();
+	this->initControlVars();
 
 	// prepare sections
-	init_sectionQueues();
+	this->initSectionQueues();
+
+	/*
+
+	
 
 	// initialize debugging font
 	text_load_font(&debugFont, strDebugFont, 16, 16, "data/fonts/font.tga");
@@ -328,6 +329,111 @@ void demokernel::load_spos() {
 			LOG->Info("Finished loading file!!");
 		} while (_findnext(hFile, &FindData) == 0);
 	}
+	LOG->Info("Finished loading all files.");
+}
+
+void demokernel::initControlVars() {
+	// reset time
+	this->runTime = this->startTime;
+
+	// reset control time variables
+	this->frameTime = 0;
+	this->realFrameTime = 0;
+	this->frameCount = 0;
+	this->accumFrameCount = 0;
+	this->accumFrameTime = 0;
+	this->fps = 0;
+	this->exitDemo = FALSE;
+}
+
+void demokernel::initSectionQueues() {
+	Section *ds = NULL;
+	Section *ds_tmp = NULL;
+	sLoading *ds_loading = NULL;
+	float startTime = 0.0f;
+	int i;
+	int sec_id;
+
+	// Set the demo state to loading
+	this->state = DEMO_LOADING;
+	LOG->Info("Loading Start...");
+
+	if (this->debug) {
+		startTime = (float)glfwGetTime();
+	}
+	
+	// Search for the loading section, if not found, we will create one
+	for (i = 0; i < this->sectionManager.section.size(); i++) {
+		if (this->sectionManager.section[i]->type == SectionType::Loading)
+			ds_loading = (sLoading*)this->sectionManager.section[i];
+	}
+	
+	if (ds_loading == NULL) {
+		LOG->Info("Loading section not found: using default loader");
+		sec_id = this->sectionManager.addSection("loading", "Automatically created", TRUE);
+		if (sec_id == SectionType::NOT_FOUND) {
+			LOG->Error("Critical Error, Loading section not found and could not be created!");
+			return;
+		}
+		else
+			ds_loading = (sLoading*)this->sectionManager.section[sec_id];
+	}
+	// Demo states
+	this->drawFps = 1;
+	this->drawTiming = 1;
+	this->drawSound = 0;
+
+	
+	// preload, load and init loading section
+	ds_loading->load();
+	ds_loading->init();
+	ds_loading->exec();
+
+	LOG->Info("  Loading section loaded, inited and executed for first time");
+
+	// Clear the ready and run section lists
+	this->sectionManager.readySection.clear();
+	this->sectionManager.runSection.clear();
+
+	// Populate Ready Section: The sections that need to be loaded
+	for (i = 0; i < this->sectionManager.section.size(); i++) {
+		ds = this->sectionManager.section[i];
+		// If we are in slave mode, we load all the sections but if not, we will load only the ones that are inside the demo time
+		if ((DEMO->slaveMode == 1) || (((ds->startTime < DEMO->endTime) || fabs(DEMO->endTime) < FLT_EPSILON) && (ds->endTime > DEMO->startTime))) {
+			// If the section is not the "loading", then we add id to the Ready Section lst
+			if (this->sectionManager.section[i]->type != SectionType::Loading) {
+				this->sectionManager.readySection.push_back(i);
+				// TODO: SPLINES Support
+				// load section splines (to avoid code load in the sections)
+				//loadSplines(ds);
+			}
+		}
+	}
+
+	LOG->Info("  Ready Section queue complete: %d sections to be loaded", this->sectionManager.readySection.size());
+
+	// Start Loading the sections of the Ready List
+	this->loadedSections = 0;
+	for (i = 0; i < this->sectionManager.readySection.size(); i++) {
+		sec_id = this->sectionManager.readySection[i];
+		this->sectionManager.section[sec_id]->load();
+		++this->loadedSections;
+		
+		// Update loading
+		ds_loading->exec();
+		LOG->Info("  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, this->sectionManager.section[sec_id]->identifier.c_str(), this->sectionManager.section[sec_id]->DataSource.c_str());
+
+		if (this->exitDemo) {
+			this->closeDemo();
+			exit(EXIT_SUCCESS);
+		}
+	}
+
+	LOG->Info("Loading complete, %d sections have been loaded", this->loadedSections);
+	
+	// End loading
+	ds_loading->end();
+	
 }
 
 void demokernel::load_spo(string sFile) {
@@ -416,7 +522,7 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 
 			// by default the section is enabled and marked as not loaded
 			sec_id = -1;
-			sec_id = this->sectionManager.addSection(key, sFile, TRUE);
+			sec_id = this->sectionManager.addSection(key, "File: " + sFile, TRUE);
 			if (sec_id != -1) {
 				LOG->Info("  Section %s added!", key);
 				new_sec = this->sectionManager.section[sec_id];
@@ -575,7 +681,6 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 			Util::getKeyValue(line, key, value);
 
 			// generic variable loading
-			// TODO: Creo que esto no va bien... revisar si las variables se leen bien!!!
 			int *iptr;
 			float *fptr;
 			char **sptr;

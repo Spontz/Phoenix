@@ -9,9 +9,9 @@
 using namespace std;
 
 
-class sLoading : public Section { public:	sLoading();  void preload(); void load(); void init(); void exec(); void end(); };
-class sGLSLShaderBind : public Section { public: sGLSLShaderBind(); void preload(); void load(); void init(); void exec(); void end(); };
-class sGLSLShaderUnbind : public Section { public: sGLSLShaderUnbind(); void preload(); void load(); void init(); void exec(); void end(); };
+class sLoading : public Section { public:	sLoading();  void load(); void init(); void exec(); void end(); };
+class sGLSLShaderBind : public Section { public: sGLSLShaderBind(); void load(); void init(); void exec(); void end(); };
+class sGLSLShaderUnbind : public Section { public: sGLSLShaderUnbind(); void load(); void init(); void exec(); void end(); };
 class sBackground		: public Section {};
 
 #endif

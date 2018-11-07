@@ -1,8 +1,8 @@
 // gldriver.h
 // Spontz Demogroup
 
-#ifndef gldriver_H
-#define gldriver_H
+#ifndef GLDRIVER_H
+#define GLDRIVER_H
 
 #include <iostream>
 #include <glad/glad.h>
