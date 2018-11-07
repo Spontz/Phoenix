@@ -245,7 +245,7 @@ void demokernel::getArguments(int argc, char *argv[]) {
 void demokernel::initDemo() {
 	
 	// initialize graphics driver
-	GLDRV->init();
+	GLDRV->initGraphics();
 	LOG->Info("OpenGL environment created");
 	
 	// initialize sound driver

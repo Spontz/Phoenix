@@ -57,7 +57,8 @@ public:
 
 	static glDriver* getInstance();
 	glDriver();
-	void init();
+	void initFramework();
+	void initGraphics();
 	void render(float time);
 	void swap_buffers();
 	void close();

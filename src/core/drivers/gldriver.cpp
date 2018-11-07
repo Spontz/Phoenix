@@ -9,6 +9,8 @@ using namespace glm;
 // Initialize the glDriver main pointer to NULL
 glDriver* glDriver::m_pThis = NULL;
 
+// **************************************************
+
 void window_size_callback(GLFWwindow * window, int width, int height) {
 	glViewport(0, 0, width, height);
 	if (width>=1 && height>=1) {
@@ -19,6 +21,18 @@ void window_size_callback(GLFWwindow * window, int width, int height) {
 	}
 }
 
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+		LOG->Info("Exit key pressed, closing demo...");
+		DEMO->closeDemo();
+		exit(EXIT_SUCCESS);
+	}
+	
+}
+
+// **************************************************
 
 glDriver * glDriver::getInstance() {
 	if (m_pThis == NULL)
@@ -57,10 +71,13 @@ glDriver::glDriver() {
 //	}
 }
 
-void glDriver::init() {
+void glDriver::initFramework() {
 	// Initialize the library
 	if (!glfwInit())
-		return;
+		LOG->Error("GL Framework could not be initialized!");
+}
+
+void glDriver::initGraphics() {
 
 	// Create a windowed mode window and its OpenGL context
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -77,7 +94,9 @@ void glDriver::init() {
 	// Make the window's context current
 	glfwMakeContextCurrent(window);
 
+	// Configure GLFW callbacks
 	glfwSetWindowSizeCallback(window, window_size_callback);
+	glfwSetKeyCallback(window, key_callback);
 
 	// Initialize glad
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {

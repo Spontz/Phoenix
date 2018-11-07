@@ -8,7 +8,9 @@
 
 
 int main(int argc, char *argv[]) {
-	
+	// Initialize the GL Framework
+	GLDRV->initFramework();
+
 	LOG->Info("Phoenix Visuals Engine starting up: Let's make some noise!");
 	// Get "demo" folder path
 	DEMO->getArguments(argc, argv);

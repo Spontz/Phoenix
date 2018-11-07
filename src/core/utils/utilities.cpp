@@ -4,10 +4,8 @@
 #include "utilities.h"
 
 const std::string Util::CurrentTime() {
-	float	now;
 	char	buf[80];
-	now = static_cast<float>(glfwGetTime());
-	sprintf_s(buf, "%.4f", now);
+	sprintf_s(buf, "%.4f", (float)glfwGetTime());
 	return buf;
 }
 
