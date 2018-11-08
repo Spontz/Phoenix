@@ -2,6 +2,7 @@
 // Spontz Demogroup
 
 #include "main.h"
+#include "core/drivers/events.h"
 
 using namespace std;
 using namespace glm;
@@ -22,13 +23,81 @@ void window_size_callback(GLFWwindow * window, int width, int height) {
 }
 
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	
+	switch (action) {
+	case GLFW_PRESS:
+		switch (key) {
+		case KEY_EXIT:
+			DEMO->exitDemo = true;
+			break;
+		case KEY_SCREENSHOT:
+			//GLDRV->screenshot(); //TODO
+			break;
+		}
+		if (DEMO->debug) {
+			switch (key) {
+			case KEY_TIME:
+				LOG->Info("Demo time: %.4f", DEMO->runTime);
+				break;
+			case KEY_PLAY_PAUSE:
+				if (DEMO->state == DEMO_PLAY) {
+					//DEMO->pause();//TODO
+				}
+				else {
+					//DEMO->play();//TODO
+				}
+				break;
+			case KEY_REWIND:
+				//DEMO->rewind();//TODO
+				break;
+			case KEY_FASTFORWARD:
+				//DEMO->fastforward();//TODO
+				break;
+			case KEY_RESTART:
+				//DEMO->restart();//TODO
+				break;
+			case KEY_SHOWTIME:
+				if (DEMO->drawTiming)
+					DEMO->drawTiming = 0;
+				else
+					DEMO->drawTiming = 1;
+				break;
+			case KEY_SHOWFPS:
+				if (DEMO->drawFps)
+					DEMO->drawFps = 0;
+				else
+					DEMO->drawFps = 1;
+				break;
+			case KEY_SHOWSOUND:
+				if (DEMO->drawSound)
+					DEMO->drawSound = 0;
+				else
+					DEMO->drawSound = 1;
+				break;
+			}
+		}
+		break;
+	case GLFW_RELEASE:
+		switch (key) {
+		case KEY_REWIND:
+		case KEY_FASTFORWARD:
+			if (DEMO->state & DEMO_PAUSE) {
+				DEMO->pause();
+			}
+			else {
+				DEMO->play();
+			}
+			break;
+		}
+	
+	}
+/*	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
 		LOG->Info("Exit key pressed, closing demo...");
 		DEMO->closeDemo();
 		exit(EXIT_SUCCESS);
 	}
+	*/
 	
 }
 
@@ -66,9 +135,6 @@ glDriver::glDriver() {
 	mesh = nullptr;
 	shader = nullptr;
 	texture = nullptr;
-//	for (int i = 0; i < FBO_BUFFERS; i++) {
-//		glDriver.fbo[i].width = glDriver.fbo[i].height = glDriver.fbo[i].ratio = 0;
-//	}
 }
 
 void glDriver::initFramework() {
@@ -122,7 +188,6 @@ void glDriver::loadcontent() {
 	std::string s_demo = DEMO->demoDir;
 	std::string s_file = s_demo + "/models/alliance.obj";
 
-	//mesh = new Model( "data/models/alliance.obj");
 	mesh = new Model(s_file);
 
 	/* Create and apply basic shader */
@@ -139,14 +204,6 @@ void glDriver::loadcontent() {
 	s_file = s_demo + "/models/alliance.png";
 	texture->load(s_file);
 	texture->bind();
-
-	// Load music
-	//D:/xphere/Spontz/Phoenix2/res/music/biomechanical.mp3
-	//str = BASS_StreamCreateFile(FALSE, "../res/music/biomechanical.mp3", 0, 0, BASS_STREAM_PRESCAN);
-	//if (str == 0)
-	//	std::cout << "BASS cannot read file" << std::endl;
-	//BASS_ChannelPlay(str, FALSE);
-	//BASS_Start();
 }
 
 void glDriver::render(float time) {

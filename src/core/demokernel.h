@@ -133,6 +133,14 @@ private:
 
 	static demokernel* m_pThis;
 	
+	void doExec();
+	void play();
+	void pause();
+	void restart();
+	void rewind();
+	void fastforward();
+
+
 	void initControlVars();			//Init control vars
 	void initSectionQueues();		// Init Section Queues
 	// Scripts (SPO files) management

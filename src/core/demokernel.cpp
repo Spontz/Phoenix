@@ -283,28 +283,139 @@ void demokernel::initDemo() {
 }
 
 void demokernel::mainLoop() {
-	//BASS_Update(200);
+	if (this->debug)
+		LOG->Info("************ Main demo loop started!");
 
-	float startTime = static_cast<float>(glfwGetTime());
-	float newTime = 0.0f;
-	float gameTime = 0.0f;
+	this->state = DEMO_PLAY;
 
 	/* Loop until the user closes the window */
-	while (!GLDRV->window_should_close())
-	{
-		/* Update game time value */
-		newTime = static_cast<float>(glfwGetTime());
-		gameTime = newTime - startTime;
-
-		/* Render here */
-		GLDRV->render(gameTime);
-
-		/* Swap front and back buffers */
-		GLDRV->swap_buffers();
-
-		/* Poll for and process events */
+	while ((!GLDRV->window_should_close()) || (!this->exitDemo)) {
+		this->doExec();
+		// Poll for and process events
 		glfwPollEvents();
 	}
+}
+
+void demokernel::doExec() {
+	/*
+// Update game time value
+newTime = static_cast<float>(glfwGetTime());
+gameTime = newTime - startTime;
+
+// Render here
+GLDRV->render(gameTime);
+
+// Swap front and back buffers
+GLDRV->swap_buffers();
+
+
+*/
+
+	// TODO: Implement mouse events
+	// capture mouse move and reset the position
+	//demoSystem.mouseButtons = SDL_GetMouseState(&demoSystem.mouseX, &demoSystem.mouseY);
+	
+	// Save the mouse position differences from the center of the window
+	//demoSystem.mouseXvar = (glDriver.width / 2) - demoSystem.mouseX;
+	//demoSystem.mouseYvar = (glDriver.height / 2) - demoSystem.mouseY;
+
+	// Reset the mouse position if the left mouse button is pressed
+	/*if (demoSystem.mouseButtons & SDL_BUTTON(1)) {
+		SDL_ShowCursor(FALSE);
+
+		SDL_WarpMouseInWindow(glDriver.pSDLWindow, glDriver.width / 2, glDriver.height / 2);
+
+	}
+	else if (demoSystem.debug) {
+		SDL_ShowCursor(TRUE);
+	}
+	*/
+
+	// control exit demo (debug, loop) when end time arrives
+	if ((this->endTime > 0) && (this->runTime > this->endTime)) {
+
+		if (this->loop) {
+			this->restart();
+		}
+		else {
+			if (this->debug) {
+				this->runTime = this->endTime;
+				this->pause();
+			}
+			else {
+				this->exitDemo = TRUE;
+				return;
+			}
+		}
+	}
+	/*
+	// non-play state
+	if (this->state != DEMO_PLAY) {
+
+		//process_sectionQueues(); // TODO
+		pause_timer();
+
+		if (demoSystem.state & DEMO_REWIND) {
+
+			// decrease demo runtime
+			demoSystem.runTime -= 10.0f * demoSystem.realFrameTime;
+			if (demoSystem.runTime < demoSystem.startTime) {
+				demoSystem.runTime = demoSystem.startTime;
+				dkernel_pause();
+			}
+
+		}
+		else if (demoSystem.state & DEMO_FASTFORWARD) {
+
+			// increase demo runtime
+			demoSystem.runTime += 10.0f * demoSystem.realFrameTime;
+			if (demoSystem.runTime > demoSystem.endTime) {
+				demoSystem.runTime = demoSystem.endTime;
+				dkernel_pause();
+			}
+		}
+
+		// reset section queues
+		reinit_sectionQueues();
+
+		// play state
+	}
+	else {
+		// Prepare and remove the sections
+		process_sectionQueues();
+
+		// Update the timing information for the sections
+		process_timer();
+	}
+
+	// Default color
+	glColor4f(1, 1, 1, 1);
+	*/
+	// update sound driver once a frame
+	if (this->sound)
+		BASSDRV->update();
+	
+
+}
+
+void demokernel::play()
+{
+}
+
+void demokernel::pause()
+{
+}
+
+void demokernel::restart()
+{
+}
+
+void demokernel::rewind()
+{
+}
+
+void demokernel::fastforward()
+{
 }
 
 void demokernel::closeDemo() {
@@ -331,6 +442,8 @@ void demokernel::load_spos() {
 	}
 	LOG->Info("Finished loading all files.");
 }
+
+
 
 void demokernel::initControlVars() {
 	// reset time

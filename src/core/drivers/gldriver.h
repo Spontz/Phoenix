@@ -34,9 +34,6 @@ typedef struct {
 
 class glDriver {
 	
-	
-	
-	
 public:
 	float			AspectRatio;
 	int				fullScreen;
