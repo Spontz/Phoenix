@@ -246,7 +246,7 @@ void demokernel::initDemo() {
 	
 	// initialize graphics driver
 	GLDRV->initGraphics();
-	LOG->Info("OpenGL environment created");
+	LOG->Info(LOG_HIGH,"OpenGL environment created");
 	
 	// initialize sound driver
 	if (this->sound)
@@ -281,7 +281,7 @@ void demokernel::initDemo() {
 
 void demokernel::mainLoop() {
 	if (this->debug)
-		LOG->Info("************ Main demo loop started!");
+		LOG->Info(LOG_MED, "************ Main demo loop started!");
 
 	this->state = DEMO_PLAY;
 
@@ -444,18 +444,16 @@ void demokernel::load_spos() {
 	string fullpath;
 	string ScriptRelativePath;
 	fullpath = demoFolder + "/*.spo";
-	LOG->Info("Scanning folder: %s", fullpath.c_str());
+	LOG->Info(LOG_MED, "Scanning folder: %s", fullpath.c_str());
 	if ((hFile = _findfirst(fullpath.c_str(), &FindData)) != -1L) {
 		do {
 			ScriptRelativePath = demoFolder + "/" + FindData.name;
-			LOG->Info("Reading file: %s", ScriptRelativePath.c_str());
+			LOG->Info(LOG_LOW, "Reading file: %s", ScriptRelativePath.c_str());
 			load_spo(ScriptRelativePath);
-			//spoReader *sporead = new spoReader();
-			//loadScriptFile(ScriptRelativePath);
-			LOG->Info("Finished loading file!!");
+			LOG->Info(LOG_LOW, "Finished loading file!!");
 		} while (_findnext(hFile, &FindData) == 0);
 	}
-	LOG->Info("Finished loading all files.");
+	LOG->Info(LOG_MED,"Finished loading all files.");
 }
 
 
@@ -541,7 +539,7 @@ void demokernel::initSectionQueues() {
 
 	// Set the demo state to loading
 	this->state = DEMO_LOADING;
-	LOG->Info("Loading Start...");
+	LOG->Info(LOG_HIGH,"Loading Start...");
 
 	if (this->debug) {
 		startTime = (float)glfwGetTime();
@@ -554,7 +552,7 @@ void demokernel::initSectionQueues() {
 	}
 	
 	if (ds_loading == NULL) {
-		LOG->Info("Loading section not found: using default loader");
+		LOG->Info(LOG_MED,"Loading section not found: using default loader");
 		sec_id = this->sectionManager.addSection("loading", "Automatically created", TRUE);
 		if (sec_id == SectionType::NOT_FOUND) {
 			LOG->Error("Critical Error, Loading section not found and could not be created!");
@@ -574,7 +572,7 @@ void demokernel::initSectionQueues() {
 	ds_loading->init();
 	ds_loading->exec();
 
-	LOG->Info("  Loading section loaded, inited and executed for first time");
+	LOG->Info(LOG_MED,"  Loading section loaded, inited and executed for first time");
 
 	// Clear the load and run section lists
 	this->sectionManager.loadSection.clear();
@@ -595,7 +593,7 @@ void demokernel::initSectionQueues() {
 		}
 	}
 
-	LOG->Info("  Ready Section queue complete: %d sections to be loaded", this->sectionManager.loadSection.size());
+	LOG->Info(LOG_LOW,"  Ready Section queue complete: %d sections to be loaded", this->sectionManager.loadSection.size());
 
 	// Start Loading the sections of the Ready List
 	this->loadedSections = 0;
@@ -607,7 +605,7 @@ void demokernel::initSectionQueues() {
 		
 		// Update loading
 		ds_loading->exec();
-		LOG->Info("  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, this->sectionManager.section[sec_id]->identifier.c_str(), this->sectionManager.section[sec_id]->DataSource.c_str());
+		LOG->Info(LOG_LOW, "  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, this->sectionManager.section[sec_id]->identifier.c_str(), this->sectionManager.section[sec_id]->DataSource.c_str());
 
 		if (this->exitDemo) {
 			this->closeDemo();
@@ -615,10 +613,11 @@ void demokernel::initSectionQueues() {
 		}
 	}
 
-	LOG->Info("Loading complete, %d sections have been loaded", this->loadedSections);
+	LOG->Info(LOG_MED,"Loading complete, %d sections have been loaded", this->loadedSections);
 	
 	// End loading
 	ds_loading->end();
+	ds_loading->ended = TRUE;
 	
 }
 
@@ -629,23 +628,23 @@ void demokernel::processSectionQueues() {
 	vector<Section*>::iterator it;
 
 
-	LOG->Info("Start queue processing for second: %.4f", this->runTime);
+	LOG->Info(LOG_MED,"Start queue processing (end, init and exec) for second: %.4f", this->runTime);
 	// We loop all the sections, searching for finished sections,
 	// if any is found, we will remove from the queue and will execute the .end() function
 
 	// Check the sections that need to be finalized
-	LOG->Info("  Analysing sections that can be removed...", this->runTime);
+	LOG->Info(LOG_LOW,"  Analysing sections that can be removed...", this->runTime);
 	for (it = this->sectionManager.section.begin(); it < this->sectionManager.section.end(); it++) {
 		ds = *it;
 		if ((ds->endTime <= this->runTime) && (ds->ended == FALSE)) {
 			ds->end();
 			ds->ended = TRUE;
-			LOG->Info("  Section id: %s has been end", ds->identifier.c_str());
+			LOG->Info(LOG_LOW,"  Section id: %s has been end", ds->identifier.c_str());
 		}
 	}
 
 	// Check the sections that need to be executed
-	LOG->Info("  Analysing sections that must be executed...", this->runTime);
+	LOG->Info(LOG_LOW,"  Analysing sections that must be executed...", this->runTime);
 	this->sectionManager.execSection.clear();
 	for (i = 0; i< this->sectionManager.section.size(); i++) {
 		ds = this->sectionManager.section[i];
@@ -655,15 +654,15 @@ void demokernel::processSectionQueues() {
 	}
 	sort(this->sectionManager.execSection.begin(), this->sectionManager.execSection.end());	// Sort sections by Layer
 
-	LOG->Info("  Exec Section queue complete: %d sections to be executed", this->sectionManager.execSection.size());
+	LOG->Info(LOG_LOW,"  Exec Section queue complete: %d sections to be executed", this->sectionManager.execSection.size());
 
 	// Run Init sections
-	LOG->Info("  Running Init Sections...");
+	LOG->Info(LOG_LOW,"  Running Init Sections...");
 	for (i = 0; i < this->sectionManager.execSection.size(); i++) {
 		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
 		ds = this->sectionManager.section[sec_id];
 		ds->init();			// Init the Section
-		LOG->Info("  Section %d [layer: %d id: %s] inited", sec_id, ds->layer, ds->identifier.c_str());
+		LOG->Info(LOG_LOW,"  Section %d [layer: %d id: %s] inited", sec_id, ds->layer, ds->identifier.c_str());
 	}
 
 
@@ -672,17 +671,17 @@ void demokernel::processSectionQueues() {
 	GLDRV->initRender(TRUE);
 	
 	// Run Exec sections
-	LOG->Info("  Running Exec Sections...");
+	LOG->Info(LOG_LOW,"  Running Exec Sections...");
 	for (i = 0; i < this->sectionManager.execSection.size(); i++) {
 		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
 		ds = this->sectionManager.section[sec_id];
 		if((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading))
 			ds->exec();			// Exec the Section
-		LOG->Info("  Section %d [layer: %d id: %s] executed", sec_id, ds->layer, ds->identifier.c_str());
+		LOG->Info(LOG_LOW,"  Section %d [layer: %d id: %s] executed", sec_id, ds->layer, ds->identifier.c_str());
 
 	}
 
-	LOG->Info("End queue processing!");
+	LOG->Info(LOG_MED,"End queue processing!");
 
 	/*
 	// restore viewport
@@ -777,7 +776,7 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 
 		// Ignore comments or empty line
 		if ((line[0] == ';') || (line[0] == '\n') || (line[0] == '\r')) {
-			LOG->Info("  Comments found or empty in line %i, ignoring this line.", lineNum);
+			LOG->Info(LOG_LOW,"  Comments found or empty in line %i, ignoring this line.", lineNum);
 			continue;
 		}
 
@@ -791,7 +790,7 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 			sec_id = -1;
 			sec_id = this->sectionManager.addSection(key, "File: " + sFile, TRUE);
 			if (sec_id != -1) {
-				LOG->Info("  Section %s added!", key);
+				LOG->Info(LOG_LOW, "  Section %s added!", key);
 				new_sec = this->sectionManager.section[sec_id];
 			}
 			else {
@@ -835,24 +834,24 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 			case SECTION_IDENTIFIER:
 				values = sscanf(value, "%s", tmp);
 				new_sec->identifier = tmp;
-				LOG->Info("  Section id: %s", new_sec->identifier.c_str());
+				LOG->Info(LOG_LOW, "  Section id: %s", new_sec->identifier.c_str());
 				break;
 
 			case SECTION_ENABLED:
 				values = sscanf(value, "%i", &new_sec->enabled);
-				LOG->Info("  Section enabled state: %i", new_sec->enabled);
+				LOG->Info(LOG_LOW, "  Section enabled state: %i", new_sec->enabled);
 				break;
 
 			case SECTION_START:
 				values = sscanf(value, "%f", &new_sec->startTime);
 				if (values != 1) LOG->Error("Invalid Start time in file %s, line: %s", sFile.c_str(), line);
-				LOG->Info("  Section Start time: %f", new_sec->startTime);
+				LOG->Info(LOG_LOW, "  Section Start time: %f", new_sec->startTime);
 				break;
 
 			case SECTION_END:
 				values = sscanf(value, "%f", &new_sec->endTime);
 				if (values != 1) LOG->Error("Invalid End time in file %s, line: %s", sFile.c_str(), line);
-				LOG->Info("  Section End time: %f", new_sec->endTime);
+				LOG->Info(LOG_LOW, "  Section End time: %f", new_sec->endTime);
 				new_sec->duration = new_sec->endTime - new_sec->startTime;
 				if (new_sec->duration <= 0)
 					LOG->Error("Section End time is less or equal than Start timeStart time!");
@@ -861,7 +860,7 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 			case SECTION_LAYER:
 				values = sscanf(value, "%i", &new_sec->layer);
 				if (values != 1) LOG->Error("Invalid layer in file %s, line: %s", sFile.c_str(), line);
-				LOG->Info("  Section layer: %i", new_sec->layer);
+				LOG->Info(LOG_LOW, "  Section layer: %i", new_sec->layer);
 				break;
 
 			case SECTION_BLEND:
@@ -875,7 +874,7 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 					LOG->Error("Invalid blend mode in file %s, line: %s", sFile.c_str(), line);
 
 				new_sec->hasBlend = TRUE;
-				LOG->Info("  Section blend mode: source %i and destination %i", new_sec->sfactor, new_sec->dfactor);
+				LOG->Info(LOG_LOW, "  Section blend mode: source %i and destination %i", new_sec->sfactor, new_sec->dfactor);
 				break;
 
 			case SECTION_ALPHA:
@@ -894,7 +893,7 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 				if (new_sec->alphaFunc == -1)
 					LOG->Error("Invalid alpha function");
 				new_sec->hasAlpha = TRUE;
-				LOG->Info("  Section alpha: from %f to %f", new_sec->alpha1, new_sec->alpha2);
+				LOG->Info(LOG_LOW, "  Section alpha: from %f to %f", new_sec->alpha1, new_sec->alpha2);
 				break;
 
 			case SECTION_PARAM:
@@ -904,7 +903,7 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 				values = Util::getFloatVector(value, &new_sec->param[new_sec->paramNum], SECTION_PARAMS);
 				new_sec->paramNum += values;
 
-				LOG->Info("  Section parameter: %s = %f (%i found)", key, new_sec->param[new_sec->paramNum - 1], values);
+				LOG->Info(LOG_LOW, "  Section parameter: %s = %f (%i found)", key, new_sec->param[new_sec->paramNum - 1], values);
 				break;
 
 			case SECTION_STRING:
@@ -914,7 +913,7 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 				new_sec->strings[new_sec->stringNum] = _strdup(value);
 				new_sec->stringNum++;
 
-				LOG->Info("  Loaded string: \"%s\"", value);
+				LOG->Info(LOG_LOW, "  Loaded string: \"%s\"", value);
 				break;
 
 			case SECTION_SPLINE:
@@ -936,7 +935,7 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 				new_sec->splineFiles[new_sec->splineNum] = _strdup(tmp);
 				new_sec->splineDuration[new_sec->splineNum] = fvalue;
 				new_sec->splineNum++;
-				LOG->Info("  Loaded Spline");
+				LOG->Info(LOG_LOW, "  Loaded Spline");
 				break;
 
 			default:
@@ -958,17 +957,17 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 					case VTYPE_INT:
 						sscanf(value, "%d", (int *)((char**)scriptCommand[i].vAddr));
 						iptr = (int *)scriptCommand[i].vAddr;
-						LOG->Info("  Command found: %s = %d", scriptCommand[i].cName, *iptr);
+						LOG->Info(LOG_LOW, "  Command found: %s = %d", scriptCommand[i].cName, *iptr);
 						break;
 					case VTYPE_FLOAT:
 						sscanf(value, "%f", (float *)((char**)scriptCommand[i].vAddr));
 						fptr = (float *)scriptCommand[i].vAddr;
-						LOG->Info("  Command found: %s = %f", scriptCommand[i].cName, *fptr);
+						LOG->Info(LOG_LOW, "  Command found: %s = %f", scriptCommand[i].cName, *fptr);
 						break;
 					case VTYPE_STRING:
 						*((char**)scriptCommand[i].vAddr) = _strdup(value);
 						sptr = (char **)scriptCommand[i].vAddr;
-						LOG->Info("  Command found: %s = %s", scriptCommand[i].cName, *sptr);
+						LOG->Info(LOG_LOW, "  Command found: %s = %s", scriptCommand[i].cName, *sptr);
 						break;
 					default:
 						LOG->Error("%d is not a valid variable type id.", scriptCommand[i].vType);

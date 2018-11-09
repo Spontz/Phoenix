@@ -72,7 +72,7 @@ SectionManager::SectionManager() {
 }
 
 void SectionManager::init() {
-	LOG->Info("SectionManager Inited. Clearing internal lists...");
+	LOG->Info(LOG_MED, "SectionManager Inited. Clearing internal lists...");
 	this->loadSection.clear();
 	this->execSection.clear();
 }

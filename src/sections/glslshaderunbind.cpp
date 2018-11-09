@@ -1,23 +1,25 @@
 #include "main.h"
 
-void sGLSLShaderUnbind::load() {
-	LOG->Info("  > glgshShaderUnbind loader has been called!");
-}
-
-void sGLSLShaderUnbind::init() {
-	LOG->Info("  > UNBIND INIT has been called!");
-}
-
-void sGLSLShaderUnbind::exec() {
-	LOG->Info("  > UNBIND RENDER has been called!");
-}
 
 sGLSLShaderUnbind::sGLSLShaderUnbind()
 {
 	type = SectionType::GLSLShaderUnbind;
 }
 
+void sGLSLShaderUnbind::load() {
+	LOG->Info(LOG_HIGH, "  > UNBIND LOAD has been called!");
+}
+
+void sGLSLShaderUnbind::init() {
+	LOG->Info(LOG_LOW, "  > UNBIND INIT has been called!");
+}
+
+void sGLSLShaderUnbind::exec() {
+	LOG->Info(LOG_LOW, "  > UNBIND RENDER has been called!");
+}
+
+
 void sGLSLShaderUnbind::end() {
-	LOG->Info("  > UNBIND END has been called!");
+	LOG->Info(LOG_HIGH, "  > UNBIND END has been called!");
 
 }

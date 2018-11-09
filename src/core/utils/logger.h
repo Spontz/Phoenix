@@ -7,13 +7,21 @@
 #include <iostream>
 #include <cstdarg>
 #include <string>
+
+#define LOG_NONE 0
+#define LOG_ERROR_ONLY 1
+#define LOG_HIGH 2
+#define LOG_MED 3
+#define LOG_LOW 4
+
 using namespace std;
 #define LOG CLogger::GetLogger()
 
 class CLogger {
 public:
+	char log_level;	// Log Level: LOG_HIGH, LOG_MED, LOG_LOW
 	// Logs an info message (@param format string for the message to be logged)
-	void Info(const char * format, ...);
+	void Info(char level, const char * format, ...);
 	// Logs an error message (@param format string for the message to be logged)
 	void Error(const char * format, ...);
 

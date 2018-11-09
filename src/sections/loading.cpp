@@ -5,17 +5,17 @@ sLoading::sLoading() {
 }
 
 void sLoading::load() {
-	LOG->Info("  > Loading loader has been called!");
+	LOG->Info(LOG_HIGH, "  > LOADING LOAD() has been called!");
 }
 
 void sLoading::init() {
-	
+	LOG->Info(LOG_LOW, "  > LOADING INIT() has been called!");
 }
 
 void sLoading::exec() {
-	
+	LOG->Info(LOG_LOW, "  > LOADING EXEC() has been called!");
 }
 
 void sLoading::end() {
-	
+	LOG->Info(LOG_HIGH, "  > LOADING END() has been called!");
 }

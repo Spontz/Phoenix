@@ -12,6 +12,10 @@ glDriver* glDriver::m_pThis = NULL;
 
 // **************************************************
 
+void error_callback(int, const char* err_str)
+{
+	LOG->Error("GLFW Error: %s", err_str);
+}
 void window_size_callback(GLFWwindow * window, int width, int height) {
 	GLDRV->width = width;
 	GLDRV->height = height;
@@ -33,7 +37,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (DEMO->debug) {
 			switch (key) {
 			case KEY_TIME:
-				LOG->Info("Demo time: %.4f", DEMO->runTime);
+				LOG->Info(LOG_HIGH,"Demo time: %.4f", DEMO->runTime);
 				break;
 			case KEY_PLAY_PAUSE:
 				if (DEMO->state == DEMO_PLAY) {
@@ -110,6 +114,9 @@ glDriver::glDriver() {
 	multisampling = 0;
 	gamma = 1.0f;
 	
+	// Register error callback first
+	glfwSetErrorCallback(error_callback);
+
 	// Init matrices
 	cam_position = glm::vec3(0.0f, 1.0f, 1.2f);
 	cam_look_at = glm::vec3(0.0f, 0.5f, 0.0f);
@@ -166,12 +173,6 @@ void glDriver::initGraphics() {
 
 void glDriver::initStates()
 {
-	char OGLError[1024];
-
-	// Check for ogl errors
-	//while(this->checkGLErrors(OGLError))
-	//	LOG->Error("An OpenGL error has been produced before GLDRV initStates: %s", OGLError);
-
 	// Set default ogl states
 	cam_position = glm::vec3(0.0f, 1.0f, 1.2f);
 	cam_look_at = glm::vec3(0.0f, 0.5f, 0.0f);
@@ -181,21 +182,12 @@ void glDriver::initStates()
 	view_matrix = glm::lookAt(cam_position, cam_look_at, cam_up);
 	projection_matrix = glm::perspectiveFov(glm::radians(60.0f), float(width), float(height), 0.1f, 10.0f);
 
-	//while (this->checkGLErrors(OGLError))
-	//	LOG->Error("OpenGL Error while setting the default state in GLDRV initStates: %s", OGLError);
-
 	glClearColor(0, 0, 0, 0);
 	glDisable(GL_BLEND);						// blending disabled
-
-	//while (this->checkGLErrors(OGLError))
-	//	LOG->Error("OpenGL Error while setting the default state in GLDRV initStates: %s", OGLError);
 
 	glDisable(GL_CULL_FACE);					// cull face disabled
 	glEnable(GL_TEXTURE_2D);					// textures enabled
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	// draw cwise and ccwise in fill mode
-
-	//while (this->checkGLErrors(OGLError))
-	//	LOG->Error("OpenGL Error while setting the default state in GLDRV initStates: %s", OGLError);
 
 	glEnable(GL_DEPTH_TEST);					// depth test enabled
 	glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL
@@ -203,10 +195,6 @@ void glDriver::initStates()
 	// Enable multisampling
 	if (this->multisampling)
 		glEnable(GL_MULTISAMPLE);
-
-	// Check for ogl errors
-	//while (this->checkGLErrors(OGLError))
-	//	LOG->Error("OpenGL Error while setting the default state in GLDRV initStates: %s", OGLError);
 }
 
 void glDriver::initRender(int clear)
@@ -241,20 +229,7 @@ void glDriver::initRender(int clear)
 int glDriver::window_should_close() {
 	return glfwWindowShouldClose(window);
 }
-/*
-int glDriver::checkGLErrors(char *pOut)
-{
-	GLenum err = glGetError();
 
-	if (pOut)
-		strcpy(pOut, (const char*)gluErrorString(err));
-
-	if (err == GL_NO_ERROR)
-		return 0;
-
-	return 1;
-}
-*/
 void glDriver::loadcontent() {
 	std::string s_demo = DEMO->demoDir;
 	std::string s_file = s_demo + "/models/alliance.obj";
