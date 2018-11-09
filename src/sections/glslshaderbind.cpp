@@ -1,15 +1,16 @@
 #include "main.h"
 
 void sGLSLShaderBind::load() {
-	LOG->Info("  > glgshShaderBind loader has been called!");
 }
 
 void sGLSLShaderBind::init() {
-	
+	LOG->Info("  > BIND INIT has been called!");
+
 }
 
 void sGLSLShaderBind::exec() {
-	
+	GLDRV->render(DEMO->runTime);
+
 }
 
 sGLSLShaderBind::sGLSLShaderBind()
@@ -18,5 +19,6 @@ sGLSLShaderBind::sGLSLShaderBind()
 }
 
 void sGLSLShaderBind::end() {
-	
+	LOG->Info("  > BIND END has been called!");
+
 }

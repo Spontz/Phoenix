@@ -16,6 +16,7 @@ Section::Section() {
 	layer		= 0;
 	enabled		= 0;	// Disabled by default
 	loaded		= 0;	// Not loaded by default
+	ended		= 0;	// Not ended by default
 	runTime		= 0;
 	hasBlend	= 0;
 	sfactor		= 0;

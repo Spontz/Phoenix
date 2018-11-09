@@ -253,8 +253,8 @@ void demokernel::initDemo() {
 		BASSDRV->init();
 
 
-	//TODO: Gestionar el section manager mejor
-	//this->sectionManager.init();
+	// Start section Manager
+	this->sectionManager.init();
 
 	/*
 	// TODO: Implement network management
@@ -271,15 +271,12 @@ void demokernel::initDemo() {
 	this->initSectionQueues();
 
 	/*
-
-	
-
 	// initialize debugging font
 	text_load_font(&debugFont, strDebugFont, 16, 16, "data/fonts/font.tga");
+	*/
 
 	// get initial sync timer values
-	init_timer();
-*/
+	this->initTimer();
 }
 
 void demokernel::mainLoop() {
@@ -289,7 +286,7 @@ void demokernel::mainLoop() {
 	this->state = DEMO_PLAY;
 
 	/* Loop until the user closes the window */
-	while ((!GLDRV->window_should_close()) || (!this->exitDemo)) {
+	while ((!GLDRV->window_should_close()) && (!this->exitDemo)) {
 		this->doExec();
 		// Poll for and process events
 		glfwPollEvents();
@@ -335,12 +332,12 @@ GLDRV->swap_buffers();
 	if ((this->endTime > 0) && (this->runTime > this->endTime)) {
 
 		if (this->loop) {
-			this->restart();
+			this->restartDemo();
 		}
 		else {
 			if (this->debug) {
 				this->runTime = this->endTime;
-				this->pause();
+				this->pauseDemo();
 			}
 			else {
 				this->exitDemo = TRUE;
@@ -352,63 +349,38 @@ GLDRV->swap_buffers();
 	// non-play state
 	if (this->state != DEMO_PLAY) {
 
-		//process_sectionQueues(); // TODO
-		// TODO TODO TODO.....
+		this->processSectionQueues();
+		this->pauseTimer();
+		if (this->state & DEMO_REWIND) {
+			// decrease demo runtime
+			this->runTime -= 10.0f * this->realFrameTime;
+			if (this->runTime < this->startTime) {
+				this->runTime = this->startTime;
+				this->pauseDemo();
+			}
+		}
+		else if (this->state & DEMO_FASTFORWARD) {
 
-		
+			// increase demo runtime
+			this->runTime += 10.0f * this->realFrameTime;
+			if (this->runTime > this->endTime) {
+				this->runTime = this->endTime;
+				this->pauseDemo();
+			}
+		}
+
+		// reset section queues //TODO: Not necesary???
+		//reinit_sectionQueues();
 	}
 	// play state
 	else {
-		// Prepare and remove the sections
+		// Prepare and execute the sections
 		this->processSectionQueues();
 
 		// Update the timing information for the sections
-		//process_timer(); //TODO
+		this->processTimer();
 	}
-
-	/*
-	// non-play state
-	if (this->state != DEMO_PLAY) {
-
-		//process_sectionQueues(); // TODO
-		pause_timer();
-
-		if (demoSystem.state & DEMO_REWIND) {
-
-			// decrease demo runtime
-			demoSystem.runTime -= 10.0f * demoSystem.realFrameTime;
-			if (demoSystem.runTime < demoSystem.startTime) {
-				demoSystem.runTime = demoSystem.startTime;
-				dkernel_pause();
-			}
-
-		}
-		else if (demoSystem.state & DEMO_FASTFORWARD) {
-
-			// increase demo runtime
-			demoSystem.runTime += 10.0f * demoSystem.realFrameTime;
-			if (demoSystem.runTime > demoSystem.endTime) {
-				demoSystem.runTime = demoSystem.endTime;
-				dkernel_pause();
-			}
-		}
-
-		// reset section queues
-		reinit_sectionQueues();
-
-		// play state
-	}
-	else {
-		// Prepare and remove the sections
-		process_sectionQueues();
-
-		// Update the timing information for the sections
-		process_timer();
-	}
-
-	// Default color
-	glColor4f(1, 1, 1, 1);
-	*/
+	
 	// update sound driver once a frame
 	if (this->sound)
 		BASSDRV->update();
@@ -416,24 +388,49 @@ GLDRV->swap_buffers();
 
 }
 
-void demokernel::play()
+void demokernel::playDemo()
 {
+	if (this->state != DEMO_PLAY) {
+		this->state = DEMO_PLAY;
+
+		// reinit section queues
+		//this->reinit_sectionQueues();
+
+		// unpause the sound
+		if (this->sound) BASSDRV->play();
+	}
 }
 
-void demokernel::pause()
+void demokernel::pauseDemo()
 {
+	this->state = DEMO_PAUSE;
+	this->frameTime = 0;
+	if (this->sound) BASSDRV->pause();
 }
 
-void demokernel::restart()
+void demokernel::restartDemo()
 {
+	this->state = DEMO_PLAY;
+	if (this->sound) {
+		// PERE: There is no need to free sound, isn't it??
+		//sound_end();
+		//sound_init();
+	}
+
+	this->initControlVars();
+	this->initTimer();
 }
 
-void demokernel::rewind()
+void demokernel::rewindDemo()
 {
+	this->state = (this->state & DEMO_PAUSE) | DEMO_REWIND;
+	if (this->sound) BASSDRV->pause();
 }
 
-void demokernel::fastforward()
+void demokernel::fastforwardDemo()
 {
+	this->state = (this->state & DEMO_PAUSE) | DEMO_FASTFORWARD;
+	if (this->sound) BASSDRV->pause();
 }
 
 void demokernel::closeDemo() {
@@ -462,6 +459,63 @@ void demokernel::load_spos() {
 }
 
 
+
+void demokernel::initTimer()
+{
+	this->beforeFrameTime = static_cast<float>(glfwGetTime());
+}
+
+void demokernel::calculateFPS(float frameTime)
+{
+	this->accumFrameTime += frameTime;
+	this->accumFrameCount++;
+	if (this->accumFrameTime > 0.3f) {
+		this->fps = (float)this->accumFrameCount / this->accumFrameTime;
+		this->accumFrameTime = 0;
+		this->accumFrameCount = 0;
+	}
+}
+
+void demokernel::processTimer()
+{
+	// frame time calculation
+	if (this->record) {
+		this->realFrameTime = 1.0f / this->recordFps;
+
+	}
+	else {
+		this->afterFrameTime = static_cast<float>(glfwGetTime());
+		this->realFrameTime = this->afterFrameTime - this->beforeFrameTime;
+		this->beforeFrameTime = this->afterFrameTime;
+	}
+
+	// advance sections and demo time
+	this->frameTime = this->realFrameTime;
+	this->runTime += this->frameTime;
+
+	// frame count
+	this->frameCount++;
+
+	// fps calculation
+	this->calculateFPS(this->frameTime);
+}
+
+void demokernel::pauseTimer()
+{
+	// frame time calculation
+	this->afterFrameTime = static_cast<float>(glfwGetTime());
+	this->realFrameTime = this->afterFrameTime - this->beforeFrameTime;
+	this->beforeFrameTime = this->afterFrameTime;
+
+	// sections should not advance
+	this->frameTime = 0;
+
+	// frame count
+	this->frameCount++;
+
+	// fps calculation
+	this->calculateFPS(this->realFrameTime);
+}
 
 void demokernel::initControlVars() {
 	// reset time
@@ -534,7 +588,6 @@ void demokernel::initSectionQueues() {
 			// If the section is not the "loading", then we add id to the Ready Section lst
 			if (ds->type != SectionType::Loading) {
 				this->sectionManager.loadSection.push_back(i);
-				this->sectionManager.endSection.push_back(i);	// Everything that needs to be loaded is added also in the "end" list, so it can be unloaded later
 				// TODO: SPLINES Support
 				// load section splines (to avoid code load in the sections)
 				//loadSplines(ds);
@@ -543,13 +596,13 @@ void demokernel::initSectionQueues() {
 	}
 
 	LOG->Info("  Ready Section queue complete: %d sections to be loaded", this->sectionManager.loadSection.size());
-	LOG->Info("  End Section queue complete: %d sections to be unloaded", this->sectionManager.endSection.size());
 
 	// Start Loading the sections of the Ready List
 	this->loadedSections = 0;
 	for (i = 0; i < this->sectionManager.loadSection.size(); i++) {
 		sec_id = this->sectionManager.loadSection[i];
 		this->sectionManager.section[sec_id]->load();
+		this->sectionManager.section[sec_id]->loaded = TRUE;
 		++this->loadedSections;
 		
 		// Update loading
@@ -570,202 +623,84 @@ void demokernel::initSectionQueues() {
 }
 
 void demokernel::processSectionQueues() {
-	char OGLError[1024];
-	Section *ds, *ds_tmp;
-	char isLast;
+	Section *ds;
 	int i;
 	int sec_id;
+	vector<Section*>::iterator it;
+
 
 	LOG->Info("Start queue processing for second: %.4f", this->runTime);
 	// We loop all the sections, searching for finished sections,
 	// if any is found, we will remove from the queue and will execute the .end() function
 
-	// Populate End Section: Check the sections that need to be finalized
-	LOG->Info("  Analysing sections that can be removed.", this->runTime);
-	for (i = 0; i < this->sectionManager.endSection.size(); i++) {
-		sec_id = this->sectionManager.endSection[i];
-		ds = this->sectionManager.section[sec_id];
-		if ((ds->endTime <= this->runTime) && (ds->type != SectionType::Loading)) {
-			// Call the End() method of the section, and remove the section form the list of sections that needs to be run
-			this->sectionManager.section[sec_id]->end();
-			this->sectionManager.removeSection.push_back(sec_id);
-			LOG->Info("  Section %d [id: %s] has been ended and marked to be removed", sec_id, this->sectionManager.section[sec_id]->identifier.c_str());
-		}
-	}
-	// Remove Sections that have been ended
-	LOG->Info("  Analysing sections that can be removed.", this->runTime);
-	for (i = 0; i < this->sectionManager.section.size(); i++) {
-		ds = this->sectionManager.section[sec_id];
-		if ((ds->endTime <= this->runTime) && (ds->type != SectionType::Loading)) {
-			// Call the End() method of the section, and remove the section form the list of sections that needs to be run
-			this->sectionManager.section[sec_id]->end();
-			this->sectionManager.removeSection.push_back(sec_id);
-			LOG->Info("  Section %d has been ended and marked to be removed", sec_id);
+	// Check the sections that need to be finalized
+	LOG->Info("  Analysing sections that can be removed...", this->runTime);
+	for (it = this->sectionManager.section.begin(); it < this->sectionManager.section.end(); it++) {
+		ds = *it;
+		if ((ds->endTime <= this->runTime) && (ds->ended == FALSE)) {
+			ds->end();
+			ds->ended = TRUE;
+			LOG->Info("  Section id: %s has been end", ds->identifier.c_str());
 		}
 	}
 
-
-	this->sectionManager.section.erase(this->sectionManager.section.begin() + sec_id);
-
-	// Populate Exec Section: Look on ALL sections, if they need to be executed or not
-	// Clear the exec queue
+	// Check the sections that need to be executed
+	LOG->Info("  Analysing sections that must be executed...", this->runTime);
 	this->sectionManager.execSection.clear();
-	for (i = 0; i < this->sectionManager.section.size(); i++) {
+	for (i = 0; i< this->sectionManager.section.size(); i++) {
 		ds = this->sectionManager.section[i];
-		if ((ds->startTime >= this->runTime) && (ds->endTime <= this->runTime) && (ds->type != SectionType::Loading)) {
-			// Add section to the run queue
-			this->sectionManager.execSection.push_back(i);
+		if ((ds->startTime <= this->runTime) && (ds->endTime >= this->runTime)) {
+			this->sectionManager.execSection.push_back(make_pair(ds->layer, i));		// Load the section: first the layer and then the ID
 		}
 	}
+	sort(this->sectionManager.execSection.begin(), this->sectionManager.execSection.end());	// Sort sections by Layer
+
 	LOG->Info("  Exec Section queue complete: %d sections to be executed", this->sectionManager.execSection.size());
 
-
-	/*
-	ds = demoSystem.runSection;
-	while (ds != NULL) {
-
-		if (ds->endTime <= demoSystem.runTime) {
-
-			// remove from run queue
-			if (ds->priorRun) (*(tDemoSection*)ds->priorRun).nextRun = ds->nextRun;
-			else demoSystem.runSection = ds->nextRun;
-			if (ds->nextRun) (*(tDemoSection*)ds->nextRun).priorRun = ds->priorRun;
-
-#ifdef _DEBUG
-			dkernel_trace(" Section removed: %s.end", sectionFunction[ds->staticSectionIndex].scriptName);
-#endif
-			// execute end
-			mySection = ds;
-			sectionFunction[ds->staticSectionIndex].end();
-		}
-
-		ds = ds->nextRun;
+	// Run Init sections
+	LOG->Info("  Running Init Sections...");
+	for (i = 0; i < this->sectionManager.execSection.size(); i++) {
+		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
+		ds = this->sectionManager.section[sec_id];
+		ds->init();			// Init the Section
+		LOG->Info("  Section %d [layer: %d id: %s] inited", sec_id, ds->layer, ds->identifier.c_str());
 	}
 
-#ifdef _DEBUG
-	//dkernel_trace("ready >");
-#endif
 
-#ifdef _DEBUG
-	dkernel_trace("Running Init (.init()) functions...");
-#endif
-	// view ready sections looking for run sections
-	ds = demoSystem.readySection;
-	while (ds != NULL) {
-
-		// direct reject of all next sections
-		if (ds->startTime > demoSystem.runTime) break;
-
-		// if finished section do nothing
-		if (ds->endTime <= demoSystem.runTime) {
-#ifdef _DEBUG
-			dkernel_trace(" Section skipped: %s", sectionFunction[ds->staticSectionIndex].scriptName);
-#endif
-		}
-		// else execute init and add it to run queue
-		else {
-			// setup the runtime value
-			ds->runTime = demoSystem.runTime - ds->startTime;
-
-#ifdef _DEBUG
-			dkernel_trace (" Initializing %s (%i)", sectionFunction[ds->staticSectionIndex].scriptName, ds->staticSectionIndex);
-#endif
-
-			// section init
-			mySection = ds;
-			sectionFunction[ds->staticSectionIndex].init();
-
-			// first element in run queue
-			if (!demoSystem.runSection) {
-				demoSystem.runSection = ds;
-
-			} else {
-				// ordered insert on run list
-				ds_tmp = demoSystem.runSection;
-				isLast = FALSE;
-				while ((!isLast) && (ds_tmp->layer < ds->layer)) {
-					if (ds_tmp->nextRun) ds_tmp = ds_tmp->nextRun;
-					else isLast = TRUE;
-				}
-
-				if (isLast) {
-					ds_tmp->nextRun = ds;
-					ds->priorRun = ds_tmp;
-				} else {
-					if (ds_tmp->priorRun) (*(tDemoSection*)ds_tmp->priorRun).nextRun = ds;
-					else demoSystem.runSection = ds;
-					ds->priorRun = ds_tmp->priorRun;
-					ds->nextRun = ds_tmp;
-					ds_tmp->priorRun = ds;
-				}
-			}
-		}
-
-		// remove from ready queue
-		if (ds->priorRdy) (*(tDemoSection*)ds->priorRdy).nextRdy = ds->nextRdy;
-		else demoSystem.readySection = ds->nextRdy;
-		if (ds->nextRdy) (*(tDemoSection*)ds->nextRdy).priorRdy = ds->priorRdy;
-
-		ds = ds->nextRdy;
-	}
 
 	// prepare engine for render
-	gldrv_initRender(TRUE);
-	demoSystem.camera = NULL;
+	GLDRV->initRender(TRUE);
+	
+	// Run Exec sections
+	LOG->Info("  Running Exec Sections...");
+	for (i = 0; i < this->sectionManager.execSection.size(); i++) {
+		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
+		ds = this->sectionManager.section[sec_id];
+		if((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading))
+			ds->exec();			// Exec the Section
+		LOG->Info("  Section %d [layer: %d id: %s] executed", sec_id, ds->layer, ds->identifier.c_str());
 
-#ifdef _DEBUG
-	dkernel_trace("Running render (.exec()) functions...");
-#endif
-
-	// execute run sections
-	ds = demoSystem.runSection;
-	while (ds != NULL)	{
-		if (ds->endTime > demoSystem.runTime) {
-			// section exec
-			tex_reset_bind();
-			mySection = ds;
-			
-			if ((ds->enabled) && (ds->loaded)) {
-				#ifdef _DEBUG
-					dkernel_trace(" Rendering %s (%i)", sectionFunction[ds->staticSectionIndex].scriptName, ds->staticSectionIndex);
-				#endif
-					
-				sectionFunction[ds->staticSectionIndex].exec();
-				while (gl_drv_check_for_gl_errors(OGLError))
-					dkernel_error("%s : The section has produced the following OGL error:\n%s", sectionFunction[ds->staticSectionIndex].scriptName, OGLError);
-			}
-			
-			// add last frame time
-			ds->runTime = demoSystem.runTime - ds->startTime;
-		}
-		else
-			dkernel_warn("Finish section not detected");
-			
-		ds = ds->nextRun;
 	}
 
-#ifdef _DEBUG
-	dkernel_trace("END queue processing!\n");
-#endif
+	LOG->Info("End queue processing!");
+
+	/*
 	// restore viewport
 	gldrv_initRender(FALSE);
 
 	// capture frame if we want to record a video
-	if (demoSystem.record) gldrv_capture();
+	if (this->record)	GLDRV->capture();
 
 	// expand RTT to fullscreen
 	gldrv_endRender();
 
-	if (demoSystem.debug) {
-		if (demoSystem.drawFps) drawFps();
-		if (demoSystem.drawTiming) drawTiming();
+	if (this->debug) {
+		if (this->drawFps) drawFps();
+		if (this->drawTiming) drawTiming();
 	}
-	// swap buffer
-	gldrv_swap();
-	
 	*/
-
-
+	// swap buffer
+	GLDRV->swap_buffers();
 }
 
 void demokernel::load_spo(string sFile) {

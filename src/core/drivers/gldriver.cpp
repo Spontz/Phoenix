@@ -13,15 +13,10 @@ glDriver* glDriver::m_pThis = NULL;
 // **************************************************
 
 void window_size_callback(GLFWwindow * window, int width, int height) {
-	glViewport(0, 0, width, height);
-	if (width>=1 && height>=1) {
-		GLDRV->projection_matrix = glm::perspectiveFov(glm::radians(60.0f), float(width), float(height), 0.1f, 10.0f);
-		if (GLDRV->shader != nullptr) {
-			GLDRV->shader->setUniformMatrix4fv("viewProj", GLDRV->projection_matrix * GLDRV->view_matrix);
-		}
-	}
+	GLDRV->width = width;
+	GLDRV->height = height;
+	GLDRV->initRender(true);
 }
-
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	
@@ -42,20 +37,20 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				break;
 			case KEY_PLAY_PAUSE:
 				if (DEMO->state == DEMO_PLAY) {
-					//DEMO->pause();//TODO
+					DEMO->pauseDemo();
 				}
 				else {
-					//DEMO->play();//TODO
+					DEMO->playDemo();
 				}
 				break;
 			case KEY_REWIND:
-				//DEMO->rewind();//TODO
+				DEMO->rewindDemo();
 				break;
 			case KEY_FASTFORWARD:
-				//DEMO->fastforward();//TODO
+				DEMO->fastforwardDemo();
 				break;
 			case KEY_RESTART:
-				//DEMO->restart();//TODO
+				DEMO->restartDemo();
 				break;
 			case KEY_SHOWTIME:
 				if (DEMO->drawTiming)
@@ -83,22 +78,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		case KEY_REWIND:
 		case KEY_FASTFORWARD:
 			if (DEMO->state & DEMO_PAUSE) {
-				DEMO->pause();
+				DEMO->pauseDemo();
 			}
 			else {
-				DEMO->play();
+				DEMO->playDemo();
 			}
 			break;
 		}
 	
 	}
-/*	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-		LOG->Info("Exit key pressed, closing demo...");
-		DEMO->closeDemo();
-		exit(EXIT_SUCCESS);
-	}
-	*/
-	
 }
 
 // **************************************************
@@ -172,18 +160,101 @@ void glDriver::initGraphics() {
 	// Load content
 	loadcontent();
 
-	// Set the viewport
-	glClearColor(0.6784f, 0.8f, 1.0f, 1.0f);
-	glViewport(0, 0, width, height);
+	// Init render
+	this->initRender(true);
+}
 
-	glEnable(GL_DEPTH_TEST);
+void glDriver::initStates()
+{
+	char OGLError[1024];
+
+	// Check for ogl errors
+	//while(this->checkGLErrors(OGLError))
+	//	LOG->Error("An OpenGL error has been produced before GLDRV initStates: %s", OGLError);
+
+	// Set default ogl states
+	cam_position = glm::vec3(0.0f, 1.0f, 1.2f);
+	cam_look_at = glm::vec3(0.0f, 0.5f, 0.0f);
+	cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	world_matrix = glm::mat4(1.0f);
+	view_matrix = glm::lookAt(cam_position, cam_look_at, cam_up);
+	projection_matrix = glm::perspectiveFov(glm::radians(60.0f), float(width), float(height), 0.1f, 10.0f);
+
+	//while (this->checkGLErrors(OGLError))
+	//	LOG->Error("OpenGL Error while setting the default state in GLDRV initStates: %s", OGLError);
+
+	glClearColor(0, 0, 0, 0);
+	glDisable(GL_BLEND);						// blending disabled
+
+	//while (this->checkGLErrors(OGLError))
+	//	LOG->Error("OpenGL Error while setting the default state in GLDRV initStates: %s", OGLError);
+
+	glDisable(GL_CULL_FACE);					// cull face disabled
+	glEnable(GL_TEXTURE_2D);					// textures enabled
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	// draw cwise and ccwise in fill mode
+
+	//while (this->checkGLErrors(OGLError))
+	//	LOG->Error("OpenGL Error while setting the default state in GLDRV initStates: %s", OGLError);
+
+	glEnable(GL_DEPTH_TEST);					// depth test enabled
+	glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL
+
+	// Enable multisampling
+	if (this->multisampling)
+		glEnable(GL_MULTISAMPLE);
+
+	// Check for ogl errors
+	//while (this->checkGLErrors(OGLError))
+	//	LOG->Error("OpenGL Error while setting the default state in GLDRV initStates: %s", OGLError);
+}
+
+void glDriver::initRender(int clear)
+{
+	// reset the default gl state
+	this->initStates();
+	// set the viewport to the correct size // TODO: S'ha de areglar el tema dels viewports....
+	//glViewport(this->vpXOffset, this->vpYOffset, this->vpWidth, this->vpHeight);
+	glViewport(0, 0, this->width, this->height);
+
+	if (this->width >= 1 && this->height >= 1) {
+		this->projection_matrix = glm::perspectiveFov(glm::radians(60.0f), float(this->width), float(this->height), 0.1f, 10.0f);
+		if (this->shader != nullptr) {
+			this->shader->setUniformMatrix4fv("viewProj", this->projection_matrix * this->view_matrix);
+		}
+	}
+
+	// clear some buffers if needed
+	if (clear) {
+		glClearColor(0, 0, 0, 0);
+
+		if (this->stencil > 0) {
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		}
+		else {
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
+	}
 }
 
 
 int glDriver::window_should_close() {
 	return glfwWindowShouldClose(window);
 }
+/*
+int glDriver::checkGLErrors(char *pOut)
+{
+	GLenum err = glGetError();
 
+	if (pOut)
+		strcpy(pOut, (const char*)gluErrorString(err));
+
+	if (err == GL_NO_ERROR)
+		return 0;
+
+	return 1;
+}
+*/
 void glDriver::loadcontent() {
 	std::string s_demo = DEMO->demoDir;
 	std::string s_file = s_demo + "/models/alliance.obj";

@@ -5,11 +5,11 @@ void sGLSLShaderUnbind::load() {
 }
 
 void sGLSLShaderUnbind::init() {
-	
+	LOG->Info("  > UNBIND INIT has been called!");
 }
 
 void sGLSLShaderUnbind::exec() {
-	
+	LOG->Info("  > UNBIND RENDER has been called!");
 }
 
 sGLSLShaderUnbind::sGLSLShaderUnbind()
@@ -18,5 +18,6 @@ sGLSLShaderUnbind::sGLSLShaderUnbind()
 }
 
 void sGLSLShaderUnbind::end() {
-	
+	LOG->Info("  > UNBIND END has been called!");
+
 }

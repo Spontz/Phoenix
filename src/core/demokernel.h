@@ -128,18 +128,26 @@ public:
 	// Scripts (SPO files) management
 	void load_spos();
 
+	// Demo control
+	void playDemo();
+	void pauseDemo();
+	void restartDemo();
+	void rewindDemo();
+	void fastforwardDemo();
+
 	
 private:
 
 	static demokernel* m_pThis;
 	
 	void doExec();
-	void play();
-	void pause();
-	void restart();
-	void rewind();
-	void fastforward();
 
+	// Timing controls
+	void calculateFPS(float frameRate); 
+	void initTimer();
+	void processTimer();
+	void pauseTimer();
+	
 
 	void initControlVars();			//Init control vars
 	void initSectionQueues();		// Init Section Queues

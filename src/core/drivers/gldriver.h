@@ -7,6 +7,7 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <gl/GLU.h>
 #define  GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -56,6 +57,8 @@ public:
 	glDriver();
 	void initFramework();
 	void initGraphics();
+	void initStates();
+	void initRender(int clear);
 	void render(float time);
 	void swap_buffers();
 	void close();
@@ -80,6 +83,7 @@ private:
 	GLFWwindow* window;
 
 	static glDriver* m_pThis;
+	//int checkGLErrors(char *pOut);
 	void loadcontent(); // TODO: Guarrada TO DELETE
 
 

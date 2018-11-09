@@ -30,6 +30,7 @@ public:
 	int			layer;								// layer where sections run (priority)
 	int			enabled;							// 1: Section enabled; 0: Section disabled
 	int			loaded;								// 1: Section loaded; 0: Section not loaded
+	int			ended;								// 1: Section ended; 0: Section not ended
 	float		runTime;							// seconds elapsed since section start
 	int			hasBlend;							// has blending function parameters?
 	int			sfactor;							// default source blending factor

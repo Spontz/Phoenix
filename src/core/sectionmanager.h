@@ -69,9 +69,7 @@ class SectionManager {
 public:
 	std::vector<Section*> section;	// Sections list, script order
 	std::vector<int> loadSection;	// Ready section list: Sections to be loaded (ascendent order by start time)
-	std::vector<int> execSection;	// Exec section list: Sections to be executed this frame (ascendent order by layer)
-	std::vector<int> endSection;	// End section list: Sections to be ended
-	std::vector<int> removeSection;	// End section list: Sections to be removed
+	std::vector<pair<int, int>> execSection;	// Exec section list: Sections to be executed this frame (first element is the layer, and second the ID of the section)
 
 	SectionManager();
 	void init();

@@ -75,8 +75,6 @@ void SectionManager::init() {
 	LOG->Info("SectionManager Inited. Clearing internal lists...");
 	this->loadSection.clear();
 	this->execSection.clear();
-	this->endSection.clear();
-	this->removeSection.clear();
 }
 
 // Adds a Section into the queue
@@ -105,9 +103,6 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		mySection->DataSource = DataSource;
 		section.push_back(dynamic_cast<Section*>(mySection));
 		sec_id = (int)section.size() - 1;
-		readySection.push_back(-1);	// Increment the Ready Section list
-		runSection.push_back(-1);	// Increment the Run Section list
-
 	}
 	return sec_id;
 }
