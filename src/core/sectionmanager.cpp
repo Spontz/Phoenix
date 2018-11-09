@@ -72,7 +72,11 @@ SectionManager::SectionManager() {
 }
 
 void SectionManager::init() {
-	LOG->Info("SectionManager:: I am alive!!! muahhahaha!!!");
+	LOG->Info("SectionManager Inited. Clearing internal lists...");
+	this->loadSection.clear();
+	this->execSection.clear();
+	this->endSection.clear();
+	this->removeSection.clear();
 }
 
 // Adds a Section into the queue

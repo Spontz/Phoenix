@@ -348,6 +348,24 @@ GLDRV->swap_buffers();
 			}
 		}
 	}
+
+	// non-play state
+	if (this->state != DEMO_PLAY) {
+
+		//process_sectionQueues(); // TODO
+		// TODO TODO TODO.....
+
+		
+	}
+	// play state
+	else {
+		// Prepare and remove the sections
+		this->processSectionQueues();
+
+		// Update the timing information for the sections
+		//process_timer(); //TODO
+	}
+
 	/*
 	// non-play state
 	if (this->state != DEMO_PLAY) {
@@ -504,18 +522,19 @@ void demokernel::initSectionQueues() {
 
 	LOG->Info("  Loading section loaded, inited and executed for first time");
 
-	// Clear the ready and run section lists
-	this->sectionManager.readySection.clear();
-	this->sectionManager.runSection.clear();
+	// Clear the load and run section lists
+	this->sectionManager.loadSection.clear();
+	this->sectionManager.execSection.clear();
 
-	// Populate Ready Section: The sections that need to be loaded
+	// Populate Load Section: The sections that need to be loaded
 	for (i = 0; i < this->sectionManager.section.size(); i++) {
 		ds = this->sectionManager.section[i];
 		// If we are in slave mode, we load all the sections but if not, we will load only the ones that are inside the demo time
 		if ((DEMO->slaveMode == 1) || (((ds->startTime < DEMO->endTime) || fabs(DEMO->endTime) < FLT_EPSILON) && (ds->endTime > DEMO->startTime))) {
 			// If the section is not the "loading", then we add id to the Ready Section lst
-			if (this->sectionManager.section[i]->type != SectionType::Loading) {
-				this->sectionManager.readySection.push_back(i);
+			if (ds->type != SectionType::Loading) {
+				this->sectionManager.loadSection.push_back(i);
+				this->sectionManager.endSection.push_back(i);	// Everything that needs to be loaded is added also in the "end" list, so it can be unloaded later
 				// TODO: SPLINES Support
 				// load section splines (to avoid code load in the sections)
 				//loadSplines(ds);
@@ -523,12 +542,13 @@ void demokernel::initSectionQueues() {
 		}
 	}
 
-	LOG->Info("  Ready Section queue complete: %d sections to be loaded", this->sectionManager.readySection.size());
+	LOG->Info("  Ready Section queue complete: %d sections to be loaded", this->sectionManager.loadSection.size());
+	LOG->Info("  End Section queue complete: %d sections to be unloaded", this->sectionManager.endSection.size());
 
 	// Start Loading the sections of the Ready List
 	this->loadedSections = 0;
-	for (i = 0; i < this->sectionManager.readySection.size(); i++) {
-		sec_id = this->sectionManager.readySection[i];
+	for (i = 0; i < this->sectionManager.loadSection.size(); i++) {
+		sec_id = this->sectionManager.loadSection[i];
 		this->sectionManager.section[sec_id]->load();
 		++this->loadedSections;
 		
@@ -547,6 +567,205 @@ void demokernel::initSectionQueues() {
 	// End loading
 	ds_loading->end();
 	
+}
+
+void demokernel::processSectionQueues() {
+	char OGLError[1024];
+	Section *ds, *ds_tmp;
+	char isLast;
+	int i;
+	int sec_id;
+
+	LOG->Info("Start queue processing for second: %.4f", this->runTime);
+	// We loop all the sections, searching for finished sections,
+	// if any is found, we will remove from the queue and will execute the .end() function
+
+	// Populate End Section: Check the sections that need to be finalized
+	LOG->Info("  Analysing sections that can be removed.", this->runTime);
+	for (i = 0; i < this->sectionManager.endSection.size(); i++) {
+		sec_id = this->sectionManager.endSection[i];
+		ds = this->sectionManager.section[sec_id];
+		if ((ds->endTime <= this->runTime) && (ds->type != SectionType::Loading)) {
+			// Call the End() method of the section, and remove the section form the list of sections that needs to be run
+			this->sectionManager.section[sec_id]->end();
+			this->sectionManager.removeSection.push_back(sec_id);
+			LOG->Info("  Section %d [id: %s] has been ended and marked to be removed", sec_id, this->sectionManager.section[sec_id]->identifier.c_str());
+		}
+	}
+	// Remove Sections that have been ended
+	LOG->Info("  Analysing sections that can be removed.", this->runTime);
+	for (i = 0; i < this->sectionManager.section.size(); i++) {
+		ds = this->sectionManager.section[sec_id];
+		if ((ds->endTime <= this->runTime) && (ds->type != SectionType::Loading)) {
+			// Call the End() method of the section, and remove the section form the list of sections that needs to be run
+			this->sectionManager.section[sec_id]->end();
+			this->sectionManager.removeSection.push_back(sec_id);
+			LOG->Info("  Section %d has been ended and marked to be removed", sec_id);
+		}
+	}
+
+
+	this->sectionManager.section.erase(this->sectionManager.section.begin() + sec_id);
+
+	// Populate Exec Section: Look on ALL sections, if they need to be executed or not
+	// Clear the exec queue
+	this->sectionManager.execSection.clear();
+	for (i = 0; i < this->sectionManager.section.size(); i++) {
+		ds = this->sectionManager.section[i];
+		if ((ds->startTime >= this->runTime) && (ds->endTime <= this->runTime) && (ds->type != SectionType::Loading)) {
+			// Add section to the run queue
+			this->sectionManager.execSection.push_back(i);
+		}
+	}
+	LOG->Info("  Exec Section queue complete: %d sections to be executed", this->sectionManager.execSection.size());
+
+
+	/*
+	ds = demoSystem.runSection;
+	while (ds != NULL) {
+
+		if (ds->endTime <= demoSystem.runTime) {
+
+			// remove from run queue
+			if (ds->priorRun) (*(tDemoSection*)ds->priorRun).nextRun = ds->nextRun;
+			else demoSystem.runSection = ds->nextRun;
+			if (ds->nextRun) (*(tDemoSection*)ds->nextRun).priorRun = ds->priorRun;
+
+#ifdef _DEBUG
+			dkernel_trace(" Section removed: %s.end", sectionFunction[ds->staticSectionIndex].scriptName);
+#endif
+			// execute end
+			mySection = ds;
+			sectionFunction[ds->staticSectionIndex].end();
+		}
+
+		ds = ds->nextRun;
+	}
+
+#ifdef _DEBUG
+	//dkernel_trace("ready >");
+#endif
+
+#ifdef _DEBUG
+	dkernel_trace("Running Init (.init()) functions...");
+#endif
+	// view ready sections looking for run sections
+	ds = demoSystem.readySection;
+	while (ds != NULL) {
+
+		// direct reject of all next sections
+		if (ds->startTime > demoSystem.runTime) break;
+
+		// if finished section do nothing
+		if (ds->endTime <= demoSystem.runTime) {
+#ifdef _DEBUG
+			dkernel_trace(" Section skipped: %s", sectionFunction[ds->staticSectionIndex].scriptName);
+#endif
+		}
+		// else execute init and add it to run queue
+		else {
+			// setup the runtime value
+			ds->runTime = demoSystem.runTime - ds->startTime;
+
+#ifdef _DEBUG
+			dkernel_trace (" Initializing %s (%i)", sectionFunction[ds->staticSectionIndex].scriptName, ds->staticSectionIndex);
+#endif
+
+			// section init
+			mySection = ds;
+			sectionFunction[ds->staticSectionIndex].init();
+
+			// first element in run queue
+			if (!demoSystem.runSection) {
+				demoSystem.runSection = ds;
+
+			} else {
+				// ordered insert on run list
+				ds_tmp = demoSystem.runSection;
+				isLast = FALSE;
+				while ((!isLast) && (ds_tmp->layer < ds->layer)) {
+					if (ds_tmp->nextRun) ds_tmp = ds_tmp->nextRun;
+					else isLast = TRUE;
+				}
+
+				if (isLast) {
+					ds_tmp->nextRun = ds;
+					ds->priorRun = ds_tmp;
+				} else {
+					if (ds_tmp->priorRun) (*(tDemoSection*)ds_tmp->priorRun).nextRun = ds;
+					else demoSystem.runSection = ds;
+					ds->priorRun = ds_tmp->priorRun;
+					ds->nextRun = ds_tmp;
+					ds_tmp->priorRun = ds;
+				}
+			}
+		}
+
+		// remove from ready queue
+		if (ds->priorRdy) (*(tDemoSection*)ds->priorRdy).nextRdy = ds->nextRdy;
+		else demoSystem.readySection = ds->nextRdy;
+		if (ds->nextRdy) (*(tDemoSection*)ds->nextRdy).priorRdy = ds->priorRdy;
+
+		ds = ds->nextRdy;
+	}
+
+	// prepare engine for render
+	gldrv_initRender(TRUE);
+	demoSystem.camera = NULL;
+
+#ifdef _DEBUG
+	dkernel_trace("Running render (.exec()) functions...");
+#endif
+
+	// execute run sections
+	ds = demoSystem.runSection;
+	while (ds != NULL)	{
+		if (ds->endTime > demoSystem.runTime) {
+			// section exec
+			tex_reset_bind();
+			mySection = ds;
+			
+			if ((ds->enabled) && (ds->loaded)) {
+				#ifdef _DEBUG
+					dkernel_trace(" Rendering %s (%i)", sectionFunction[ds->staticSectionIndex].scriptName, ds->staticSectionIndex);
+				#endif
+					
+				sectionFunction[ds->staticSectionIndex].exec();
+				while (gl_drv_check_for_gl_errors(OGLError))
+					dkernel_error("%s : The section has produced the following OGL error:\n%s", sectionFunction[ds->staticSectionIndex].scriptName, OGLError);
+			}
+			
+			// add last frame time
+			ds->runTime = demoSystem.runTime - ds->startTime;
+		}
+		else
+			dkernel_warn("Finish section not detected");
+			
+		ds = ds->nextRun;
+	}
+
+#ifdef _DEBUG
+	dkernel_trace("END queue processing!\n");
+#endif
+	// restore viewport
+	gldrv_initRender(FALSE);
+
+	// capture frame if we want to record a video
+	if (demoSystem.record) gldrv_capture();
+
+	// expand RTT to fullscreen
+	gldrv_endRender();
+
+	if (demoSystem.debug) {
+		if (demoSystem.drawFps) drawFps();
+		if (demoSystem.drawTiming) drawTiming();
+	}
+	// swap buffer
+	gldrv_swap();
+	
+	*/
+
+
 }
 
 void demokernel::load_spo(string sFile) {
