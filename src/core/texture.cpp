@@ -19,33 +19,38 @@ Texture::~Texture()
 
 bool Texture::load(const std::string & file_name)
 {
-	if (file_name.empty())
+	filename = file_name;
+	if (filename.empty())
 		return false;
 
 	bool is_loaded = false;
-	int width, height, components;
 
-	unsigned char* pixels = stbi_load((file_name).c_str(), &width, &height, &components, 4);
+	unsigned char* pixels = stbi_load((filename).c_str(), &width, &height, &components, 4);
 
 	if (pixels != nullptr) {
 		glGenTextures(1, &to_id);
 		glBindTexture(GL_TEXTURE_2D, to_id);
 
 		glTexStorage2D(GL_TEXTURE_2D, 2 /* mip map levels */, GL_RGB8, width, height);
-		glTexSubImage2D(GL_TEXTURE_2D, 0 /* mip map level */, 0 /* xoffset */, 0 /* yoffset */, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+		glTexSubImage2D(GL_TEXTURE_2D, 0 /* mip map level */, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		LOG->Info(LOG_LOW,"Texture loaded OK [%s]", file_name.c_str());
-	}
-	else {
-		LOG->Error("Could not load texture: %s", file_name.c_str());
+		is_loaded = true;
 	}
 	
 	stbi_image_free(pixels);
 
 	return is_loaded;
+}
+
+void Texture::bind(int index) const
+{
+	if (to_id != 0) {
+			glActiveTexture(GL_TEXTURE0 + index);
+			glBindTexture(GL_TEXTURE_2D, to_id);
+	}
 }

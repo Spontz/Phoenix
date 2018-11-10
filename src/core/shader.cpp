@@ -99,6 +99,12 @@ Shader::Shader(const std::string & vertexShaderFilename,
     }
 
     link();
+	// If all ok, copy the filenames to the shader
+	this->fragmentShader_Filename = fragmentShaderFilename;
+	this->vertexShader_Filename = vertexShaderFilename;
+	this->geometryShader_Filename = geometryShaderFilename;
+	this->tessellationControlShader_Filename = tessellationControlShaderFilename;
+	this->tessellationEvaluationShader_Filename = tessellationEvaluationShaderFilename;
 }
 
 Shader::~Shader()

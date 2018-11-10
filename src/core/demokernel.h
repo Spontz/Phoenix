@@ -5,9 +5,13 @@
 #define DEMOKERNEL_H
 
 #include <iostream>
-#include "section.h"
-#include "sectionmanager.h"
+#include "core/section.h"
+#include "core/sectionmanager.h"
 #include "sections/sections.h"
+
+#include "core/texturemanager.h"
+#include "core/modelmanager.h"
+#include "core/shadermanager.h"
 
 // ******************************************************************
 
@@ -64,7 +68,11 @@ public:
 	float startTime;							// first demo second
 	float endTime;								// last demo second (0 = unlimited)
 
+	// Managers
 	SectionManager sectionManager;
+	TextureManager textureManager;
+	ModelManager modelManager;
+	ShaderManager shaderManager;
 
 	// loading information
 	//int numSections;

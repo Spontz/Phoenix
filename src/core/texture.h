@@ -16,22 +16,15 @@ using namespace std;
 
 class Texture {
 public:
+	string filename;
+	int width, height, components;
+	bool use_linear;
 
 	Texture();
 	virtual ~Texture();
 
 	bool load(const std::string & file_name);
-
-	void bind(int index = 0) const
-	{
-		if (to_id != 0)
-		{
-			glActiveTexture(GL_TEXTURE0 + index);
-			glBindTexture(GL_TEXTURE_2D, to_id);
-		}
-	}
-
-	bool use_linear;
+	void bind(int index = 0) const;
 			
 private:
 	GLuint to_id;

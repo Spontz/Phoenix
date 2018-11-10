@@ -253,8 +253,11 @@ void demokernel::initDemo() {
 		BASSDRV->init();
 
 
-	// Start section Manager
+	// Start Managers
 	this->sectionManager.init();
+	this->textureManager.init();
+	this->modelManager.init();
+	this->shaderManager.init();
 
 	/*
 	// TODO: Implement network management

@@ -25,12 +25,14 @@ class Model
 public:
     //  Model Data
     std::vector<Mesh> meshes;
-    std::string directory;
+    string directory;
+	string filename;
 
     // Constructor, expects a filepath to a 3D model.
     Model(std::string const &path)
     {
-        loadModel(path);
+		filename = path;
+        loadModel(filename);
     }
 
     // Draws the model, and thus all its meshes

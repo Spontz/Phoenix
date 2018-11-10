@@ -11,6 +11,13 @@
 class Shader
 {
 public:
+
+	string vertexShader_Filename;
+	string fragmentShader_Filename;
+	string geometryShader_Filename;
+	string tessellationControlShader_Filename;
+	string tessellationEvaluationShader_Filename;
+
     Shader(const std::string & vertexShaderFilename,
            const std::string & fragmentShaderFilename,
            const std::string & geometryShaderFilename               = "",
