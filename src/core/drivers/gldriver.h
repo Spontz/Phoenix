@@ -11,9 +11,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "rendering/Shader.h"
-#include "rendering/Texture.h"
-#include "rendering/Model.h"
+#include "core/shader.h"
+#include "core/texture.h"
+#include "core/model.h"
 
 #define GLDRV glDriver::getInstance()
 
@@ -58,7 +58,6 @@ public:
 	void initGraphics();
 	void initStates();
 	void initRender(int clear);
-	void render(float time);
 	void swap_buffers();
 	void close();
 
@@ -72,17 +71,12 @@ public:
 	glm::mat4 world_matrix;
 	glm::mat4 view_matrix;
 	glm::mat4 projection_matrix;
-	
-	// TODO: TO DELETE
-	Model   * mesh;
-	Shader  * shader;
-	Texture * texture;
+
 
 private:
 	GLFWwindow* window;
 
 	static glDriver* m_pThis;
-	void loadcontent(); // TODO: Guarrada TO DELETE
 
 
 };

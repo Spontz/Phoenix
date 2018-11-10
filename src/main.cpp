@@ -8,9 +8,11 @@
 
 
 int main(int argc, char *argv[]) {
+	// Define the Log level
+	LOG->log_level = LOG_MED; // Define the log with the lowest detail
+
 	// Initialize the GL Framework
 	GLDRV->initFramework();
-	LOG->log_level = LOG_HIGH; // Define the log with the lowest detail
 	LOG->Info(LOG_HIGH, "Phoenix Visuals Engine starting up: Let's make some noise!");
 	
 	// Get "demo" folder path

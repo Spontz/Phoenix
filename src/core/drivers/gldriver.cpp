@@ -125,11 +125,6 @@ glDriver::glDriver() {
 	world_matrix = glm::mat4(1.0f);
 	view_matrix = glm::lookAt(cam_position, cam_look_at, cam_up);
 	projection_matrix = glm::perspectiveFov(glm::radians(60.0f), float(width), float(height), 0.1f, 10.0f);
-
-	// TODELETE
-	mesh = nullptr;
-	shader = nullptr;
-	texture = nullptr;
 }
 
 void glDriver::initFramework() {
@@ -163,9 +158,6 @@ void glDriver::initGraphics() {
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		LOG->Error("Failed to initialize GLAD");
 	}
-
-	// Load content
-	loadcontent();
 
 	// Init render
 	this->initRender(true);
@@ -205,13 +197,6 @@ void glDriver::initRender(int clear)
 	//glViewport(this->vpXOffset, this->vpYOffset, this->vpWidth, this->vpHeight);
 	glViewport(0, 0, this->width, this->height);
 
-	if (this->width >= 1 && this->height >= 1) {
-		this->projection_matrix = glm::perspectiveFov(glm::radians(60.0f), float(this->width), float(this->height), 0.1f, 10.0f);
-		if (this->shader != nullptr) {
-			this->shader->setUniformMatrix4fv("viewProj", this->projection_matrix * this->view_matrix);
-		}
-	}
-
 	// clear some buffers if needed
 	if (clear) {
 		glClearColor(0, 0, 0, 0);
@@ -228,42 +213,6 @@ void glDriver::initRender(int clear)
 
 int glDriver::window_should_close() {
 	return glfwWindowShouldClose(window);
-}
-
-void glDriver::loadcontent() {
-	std::string s_demo = DEMO->demoDir;
-	std::string s_file = s_demo + "/models/alliance.obj";
-
-	mesh = new Model(s_file);
-
-	/* Create and apply basic shader */
-	shader = new Shader("Basic.vert", "Basic.frag");
-	shader->apply();
-
-	shader->setUniformMatrix4fv("world", world_matrix);
-	shader->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));
-	shader->setUniformMatrix4fv("viewProj", projection_matrix * view_matrix);
-
-	shader->setUniform3fv("cam_pos", cam_position);
-
-	texture = new Texture();
-	s_file = s_demo + "/models/alliance.png";
-	texture->load(s_file);
-	texture->bind();
-}
-
-void glDriver::render(float time) {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	/* Draw our triangle */
-	world_matrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(-90.0f), glm::vec3(0, 1, 0));
-
-	shader->setUniformMatrix4fv("world", world_matrix);
-	shader->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));
-
-	shader->apply();
-	texture->bind();
-	mesh->Draw();
 }
 
 void glDriver::swap_buffers() {
