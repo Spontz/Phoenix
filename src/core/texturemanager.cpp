@@ -23,7 +23,7 @@ int TextureManager::addTexture(string path) {
 
 	// check if texture is already loaded, then we just return the ID of our texture
 	for (i = 0; i < texture.size(); i++) {
-		if (texture[i]->filename.compare(path)) {
+		if (texture[i]->filename.compare(path) == 0) {
 			return i;
 		}
 	}

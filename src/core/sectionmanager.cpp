@@ -88,6 +88,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 	case SectionType::Loading:
 		mySection = new sLoading();
 		break;
+	case SectionType::Background:
+		mySection = new sBackground();
+		break;
 	case SectionType::GLSLShaderBind:
 		mySection = new sGLSLShaderBind();
 		break;
@@ -120,5 +123,3 @@ SectionType SectionManager::getSectionType(string key) {
 
 	return SectionType::NOT_FOUND;
 }
-
-

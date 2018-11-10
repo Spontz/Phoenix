@@ -25,7 +25,8 @@ int ShaderManager::addShader(string path_vert, string path_frag) {
 	for (i = 0; i < shader.size(); i++) {
 		shad = shader[i];
 		// TODO: Fix and add the geometry shader, tessellation shader, etc....
-		if (shad->vertexShader_Filename.compare(path_vert) && shad->fragmentShader_Filename.compare(path_frag)) {
+		if ((shad->vertexShader_Filename.compare(path_vert) == 0)  &&
+			(shad->fragmentShader_Filename.compare(path_frag) == 0)) {
 			return i;
 		}
 	}
