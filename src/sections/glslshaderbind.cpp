@@ -17,7 +17,6 @@ void sGLSLShaderBind::load() {
 	// Load model
 	model = DEMO->modelManager.addModel(s_demo + "/pool/models/alliance/alliance.obj");
 		
-	//shader = new Shader(s_vert, s_frag);
 	shader = DEMO->shaderManager.addShader(s_demo + "/pool/shaders/basic/basic.vert", s_demo + "/pool/shaders/basic/basic.frag");
 	DEMO->shaderManager.shader[shader]->apply();
 

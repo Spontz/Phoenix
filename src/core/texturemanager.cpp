@@ -7,7 +7,6 @@
 
 // Init vars
 TextureManager::TextureManager() {
-	
 }
 
 void TextureManager::init() {

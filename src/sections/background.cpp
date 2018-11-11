@@ -54,7 +54,7 @@ void sBackground::init() {
 }
 
 void sBackground::exec() {
-	int i;
+//	int i;
 
 	local = (background_section *)this->vars;
 
@@ -69,65 +69,71 @@ void sBackground::exec() {
 		if (this->hasAlpha)
 		{
 			float alpha = this->alpha1 + this->runTime * (this->alpha2 - this->alpha1) / this->duration;
+			
 			//glEnable(GL_ALPHA_TEST);
 			//glAlphaFunc(this->alphaFunc, alpha);
 		}
-
-		/*
 		// compute rectangle coordinates
 		{
 			// hack : las texturas se cargan con resoluciones multiplo de dos
-			float TextureAspectRatio = (float)tex_array[local->texture]->width / (float)tex_array[local->texture]->height;
+//			float TextureAspectRatio = (float)tex_array[local->texture]->width / (float)tex_array[local->texture]->height;
 
 			switch (local->mode)
 			{
 			case background_drawing_mode__fit_to_viewport:
-				camera_2d_fit_to_viewport(TextureAspectRatio, &local->quad.x0, &local->quad.x1, &local->quad.y0, &local->quad.y1);
+//				camera_2d_fit_to_viewport(TextureAspectRatio, &local->quad.x0, &local->quad.x1, &local->quad.y0, &local->quad.y1);
 				break;
 			case background_drawing_mode__fit_to_content:
-				camera_2d_fit_to_content(TextureAspectRatio, &local->quad.x0, &local->quad.x1, &local->quad.y0, &local->quad.y1);
+//				camera_2d_fit_to_content(TextureAspectRatio, &local->quad.x0, &local->quad.x1, &local->quad.y0, &local->quad.y1);
 				break;
 			default:
-				section_error("Invalid background section drawing mode");
+				LOG->Error("Invalid background section drawing mode");
 				break;
 			}
 		}
 
-		// store vertex values
-		local->quad.pc[0][0] = local->quad.x0;
-		local->quad.pc[1][0] = local->quad.x1;
-		local->quad.pc[2][0] = local->quad.x1;
-		local->quad.pc[3][0] = local->quad.x0;
+//		camera_set2d();
+		// Rotate our "world"
+		/*
+		DEMO->cam_position = glm::vec3(0.0f, 1.0f, 1.2f);
+		cam_look_at = glm::vec3(0.0f, 0.5f, 0.0f);
+		cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-		local->quad.pc[0][1] = local->quad.y0;
-		local->quad.pc[1][1] = local->quad.y0;
-		local->quad.pc[2][1] = local->quad.y1;
-		local->quad.pc[3][1] = local->quad.y1;
+		view_matrix = glm::lookAt(cam_position, cam_look_at, cam_up);
+		projection_matrix = glm::perspectiveFov(glm::radians(90.0f), float(GLDRV->width), float(GLDRV->height), 0.1f, 10.0f);
 
-		local->quad.tc[0][0] = 0; local->quad.tc[0][1] = 1;
-		local->quad.tc[1][0] = 1; local->quad.tc[1][1] = 1;
-		local->quad.tc[2][0] = 1; local->quad.tc[2][1] = 0;
-		local->quad.tc[3][0] = 0; local->quad.tc[3][1] = 0;
-
-		camera_set2d();
-
-		tex_bind(local->texture);
-		glBegin(GL_QUADS);
-		for (i = 0; i < 4; i++)
-		{
-			glTexCoord2fv(local->quad.tc[i]);
-			glVertex2fv(local->quad.pc[i]);
+		if (GLDRV->width >= 1 && GLDRV->height >= 1) {
+			GLDRV->projection_matrix = glm::perspectiveFov(glm::radians(60.0f), float(GLDRV->width), float(GLDRV->height), 0.1f, 10.0f);
+			if (shader != -1) {
+				DEMO->shaderManager.shader[shader]->setUniformMatrix4fv("viewProj", GLDRV->projection_matrix * GLDRV->view_matrix);
+			}
 		}
-		glEnd();
+		*/
+		Shader *my_shad = DEMO->shaderManager.shader[RES->shdr_basic];
+		// Place the quad in the center
+		glm::mat4 world_matrix = glm::mat4(1.0f);
+		my_shad->setUniformMatrix4fv("world", world_matrix);
+		my_shad->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));
 
-		camera_restore();
+		// Put the camera in 2D mode
+		// Init matrices
+		glm::vec3 cam_position = glm::vec3(0.0f, 0.0f, 1.0f);
+		glm::vec3 cam_look_at = glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::vec3 cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::mat4 projection_matrix = glm::perspectiveFov(glm::radians(90.0f), float(GLDRV->width), float(GLDRV->height), 0.1f, 10.0f);
+		glm::mat4 view_matrix = glm::lookAt(cam_position, cam_look_at, cam_up);
+		my_shad->setUniformMatrix4fv("viewProj", projection_matrix * view_matrix);
+		
 
-		if (this->hasAlpha)
-			glDisable(GL_ALPHA_TEST);
+		RES->Draw_Obj_Quad();
+
+//		camera_restore();
+
+//		if (this->hasAlpha)
+//			glDisable(GL_ALPHA_TEST);
 
 		if (this->hasBlend)
 			glDisable(GL_BLEND);
-			*/
 	}
 	glEnable(GL_DEPTH_TEST);
 }

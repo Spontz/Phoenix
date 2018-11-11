@@ -259,6 +259,9 @@ void demokernel::initDemo() {
 	this->modelManager.init();
 	this->shaderManager.init();
 
+	// Start loading Basic resources
+	RES->loadAllResources();
+
 	/*
 	// TODO: Implement network management
 	if (demoSystem.slaveMode) {

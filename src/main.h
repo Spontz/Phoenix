@@ -9,6 +9,8 @@
 #include "core/drivers/gldriver.h"
 #include "core/drivers/bassdriver.h"
 
+#include "core/resource/resource.h"
+
 #include "core/utils/logger.h"
 #include "core/utils/utilities.h"
 

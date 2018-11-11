@@ -19,6 +19,8 @@ Texture::~Texture()
 
 bool Texture::load(const std::string & file_name)
 {
+	stbi_set_flip_vertically_on_load(true); // required for loading textures properly
+
 	filename = file_name;
 	if (filename.empty())
 		return false;
