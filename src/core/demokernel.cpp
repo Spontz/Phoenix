@@ -295,8 +295,11 @@ void demokernel::mainLoop() {
 
 	/* Loop until the user closes the window */
 	while ((!GLDRV->window_should_close()) && (!this->exitDemo)) {
-		this->doExec();
 		// Poll for and process events
+		GLDRV->processInput();
+		// 
+		this->doExec();
+
 		glfwPollEvents();
 	}
 }

@@ -23,7 +23,7 @@ void window_size_callback(GLFWwindow * window, int width, int height) {
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	
+
 	switch (action) {
 	case GLFW_PRESS:
 		switch (key) {
@@ -74,6 +74,21 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				else
 					DEMO->drawSound = 1;
 				break;
+
+			//////// CAMERA
+	/*		case KEY_FORWARD:
+				DEMO->camera->ProcessKeyboard(CAM_FORWARD, DEMO->frameTime);
+				break;
+			case KEY_BACKWARD:
+				DEMO->camera->ProcessKeyboard(CAM_BACKWARD, DEMO->frameTime);
+				break;
+*/			case KEY_STRAFELEFT:
+				DEMO->camera->ProcessKeyboard(CAM_LEFT, DEMO->frameTime);
+				break;
+			case KEY_STRAFERIGHT:
+				DEMO->camera->ProcessKeyboard(CAM_RIGHT, DEMO->frameTime);
+				break;
+
 			}
 		}
 		break;
@@ -152,6 +167,9 @@ void glDriver::initGraphics() {
 
 	// Init render
 	this->initRender(true);
+
+	// Init internal timer
+	TimeCurrentFrame = glfwGetTime();
 }
 
 void glDriver::initStates()
@@ -174,6 +192,12 @@ void glDriver::initRender(int clear)
 {
 	// reset the default gl state
 	this->initStates();
+	
+	// Set the internal timer
+	TimeLastFrame = TimeCurrentFrame;
+	TimeCurrentFrame = glfwGetTime();
+	TimeDelta = TimeCurrentFrame - TimeLastFrame;
+
 	// set the viewport to the correct size // TODO: S'ha de areglar el tema dels viewports....
 	//glViewport(this->vpXOffset, this->vpYOffset, this->vpWidth, this->vpHeight);
 	glViewport(0, 0, this->width, this->height);
@@ -202,4 +226,17 @@ void glDriver::swap_buffers() {
 
 void glDriver::close() {
 	glfwTerminate();
+}
+
+void glDriver::processInput()
+{
+	if ((glfwGetKey(window, KEY_FORWARD) == GLFW_PRESS))
+		DEMO->camera->ProcessKeyboard(CAM_FORWARD, TimeDelta);
+	if ((glfwGetKey(window, KEY_BACKWARD) == GLFW_PRESS))
+		DEMO->camera->ProcessKeyboard(CAM_BACKWARD, TimeDelta);
+	if ((glfwGetKey(window, KEY_STRAFELEFT) == GLFW_PRESS))
+		DEMO->camera->ProcessKeyboard(CAM_LEFT, TimeDelta);
+	if ((glfwGetKey(window, KEY_STRAFERIGHT) == GLFW_PRESS))
+		DEMO->camera->ProcessKeyboard(CAM_RIGHT, TimeDelta);
+
 }

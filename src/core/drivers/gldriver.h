@@ -48,6 +48,9 @@ public:
 	int				accum;
 	int				multisampling;
 	float			gamma;
+	float			TimeCurrentFrame;
+	float			TimeLastFrame;
+	float			TimeDelta;
 	tGLFboFormat	fbo[FBO_BUFFERS];
 
 
@@ -60,6 +63,8 @@ public:
 	void initRender(int clear);
 	void swap_buffers();
 	void close();
+
+	void processInput();
 
 	int window_should_close();
 
