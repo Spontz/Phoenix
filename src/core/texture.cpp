@@ -5,21 +5,22 @@
 #include <main.h>
 #include "texture.h"
 
-Texture::Texture(): use_linear(true), to_id(0)
+Texture::Texture(): use_linear(true), textureID(0)
 {
+	type = "texture_diffuse"; // default is set to diffuse texture
 }
 
 Texture::~Texture()
 {
-	if (to_id != 0) {
-		glDeleteTextures(1, &to_id);
-		to_id = 0;
+	if (textureID != 0) {
+		glDeleteTextures(1, &textureID);
+		textureID = 0;
 	}
 }
 
 bool Texture::load(const std::string & file_name)
 {
-	stbi_set_flip_vertically_on_load(true); // required for loading textures properly
+	//stbi_set_flip_vertically_on_load(true); // required for loading textures properly
 
 	filename = file_name;
 	if (filename.empty())
@@ -27,32 +28,42 @@ bool Texture::load(const std::string & file_name)
 
 	bool is_loaded = false;
 
-	unsigned char* pixels = stbi_load((filename).c_str(), &width, &height, &components, 4);
+	unsigned char* data = stbi_load((filename).c_str(), &width, &height, &components, 4);
 
-	if (pixels != nullptr) {
-		glGenTextures(1, &to_id);
-		glBindTexture(GL_TEXTURE_2D, to_id);
+	if (data) {
+		GLenum format;
+		if (components == 1)
+			format = GL_RED;
+		else if (components == 3)
+			format = GL_RGB;
+		else if (components == 4)
+			format = GL_RGBA;
 
-		glTexStorage2D(GL_TEXTURE_2D, 2 /* mip map levels */, GL_RGB8, width, height);
-		glTexSubImage2D(GL_TEXTURE_2D, 0 /* mip map level */, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+		glGenTextures(1, &textureID);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		is_loaded = true;
 	}
-	
-	stbi_image_free(pixels);
+	else
+		LOG->Error("Falied loading texture form file: %s", filename.c_str());
+
+	stbi_image_free(data);
+
 
 	return is_loaded;
 }
 
-void Texture::bind(int index) const
+void Texture::active(int index) const
 {
-	if (to_id != 0) {
-			glActiveTexture(GL_TEXTURE0 + index);
-			glBindTexture(GL_TEXTURE_2D, to_id);
-	}
+	glActiveTexture(GL_TEXTURE0 + index);
+}
+void Texture::bind() const
+{
+	glBindTexture(GL_TEXTURE_2D, textureID);
 }

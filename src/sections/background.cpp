@@ -55,9 +55,9 @@ void sBackground::init() {
 
 void sBackground::exec() {
 //	int i;
-
+	/*
 	local = (background_section *)this->vars;
-
+	
 	glDisable(GL_DEPTH_TEST);
 	{
 		if (this->hasBlend)
@@ -94,21 +94,6 @@ void sBackground::exec() {
 
 //		camera_set2d();
 		// Rotate our "world"
-		/*
-		DEMO->cam_position = glm::vec3(0.0f, 1.0f, 1.2f);
-		cam_look_at = glm::vec3(0.0f, 0.5f, 0.0f);
-		cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
-
-		view_matrix = glm::lookAt(cam_position, cam_look_at, cam_up);
-		projection_matrix = glm::perspectiveFov(glm::radians(90.0f), float(GLDRV->width), float(GLDRV->height), 0.1f, 10.0f);
-
-		if (GLDRV->width >= 1 && GLDRV->height >= 1) {
-			GLDRV->projection_matrix = glm::perspectiveFov(glm::radians(60.0f), float(GLDRV->width), float(GLDRV->height), 0.1f, 10.0f);
-			if (shader != -1) {
-				DEMO->shaderManager.shader[shader]->setUniformMatrix4fv("viewProj", GLDRV->projection_matrix * GLDRV->view_matrix);
-			}
-		}
-		*/
 		Shader *my_shad = DEMO->shaderManager.shader[RES->shdr_basic];
 		// Place the quad in the center
 		glm::mat4 world_matrix = glm::mat4(1.0f);
@@ -126,7 +111,7 @@ void sBackground::exec() {
 		
 
 		RES->Draw_Obj_Quad();
-
+		
 //		camera_restore();
 
 //		if (this->hasAlpha)
@@ -136,6 +121,8 @@ void sBackground::exec() {
 			glDisable(GL_BLEND);
 	}
 	glEnable(GL_DEPTH_TEST);
+
+	*/
 }
 
 

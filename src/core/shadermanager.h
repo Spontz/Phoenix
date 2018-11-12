@@ -15,7 +15,7 @@ public:
 
 	ShaderManager();
 	void init();
-	int addShader(string path_vert, string path_frag);
+	int addShader(string path_vert, string path_frag, string path_geo = "");
 private:
 
 

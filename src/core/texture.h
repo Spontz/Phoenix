@@ -17,6 +17,7 @@ using namespace std;
 class Texture {
 public:
 	string filename;
+	string type;	//texture_diffuse / texture_specular / texture_normal / texture_height
 	int width, height, components;
 	bool use_linear;
 
@@ -24,10 +25,11 @@ public:
 	virtual ~Texture();
 
 	bool load(const std::string & file_name);
-	void bind(int index = 0) const;
+	void bind() const;
+	void active(int index = 0) const;
 			
 private:
-	GLuint to_id;
+	GLuint textureID;
 };
 
 #endif

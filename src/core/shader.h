@@ -1,52 +1,49 @@
 // shader.h
 // Spontz Demogroup
 
-#pragma once
+#ifndef SHADER_H
+#define SHADER_H
 
 #include <glad/glad.h>
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 
-#include <map>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include "main.h"
+#include "core/utils/logger.h"
+
+
 
 class Shader
 {
 public:
-
+	unsigned int ID;
 	string vertexShader_Filename;
 	string fragmentShader_Filename;
 	string geometryShader_Filename;
-	string tessellationControlShader_Filename;
-	string tessellationEvaluationShader_Filename;
-
-    Shader(const std::string & vertexShaderFilename,
-           const std::string & fragmentShaderFilename,
-           const std::string & geometryShaderFilename               = "",
-           const std::string & tessellationControlShaderFilename    = "",
-           const std::string & tessellationEvaluationShaderFilename = "");
-
-    virtual ~Shader();
-
-    void setUniform1f       (const std::string & uniformName, float value);
-    void setUniform1i       (const std::string & uniformName, int value);
-    void setUniform1ui      (const std::string & uniformName, unsigned int value);
-    void setUniform1fv      (const std::string & uniformName, GLsizei count, float * value);
-    void setUniform1iv      (const std::string & uniformName, GLsizei count, int * value);
-    void setUniform2fv      (const std::string & uniformName, const glm::vec2 & vector);
-    void setUniform3fv      (const std::string & uniformName, const glm::vec3 & vector);
-    void setUniform4fv      (const std::string & uniformName, const glm::vec4 & vector);
-    void setUniformMatrix3fv(const std::string & uniformName, const glm::mat3 & matrix);
-    void setUniformMatrix4fv(const std::string & uniformName, const glm::mat4 & matrix);
-    
-    void apply();
+	// constructor generates the shader on the fly
+	//Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
+	Shader(const std::string &vertexPath, const std::string &fragmentPath, const std::string & geometryPath = "");
+	// activate the shader
+	void use();
+	// utility uniform functions
+	void setBool(const std::string &name, bool value) const;
+	void setInt(const std::string &name, int value) const;
+	void setFloat(const std::string &name, float value) const;
+	void setVec2(const std::string &name, const glm::vec2 &value) const;
+	void setVec2(const std::string &name, float x, float y) const;
+	void setVec3(const std::string &name, const glm::vec3 &value) const;
+	void setVec3(const std::string &name, float x, float y, float z) const;
+	void setVec4(const std::string &name, const glm::vec4 &value) const;
+	void setVec4(const std::string &name, float x, float y, float z, float w);
+	void setMat2(const std::string &name, const glm::mat2 &mat) const;
+	void setMat3(const std::string &name, const glm::mat3 &mat) const;
+	void setMat4(const std::string &name, const glm::mat4 &mat) const;
 
 private:
-    std::map<std::string, GLint> uniformsLocations;
-
-    GLuint program_id;
-    bool isLinked;
-
-    bool link();
-    bool getUniformLocation(const std::string & uniform_name);
-    std::string loadFile(const std::string & filename);
+	// utility function for checking shader compilation/linking errors.
+	void checkCompileErrors(GLuint shader, std::string type);
 };
-
+#endif

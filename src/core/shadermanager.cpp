@@ -16,7 +16,7 @@ void ShaderManager::init() {
 }
 
 // Adds a Texture into the queue, returns the ID of the texture added
-int ShaderManager::addShader(string path_vert, string path_frag) {
+int ShaderManager::addShader(string path_vert, string path_frag, string path_geo) {
 	int i;
 	int shad_id = -1;
 	Shader *shad;
@@ -24,15 +24,15 @@ int ShaderManager::addShader(string path_vert, string path_frag) {
 	// check if shader is already loaded, then we just return the ID of our shader
 	for (i = 0; i < shader.size(); i++) {
 		shad = shader[i];
-		// TODO: Fix and add the geometry shader, tessellation shader, etc....
 		if ((shad->vertexShader_Filename.compare(path_vert) == 0)  &&
-			(shad->fragmentShader_Filename.compare(path_frag) == 0)) {
+			(shad->fragmentShader_Filename.compare(path_frag) == 0) &&
+			(shad->geometryShader_Filename.compare(path_geo) == 0)) {
 			return i;
 		}
 	}
 	// if we must load the shader...
 	Shader *new_shad = NULL;
-	new_shad = new Shader(path_vert, path_frag);
+	new_shad = new Shader(path_vert, path_frag, path_geo);
 	if (new_shad) {
 		shader.push_back(new_shad);
 		shad_id = (int)shader.size() - 1;

@@ -70,11 +70,11 @@ void Resource::Load_Shdr_Basic()
 	/////////////////////// BASIC: Textured shader
 	shdr_basic = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/basic.vert", demoDir + "/resources/shaders/basic/basic.frag");
 	if (shdr_basic != -1) {
-		DEMO->shaderManager.shader[shdr_basic]->apply();
-		DEMO->shaderManager.shader[shdr_basic]->setUniformMatrix4fv("world", GLDRV->world_matrix);
-		DEMO->shaderManager.shader[shdr_basic]->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(GLDRV->world_matrix))));
-		DEMO->shaderManager.shader[shdr_basic]->setUniformMatrix4fv("viewProj", GLDRV->projection_matrix * GLDRV->view_matrix);
-		DEMO->shaderManager.shader[shdr_basic]->setUniform3fv("cam_pos", GLDRV->cam_position);
+		DEMO->shaderManager.shader[shdr_basic]->use();
+		DEMO->shaderManager.shader[shdr_basic]->setMat4("world", GLDRV->world_matrix);
+		DEMO->shaderManager.shader[shdr_basic]->setMat3("normalMatrix", glm::inverse(glm::transpose(glm::mat3(GLDRV->world_matrix))));
+		DEMO->shaderManager.shader[shdr_basic]->setMat4("viewProj", GLDRV->projection_matrix * GLDRV->view_matrix);
+		DEMO->shaderManager.shader[shdr_basic]->setVec3("cam_pos", GLDRV->cam_position);
 	}
 	else
 		LOG->Error("Could not load Basic shader!");
@@ -94,7 +94,7 @@ void Resource::Load_Tex_Spontz()
 void Resource::Draw_Obj_Quad(int texture_id, int shader_id)
 {
 	DEMO->textureManager.texture[texture_id]->bind();
-	DEMO->shaderManager.shader[shader_id]->apply();
+	DEMO->shaderManager.shader[shader_id]->use();
 	glBindVertexArray(obj_quad);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
@@ -119,7 +119,7 @@ void Resource::Draw_Obj_Quad(int texture_id)
 
 void Resource::Draw_Shdr_Basic()
 {
-	DEMO->shaderManager.shader[shdr_basic]->apply();
+	DEMO->shaderManager.shader[shdr_basic]->use();
 }
 
 
