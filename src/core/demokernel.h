@@ -12,6 +12,7 @@
 #include "core/texturemanager.h"
 #include "core/modelmanager.h"
 #include "core/shadermanager.h"
+#include "core/camera.h"
 
 // ******************************************************************
 
@@ -73,6 +74,7 @@ public:
 	TextureManager textureManager;
 	ModelManager modelManager;
 	ShaderManager shaderManager;
+	Camera *camera;		//TODO: Implement a camera manager... does it makes sense¿?
 
 	// loading information
 	//int numSections;

@@ -32,9 +32,9 @@ tSectionID sectionID[] = {
 	// built-in sections
 	{"background",			SectionType::Background},
 	{"video",				SectionType::Video},
-	{"camera",				SectionType::Camera},
-	{"camera2",				SectionType::Camera2},
-	{"camera3",				SectionType::Camera3},
+	{"camera",				SectionType::sCamera},
+	{"camera2",				SectionType::sCamera2},
+	{"camera3",				SectionType::sCamera3},
 	{"image",				SectionType::Image},
 	{"image2",				SectionType::Image2},
 	{"image2D",				SectionType::Image2D},

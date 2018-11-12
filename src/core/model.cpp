@@ -1,4 +1,6 @@
-﻿
+﻿// model.cpp
+// Spontz Demogroup
+
 #include <glad/glad.h> 
 
 #include <glm/glm.hpp>
@@ -40,7 +42,7 @@ void Model::loadModel(string const &path)
 	// check for errors
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 	{
-		cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+		LOG->Error("Error loading file [%s]: %s", filename.c_str(), importer.GetErrorString());
 		return;
 	}
 	// retrieve the directory path of the filepath

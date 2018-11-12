@@ -1,4 +1,8 @@
-﻿#ifndef MODEL_H
+﻿// model.h
+// Spontz Demogroup
+
+
+#ifndef MODEL_H
 #define MODEL_H
 
 #include <glad/glad.h> 

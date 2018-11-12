@@ -63,16 +63,6 @@ public:
 
 	int window_should_close();
 
-	// Matrices
-	glm::vec3 cam_position;
-	glm::vec3 cam_look_at;
-	glm::vec3 cam_up;
-
-	glm::mat4 world_matrix;
-	glm::mat4 view_matrix;
-	glm::mat4 projection_matrix;
-
-
 private:
 	GLFWwindow* window;
 

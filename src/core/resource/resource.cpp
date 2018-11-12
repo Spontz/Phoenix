@@ -71,10 +71,6 @@ void Resource::Load_Shdr_Basic()
 	shdr_basic = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/basic.vert", demoDir + "/resources/shaders/basic/basic.frag");
 	if (shdr_basic != -1) {
 		DEMO->shaderManager.shader[shdr_basic]->use();
-		DEMO->shaderManager.shader[shdr_basic]->setMat4("world", GLDRV->world_matrix);
-		DEMO->shaderManager.shader[shdr_basic]->setMat3("normalMatrix", glm::inverse(glm::transpose(glm::mat3(GLDRV->world_matrix))));
-		DEMO->shaderManager.shader[shdr_basic]->setMat4("viewProj", GLDRV->projection_matrix * GLDRV->view_matrix);
-		DEMO->shaderManager.shader[shdr_basic]->setVec3("cam_pos", GLDRV->cam_position);
 	}
 	else
 		LOG->Error("Could not load Basic shader!");

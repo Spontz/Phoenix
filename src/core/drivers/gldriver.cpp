@@ -116,15 +116,6 @@ glDriver::glDriver() {
 	
 	// Register error callback first
 	glfwSetErrorCallback(error_callback);
-
-	// Init matrices
-	cam_position = glm::vec3(0.0f, 1.0f, 1.2f);
-	cam_look_at = glm::vec3(0.0f, 0.5f, 0.0f);
-	cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
-
-	world_matrix = glm::mat4(1.0f);
-	view_matrix = glm::lookAt(cam_position, cam_look_at, cam_up);
-	projection_matrix = glm::perspectiveFov(glm::radians(60.0f), float(width), float(height), 0.1f, 10.0f);
 }
 
 void glDriver::initFramework() {
@@ -165,16 +156,6 @@ void glDriver::initGraphics() {
 
 void glDriver::initStates()
 {
-	// Set default ogl states
-	cam_position = glm::vec3(0.0f, 1.0f, 1.2f);
-	cam_look_at = glm::vec3(0.0f, 0.5f, 0.0f);
-	cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
-
-	world_matrix = glm::mat4(1.0f);
-	view_matrix = glm::lookAt(cam_position, cam_look_at, cam_up);
-	projection_matrix = glm::perspectiveFov(glm::radians(60.0f), float(width), float(height), 0.1f, 10.0f);
-
-	glClearColor(0, 0, 0, 0);
 	glDisable(GL_BLEND);						// blending disabled
 
 	glDisable(GL_CULL_FACE);					// cull face disabled
@@ -199,7 +180,7 @@ void glDriver::initRender(int clear)
 
 	// clear some buffers if needed
 	if (clear) {
-		glClearColor(0, 0, 0, 0);
+		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 
 		if (this->stencil > 0) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);

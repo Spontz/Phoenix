@@ -31,9 +31,9 @@ enum SectionType {
 
 	Background,
 	Video,
-	Camera,
-	Camera2,
-	Camera3,
+	sCamera,
+	sCamera2,
+	sCamera3,
 	Image,
 	Image2,
 	Image2D,

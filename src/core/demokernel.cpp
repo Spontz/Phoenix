@@ -259,6 +259,8 @@ void demokernel::initDemo() {
 	this->modelManager.init();
 	this->shaderManager.init();
 
+	this->camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+
 	// Start loading Basic resources
 	RES->loadAllResources();
 
