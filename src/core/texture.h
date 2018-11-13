@@ -24,7 +24,7 @@ public:
 	Texture();
 	virtual ~Texture();
 
-	bool load(const std::string & file_name);
+	bool load(const std::string & file_name, bool flip);
 	void bind() const;
 	void active(int index = 0) const;
 			

@@ -169,7 +169,7 @@ void glDriver::initGraphics() {
 	this->initRender(true);
 
 	// Init internal timer
-	TimeCurrentFrame = glfwGetTime();
+	TimeCurrentFrame = static_cast <float>(glfwGetTime());;
 }
 
 void glDriver::initStates()
@@ -195,7 +195,7 @@ void glDriver::initRender(int clear)
 	
 	// Set the internal timer
 	TimeLastFrame = TimeCurrentFrame;
-	TimeCurrentFrame = glfwGetTime();
+	TimeCurrentFrame = static_cast <float>(glfwGetTime());
 	TimeDelta = TimeCurrentFrame - TimeLastFrame;
 
 	// set the viewport to the correct size // TODO: S'ha de areglar el tema dels viewports....

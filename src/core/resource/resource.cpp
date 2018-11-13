@@ -32,10 +32,10 @@ void Resource::Load_Obj_Quad()
 {
 	float vertices[] = {
 		// positions          // colors           // texture coords
-		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // top right
+		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, // bottom right
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f, // bottom left
+		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 0.0f  // top left 
 	};
 	unsigned int indices[] = {
 		0, 1, 3, // first triangle
@@ -79,6 +79,7 @@ void Resource::Load_Shdr_Basic()
 
 void Resource::Load_Tex_Spontz()
 {
+	tex_tv = DEMO->textureManager.addTexture(demoDir + "/resources/textures/tv.jpg");
 	tex_isaac2 = DEMO->textureManager.addTexture(demoDir + "/resources/textures/isaac2.jpg");
 	tex_shotgan = DEMO->textureManager.addTexture(demoDir + "/resources/textures/shotgan.jpg");
 	tex_shotgan2 = DEMO->textureManager.addTexture(demoDir + "/resources/textures/shotgan2.jpg");
@@ -92,16 +93,20 @@ void Resource::Draw_Obj_Quad(int texture_id, int shader_id)
 	DEMO->textureManager.texture[texture_id]->bind();
 	DEMO->shaderManager.shader[shader_id]->use();
 	glBindVertexArray(obj_quad);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // size of indices is 6
 }
 
 // Draw a Quad in full screen. Spontz memeber picure used
 void Resource::Draw_Obj_Quad()
 {
-	DEMO->textureManager.texture[tex_merlucin]->bind();
-	Draw_Shdr_Basic();
+	Texture *tex = DEMO->textureManager.texture[tex_tv];
+	Shader *shad = DEMO->shaderManager.shader[shdr_basic];
+	tex->active();
+	tex->bind();
+	shad->setInt("texture_diffuse1", 0);
 	glBindVertexArray(obj_quad);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
 }
 
 // Draw a Quad in full screen. A texture can be specified. Textured shader will be applied

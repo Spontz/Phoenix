@@ -17,7 +17,7 @@ public:
 	void Draw_Obj_Quad(int texture_id);
 	void Draw_Obj_Quad();
 	void Draw_Shdr_Basic();
-	int tex_isaac2, tex_shotgan, tex_shotgan2, tex_merlucin, tex_xphere;
+	int tex_tv, tex_isaac2, tex_shotgan, tex_shotgan2, tex_merlucin, tex_xphere;
 	int shdr_basic;
 private:
 

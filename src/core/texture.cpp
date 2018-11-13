@@ -18,9 +18,10 @@ Texture::~Texture()
 	}
 }
 
-bool Texture::load(const std::string & file_name)
+bool Texture::load(const std::string & file_name, bool flip)
 {
-	//stbi_set_flip_vertically_on_load(true); // required for loading textures properly
+	
+	stbi_set_flip_vertically_on_load(flip); // required for loading textures properly
 
 	filename = file_name;
 	if (filename.empty())
@@ -28,7 +29,7 @@ bool Texture::load(const std::string & file_name)
 
 	bool is_loaded = false;
 
-	unsigned char* data = stbi_load((filename).c_str(), &width, &height, &components, 4);
+	unsigned char* data = stbi_load((filename).c_str(), &width, &height, &components, 0);
 
 	if (data) {
 		GLenum format;
@@ -54,7 +55,6 @@ bool Texture::load(const std::string & file_name)
 		LOG->Error("Falied loading texture form file: %s", filename.c_str());
 
 	stbi_image_free(data);
-
 
 	return is_loaded;
 }

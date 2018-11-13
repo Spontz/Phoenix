@@ -45,7 +45,7 @@ void sBackground::load() {
 
 	// texture loading
 	string s_dir = DEMO->demoDir;
-	local->texture = DEMO->textureManager.addTexture(s_dir + this->strings[0]);
+	local->texture = DEMO->textureManager.addTexture(s_dir + this->strings[0], true);
 	if (local->texture == -1)
 		return;
 }
@@ -55,7 +55,7 @@ void sBackground::init() {
 
 void sBackground::exec() {
 //	int i;
-	/*
+	
 	local = (background_section *)this->vars;
 	
 	glDisable(GL_DEPTH_TEST);
@@ -93,22 +93,21 @@ void sBackground::exec() {
 		}
 
 //		camera_set2d();
-		// Rotate our "world"
 		Shader *my_shad = DEMO->shaderManager.shader[RES->shdr_basic];
-		// Place the quad in the center
-		glm::mat4 world_matrix = glm::mat4(1.0f);
-		my_shad->setUniformMatrix4fv("world", world_matrix);
-		my_shad->setUniformMatrix3fv("normalMatrix", glm::inverse(glm::transpose(glm::mat3(world_matrix))));
 
-		// Put the camera in 2D mode
-		// Init matrices
-		glm::vec3 cam_position = glm::vec3(0.0f, 0.0f, 1.0f);
-		glm::vec3 cam_look_at = glm::vec3(0.0f, 0.0f, 0.0f);
-		glm::vec3 cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
-		glm::mat4 projection_matrix = glm::perspectiveFov(glm::radians(90.0f), float(GLDRV->width), float(GLDRV->height), 0.1f, 10.0f);
-		glm::mat4 view_matrix = glm::lookAt(cam_position, cam_look_at, cam_up);
-		my_shad->setUniformMatrix4fv("viewProj", projection_matrix * view_matrix);
-		
+		my_shad->use();
+		my_shad->setInt("texture_diffuse1", 0);
+
+		// view/projection transformations
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)GLDRV->width / (float)GLDRV->height, 0.1f, 100.0f);
+		glm::mat4 view = DEMO->camera->GetViewMatrix();
+		my_shad->setMat4("projection", projection);
+		my_shad->setMat4("view", view);
+
+		// Rotate our "world"
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0, 0, 2));
+		my_shad->setMat4("model", model);
 
 		RES->Draw_Obj_Quad();
 		
@@ -117,16 +116,16 @@ void sBackground::exec() {
 //		if (this->hasAlpha)
 //			glDisable(GL_ALPHA_TEST);
 
-		if (this->hasBlend)
-			glDisable(GL_BLEND);
+//		if (this->hasBlend)
+//			glDisable(GL_BLEND);
 	}
 	glEnable(GL_DEPTH_TEST);
 
-	*/
+
 }
 
 
 
 void sBackground::end() {
-
+	LOG->Info(LOG_HIGH, "Background has finished!");
 }
