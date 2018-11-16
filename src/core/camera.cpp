@@ -88,6 +88,27 @@ void Camera::ProcessMouseScroll(float yoffset)
 		Zoom = 45.0f;
 }
 
+// Captures Camera position and appends to a file called "camera.cam" (only works in debug mode)
+void Camera::CapturePos()
+{
+	if (DEMO->debug) {
+		ofstream camFile;
+		//string message;
+		char message[1024];
+		camFile.open("camera.cam", ios::out | ios::app);
+		sprintf_s(message, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
+											DEMO->camera->Position.x,	DEMO->camera->Position.y,	DEMO->camera->Position.z,
+											DEMO->camera->Up.x,			DEMO->camera->Up.y,			DEMO->camera->Up.z,
+											DEMO->camera->Yaw,			DEMO->camera->Pitch,		DEMO->camera->Zoom);
+		camFile << message << "\n";
+		camFile.close();
+	}
+
+	
+
+
+}
+
 void Camera::updateCameraVectors()
 {
 	// Calculate the new Front vector

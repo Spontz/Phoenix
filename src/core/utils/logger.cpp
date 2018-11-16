@@ -23,6 +23,12 @@ CLogger* CLogger::GetLogger() {
 	return m_pThis;
 }
 
+void CLogger::CloseLogFile()
+{
+	if (DEMO->debug)
+		m_Logfile.close();
+}
+
 void CLogger::Info(char level, const char *message, ...) {
 	va_list argptr;
 	char text[1024];
@@ -62,12 +68,4 @@ void CLogger::Error(const char *message, ...) {
 			OutputDebugStringA("\n");
 #endif
 	}
-}
-
-CLogger& CLogger::operator<<(const string& sMessage) {
-//	m_Logfile << "\n" << Util::CurrentTime() << ":\t";
-//	m_Logfile << sMessage << "\n";
-//	cout << "\n" << Util::CurrentTime() << ":\t";
-//	cout << sMessage << "\n";
-	return *this;
 }

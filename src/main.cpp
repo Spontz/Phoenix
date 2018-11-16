@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
 	DEMO->mainLoop();
 	LOG->Info(LOG_HIGH, "Closing demo. We hope you enjoyed watching this demo! See you next time! Watch more at www.spontz.org");
 	DEMO->closeDemo();
+	LOG->CloseLogFile();
 
 	return 0;
 }

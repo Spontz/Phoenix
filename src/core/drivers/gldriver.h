@@ -53,7 +53,7 @@ public:
 	float			TimeDelta;
 	tGLFboFormat	fbo[FBO_BUFFERS];
 
-
+	float			mouse_lastxpos, mouse_lastypos;
 
 	static glDriver* getInstance();
 	glDriver();

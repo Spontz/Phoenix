@@ -19,93 +19,103 @@ void error_callback(int, const char* err_str)
 void window_size_callback(GLFWwindow * window, int width, int height) {
 	GLDRV->width = width;
 	GLDRV->height = height;
+
+	GLDRV->mouse_lastxpos = (float)width / 2.0f;
+	GLDRV->mouse_lastypos = (float)height / 2.0f;
+
 	GLDRV->initRender(true);
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (DEMO->debug) {
+		float x = (float)xpos;
+		float y = (float)ypos;
+
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+
+			float xoffset = x - GLDRV->mouse_lastxpos;
+			float yoffset = GLDRV->mouse_lastypos - y; // reversed since y-coordinates go from bottom to top
+
+			GLDRV->mouse_lastxpos = x;
+			GLDRV->mouse_lastypos = y;
+
+			DEMO->camera->ProcessMouseMovement(xoffset, yoffset);
+		}
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+			GLDRV->mouse_lastxpos = x;
+			GLDRV->mouse_lastypos = y;
+		}
+
+	}
+	
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	DEMO->camera->ProcessMouseScroll((float)yoffset);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 
-	switch (action) {
-	case GLFW_PRESS:
-		switch (key) {
-		case KEY_EXIT:
+	if (action == GLFW_PRESS) {
+		if (key == KEY_EXIT)
 			DEMO->exitDemo = true;
-			break;
-		case KEY_SCREENSHOT:
+		else if (key == KEY_SCREENSHOT) {
 			//GLDRV->screenshot(); //TODO
-			break;
 		}
 		if (DEMO->debug) {
-			switch (key) {
-			case KEY_TIME:
-				LOG->Info(LOG_HIGH,"Demo time: %.4f", DEMO->runTime);
-				break;
-			case KEY_PLAY_PAUSE:
-				if (DEMO->state == DEMO_PLAY) {
-					DEMO->pauseDemo();
-				}
-				else {
-					DEMO->playDemo();
-				}
-				break;
-			case KEY_REWIND:
-				DEMO->rewindDemo();
-				break;
-			case KEY_FASTFORWARD:
+			if (key == KEY_FASTFORWARD)
 				DEMO->fastforwardDemo();
-				break;
-			case KEY_RESTART:
+			else if (key == KEY_REWIND)
+				DEMO->rewindDemo();
+			else if (key == KEY_TIME)
+				LOG->Info(LOG_HIGH, "Demo time: %.4f", DEMO->runTime);
+			else if (key == KEY_PLAY_PAUSE) {
+				if (DEMO->state == DEMO_PLAY)
+					DEMO->pauseDemo();
+				else
+					DEMO->playDemo();
+			}
+			else if (key == KEY_RESTART)
 				DEMO->restartDemo();
-				break;
-			case KEY_SHOWTIME:
-				if (DEMO->drawTiming)
-					DEMO->drawTiming = 0;
-				else
-					DEMO->drawTiming = 1;
-				break;
-			case KEY_SHOWFPS:
-				if (DEMO->drawFps)
-					DEMO->drawFps = 0;
-				else
-					DEMO->drawFps = 1;
-				break;
-			case KEY_SHOWSOUND:
-				if (DEMO->drawSound)
-					DEMO->drawSound = 0;
-				else
-					DEMO->drawSound = 1;
-				break;
+			else if (key == KEY_SHOWTIME)
+				DEMO->drawTiming = !DEMO->drawTiming;
+			else if (key == KEY_SHOWFPS)
+				DEMO->drawFps = !DEMO->drawFps;
+			else if (key == KEY_SHOWSOUND)
+				DEMO->drawSound = !DEMO->drawSound;
+			else if (key == KEY_CAPTURE) {
+				DEMO->camera->CapturePos();
+			}
 
-			//////// CAMERA
-	/*		case KEY_FORWARD:
-				DEMO->camera->ProcessKeyboard(CAM_FORWARD, DEMO->frameTime);
-				break;
-			case KEY_BACKWARD:
-				DEMO->camera->ProcessKeyboard(CAM_BACKWARD, DEMO->frameTime);
-				break;
-*/			case KEY_STRAFELEFT:
-				DEMO->camera->ProcessKeyboard(CAM_LEFT, DEMO->frameTime);
-				break;
-			case KEY_STRAFERIGHT:
-				DEMO->camera->ProcessKeyboard(CAM_RIGHT, DEMO->frameTime);
-				break;
-
-			}
 		}
-		break;
-	case GLFW_RELEASE:
-		switch (key) {
-		case KEY_REWIND:
-		case KEY_FASTFORWARD:
-			if (DEMO->state & DEMO_PAUSE) {
-				DEMO->pauseDemo();
-			}
-			else {
-				DEMO->playDemo();
-			}
-			break;
-		}
-	
 	}
+	if (action == GLFW_RELEASE && DEMO->debug == TRUE) {
+		if (key == KEY_FASTFORWARD || key == KEY_REWIND) {
+			if (DEMO->state & DEMO_PAUSE)
+				DEMO->pauseDemo();
+			else
+				DEMO->playDemo();
+		}
+	}
+}
+
+void glDriver::processInput()
+{
+	if (DEMO->debug) {
+		if (glfwGetKey(window, KEY_FORWARD) == GLFW_PRESS)
+			DEMO->camera->ProcessKeyboard(CAM_FORWARD, GLDRV->TimeDelta);
+		if (glfwGetKey(window, KEY_BACKWARD) == GLFW_PRESS)
+			DEMO->camera->ProcessKeyboard(CAM_BACKWARD, GLDRV->TimeDelta);
+		if (glfwGetKey(window, KEY_STRAFELEFT) == GLFW_PRESS)
+			DEMO->camera->ProcessKeyboard(CAM_LEFT, GLDRV->TimeDelta);
+		if (glfwGetKey(window, KEY_STRAFERIGHT) == GLFW_PRESS)
+			DEMO->camera->ProcessKeyboard(CAM_RIGHT, GLDRV->TimeDelta);
+	}
+
 }
 
 // **************************************************
@@ -128,6 +138,8 @@ glDriver::glDriver() {
 	accum = 0;
 	multisampling = 0;
 	gamma = 1.0f;
+	mouse_lastxpos = width / 2.0f;
+	mouse_lastypos = height / 2.0f;
 	
 	// Register error callback first
 	glfwSetErrorCallback(error_callback);
@@ -159,6 +171,8 @@ void glDriver::initGraphics() {
 	// Configure GLFW callbacks
 	glfwSetWindowSizeCallback(window, window_size_callback);
 	glfwSetKeyCallback(window, key_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 
 	// Initialize glad
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -169,7 +183,7 @@ void glDriver::initGraphics() {
 	this->initRender(true);
 
 	// Init internal timer
-	TimeCurrentFrame = static_cast <float>(glfwGetTime());;
+	TimeCurrentFrame = static_cast<float>(glfwGetTime());
 }
 
 void glDriver::initStates()
@@ -195,7 +209,7 @@ void glDriver::initRender(int clear)
 	
 	// Set the internal timer
 	TimeLastFrame = TimeCurrentFrame;
-	TimeCurrentFrame = static_cast <float>(glfwGetTime());
+	TimeCurrentFrame = static_cast<float>(glfwGetTime());
 	TimeDelta = TimeCurrentFrame - TimeLastFrame;
 
 	// set the viewport to the correct size // TODO: S'ha de areglar el tema dels viewports....
@@ -228,15 +242,4 @@ void glDriver::close() {
 	glfwTerminate();
 }
 
-void glDriver::processInput()
-{
-	if ((glfwGetKey(window, KEY_FORWARD) == GLFW_PRESS))
-		DEMO->camera->ProcessKeyboard(CAM_FORWARD, TimeDelta);
-	if ((glfwGetKey(window, KEY_BACKWARD) == GLFW_PRESS))
-		DEMO->camera->ProcessKeyboard(CAM_BACKWARD, TimeDelta);
-	if ((glfwGetKey(window, KEY_STRAFELEFT) == GLFW_PRESS))
-		DEMO->camera->ProcessKeyboard(CAM_LEFT, TimeDelta);
-	if ((glfwGetKey(window, KEY_STRAFERIGHT) == GLFW_PRESS))
-		DEMO->camera->ProcessKeyboard(CAM_RIGHT, TimeDelta);
 
-}

@@ -20,15 +20,11 @@ using namespace std;
 class CLogger {
 public:
 	char log_level;	// Log Level: LOG_HIGH, LOG_MED, LOG_LOW
-	// Logs an info message (@param format string for the message to be logged)
 	void Info(char level, const char * format, ...);
-	// Logs an error message (@param format string for the message to be logged)
 	void Error(const char * format, ...);
 
-	// << overloaded function to Logs a message (@param sMessage message to be logged)
-	CLogger& operator<<(const string& sMessage);
-	// Funtion to create the instance of logger class (@return singleton object of Clogger class..)
 	static CLogger* GetLogger();
+	void CloseLogFile();
 private:
 	CLogger();
 	// Copy constructor for the Logger class.
