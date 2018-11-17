@@ -95,19 +95,57 @@ void sBackground::exec() {
 //		camera_set2d();
 		Shader *my_shad = DEMO->shaderManager.shader[RES->shdr_basic];
 
+		Texture *my_tex = DEMO->textureManager.texture[local->texture];
+
 		my_shad->use();
 		my_shad->setInt("texture_diffuse1", 0);
 
-		// view/projection transformations
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)GLDRV->width / (float)GLDRV->height, 0.1f, 100.0f);
-		glm::mat4 view = DEMO->camera->GetViewMatrix();
-		my_shad->setMat4("projection", projection);
-		my_shad->setMat4("view", view);
+		//glm::mat4 projection = glm::ortho(0.0f,	static_cast<float>(GLDRV->width), static_cast<float>(GLDRV->height), 0.0f, 0.0f, 100.0f);
+		//glm::mat4 projection = glm::ortho(-1, 1, 1, -1, 0.0f, 100.0f);
+		//glm::mat4 view = glm::lookAt(glm::vec3(0, 0, 1.21f), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+		//glm::mat4 model = glm::mat4(1.0f);
+		  //model = glm::translate(model, glm::vec3(static_cast<float>(GLDRV->width)/2.0f, static_cast<float>(GLDRV->height)/2.0f, 0));
+		  //model = glm::scale(model, glm::vec3(static_cast<float>(GLDRV->width), static_cast<float>(GLDRV->height), 0));
+		  //model = glm::translate(model, glm::vec3(0, 0, 2*sin(DEMO->runTime)));
+		
+		// Keep image proportions
+		float tex_aspect = (float)my_tex->width / (float)my_tex->height;
+		float view_aspect = (float)GLDRV->width / (float)GLDRV->height;
 
-		// Rotate our "world"
+		float Left, Right, Bottom, Top;
+
+		if (view_aspect > 1) {
+			Left = (1 - view_aspect) / 2;
+			Right = (1 - view_aspect) / 2 + view_aspect;
+			Bottom = 0;
+			Top = 1;
+		}
+		else {
+			Left = 0;
+			Right = 1;
+			Bottom = (1 - 1 / view_aspect) / 2;
+			Top = (1 - 1 / view_aspect) / 2 + 1 / view_aspect;
+		}
+
+		//glm::mat4 projection = glm::ortho(-1, 1, 1, -1, -1, 2);
+		glm::mat4 projection = glm::ortho(Left, Right, Bottom, Top, -1.0f, 2.0f);
+
+		glm::mat4 view = glm::lookAt(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0, 0, 2));
+		//model = glm::scale(model, glm::vec3(1, scale, 1));
+
+		//model = glm::translate(model, glm::vec3(static_cast<float>(GLDRV->width)/2.0f, static_cast<float>(GLDRV->height)/2.0f, 0));
+		//model = glm::scale(model, glm::vec3(static_cast<float>(GLDRV->width), static_cast<float>(GLDRV->height), 0));
+		//model = glm::translate(model, glm::vec3(0, 0, 2*sin(DEMO->runTime)));
+
+
+		// Set matrices to shader
 		my_shad->setMat4("model", model);
+		my_shad->setMat4("view", view);
+		my_shad->setMat4("projection", projection);
+
+		my_tex->active();
+		my_tex->bind();
 
 		RES->Draw_Obj_Quad();
 		

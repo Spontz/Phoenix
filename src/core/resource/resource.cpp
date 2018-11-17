@@ -31,11 +31,11 @@ Resource::Resource() {
 void Resource::Load_Obj_Quad()
 {
 	float vertices[] = {
-		// positions          // colors           // texture coords
-		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // top right
-		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, // bottom right
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f, // bottom left
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 0.0f  // top left 
+		// positions	// colors	// texture coords
+		 1,  1, 0,		1, 0, 0,	1, 0, // top right
+		 1, -1, 0,		0, 1, 0,	1, 1, // bottom right
+		-1, -1, 0,		0, 0, 1,	0, 1, // bottom left
+		-1,  1, 0,		1, 1, 0,	0, 0  // top left 
 	};
 	unsigned int indices[] = {
 		0, 1, 3, // first triangle
@@ -99,10 +99,10 @@ void Resource::Draw_Obj_Quad(int texture_id, int shader_id)
 // Draw a Quad in full screen. Spontz memeber picure used
 void Resource::Draw_Obj_Quad()
 {
-	Texture *tex = DEMO->textureManager.texture[tex_tv];
+	//Texture *tex = DEMO->textureManager.texture[tex_tv];
 	Shader *shad = DEMO->shaderManager.shader[shdr_basic];
-	tex->active();
-	tex->bind();
+	//tex->active();
+	//tex->bind();
 	shad->setInt("texture_diffuse1", 0);
 	glBindVertexArray(obj_quad);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
