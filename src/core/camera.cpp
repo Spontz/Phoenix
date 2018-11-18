@@ -91,22 +91,26 @@ void Camera::ProcessMouseScroll(float yoffset)
 // Captures Camera position and appends to a file called "camera.cam" (only works in debug mode)
 void Camera::CapturePos()
 {
-	if (DEMO->debug) {
-		ofstream camFile;
-		//string message;
-		char message[1024];
-		camFile.open("camera.cam", ios::out | ios::app);
-		sprintf_s(message, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
-											DEMO->camera->Position.x,	DEMO->camera->Position.y,	DEMO->camera->Position.z,
-											DEMO->camera->Up.x,			DEMO->camera->Up.y,			DEMO->camera->Up.z,
-											DEMO->camera->Yaw,			DEMO->camera->Pitch,		DEMO->camera->Zoom);
-		camFile << message << "\n";
-		camFile.close();
-	}
+	ofstream camFile;
+	//string message;
+	char message[1024];
+	camFile.open("camera.cam", ios::out | ios::app);
+	sprintf_s(message, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
+										DEMO->camera->Position.x,	DEMO->camera->Position.y,	DEMO->camera->Position.z,
+										DEMO->camera->Up.x,			DEMO->camera->Up.y,			DEMO->camera->Up.z,
+										DEMO->camera->Yaw,			DEMO->camera->Pitch,		DEMO->camera->Zoom);
+	camFile << message << "\n";
+	camFile.close();
+}
 
-	
+glm::mat4 Camera::getOrthoMatrix_Projection()
+{
+	return glm::ortho(-1, 1, 1, -1, -1, 2);;
+}
 
-
+glm::mat4 Camera::getOrthoMatrix_View()
+{
+	return glm::lookAt(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 }
 
 void Camera::updateCameraVectors()

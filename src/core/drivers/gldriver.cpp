@@ -19,6 +19,10 @@ void error_callback(int, const char* err_str)
 void window_size_callback(GLFWwindow * window, int width, int height) {
 	GLDRV->width = width;
 	GLDRV->height = height;
+	if (GLDRV->width == 0)
+		GLDRV->width = 1;
+	if (GLDRV->height == 0)
+		GLDRV->height = 1;
 
 	GLDRV->mouse_lastxpos = (float)width / 2.0f;
 	GLDRV->mouse_lastypos = (float)height / 2.0f;
