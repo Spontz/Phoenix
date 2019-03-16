@@ -8,6 +8,7 @@ sGLSLShaderUnbind::sGLSLShaderUnbind()
 
 void sGLSLShaderUnbind::load() {
 	LOG->Info(LOG_HIGH, "  > UNBIND LOAD has been called!");
+	this->loaded = TRUE;
 }
 
 void sGLSLShaderUnbind::init() {

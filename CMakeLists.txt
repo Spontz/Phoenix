@@ -15,8 +15,8 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 set(CMAKE_C_FLAGS "/MP ${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "/MP ${CMAKE_CXX_FLAGS}")
 #ISO standard
-set(CMAKE_C_FLAGS "/std:c++17 ${CMAKE_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "/std:c++17 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_C_FLAGS "/std:c++14 ${CMAKE_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "/std:c++14 ${CMAKE_CXX_FLAGS}")
 set(CMAKE_C_FLAGS "/bigobj ${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "/bigobj ${CMAKE_CXX_FLAGS}")
 

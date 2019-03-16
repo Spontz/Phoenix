@@ -17,7 +17,7 @@ void TextureManager::init() {
 
 // Adds a Texture into the queue, returns the ID of the texture added
 int TextureManager::addTexture(string path, bool flip) {
-	int i;
+	unsigned int i;
 	int tex_id = -1;
 
 	// check if texture is already loaded, then we just return the ID of our texture

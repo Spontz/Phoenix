@@ -6,6 +6,7 @@ sLoading::sLoading() {
 
 void sLoading::load() {
 	LOG->Info(LOG_HIGH, "  > LOADING LOAD() has been called!");
+	this->loaded = TRUE;
 }
 
 void sLoading::init() {

@@ -48,6 +48,8 @@ void sBackground::load() {
 	local->texture = DEMO->textureManager.addTexture(s_dir + this->strings[0], true);
 	if (local->texture == -1)
 		return;
+
+	this->loaded = TRUE;
 }
 
 void sBackground::init() {

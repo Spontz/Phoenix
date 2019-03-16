@@ -88,6 +88,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 	case SectionType::Loading:
 		mySection = new sLoading();
 		break;
+	case SectionType::Sound:
+		mySection = new sSound();
+		break;
 	case SectionType::Background:
 		mySection = new sBackground();
 		break;

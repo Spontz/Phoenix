@@ -392,7 +392,7 @@ GLDRV->swap_buffers();
 		this->processTimer();
 	}
 	
-	// update sound driver once a frame
+	// update sound driver once a frame //TODO: Not needed!
 	if (this->sound)
 		BASSDRV->update();
 	
@@ -611,7 +611,7 @@ void demokernel::initSectionQueues() {
 	for (i = 0; i < this->sectionManager.loadSection.size(); i++) {
 		sec_id = this->sectionManager.loadSection[i];
 		this->sectionManager.section[sec_id]->load();
-		this->sectionManager.section[sec_id]->loaded = TRUE;
+		//this->sectionManager.section[sec_id]->loaded = TRUE; // TODO: Each section should mark it as loaded
 		++this->loadedSections;
 		
 		// Update loading
@@ -650,7 +650,7 @@ void demokernel::processSectionQueues() {
 		if ((ds->endTime <= this->runTime) && (ds->ended == FALSE)) {
 			ds->end();
 			ds->ended = TRUE;
-			LOG->Info(LOG_LOW,"  Section id: %s has been end", ds->identifier.c_str());
+			LOG->Info(LOG_LOW,"  Section id: %s has been ended", ds->identifier.c_str());
 		}
 	}
 
@@ -666,13 +666,15 @@ void demokernel::processSectionQueues() {
 	sort(this->sectionManager.execSection.begin(), this->sectionManager.execSection.end());	// Sort sections by Layer
 
 	LOG->Info(LOG_LOW,"  Exec Section queue complete: %d sections to be executed", this->sectionManager.execSection.size());
-
 	// Run Init sections
 	LOG->Info(LOG_LOW,"  Running Init Sections...");
 	for (i = 0; i < this->sectionManager.execSection.size(); i++) {
 		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
 		ds = this->sectionManager.section[sec_id];
-		ds->init();			// Init the Section
+		if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
+			ds->runTime = DEMO->runTime - ds->startTime;
+			ds->init();			// Init the Section
+		}
 		LOG->Info(LOG_LOW,"  Section %d [layer: %d id: %s] inited", sec_id, ds->layer, ds->identifier.c_str());
 	}
 
@@ -686,8 +688,10 @@ void demokernel::processSectionQueues() {
 	for (i = 0; i < this->sectionManager.execSection.size(); i++) {
 		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
 		ds = this->sectionManager.section[sec_id];
-		if((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading))
+		if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
 			ds->exec();			// Exec the Section
+		}
+			
 		LOG->Info(LOG_LOW,"  Section %d [layer: %d id: %s] executed", sec_id, ds->layer, ds->identifier.c_str());
 
 	}

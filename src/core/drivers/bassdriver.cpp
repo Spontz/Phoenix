@@ -31,7 +31,6 @@ void bassDriver::play() {
 }
 
 void bassDriver::update() {
-	BASS_Update(200);
 }
 
 void bassDriver::pause() {

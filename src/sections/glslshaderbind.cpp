@@ -15,6 +15,8 @@ void sGLSLShaderBind::load() {
 	// Load model, shader and texture
 	model = DEMO->modelManager.addModel(s_demo + "/pool/models/nanosuit/nanosuit.obj");
 	shader = DEMO->shaderManager.addShader(s_demo + "/pool/shaders/basic/basic.vert", s_demo + "/pool/shaders/basic/basic.frag");
+
+	this->loaded = TRUE;
 }
 
 void sGLSLShaderBind::init() {

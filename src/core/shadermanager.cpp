@@ -17,7 +17,7 @@ void ShaderManager::init() {
 
 // Adds a Texture into the queue, returns the ID of the texture added
 int ShaderManager::addShader(string path_vert, string path_frag, string path_geo) {
-	int i;
+	unsigned int i;
 	int shad_id = -1;
 	Shader *shad;
 
