@@ -15,6 +15,7 @@ Section::Section() {
 	duration	= 0;
 	layer		= 0;
 	enabled		= 0;	// Disabled by default
+	inited		= 0;	// Not inited by default
 	loaded		= 0;	// Not loaded by default
 	ended		= 0;	// Not ended by default
 	runTime		= 0;

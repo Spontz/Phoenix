@@ -9,18 +9,15 @@ int model = -1;
 int shader = -1;
 
 void sGLSLShaderBind::load() {
-	LOG->Info(LOG_HIGH, "  > BIND LOAD has been called!");
 	string s_demo = DEMO->demoDir;
 
 	// Load model, shader and texture
 	model = DEMO->modelManager.addModel(s_demo + "/pool/models/nanosuit/nanosuit.obj");
 	shader = DEMO->shaderManager.addShader(s_demo + "/pool/shaders/basic/basic.vert", s_demo + "/pool/shaders/basic/basic.frag");
-
-	this->loaded = TRUE;
 }
 
 void sGLSLShaderBind::init() {
-	LOG->Info(LOG_LOW, "  > BIND INIT has been called!");
+	
 }
 
 void sGLSLShaderBind::exec() {
@@ -50,5 +47,5 @@ void sGLSLShaderBind::exec() {
 }
 
 void sGLSLShaderBind::end() {
-	LOG->Info(LOG_HIGH, "  > BIND END has been called!");
+	
 }

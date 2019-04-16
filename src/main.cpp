@@ -9,7 +9,7 @@
 
 int main(int argc, char *argv[]) {
 	// Define the Log level
-	LOG->log_level = LOG_HIGH; // Define the log with the lowest detail
+	LOG->log_level = LOG_LOW; // Define the log with the lowest detail
 
 	// Initialize the GL Framework
 	GLDRV->initFramework();

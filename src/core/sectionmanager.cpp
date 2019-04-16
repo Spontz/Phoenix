@@ -107,6 +107,7 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		mySection->loaded = FALSE;	// By default, the section is not loaded
 		mySection->enabled = enabled;
 		mySection->DataSource = DataSource;
+		mySection->type_str = key;
 		section.push_back(dynamic_cast<Section*>(mySection));
 		sec_id = (int)section.size() - 1;
 	}

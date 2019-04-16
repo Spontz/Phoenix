@@ -161,7 +161,9 @@ private:
 
 	void initControlVars();			//Init control vars
 	void initSectionQueues();		// Init Section Queues
+	void reInitSectionQueues();		// ReInit Section Queues
 	void processSectionQueues();	// Process Section Queues
+
 
 	// Scripts (SPO files) management
 	void load_spo(string sFile);

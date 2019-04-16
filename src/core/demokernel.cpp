@@ -380,8 +380,8 @@ GLDRV->swap_buffers();
 			}
 		}
 
-		// reset section queues //TODO: Not necesary???
-		//reinit_sectionQueues();
+		// reset section queues
+		this->reInitSectionQueues();
 	}
 	// play state
 	else {
@@ -405,7 +405,7 @@ void demokernel::playDemo()
 		this->state = DEMO_PLAY;
 
 		// reinit section queues
-		//this->reinit_sectionQueues();
+		this->reInitSectionQueues();
 
 		// unpause the sound
 		if (this->sound) BASSDRV->play();
@@ -424,24 +424,25 @@ void demokernel::restartDemo()
 	this->state = DEMO_PLAY;
 	if (this->sound) {
 		// PERE: There is no need to free sound, isn't it??
-		//sound_end();
-		//sound_init();
+		//BASSDRV->end();
+		//BASSDRV->init();
 	}
 
 	this->initControlVars();
+	this->reInitSectionQueues();
 	this->initTimer();
 }
 
 void demokernel::rewindDemo()
 {
 	this->state = (this->state & DEMO_PAUSE) | DEMO_REWIND;
-	if (this->sound) BASSDRV->pause();
+	if (this->sound) BASSDRV->stop();
 }
 
 void demokernel::fastforwardDemo()
 {
 	this->state = (this->state & DEMO_PAUSE) | DEMO_FASTFORWARD;
-	if (this->sound) BASSDRV->pause();
+	if (this->sound) BASSDRV->stop();
 }
 
 void demokernel::closeDemo() {
@@ -582,6 +583,9 @@ void demokernel::initSectionQueues() {
 	ds_loading->load();
 	ds_loading->init();
 	ds_loading->exec();
+	ds_loading->loaded = TRUE;
+	ds_loading->inited = TRUE;
+	ds_loading->inited = TRUE;
 
 	LOG->Info(LOG_MED,"  Loading section loaded, inited and executed for first time");
 
@@ -611,7 +615,7 @@ void demokernel::initSectionQueues() {
 	for (i = 0; i < this->sectionManager.loadSection.size(); i++) {
 		sec_id = this->sectionManager.loadSection[i];
 		this->sectionManager.section[sec_id]->load();
-		//this->sectionManager.section[sec_id]->loaded = TRUE; // TODO: Each section should mark it as loaded
+		this->sectionManager.section[sec_id]->loaded = TRUE;
 		++this->loadedSections;
 		
 		// Update loading
@@ -632,6 +636,22 @@ void demokernel::initSectionQueues() {
 	
 }
 
+void demokernel::reInitSectionQueues() {
+	Section *ds = NULL;
+	int i;
+	int sec_id;
+
+	LOG->Info(LOG_LOW, "  Analysing sections that must be re-inited...");
+	for (i = 0; i < this->sectionManager.execSection.size(); i++) {
+		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
+		ds = this->sectionManager.section[sec_id];
+		if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
+			ds->inited = FALSE;			// Mark the section as not inited
+			LOG->Info(LOG_LOW, "  Section %d [layer: %d id: %s] marked to be inited", sec_id, ds->layer, ds->identifier.c_str());
+		}
+	}
+}
+
 void demokernel::processSectionQueues() {
 	Section *ds;
 	int i;
@@ -650,7 +670,7 @@ void demokernel::processSectionQueues() {
 		if ((ds->endTime <= this->runTime) && (ds->ended == FALSE)) {
 			ds->end();
 			ds->ended = TRUE;
-			LOG->Info(LOG_LOW,"  Section id: %s has been ended", ds->identifier.c_str());
+			LOG->Info(LOG_LOW, "  Section [layer: %d id: %s type: %s] ended", ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 		}
 	}
 
@@ -671,11 +691,12 @@ void demokernel::processSectionQueues() {
 	for (i = 0; i < this->sectionManager.execSection.size(); i++) {
 		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
 		ds = this->sectionManager.section[sec_id];
-		if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
+		if ((ds->enabled) && (ds->loaded) && (!(ds->inited)) && (ds->type != SectionType::Loading)) {
 			ds->runTime = DEMO->runTime - ds->startTime;
 			ds->init();			// Init the Section
+			ds->inited = TRUE;
+			LOG->Info(LOG_LOW, "  Section %d [layer: %d id: %s type: %s] inited", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 		}
-		LOG->Info(LOG_LOW,"  Section %d [layer: %d id: %s] inited", sec_id, ds->layer, ds->identifier.c_str());
 	}
 
 
@@ -690,10 +711,8 @@ void demokernel::processSectionQueues() {
 		ds = this->sectionManager.section[sec_id];
 		if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
 			ds->exec();			// Exec the Section
+			LOG->Info(LOG_LOW, "  Section %d [layer: %d id: %s type: %s] executed", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 		}
-			
-		LOG->Info(LOG_LOW,"  Section %d [layer: %d id: %s] executed", sec_id, ds->layer, ds->identifier.c_str());
-
 	}
 
 	LOG->Info(LOG_MED,"End queue processing!");

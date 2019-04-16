@@ -33,12 +33,12 @@ void sSound::load() {
 	}
 
 	if (this->stringNum != 1) {
-		LOG->Error("Sound [%s]: 1 string needed", this->identifier.c_str());
+		LOG->Error("Sound [%s]: 1 string needed: path to the sound file", this->identifier.c_str());
 		return;
 	}
 
 	if (this->paramNum != 1) {
-		LOG->Error("Sound [%s]: 1 param needed", this->identifier.c_str()); 
+		LOG->Error("Sound [%s]: 1 param needed: volume of the sound (0.0 to 1.0)", this->identifier.c_str()); 
 		return;
 	}
 
@@ -48,15 +48,26 @@ void sSound::load() {
 	local->volume = this->param[0];
 	local->prev_volume = local->volume;
 
+	// Beat detection - Init variables
+	local->beat_ratio = DEMO->beat_ratio;
+	local->fade_out = DEMO->beat_fadeout;
+
+	// Clean variables
+	for (auto i = 0; i < BUFFER_SAMPLES; i++) {
+		local->energy[i] = DEFAULT_ENERGY;
+	}
+	local->intensity = 0;
+	local->position = 1;
+
 	string file = DEMO->demoDir + this->strings[0];
 	local->str = BASS_StreamCreateFile(FALSE, file.c_str(), 0, 0, BASS_STREAM_PRESCAN);
 	if (local->str == 0)
 		LOG->Error("Sound [%s]: Cannot read file: %s - Error Code: %i", this->identifier.c_str(), file.c_str(), BASS_ErrorGetCode());
-	else
-		this->loaded = TRUE;
 }
 
 void sSound::init() {
+	int BASS_err = 0;
+
 	if (!DEMO->sound)
 		return;
 
@@ -76,21 +87,23 @@ void sSound::init() {
 	local->intensity = 0;
 	local->position = 1;
 
-	if (DEMO->state != DEMO_PLAY) { // When running the demo, there is no need to recalculate the position
-		QWORD bytes = BASS_ChannelSeconds2Bytes(local->str, this->runTime); // convert seconds to bytes
-		if (FALSE == BASS_ChannelSetPosition(local->str, bytes, BASS_POS_BYTE)) // seek there
+	QWORD bytes = BASS_ChannelSeconds2Bytes(local->str, this->runTime);		// convert seconds to bytes
+	if (FALSE == BASS_ChannelSetPosition(local->str, bytes, BASS_POS_BYTE)) { // seek there
+		BASS_err = BASS_ErrorGetCode();
+		if (BASS_err > 0 && BASS_err != BASS_ERROR_POSITION)
 			LOG->Error("Sound [%s]: BASS_ChannelSetPosition returned error: %i", this->identifier.c_str(), BASS_ErrorGetCode());
 	}
-
+	
 	if (FALSE == BASS_ChannelPlay(local->str, FALSE))
 		LOG->Error("Sound [%s]: BASS_ChannelPlay returned error: %i", this->identifier.c_str(), BASS_ErrorGetCode());
+		
 	BASS_ChannelSetAttribute(local->str, BASS_ATTRIB_VOL, local->volume);
 }
 
 void sSound::exec() {
 	float instant, avg;	// Instant energy
 	int i;
-	float fft[BUFFER_SAMPLES]; // 512 samples, because we have used "BASS_DATA_FFT1024", and this returns 512 values
+	float fft[BUFFER_SAMPLES] = {0.0f}; // 512 samples, because we have used "BASS_DATA_FFT1024", and this returns 512 values
 
 	local = (sound_section *)this->vars;
 
@@ -104,8 +117,11 @@ void sSound::exec() {
 		local->prev_volume = local->volume;
 	}
 
-	if (FALSE == BASS_ChannelGetData(local->str, fft, BASS_DATA_FFT1024))	// get the FFT data
-		LOG->Error("Sound [%s]: BASS_ChannelGetData returned error: %i", this->identifier.c_str(), BASS_ErrorGetCode());
+	if (FALSE == BASS_ChannelGetData(local->str, fft, BASS_DATA_FFT1024)) {	// get the FFT data
+		int BASS_err = BASS_ErrorGetCode();
+		if ((BASS_err > 0) && (BASS_err != BASS_ERROR_ENDED))
+			LOG->Error("Sound [%s]: BASS_ChannelGetData returned error: %i", this->identifier.c_str(), BASS_err);
+	}
 
 	instant = 0;
 	for (i = 0; i < (int)BUFFER_SAMPLES; i++)
