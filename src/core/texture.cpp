@@ -35,6 +35,8 @@ bool Texture::load(const std::string & file_name, bool flip)
 		GLenum format;
 		if (components == 1)
 			format = GL_RED;
+		else if (components == 2)
+			format = GL_RG;
 		else if (components == 3)
 			format = GL_RGB;
 		else if (components == 4)
@@ -42,6 +44,7 @@ bool Texture::load(const std::string & file_name, bool flip)
 
 		glGenTextures(1, &textureID);
 		glBindTexture(GL_TEXTURE_2D, textureID);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
