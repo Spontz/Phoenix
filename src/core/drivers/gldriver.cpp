@@ -11,6 +11,12 @@ using namespace glm;
 glDriver* glDriver::m_pThis = NULL;
 
 // **************************************************
+// Demo states to show in the drawTiming information
+
+char *stateStr[] = {"play", "play - RW", "play - FF", 
+					"paused", "paused - RW", "paused - FF" };
+
+// **************************************************
 
 void error_callback(int, const char* err_str)
 {
@@ -246,4 +252,27 @@ void glDriver::close() {
 	glfwTerminate();
 }
 
+void glDriver::drawFps() {
+	DEMO->text->glPrintf(-1, 0.9, "FPS: %.0f", DEMO->fps);
+}
 
+
+void glDriver::drawTiming() {
+	char *state;
+	if (DEMO->state & DEMO_PAUSE) {
+		if (DEMO->state & DEMO_REWIND) state = stateStr[4];
+		else if (DEMO->state & DEMO_FASTFORWARD) state = stateStr[5];
+		else state = stateStr[3];
+
+	}
+	else {
+		if (DEMO->state & DEMO_REWIND) state = stateStr[1];
+		else if (DEMO->state & DEMO_FASTFORWARD) state = stateStr[2];
+		else state = stateStr[0];
+	}
+
+	DEMO->text->glPrintf(-1, 0.8, "%d - %.1f/%.1f", DEMO->frameCount, DEMO->runTime, DEMO->endTime);
+	DEMO->text->glPrintf(-1, 0.7, "sound %0.1f", BASSDRV->sound_cpu());
+	DEMO->text->glPrintf(-1, 0.6, "texmem %.2fM", DEMO->textureManager.mem);
+	DEMO->text->glPrintf(-1, 0.5, "%s", state);	
+}

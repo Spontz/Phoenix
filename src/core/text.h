@@ -23,6 +23,7 @@ public:
 	virtual ~Text();
 
 	void RenderText(string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);
+	void glPrintf(float x, float y, const char *message, ...);
 
 private:
 	GLuint VAO, VBO;	// Buffer objects for drawing the text

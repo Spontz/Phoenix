@@ -49,9 +49,9 @@ void sGLSLShaderBind::exec() {
 
 	//DEMO->text->RenderText("hola", sin(DEMO->runTime), cos(DEMO->runTime), sin(DEMO->runTime), glm::vec3(1, 0, 0));
 	//glEnable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	DEMO->text->RenderText("hi spontz demomaker!", -1, sin(DEMO->runTime), 0.002f, glm::vec3(1, 0, 0));
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//DEMO->text->RenderText("hi spontz demomaker!", -1, sin(DEMO->runTime), 0.5f, glm::vec3(1, 0, 0));
 
 }
 

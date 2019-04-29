@@ -99,8 +99,26 @@ Text::~Text()
 
 }
 
+void Text::glPrintf(float x, float y, const char *message, ...) {
+	va_list argptr;
+	char text[256];
+
+	if (message == NULL)
+		return;
+	
+	va_start(argptr, message);
+	vsprintf_s(text, message, argptr);
+	va_end(argptr);
+	
+	RenderText(text, x, y, 0.2f, glm::vec3(1, 1, 1));
+}
+
 void Text::RenderText(string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
 {
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	scale /= 100.0f; // Divide per 100 in order to match our windows scale (from 0 to 1)
 	// Activate corresponding render state	
 	Shader *myShad;
 	
@@ -120,19 +138,19 @@ void Text::RenderText(string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec
 		Character ch = Characters[*c];
 
 		GLfloat xpos = x + ch.Bearing.x * scale;
-		GLfloat ypos = y + (ch.Size.y - ch.Bearing.y) * scale;
+		GLfloat ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
 
 		GLfloat w = ch.Size.x * scale;
 		GLfloat h = ch.Size.y * scale;
 		// Update VBO for each character
 		GLfloat vertices[6][4] = {
-			{ xpos,     ypos - h,   0.0, 0.0 },
-			{ xpos,     ypos,       0.0, 1.0 },
-			{ xpos + w, ypos,       1.0, 1.0 },
+			{ xpos,     -ypos - h,   0.0, 0.0 },
+			{ xpos,     -ypos,       0.0, 1.0 },
+			{ xpos + w, -ypos,       1.0, 1.0 },
 
-			{ xpos,     ypos - h,   0.0, 0.0 },
-			{ xpos + w, ypos,       1.0, 1.0 },
-			{ xpos + w, ypos - h,   1.0, 0.0 }
+			{ xpos,     -ypos - h,   0.0, 0.0 },
+			{ xpos + w, -ypos,       1.0, 1.0 },
+			{ xpos + w, -ypos - h,   1.0, 0.0 }
 		};
 		// Render glyph texture over quad
 		glBindTexture(GL_TEXTURE_2D, ch.TextureID);
@@ -148,6 +166,7 @@ void Text::RenderText(string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_BLEND);
 }
 
 

@@ -726,12 +726,15 @@ void demokernel::processSectionQueues() {
 
 	// expand RTT to fullscreen
 	gldrv_endRender();
+	*/
 
 	if (this->debug) {
-		if (this->drawFps) drawFps();
-		if (this->drawTiming) drawTiming();
+		if (this->drawFps)
+			GLDRV->drawFps();
+		if (this->drawTiming)
+			GLDRV->drawTiming();
 	}
-	*/
+	
 	// swap buffer
 	GLDRV->swap_buffers();
 }

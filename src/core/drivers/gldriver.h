@@ -64,6 +64,8 @@ public:
 	void swap_buffers();
 	void close();
 
+	void drawFps();
+	void drawTiming();
 	void processInput();
 
 	int window_should_close();
