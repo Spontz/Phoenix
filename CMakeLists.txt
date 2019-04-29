@@ -73,7 +73,7 @@ add_library(STB_IMAGE "thirdparty/stb_image.cpp")
 # GLAD
 add_library(GLAD "thirdparty/glad.c")
 
-# BASS
+# BASS and FREETYPE
 if(CMAKE_CL_64)
 	link_directories(${CMAKE_SOURCE_DIR}/lib/lib64)
 else()
@@ -81,7 +81,7 @@ else()
 endif()
 
 # Put all libraries into a variable
-set(LIBS glfw3 opengl32 assimp STB_IMAGE GLAD bass)
+set(LIBS glfw3 opengl32 assimp STB_IMAGE GLAD bass freetype)
 
 # Define the include DIRs
 include_directories(

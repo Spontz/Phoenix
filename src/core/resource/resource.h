@@ -28,6 +28,7 @@ private:
 	void Load_Obj_Quad();
 	void Load_Shdr_Basic();
 	void Load_Tex_Spontz();
+	void Load_Text_Fonts();
 
 	static Resource* m_pThis;
 };

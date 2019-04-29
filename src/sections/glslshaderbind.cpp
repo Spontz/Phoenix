@@ -44,6 +44,15 @@ void sGLSLShaderBind::exec() {
 	my_shad->setMat4("model", model);
 
 	my_model->Draw(*my_shad);
+
+	//DEMO->text->RenderText("hola", 0, -1, 1, glm::vec3(1, 0, 0));
+
+	//DEMO->text->RenderText("hola", sin(DEMO->runTime), cos(DEMO->runTime), sin(DEMO->runTime), glm::vec3(1, 0, 0));
+	//glEnable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	DEMO->text->RenderText("hi spontz demomaker!", -1, sin(DEMO->runTime), 0.002f, glm::vec3(1, 0, 0));
+
 }
 
 void sGLSLShaderBind::end() {

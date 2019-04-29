@@ -20,6 +20,7 @@ void Resource::loadAllResources()
 	Load_Obj_Quad();
 	Load_Shdr_Basic();
 	Load_Tex_Spontz();
+	Load_Text_Fonts();
 }
 
 Resource::Resource() {
@@ -85,6 +86,12 @@ void Resource::Load_Tex_Spontz()
 	tex_shotgan2 = DEMO->textureManager.addTexture(demoDir + "/resources/textures/shotgan2.jpg");
 	tex_merlucin = DEMO->textureManager.addTexture(demoDir + "/resources/textures/merlucin.jpg");
 	tex_xphere = DEMO->textureManager.addTexture(demoDir + "/resources/textures/xphere.jpg");
+}
+
+void Resource::Load_Text_Fonts()
+{
+	DEMO->text = new Text(demoDir + "/resources/shaders/font/font.vert", demoDir + "/resources/shaders/font/font.frag", demoDir + "/resources/fonts/arial.ttf");
+
 }
 
 // Draw a Quad in full screen. A texture and a Shader can be specified
