@@ -305,19 +305,6 @@ void demokernel::mainLoop() {
 }
 
 void demokernel::doExec() {
-	/*
-// Update game time value
-newTime = static_cast<float>(glfwGetTime());
-gameTime = newTime - startTime;
-
-// Render here
-GLDRV->render(gameTime);
-
-// Swap front and back buffers
-GLDRV->swap_buffers();
-
-
-*/
 
 	// TODO: Implement mouse events
 	// capture mouse move and reset the position
@@ -395,8 +382,6 @@ GLDRV->swap_buffers();
 	// update sound driver once a frame //TODO: Not needed!
 	if (this->sound)
 		BASSDRV->update();
-	
-
 }
 
 void demokernel::playDemo()
