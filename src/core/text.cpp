@@ -4,7 +4,7 @@
 #include <main.h>
 #include "text.h"
 
-Text::Text(string vshader_path, string fshader_path, string font_path)
+Text::Text(int size, string vshader_path, string fshader_path, string font_path)
 {
 	// Load the shader
 	Shader *myShad;
@@ -35,7 +35,7 @@ Text::Text(string vshader_path, string fshader_path, string font_path)
 			LOG->Error("Freetype library could not load font: %s", font_path.c_str());
 			return;
 		}
-		FT_Set_Pixel_Sizes(face, 0, 48);
+		FT_Set_Pixel_Sizes(face, 0, size);
 		LOG->Info(LOG_LOW, "Font %s loaded OK", font_path.c_str());
 	}
 

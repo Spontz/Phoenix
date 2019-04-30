@@ -90,7 +90,7 @@ void Resource::Load_Tex_Spontz()
 
 void Resource::Load_Text_Fonts()
 {
-	DEMO->text = new Text(demoDir + "/resources/shaders/font/font.vert", demoDir + "/resources/shaders/font/font.frag", demoDir + "/resources/fonts/arial.ttf");
+	DEMO->text = new Text(48, demoDir + "/resources/shaders/font/font.vert", demoDir + "/resources/shaders/font/font.frag", demoDir + "/resources/fonts/arial.ttf");
 
 }
 
