@@ -68,6 +68,19 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	DEMO->camera->ProcessMouseScroll((float)yoffset);
 }
 
+
+void glErrorCallback(GLenum source, GLenum type,
+	GLuint id,
+	GLenum severity,
+	GLsizei length,
+	const GLchar* message,
+	const void* userParam)
+{
+	LOG->Error("GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+		type, severity, message);
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 
 	if (action == GLFW_PRESS) {
@@ -192,6 +205,12 @@ void glDriver::initGraphics() {
 	// Init render
 	this->initRender(true);
 
+	// During init, enable debug output
+	if (DEMO->debug) {
+		glEnable(GL_DEBUG_OUTPUT);	
+		glDebugMessageCallback(glErrorCallback, 0);
+	}
+
 	// Init internal timer
 	TimeCurrentFrame = static_cast<float>(glfwGetTime());
 }
@@ -201,12 +220,10 @@ void glDriver::initStates()
 	glDisable(GL_BLEND);						// blending disabled
 
 	glDisable(GL_CULL_FACE);					// cull face disabled
-	glEnable(GL_TEXTURE_2D);					// textures enabled
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	// draw cwise and ccwise in fill mode
 
 	glEnable(GL_DEPTH_TEST);					// depth test enabled
 	glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL
-
 	// Enable multisampling
 	if (this->multisampling)
 		glEnable(GL_MULTISAMPLE);
@@ -253,7 +270,7 @@ void glDriver::close() {
 }
 
 void glDriver::drawFps() {
-	DEMO->text->glPrintf(-1, 0.9, "FPS: %.0f", DEMO->fps);
+	DEMO->text->glPrintf(-1, 0.9f, "FPS: %.0f", DEMO->fps);
 }
 
 
@@ -271,8 +288,8 @@ void glDriver::drawTiming() {
 		else state = stateStr[0];
 	}
 
-	DEMO->text->glPrintf(-1, 0.8, "%d - %.1f/%.1f", DEMO->frameCount, DEMO->runTime, DEMO->endTime);
-	DEMO->text->glPrintf(-1, 0.7, "sound %0.1f", BASSDRV->sound_cpu());
-	DEMO->text->glPrintf(-1, 0.6, "texmem %.2fM", DEMO->textureManager.mem);
-	DEMO->text->glPrintf(-1, 0.5, "%s", state);	
+	DEMO->text->glPrintf(-1, 0.8f, "%d - %.1f/%.1f", DEMO->frameCount, DEMO->runTime, DEMO->endTime);
+	DEMO->text->glPrintf(-1, 0.7f, "sound %0.1f", BASSDRV->sound_cpu());
+	DEMO->text->glPrintf(-1, 0.6f, "texmem %.2fM", DEMO->textureManager.mem);
+	DEMO->text->glPrintf(-1, 0.5f, "%s", state);	
 }
