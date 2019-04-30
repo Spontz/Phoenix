@@ -182,7 +182,10 @@ void glDriver::initGraphics() {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = glfwCreateWindow(width, height, DEMO->demoName, nullptr, nullptr);
+	if (GLDRV->fullScreen)
+		window = glfwCreateWindow(width, height, DEMO->demoName, glfwGetPrimaryMonitor(), nullptr);
+	else
+		window = glfwCreateWindow(width, height, DEMO->demoName, nullptr, nullptr);
 
 	if (!window) {
 		glfwTerminate();
@@ -231,6 +234,9 @@ void glDriver::initStates()
 
 void glDriver::initRender(int clear)
 {
+	// Vsync Management
+	glfwSwapInterval(0); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
+
 	// reset the default gl state
 	this->initStates();
 	
@@ -266,6 +272,7 @@ void glDriver::swap_buffers() {
 }
 
 void glDriver::close() {
+	glfwSetWindowShouldClose(window, GL_TRUE);
 	glfwTerminate();
 }
 
