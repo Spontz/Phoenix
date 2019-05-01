@@ -12,7 +12,7 @@
 #include "core/texturemanager.h"
 #include "core/modelmanager.h"
 #include "core/shadermanager.h"
-#include "core/text.h"
+#include "core/font.h"
 #include "core/camera.h"
 
 // ******************************************************************
@@ -76,7 +76,7 @@ public:
 	ModelManager modelManager;
 	ShaderManager shaderManager;
 	Camera *camera;		//TODO: Implement a camera manager... does it makes sense¿?
-	Text	*text;
+	Font	*text;
 
 	// loading information
 	//int numSections;

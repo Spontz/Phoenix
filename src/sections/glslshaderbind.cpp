@@ -51,8 +51,8 @@ void sGLSLShaderBind::exec() {
 	//glEnable(GL_CULL_FACE);
 	//glEnable(GL_BLEND);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//DEMO->text->RenderText("hi spontz demomaker!", -1, sin(DEMO->runTime), 0.5f, glm::vec3(1, 0, 0));
-
+	//DEMO->text->RenderText("hola New", -0.5f*cos(DEMO->runTime), -0.5f*sin(DEMO->runTime), 0.4f, glm::vec3(1, 0, 0));
+	//DEMO->text->RenderText("AbraCadraBRA", -0.8f, 0, 0.4f, glm::vec3(1, 0, 0));
 }
 
 void sGLSLShaderBind::end() {

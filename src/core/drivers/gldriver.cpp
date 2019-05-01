@@ -210,8 +210,12 @@ void glDriver::initGraphics() {
 
 	// During init, enable debug output
 	if (DEMO->debug) {
-		glEnable(GL_DEBUG_OUTPUT);	
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 		glDebugMessageCallback(glErrorCallback, 0);
+		// If you want to disable all error messages, except the API error messages, then you have to disable all messages first and the enable explicitly the API error messages:
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
+		glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, NULL, GL_TRUE);
 	}
 
 	// Init internal timer
@@ -235,7 +239,7 @@ void glDriver::initStates()
 void glDriver::initRender(int clear)
 {
 	// Vsync Management
-	glfwSwapInterval(0); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
+	glfwSwapInterval(1); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
 
 	// reset the default gl state
 	this->initStates();
@@ -278,6 +282,7 @@ void glDriver::close() {
 
 void glDriver::drawFps() {
 	DEMO->text->glPrintf(-1, 0.9f, "FPS: %.0f", DEMO->fps);
+
 }
 
 
@@ -294,9 +299,8 @@ void glDriver::drawTiming() {
 		else if (DEMO->state & DEMO_FASTFORWARD) state = stateStr[2];
 		else state = stateStr[0];
 	}
-
 	DEMO->text->glPrintf(-1, 0.8f, "%d - %.1f/%.1f", DEMO->frameCount, DEMO->runTime, DEMO->endTime);
 	DEMO->text->glPrintf(-1, 0.7f, "sound %0.1f", BASSDRV->sound_cpu());
 	DEMO->text->glPrintf(-1, 0.6f, "texmem %.2fM", DEMO->textureManager.mem);
-	DEMO->text->glPrintf(-1, 0.5f, "%s", state);	
+	DEMO->text->glPrintf(-1, 0.5f, "%s", state);
 }

@@ -90,8 +90,7 @@ void Resource::Load_Tex_Spontz()
 
 void Resource::Load_Text_Fonts()
 {
-	DEMO->text = new Text(48, demoDir + "/resources/shaders/font/font.vert", demoDir + "/resources/shaders/font/font.frag", demoDir + "/resources/fonts/arial.ttf");
-
+	DEMO->text = new Font(48, demoDir + "/resources/fonts/arial.ttf", demoDir + "/resources/shaders/font/font.vert", demoDir + "/resources/shaders/font/font.frag");
 }
 
 // Draw a Quad in full screen. A texture and a Shader can be specified

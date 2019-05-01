@@ -112,9 +112,6 @@ void sBackground::exec() {
 			glDisable(GL_BLEND);
 	}
 	glEnable(GL_DEPTH_TEST);
-
-	DEMO->text->RenderText("hola", 10.0*sin(DEMO->runTime), 10.0*cos(DEMO->runTime), 10.0*sin(DEMO->runTime), glm::vec3(1, 0, 0));
-
 }
 
 
