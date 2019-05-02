@@ -239,7 +239,7 @@ void glDriver::initStates()
 void glDriver::initRender(int clear)
 {
 	// Vsync Management
-	glfwSwapInterval(1); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
+	glfwSwapInterval(0); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
 
 	// reset the default gl state
 	this->initStates();
