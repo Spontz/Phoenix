@@ -46,7 +46,7 @@ void sObjectShader::load() {
 	local->model = DEMO->modelManager.addModel(s_demo + this->strings[0]);
 	local->shader = DEMO->shaderManager.addShader(s_demo + this->strings[1], s_demo + this->strings[2]);
 
-	local->exprPosition = new mathDriver();
+	local->exprPosition = new mathDriver(this);
 	// Load positions, process constants and compile expression
 	local->exprPosition->expression = std::string(this->strings[3]) + this->strings[4] + this->strings[5]; // Concatenate the 3 positioning strings (position+rotation+scale)
 	local->exprPosition->SymbolTable.add_variable("tx", local->tx);
@@ -58,7 +58,6 @@ void sObjectShader::load() {
 	local->exprPosition->SymbolTable.add_variable("sx", local->sx);
 	local->exprPosition->SymbolTable.add_variable("sy", local->sy);
 	local->exprPosition->SymbolTable.add_variable("sz", local->sz);
-	local->exprPosition->SymbolTable.add_variable("time", DEMO->runTime);
 	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
 	if (!local->exprPosition->Parser.compile(local->exprPosition->expression, local->exprPosition->Expression)) {
 		LOG->Error("Error in formula, please check Section %s, ID: %s, file: %s. Equation: %s", this->type_str.c_str(), this->identifier.c_str(), this->DataSource.c_str(), local->exprPosition->expression.c_str());
@@ -77,6 +76,7 @@ void sObjectShader::exec() {
 	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
 	
 	// Evaluate the expression
+	//local->exprPosition->updateVars();
 	local->exprPosition->Expression.value();
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

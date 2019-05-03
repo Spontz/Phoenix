@@ -22,7 +22,7 @@ public:
 	exprtk::expression<float>	Expression;
 	exprtk::parser<float> Parser;
 
-	mathDriver();
+	mathDriver(Section *sec);
 
 private:
 

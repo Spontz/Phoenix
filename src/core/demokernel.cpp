@@ -695,6 +695,7 @@ void demokernel::processSectionQueues() {
 		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
 		ds = this->sectionManager.section[sec_id];
 		if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
+			ds->runTime = DEMO->runTime - ds->startTime;
 			ds->exec();			// Exec the Section
 			LOG->Info(LOG_LOW, "  Section %d [layer: %d id: %s type: %s] executed", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 		}
