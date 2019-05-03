@@ -94,6 +94,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 	case SectionType::Background:
 		mySection = new sBackground();
 		break;
+	case SectionType::ObjectShader:
+		mySection = new sObjectShader();
+		break;
 	case SectionType::GLSLShaderBind:
 		mySection = new sGLSLShaderBind();
 		break;

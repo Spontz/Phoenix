@@ -19,13 +19,8 @@ sBackground::sBackground() {
 
 void sBackground::load() {
 	// script validation
-	if (this->stringNum != 1) {
-		LOG->Error("Background [%s]: 1 string needed", this->identifier.c_str());
-		return;
-	}
-
-	if (this->paramNum != 1) {
-		LOG->Error("Background [%s]: 1 param needed", this->identifier.c_str());
+	if ((this->stringNum != 1) || (this->paramNum != 1)) {
+		LOG->Error("Background [%s]: 1 string and 1 param needed", this->identifier.c_str());
 		return;
 	}
 
@@ -70,7 +65,7 @@ void sBackground::exec() {
 		Texture *my_tex = DEMO->textureManager.texture[local->texture];
 
 		my_shad->use();
-		my_shad->setInt("texture_diffuse1", 0);
+		my_shad->setValue("texture_diffuse1", 0);
 
 		// Texture and View aspect ratio, stored for Keeping image proportions
 		float tex_aspect = (float)my_tex->width / (float)my_tex->height;
@@ -98,9 +93,9 @@ void sBackground::exec() {
 		
 
 		// Send matrices to shader
-		my_shad->setMat4("model", model);
-		my_shad->setMat4("view", view);
-		my_shad->setMat4("projection", projection);
+		my_shad->setValue("model", model);
+		my_shad->setValue("view", view);
+		my_shad->setValue("projection", projection);
 
 		my_tex->active();
 		my_tex->bind();

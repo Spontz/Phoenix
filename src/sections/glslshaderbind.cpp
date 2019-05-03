@@ -32,8 +32,8 @@ void sGLSLShaderBind::exec() {
 	float zoom = DEMO->camera->Zoom;
 	glm::mat4 projection = glm::perspective(glm::radians(zoom), (float)GLDRV->width / (float)GLDRV->height, 0.1f, 100.0f);
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
-	my_shad->setMat4("projection", projection);
-	my_shad->setMat4("view", view);
+	my_shad->setValue("projection", projection);
+	my_shad->setValue("view", view);
 
 
 	// render the loaded model
@@ -41,12 +41,11 @@ void sGLSLShaderBind::exec() {
 	model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
 	model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
 	model = glm::rotate(model, DEMO->runTime * glm::radians(-90.0f), glm::vec3(0, 1, 0));
-	my_shad->setMat4("model", model);
+	my_shad->setValue("model", model);
 
-	my_model->Draw(*my_shad);
+	//my_model->Draw(*my_shad);
 
 	//DEMO->text->RenderText("hola", 0, -1, 1, glm::vec3(1, 0, 0));
-
 	//DEMO->text->RenderText("hola", sin(DEMO->runTime), cos(DEMO->runTime), sin(DEMO->runTime), glm::vec3(1, 0, 0));
 	//glEnable(GL_CULL_FACE);
 	//glEnable(GL_BLEND);

@@ -109,7 +109,7 @@ void Resource::Draw_Obj_Quad()
 	Shader *shad = DEMO->shaderManager.shader[shdr_basic];
 	//tex->active();
 	//tex->bind();
-	shad->setInt("texture_diffuse1", 0);
+	shad->setValue("texture_diffuse1", 0);
 	glBindVertexArray(obj_quad);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);

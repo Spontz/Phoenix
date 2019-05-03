@@ -12,6 +12,7 @@ using namespace std;
 class sLoading : public Section { public:	sLoading();  void load(); void init(); void exec(); void end(); };
 class sSound : public Section { public:	sSound();  void load(); void init(); void exec(); void end(); };
 class sBackground : public Section { public:	sBackground();  void load(); void init(); void exec(); void end(); };
+class sObjectShader : public Section { public:	sObjectShader();  void load(); void init(); void exec(); void end(); };
 class sGLSLShaderBind : public Section { public: sGLSLShaderBind(); void load(); void init(); void exec(); void end(); };
 class sGLSLShaderUnbind : public Section { public: sGLSLShaderUnbind(); void load(); void init(); void exec(); void end(); };
 

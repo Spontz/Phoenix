@@ -29,18 +29,18 @@ public:
 	// activate the shader
 	void use();
 	// utility uniform functions
-	void setBool(const char *name, bool value) const;
-	void setInt(const char *name, int value) const;
-	void setFloat(const char *name, float value) const;
-	void setVec2(const char *name, const glm::vec2 &value) const;
-	void setVec2(const char *name, float x, float y) const;
-	void setVec3(const char *name, const glm::vec3 &value) const;
-	void setVec3(const char *name, float x, float y, float z) const;
-	void setVec4(const char *name, const glm::vec4 &value) const;
-	void setVec4(const char *name, float x, float y, float z, float w);
-	void setMat2(const char *name, const glm::mat2 &mat) const;
-	void setMat3(const char *name, const glm::mat3 &mat) const;
-	void setMat4(const char *name, const glm::mat4 &mat) const;
+	void setValue(const char *name, bool value) const;
+	void setValue(const char *name, int value) const;
+	void setValue(const char *name, float value) const;
+	void setValue(const char *name, const glm::vec2 &value) const;
+	void setValue(const char *name, float x, float y) const;
+	void setValue(const char *name, const glm::vec3 &value) const;
+	void setValue(const char *name, float x, float y, float z) const;
+	void setValue(const char *name, const glm::vec4 &value) const;
+	void setValue(const char *name, float x, float y, float z, float w);
+	void setValue(const char *name, const glm::mat2 &mat) const;
+	void setValue(const char *name, const glm::mat3 &mat) const;
+	void setValue(const char *name, const glm::mat4 &mat) const;
 
 	GLint getUniformLocation(int program_index, const char *varname) const;
 

@@ -20,7 +20,7 @@ Font::Font(int size, string font_path, string vshader_path, string fshader_path)
 	else
 		LOG->Error("Could not load Font shader!");
 
-	myShad->setMat4("projection", projection);
+	myShad->setValue("projection", projection);
 	LOG->Info(LOG_LOW, "Font shader loaded OK");
 
 
@@ -146,7 +146,7 @@ void Font::RenderText(string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec
 	}
 	myShad->use();
 
-	myShad->setVec3("textColor", color);
+	myShad->setValue("textColor", color);
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(VAO);
 
