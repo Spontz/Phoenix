@@ -12,12 +12,14 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <fastmathparser/exprtk.hpp>
 using namespace std;
 
 
 #include "core/demokernel.h"
 #include "core/drivers/gldriver.h"
 #include "core/drivers/bassdriver.h"
+#include "core/drivers/mathdriver.h"
 
 #include "core/resource/resource.h"
 

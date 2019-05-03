@@ -5,8 +5,6 @@
 #define BASSDRIVER_H
 
 
-//#include <bass/bass.h>
-
 #define BASSDRV bassDriver::getInstance()
 
 using namespace std;

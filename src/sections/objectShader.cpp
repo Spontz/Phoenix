@@ -6,7 +6,13 @@ typedef struct {
 	int			model;
 	int			shader;
 	int			enableDepthBufferClearing;
+
+	float	tx,ty,tz;// Translation
+	float	rx,ry,rz;// Rotation
+	float	sx,sy,sz;// Scale
 	
+	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
+
 	//tExpression evalPositioning;			// A equation containing the calculations used to position the object
 	//tExpression evalSources;				// A equation containing the calculations for iterative object renderings
 } objectShader_section;
@@ -23,7 +29,7 @@ sObjectShader::sObjectShader()
 void sObjectShader::load() {
 	string s_demo = DEMO->demoDir;
 	// script validation - TODO: Put this on a common function from "section"
-	if ((this->paramNum != 1) || (this->stringNum < 3)) {
+	if ((this->paramNum != 1) || (this->stringNum < 6)) {
 		LOG->Error("ObjectShader [%s]: 1 param and 10 strings needed", this->identifier.c_str());
 		return;
 	}
@@ -40,7 +46,24 @@ void sObjectShader::load() {
 	local->model = DEMO->modelManager.addModel(s_demo + this->strings[0]);
 	local->shader = DEMO->shaderManager.addShader(s_demo + this->strings[1], s_demo + this->strings[2]);
 
-	// TODO: Load positions - expr_eval needed
+	local->exprPosition = new mathDriver();
+	// Load positions, process constants and compile expression
+	local->exprPosition->expression = std::string(this->strings[3]) + this->strings[4] + this->strings[5]; // Concatenate the 3 positioning strings (position+rotation+scale)
+	local->exprPosition->SymbolTable.add_variable("tx", local->tx);
+	local->exprPosition->SymbolTable.add_variable("ty", local->ty);
+	local->exprPosition->SymbolTable.add_variable("tz", local->tz);
+	local->exprPosition->SymbolTable.add_variable("rx", local->rx);
+	local->exprPosition->SymbolTable.add_variable("ry", local->ry);
+	local->exprPosition->SymbolTable.add_variable("rz", local->rz);
+	local->exprPosition->SymbolTable.add_variable("sx", local->sx);
+	local->exprPosition->SymbolTable.add_variable("sy", local->sy);
+	local->exprPosition->SymbolTable.add_variable("sz", local->sz);
+	local->exprPosition->SymbolTable.add_variable("time", DEMO->runTime);
+	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
+	if (!local->exprPosition->Parser.compile(local->exprPosition->expression, local->exprPosition->Expression)) {
+		LOG->Error("Error in formula, please check Section %s, ID: %s, file: %s. Equation: %s", this->type_str.c_str(), this->identifier.c_str(), this->DataSource.c_str(), local->exprPosition->expression.c_str());
+	}
+
 }
 
 void sObjectShader::init() {
@@ -53,6 +76,9 @@ void sObjectShader::exec() {
 	Model *my_model = DEMO->modelManager.model[local->model];
 	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
 	
+	// Evaluate the expression
+	local->exprPosition->Expression.value();
+
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	if (local->enableDepthBufferClearing == 1)
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -70,9 +96,14 @@ void sObjectShader::exec() {
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0, 0, -10)); // translate it down so it's at the center of the scene
-	model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));	// it's a bit too big for our scene, so scale it down
-	model = glm::rotate(model, DEMO->runTime * glm::radians(-90.0f), glm::vec3(0, 1, 0));
+	//model = glm::translate(model, glm::vec3(0, 0, -10)); // translate it down so it's at the center of the scene
+	//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));	// it's a bit too big for our scene, so scale it down
+	//model = glm::rotate(model, DEMO->runTime * glm::radians(-90.0f), glm::vec3(0, 1, 0));
+	model = glm::translate(model, glm::vec3(local->tx, local->ty, local->tz));
+	model = glm::scale(model, glm::vec3(local->sx, local->sy, local->sz));
+	model = glm::rotate(model, (float)local->rx, glm::vec3(1, 0, 0));
+	model = glm::rotate(model, (float)local->ry, glm::vec3(0, 1, 0));
+	model = glm::rotate(model, (float)local->rz, glm::vec3(0, 0, 1));
 	my_shader->setValue("model", model);
 
 	my_model->Draw(*my_shader);
