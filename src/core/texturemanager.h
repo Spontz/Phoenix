@@ -17,7 +17,6 @@ public:
 	TextureManager();
 	void init();
 	int addTexture(string path, bool flip = false);
-	int addEmptyTexture(int width, int height, int iformat, int format, int type);
 private:
 
 

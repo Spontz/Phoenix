@@ -10,6 +10,7 @@
 #include "sections/sections.h"
 
 #include "core/texturemanager.h"
+#include "core/fbomanager.h"
 #include "core/modelmanager.h"
 #include "core/shadermanager.h"
 #include "core/font.h"
@@ -71,10 +72,11 @@ public:
 	float endTime;								// last demo second (0 = unlimited)
 
 	// Managers
-	SectionManager sectionManager;
-	TextureManager textureManager;
-	ModelManager modelManager;
-	ShaderManager shaderManager;
+	SectionManager	sectionManager;
+	TextureManager	textureManager;
+	FboManager		fboManager;
+	ModelManager	modelManager;
+	ShaderManager	shaderManager;
 	Camera *camera;		//TODO: Implement a camera manager... does it makes sense¿?
 	Font	*text;
 

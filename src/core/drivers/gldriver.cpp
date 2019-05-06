@@ -253,7 +253,7 @@ void glDriver::initRender(int clear)
 
 	// set the viewport to the correct size // TODO: S'ha de areglar el tema dels viewports....
 	//glViewport(this->vpXOffset, this->vpYOffset, this->vpWidth, this->vpHeight);
-	glViewport(0, 0, this->width, this->height);
+	setViewport(0, 0, this->width, this->height);
 	this->vpXOffset = 0;
 	this->vpYOffset = 0;
 	this->vpWidth = this->width;
@@ -297,9 +297,26 @@ void glDriver::initRender(int clear)
 	}
 }
 
+void glDriver::setViewport(int x, int y, GLsizei width, GLsizei height)
+{
+	glViewport(0, 0, this->width, this->height);
+}
+
 
 int glDriver::window_should_close() {
 	return glfwWindowShouldClose(window);
+}
+
+bool glDriver::checkGLError(char * pOut)
+{
+	GLenum err = glGetError();
+
+	if (pOut)
+		strcpy(pOut, (const char*)gluErrorString(err));
+
+	if (err == GL_NO_ERROR)
+		return false;
+	return true;
 }
 
 void glDriver::swap_buffers() {

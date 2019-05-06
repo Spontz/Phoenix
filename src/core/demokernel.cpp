@@ -256,6 +256,7 @@ void demokernel::initDemo() {
 	// Start Managers
 	this->sectionManager.init();
 	this->textureManager.init();
+	this->fboManager.init();
 	this->modelManager.init();
 	this->shaderManager.init();
 

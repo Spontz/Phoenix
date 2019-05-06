@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <glad/glad.h>
+#define GLFW_INCLUDE_GLU // for gluErrorString
 #include <GLFW/glfw3.h>
 #define  GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -61,6 +62,7 @@ public:
 	void initGraphics();
 	void initStates();
 	void initRender(int clear);
+	void setViewport(int x, int y, GLsizei width, GLsizei height);
 	void swap_buffers();
 	void close();
 
@@ -69,6 +71,8 @@ public:
 	void processInput();
 
 	int window_should_close();
+
+	bool checkGLError(char *pOut);
 
 private:
 	GLFWwindow* window;
