@@ -238,6 +238,8 @@ void glDriver::initStates()
 
 void glDriver::initRender(int clear)
 {
+	int i;
+
 	// Vsync Management
 	glfwSwapInterval(0); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
 
@@ -252,6 +254,35 @@ void glDriver::initRender(int clear)
 	// set the viewport to the correct size // TODO: S'ha de areglar el tema dels viewports....
 	//glViewport(this->vpXOffset, this->vpYOffset, this->vpWidth, this->vpHeight);
 	glViewport(0, 0, this->width, this->height);
+	this->vpXOffset = 0;
+	this->vpYOffset = 0;
+	this->vpWidth = this->width;
+	this->vpHeight = this->height;
+
+
+	// init fbo's
+	for (i = 0; i < FBO_BUFFERS; i++) {
+		if (((this->fbo[i].width != 0) && (this->fbo[i].height != 0)) || (this->fbo[i].ratio != 0)) {
+			if (this->fbo[i].ratio != 0) {
+				this->fbo[i].width = (this->width / this->fbo[i].ratio);
+				this->fbo[i].height = (this->height / this->fbo[i].ratio);
+			}
+
+			this->fbo[i].tex_iformat = getTextureInternalFormatByName(this->fbo[i].format);
+			this->fbo[i].tex_format = getTextureFormatByName(this->fbo[i].format);
+			this->fbo[i].tex_type = getTextureTypeByName(this->fbo[i].format);
+			// Check if the format is valid
+			if (this->fbo[i].tex_format > 0) {
+				demoSystem.fboRenderingBuffer[i] = fbo_new(this->fbo[i].width, this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type);
+				fbo_properties(demoSystem.fboRenderingBuffer[i], MODULATE | NO_MIPMAP); // Delete "NO_MIPMAP" to disable filtering 
+				fbo_upload(demoSystem.fboRenderingBuffer[i], NO_CACHE);
+				dkernel_trace("Fbo %i uploaded: width: %i, height: %i, format: %s (%i), iformat: %i, type: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
+			}
+			else {
+				dkernel_error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, glDriver.fbo[i].format);
+			}
+		}
+	}
 
 	// clear some buffers if needed
 	if (clear) {
