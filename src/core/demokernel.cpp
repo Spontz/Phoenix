@@ -172,30 +172,6 @@ glTable_t alphaFunc[ALPHA_FUNC] = {
 	{ "ALWAYS",		GL_ALWAYS	}
 };
 
-// ******************************************************************
-
-typedef struct {
-	char *name;
-	int tex_iformat;		// internalformat
-	int tex_format;
-	int tex_type;
-} glTexTable_t;
-
-// ******************************************************************
-
-glTexTable_t textureModes[] = {
-	{ "RGB",			GL_RGB8,				GL_RGB,				GL_UNSIGNED_BYTE },
-	{ "RGBA",			GL_RGBA8,				GL_RGBA,			GL_UNSIGNED_BYTE },
-	{ "RGB_16F",		GL_RGB16F,				GL_RGB,				GL_FLOAT },
-	{ "RGBA_16F",		GL_RGBA16F,				GL_RGBA,			GL_FLOAT },
-	{ "RGB_32F",		GL_RGB32F,				GL_RGB,				GL_FLOAT },
-	{ "RGBA_32F",		GL_RGBA32F,				GL_RGBA,			GL_FLOAT },
-};
-#define TEXTURE_MODE (sizeof(textureModes) / sizeof(glTexTable_t))
-
-// ******************************************************************
-
-
 
 demokernel * demokernel::getInstance() {
 	if (m_pThis == NULL) {
@@ -1034,20 +1010,6 @@ int demokernel::getRenderModeByName(char *name) {
 	return -1;
 }
 
-int demokernel::getTextureFormatByName(char *name) {
-	//return getTexFormatByName(name, textureModes, TEXTURE_MODE);
-	return -1;
-}
-
-int demokernel::getTextureInternalFormatByName(char *name) {
-	//return getTexInternalFormatByName(name, textureModes, TEXTURE_MODE);
-	return -1;
-}
-
-int demokernel::getTextureTypeByName(char *name) {
-	//return getTexTypeByName(name, textureModes, TEXTURE_MODE);
-	return -1;
-}
 
 int demokernel::getSectionByName(char * name) {
 	/*	int i;

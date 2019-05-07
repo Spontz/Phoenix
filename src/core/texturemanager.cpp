@@ -39,3 +39,10 @@ int TextureManager::addTexture(string path, bool flip) {
 	
 	return tex_id;
 }
+
+int TextureManager::getOpenGLTextureID(int index)
+{
+	if (index > texture.size())
+		return texture[index]->textureID;
+	return -1;
+}

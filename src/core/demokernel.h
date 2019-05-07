@@ -105,10 +105,7 @@ public:
 	//camera_t *camera;							// the actual camera (set by genCamera)
 	int rtt, backup;							// render to texture shared texture index (RGB8 format)
 
-	int texRenderingBuffer[RENDERING_BUFFERS];	// Array with the indexes to the rendering buffers
-	int fboRenderingBuffer[FBO_BUFFERS];		// Array with the indexes to the fbo buffers
-
-												// Beat and beat detection parameters
+	// Beat and beat detection parameters
 	float beat;									// intensity of the current music beat
 	float beat_ratio;
 	float beat_fadeout;
@@ -178,9 +175,6 @@ private:
 	int getBlendCodeByName(char *name);
 	int getAlphaCodeByName(char *name);
 	int getRenderModeByName(char *name);
-	int getTextureFormatByName(char *name);
-	int getTextureInternalFormatByName(char *name);
-	int getTextureTypeByName(char *name);
 };
 // ******************************************************************
 

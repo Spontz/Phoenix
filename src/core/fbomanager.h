@@ -17,6 +17,8 @@ public:
 	FboManager();
 	void init();
 	int addFbo(int width, int height, int iformat, int format, int type);
+	int	getOpenGLTextureID(int index);
+
 private:
 
 

@@ -66,6 +66,7 @@ void Texture::active(int index) const
 {
 	glActiveTexture(GL_TEXTURE0 + index);
 }
+
 void Texture::bind() const
 {
 	glBindTexture(GL_TEXTURE_2D, textureID);

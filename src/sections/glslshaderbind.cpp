@@ -74,6 +74,10 @@ sGLSLShaderBind::sGLSLShaderBind()
 void sGLSLShaderBind::load() {
 	int		i;
 	int		num;
+	char	var_name[128];
+	char	var_type[128];
+	char	var_value[512];
+
 	string	string_name;
 	string	string_type;
 	string	string_value;
@@ -117,7 +121,10 @@ void sGLSLShaderBind::load() {
 
 	// Read the variables
 	for (i = 2; i < this->stringNum; i++) {
-		sscanf(this->strings[i].c_str(), "%s %s %s", string_type, string_name, string_value);	// Read one string and store values on temporary strings for further evaluation
+		sscanf(this->strings[i].c_str(), "%s %s %s", var_type, var_name, var_value);	// Read one string and store values on temporary strings for further evaluation
+		string_type = var_type;
+		string_name = var_name;
+		string_value = var_value;
 		LOG->Info(LOG_MED,"GLSLShaderBind [%s]: string_type [%s], string_name [%s], string_value [%s]", this->identifier.c_str(), string_type.c_str(), string_name.c_str(), string_value.c_str());
 
 		if (string_type == "float")	// FLOAT detected
@@ -176,13 +183,14 @@ void sGLSLShaderBind::load() {
 					return;
 				}
 				else {
-					sampler2D->texture = DEMO->fboRenderingBuffer[fbonum];
-					sampler2D->texGLid = ;//fbo_get_texbind_id(sampler2D->texture);//TODO
+					sampler2D->texture = fbonum;
+					sampler2D->texGLid = DEMO->fboManager.getOpenGLTextureID(fbonum);
 				}
 			}
 			// Is it s a normal texture...
 			else {
 				sampler2D->texture = DEMO->textureManager.addTexture(s_demo + string_value);
+				sampler2D->texGLid = DEMO->textureManager.getOpenGLTextureID(sampler2D->texture);
 			}
 		}
 	}

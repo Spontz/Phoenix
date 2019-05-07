@@ -20,6 +20,7 @@ public:
 	string type;	//texture_diffuse / texture_specular / texture_normal / texture_height
 	int width, height, components;
 	bool use_linear;
+	GLuint textureID;
 
 	Texture();
 	virtual ~Texture();
@@ -29,7 +30,7 @@ public:
 	void active(int index = 0) const;
 			
 private:
-	GLuint textureID;
+
 };
 
 #endif

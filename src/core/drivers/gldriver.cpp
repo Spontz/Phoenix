@@ -16,12 +16,38 @@ glDriver* glDriver::m_pThis = NULL;
 char *stateStr[] = {"play", "play - RW", "play - FF", 
 					"paused", "paused - RW", "paused - FF" };
 
-// **************************************************
+// ******************************************************************
+
+typedef struct {
+	char *name;
+	int tex_iformat;		// internalformat
+	int tex_format;
+	int tex_type;
+} glTexTable_t;
+
+// ******************************************************************
+
+glTexTable_t textureModes[] = {
+	{ "RGB",			GL_RGB8,				GL_RGB,				GL_UNSIGNED_BYTE },
+	{ "RGBA",			GL_RGBA8,				GL_RGBA,			GL_UNSIGNED_BYTE },
+	{ "RGB_16F",		GL_RGB16F,				GL_RGB,				GL_FLOAT },
+	{ "RGBA_16F",		GL_RGBA16F,				GL_RGBA,			GL_FLOAT },
+	{ "RGB_32F",		GL_RGB32F,				GL_RGB,				GL_FLOAT },
+	{ "RGBA_32F",		GL_RGBA32F,				GL_RGBA,			GL_FLOAT },
+};
+#define TEXTURE_MODE (sizeof(textureModes) / sizeof(glTexTable_t))
+
+// ******************************************************************
+
+
+
+// CALBACKS **************************************************
 
 void error_callback(int, const char* err_str)
 {
 	LOG->Error("GLFW Error: %s", err_str);
 }
+
 void window_size_callback(GLFWwindow * window, int width, int height) {
 	GLDRV->width = width;
 	GLDRV->height = height;
@@ -62,12 +88,10 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	DEMO->camera->ProcessMouseScroll((float)yoffset);
 }
-
 
 void glErrorCallback(GLenum source, GLenum type,
 	GLuint id,
@@ -125,6 +149,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		}
 	}
 }
+
+// ----------------------------------------------------------------------
 
 void glDriver::processInput()
 {
@@ -273,13 +299,15 @@ void glDriver::initRender(int clear)
 			this->fbo[i].tex_type = getTextureTypeByName(this->fbo[i].format);
 			// Check if the format is valid
 			if (this->fbo[i].tex_format > 0) {
-				demoSystem.fboRenderingBuffer[i] = fbo_new(this->fbo[i].width, this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type);
-				fbo_properties(demoSystem.fboRenderingBuffer[i], MODULATE | NO_MIPMAP); // Delete "NO_MIPMAP" to disable filtering 
-				fbo_upload(demoSystem.fboRenderingBuffer[i], NO_CACHE);
-				dkernel_trace("Fbo %i uploaded: width: %i, height: %i, format: %s (%i), iformat: %i, type: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
+				DEMO->fboManager.addFbo(this->fbo[i].width, this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type);
+				LOG->Info(LOG_MED, "Fbo %i uploaded: width: %i, height: %i, format: %s (%i), iformat: %i, type: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
+				//demoSystem.fboRenderingBuffer[i] = fbo_new(this->fbo[i].width, this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type);
+				//fbo_properties(demoSystem.fboRenderingBuffer[i], MODULATE | NO_MIPMAP); // Delete "NO_MIPMAP" to disable filtering 
+				//fbo_upload(demoSystem.fboRenderingBuffer[i], NO_CACHE);
+				//dkernel_trace("Fbo %i uploaded: width: %i, height: %i, format: %s (%i), iformat: %i, type: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
 			}
 			else {
-				dkernel_error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, glDriver.fbo[i].format);
+				LOG->Error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, this->fbo[i].format);
 			}
 		}
 	}
@@ -310,12 +338,22 @@ int glDriver::window_should_close() {
 bool glDriver::checkGLError(char * pOut)
 {
 	GLenum err = glGetError();
-
-	if (pOut)
-		strcpy(pOut, (const char*)gluErrorString(err));
-
+	
 	if (err == GL_NO_ERROR)
 		return false;
+
+	if (pOut) {
+		switch (err) {
+		case GL_INVALID_OPERATION:				strcpy(pOut, (const char*)"INVALID_OPERATION");				break;
+		case GL_INVALID_ENUM:					strcpy(pOut, (const char*)"INVALID_ENUM");					break;
+		case GL_INVALID_VALUE:					strcpy(pOut, (const char*)"INVALID_VALUE");					break;
+		case GL_OUT_OF_MEMORY:					strcpy(pOut, (const char*)"INVALID_VALUE");					break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION:	strcpy(pOut, (const char*)"INVALID_FRAMEBUFFER_OPERATION");	break;
+		default:								strcpy(pOut, (const char*)"UNHANDLED ERROR");				break;
+		}
+
+	}
+
 	return true;
 }
 
@@ -351,4 +389,32 @@ void glDriver::drawTiming() {
 	DEMO->text->glPrintf(-1, 0.7f, "sound %0.1f", BASSDRV->sound_cpu());
 	DEMO->text->glPrintf(-1, 0.6f, "texmem %.2fM", DEMO->textureManager.mem);
 	DEMO->text->glPrintf(-1, 0.5f, "%s", state);
+}
+
+
+int glDriver::getTextureFormatByName(char *name) {
+	for (int i = 0; i < TEXTURE_MODE; i++) {
+		if (_strcmpi(name, textureModes[i].name) == 0) {
+			return textureModes[i].tex_iformat;
+		}
+	}
+	return -1;
+}
+
+int glDriver::getTextureInternalFormatByName(char *name) {
+	for (int i = 0; i < TEXTURE_MODE; i++) {
+		if (_strcmpi(name, textureModes[i].name) == 0) {
+			return textureModes[i].tex_iformat;
+		}
+	}
+	return -1;
+}
+
+int glDriver::getTextureTypeByName(char *name) {
+	for (int i = 0; i < TEXTURE_MODE; i++) {
+		if (_strcmpi(name, textureModes[i].name) == 0) {
+			return textureModes[i].tex_type;
+		}
+	}
+	return -1;
 }

@@ -17,6 +17,8 @@ public:
 	TextureManager();
 	void init();
 	int addTexture(string path, bool flip = false);
+	int	getOpenGLTextureID(int index);
+
 private:
 
 

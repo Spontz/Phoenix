@@ -2,7 +2,6 @@
 // Spontz Demogroup
 
 #include <iostream>
-//#include "core/demokernel.h"
 #include "main.h"
 
 

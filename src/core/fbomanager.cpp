@@ -27,8 +27,18 @@ int FboManager::addFbo(int width, int height, int iformat, int format, int type)
 		fbo_id = (int)fbo.size() - 1;
 		LOG->Info(LOG_MED, "Fbo %d loaded OK. Overall fbo Memory: %.3fMb", fbo_id, mem);
 	}
-	else
+	else {
 		LOG->Error("Could not load fbo with the current format: Width: %d, Height: %d, iformat: %d, format: %d, type: %d", width, height, iformat, format, type);
+		return -1;
+	}
 	
 	return fbo_id;
+}
+
+int FboManager::getOpenGLTextureID(int index)
+{
+	if (index < fbo.size())
+		return fbo[index]->textureID;
+	else
+		return -1;
 }

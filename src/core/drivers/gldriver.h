@@ -6,7 +6,6 @@
 
 #include <iostream>
 #include <glad/glad.h>
-#define GLFW_INCLUDE_GLU // for gluErrorString
 #include <GLFW/glfw3.h>
 #define  GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -73,6 +72,11 @@ public:
 	int window_should_close();
 
 	bool checkGLError(char *pOut);
+
+	int getTextureFormatByName(char *name);
+	int getTextureInternalFormatByName(char *name);
+	int getTextureTypeByName(char *name);
+
 
 private:
 	GLFWwindow* window;
