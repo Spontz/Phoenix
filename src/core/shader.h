@@ -24,8 +24,8 @@ public:
 	string fragmentShader_Filename;
 	string geometryShader_Filename;
 	// constructor generates the shader on the fly
-	//Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
-	Shader(const std::string &vertexPath, const std::string &fragmentPath, const std::string & geometryPath = "");
+	Shader();
+	int load(const std::string &vertexPath, const std::string &fragmentPath, const std::string & geometryPath = "");
 	// activate the shader
 	void use();
 	// utility uniform functions

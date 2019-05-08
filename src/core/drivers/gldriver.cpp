@@ -23,17 +23,18 @@ typedef struct {
 	int tex_iformat;		// internalformat
 	int tex_format;
 	int tex_type;
+	int tex_components;
 } glTexTable_t;
 
 // ******************************************************************
 
 glTexTable_t textureModes[] = {
-	{ "RGB",			GL_RGB8,				GL_RGB,				GL_UNSIGNED_BYTE },
-	{ "RGBA",			GL_RGBA8,				GL_RGBA,			GL_UNSIGNED_BYTE },
-	{ "RGB_16F",		GL_RGB16F,				GL_RGB,				GL_FLOAT },
-	{ "RGBA_16F",		GL_RGBA16F,				GL_RGBA,			GL_FLOAT },
-	{ "RGB_32F",		GL_RGB32F,				GL_RGB,				GL_FLOAT },
-	{ "RGBA_32F",		GL_RGBA32F,				GL_RGBA,			GL_FLOAT },
+	{ "RGB",			GL_RGB8,				GL_RGB,				GL_UNSIGNED_BYTE,	3},
+	{ "RGBA",			GL_RGBA8,				GL_RGBA,			GL_UNSIGNED_BYTE,	4},
+	{ "RGB_16F",		GL_RGB16F,				GL_RGB,				GL_FLOAT,			3},
+	{ "RGBA_16F",		GL_RGBA16F,				GL_RGBA,			GL_FLOAT,			4},
+	{ "RGB_32F",		GL_RGB32F,				GL_RGB,				GL_FLOAT,			3},
+	{ "RGBA_32F",		GL_RGBA32F,				GL_RGBA,			GL_FLOAT,			4},
 };
 #define TEXTURE_MODE (sizeof(textureModes) / sizeof(glTexTable_t))
 
@@ -176,6 +177,7 @@ glDriver * glDriver::getInstance() {
 }
 
 glDriver::glDriver() {
+	int i = 0;
 	width = 200;
 	height = 100;
 	fullScreen = 0;
@@ -190,6 +192,9 @@ glDriver::glDriver() {
 	mouse_lastxpos = width / 2.0f;
 	mouse_lastypos = height / 2.0f;
 	
+	for (i=0; i<FBO_BUFFERS; i++) {
+		this->fbo[i].width = this->fbo[i].height = this->fbo[i].ratio = 0;
+	}
 	// Register error callback first
 	glfwSetErrorCallback(error_callback);
 }
@@ -201,6 +206,7 @@ void glDriver::initFramework() {
 }
 
 void glDriver::initGraphics() {
+	int i;
 
 	// Create a windowed mode window and its OpenGL context
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -244,6 +250,29 @@ void glDriver::initGraphics() {
 		glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, NULL, GL_TRUE);
 	}
 
+	// init fbo's
+	for (i = 0; i < FBO_BUFFERS; i++) {
+		if (((this->fbo[i].width != 0) && (this->fbo[i].height != 0)) || (this->fbo[i].ratio != 0)) {
+			if (this->fbo[i].ratio != 0) {
+				this->fbo[i].width = (this->width / this->fbo[i].ratio);
+				this->fbo[i].height = (this->height / this->fbo[i].ratio);
+			}
+
+			this->fbo[i].tex_iformat = getTextureInternalFormatByName(this->fbo[i].format);
+			this->fbo[i].tex_format = getTextureFormatByName(this->fbo[i].format);
+			this->fbo[i].tex_type = getTextureTypeByName(this->fbo[i].format);
+			this->fbo[i].tex_components = getTextureComponentsByName(this->fbo[i].format);
+			// Check if the format is valid
+			if (this->fbo[i].tex_format > 0) {
+				DEMO->fboManager.addFbo(this->fbo[i].width, this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type, this->fbo[i].tex_components);
+				LOG->Info(LOG_LOW, "Fbo %i uploaded: width: %i, height: %i, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_components, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
+			}
+			else {
+				LOG->Error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, this->fbo[i].format);
+			}
+		}
+	}
+
 	// Init internal timer
 	TimeCurrentFrame = static_cast<float>(glfwGetTime());
 }
@@ -264,8 +293,6 @@ void glDriver::initStates()
 
 void glDriver::initRender(int clear)
 {
-	int i;
-
 	// Vsync Management
 	glfwSwapInterval(0); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
 
@@ -284,33 +311,6 @@ void glDriver::initRender(int clear)
 	this->vpYOffset = 0;
 	this->vpWidth = this->width;
 	this->vpHeight = this->height;
-
-
-	// init fbo's
-	for (i = 0; i < FBO_BUFFERS; i++) {
-		if (((this->fbo[i].width != 0) && (this->fbo[i].height != 0)) || (this->fbo[i].ratio != 0)) {
-			if (this->fbo[i].ratio != 0) {
-				this->fbo[i].width = (this->width / this->fbo[i].ratio);
-				this->fbo[i].height = (this->height / this->fbo[i].ratio);
-			}
-
-			this->fbo[i].tex_iformat = getTextureInternalFormatByName(this->fbo[i].format);
-			this->fbo[i].tex_format = getTextureFormatByName(this->fbo[i].format);
-			this->fbo[i].tex_type = getTextureTypeByName(this->fbo[i].format);
-			// Check if the format is valid
-			if (this->fbo[i].tex_format > 0) {
-				DEMO->fboManager.addFbo(this->fbo[i].width, this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type);
-				LOG->Info(LOG_MED, "Fbo %i uploaded: width: %i, height: %i, format: %s (%i), iformat: %i, type: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
-				//demoSystem.fboRenderingBuffer[i] = fbo_new(this->fbo[i].width, this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type);
-				//fbo_properties(demoSystem.fboRenderingBuffer[i], MODULATE | NO_MIPMAP); // Delete "NO_MIPMAP" to disable filtering 
-				//fbo_upload(demoSystem.fboRenderingBuffer[i], NO_CACHE);
-				//dkernel_trace("Fbo %i uploaded: width: %i, height: %i, format: %s (%i), iformat: %i, type: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
-			}
-			else {
-				LOG->Error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, this->fbo[i].format);
-			}
-		}
-	}
 
 	// clear some buffers if needed
 	if (clear) {
@@ -338,22 +338,21 @@ int glDriver::window_should_close() {
 bool glDriver::checkGLError(char * pOut)
 {
 	GLenum err = glGetError();
-	
 	if (err == GL_NO_ERROR)
 		return false;
-
 	if (pOut) {
 		switch (err) {
-		case GL_INVALID_OPERATION:				strcpy(pOut, (const char*)"INVALID_OPERATION");				break;
 		case GL_INVALID_ENUM:					strcpy(pOut, (const char*)"INVALID_ENUM");					break;
 		case GL_INVALID_VALUE:					strcpy(pOut, (const char*)"INVALID_VALUE");					break;
+		case GL_INVALID_OPERATION:				strcpy(pOut, (const char*)"INVALID_OPERATION");				break;
+		case GL_STACK_OVERFLOW:					strcpy(pOut, (const char*)"STACK_OVERFLOW");				break;
+		case GL_STACK_UNDERFLOW:				strcpy(pOut, (const char*)"STACK_UNDERFLOW");				break;
 		case GL_OUT_OF_MEMORY:					strcpy(pOut, (const char*)"INVALID_VALUE");					break;
 		case GL_INVALID_FRAMEBUFFER_OPERATION:	strcpy(pOut, (const char*)"INVALID_FRAMEBUFFER_OPERATION");	break;
 		default:								strcpy(pOut, (const char*)"UNHANDLED ERROR");				break;
 		}
 
 	}
-
 	return true;
 }
 
@@ -395,7 +394,7 @@ void glDriver::drawTiming() {
 int glDriver::getTextureFormatByName(char *name) {
 	for (int i = 0; i < TEXTURE_MODE; i++) {
 		if (_strcmpi(name, textureModes[i].name) == 0) {
-			return textureModes[i].tex_iformat;
+			return textureModes[i].tex_format;
 		}
 	}
 	return -1;
@@ -414,6 +413,15 @@ int glDriver::getTextureTypeByName(char *name) {
 	for (int i = 0; i < TEXTURE_MODE; i++) {
 		if (_strcmpi(name, textureModes[i].name) == 0) {
 			return textureModes[i].tex_type;
+		}
+	}
+	return -1;
+}
+
+int glDriver::getTextureComponentsByName(char *name) {
+	for (int i = 0; i < TEXTURE_MODE; i++) {
+		if (_strcmpi(name, textureModes[i].name) == 0) {
+			return textureModes[i].tex_components;
 		}
 	}
 	return -1;

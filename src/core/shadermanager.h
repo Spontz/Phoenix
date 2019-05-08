@@ -14,12 +14,11 @@ public:
 	std::vector<Shader*> shader;	// Shader list
 
 	ShaderManager();
-	void init();
 	int addShader(string path_vert, string path_frag, string path_geo = "");
+	void unbindShaders();
+
 private:
 
-
-	
 };
 
 #endif

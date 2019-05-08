@@ -14,7 +14,7 @@ void sGLSLShaderUnbind::init() {
 }
 
 void sGLSLShaderUnbind::exec() {
-	
+	DEMO->shaderManager.unbindShaders();
 }
 
 

@@ -7,11 +7,6 @@
 
 // Init vars
 ModelManager::ModelManager() {
-	
-}
-
-void ModelManager::init() {
-	LOG->Info(LOG_MED, "ModelManager Inited. Clearing internal lists...");
 	model.clear();
 }
 

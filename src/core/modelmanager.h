@@ -14,7 +14,6 @@ public:
 	std::vector<Model*> model;	// Model list
 
 	ModelManager();
-	void init();
 	int addModel(string path);
 private:
 

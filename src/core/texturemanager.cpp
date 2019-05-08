@@ -7,12 +7,8 @@
 
 // Init vars
 TextureManager::TextureManager() {
-}
-
-void TextureManager::init() {
-	LOG->Info(LOG_MED, "TextureManager Inited. Clearing internal lists...");
-	mem = 0;
 	texture.clear();
+	mem = 0;
 }
 
 // Adds a Texture into the queue, returns the ID of the texture added

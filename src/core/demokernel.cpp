@@ -228,14 +228,6 @@ void demokernel::initDemo() {
 	if (this->sound)
 		BASSDRV->init();
 
-
-	// Start Managers
-	this->sectionManager.init();
-	this->textureManager.init();
-	this->fboManager.init();
-	this->modelManager.init();
-	this->shaderManager.init();
-
 	this->camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 	// Start loading Basic resources
@@ -424,7 +416,7 @@ void demokernel::load_spos() {
 			ScriptRelativePath = demoFolder + "/" + FindData.name;
 			LOG->Info(LOG_LOW, "Reading file: %s", ScriptRelativePath.c_str());
 			load_spo(ScriptRelativePath);
-			LOG->Info(LOG_LOW, "Finished loading file!!");
+			LOG->Info(LOG_LOW, "Finished loading file!");
 		} while (_findnext(hFile, &FindData) == 0);
 	}
 	LOG->Info(LOG_MED,"Finished loading all files.");

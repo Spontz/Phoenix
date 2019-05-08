@@ -72,7 +72,6 @@ public:
 	std::vector<pair<int, int>> execSection;	// Exec section list: Sections to be executed this frame (first element is the layer, and second the ID of the section)
 
 	SectionManager();
-	void init();
 	int addSection(string key, string DataSource, int enabled);		// Adds a Section of a given type
 private:
 	SectionType getSectionType(string key);

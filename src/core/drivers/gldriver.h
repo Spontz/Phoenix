@@ -26,6 +26,7 @@ typedef struct {
 	int tex_iformat;
 	int tex_format;
 	int tex_type;
+	int tex_components;
 	int ratio;
 	char *format;
 } tGLFboFormat;
@@ -76,6 +77,7 @@ public:
 	int getTextureFormatByName(char *name);
 	int getTextureInternalFormatByName(char *name);
 	int getTextureTypeByName(char *name);
+	int getTextureComponentsByName(char *name);
 
 
 private:

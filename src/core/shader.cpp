@@ -14,7 +14,12 @@
 #include "core/utils/logger.h"
 
 
-Shader::Shader(const std::string & vertexPath, const std::string & fragmentPath, const std::string & geometryPath)
+Shader::Shader()
+{
+	ID = 0;
+}
+
+int Shader::load(const std::string & vertexPath, const std::string & fragmentPath, const std::string & geometryPath)
 {
 	vertexShader_Filename = vertexPath;
 	fragmentShader_Filename = fragmentPath;
@@ -30,7 +35,7 @@ Shader::Shader(const std::string & vertexPath, const std::string & fragmentPath,
 	vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-	try	{
+	try {
 		// open files
 		vShaderFile.open(vertexPath);
 		fShaderFile.open(fragmentPath);
@@ -54,7 +59,8 @@ Shader::Shader(const std::string & vertexPath, const std::string & fragmentPath,
 		}
 	}
 	catch (std::ifstream::failure e) {
-		LOG->Error("Shader Error: File have not been succesfully read: %s - %s", vertexPath.c_str(), fragmentPath.c_str());
+		LOG->Error("Shader Error: Files have not been succesfully read, check paths: VERT: %s, FRAG: %s", vertexPath.c_str(), fragmentPath.c_str());
+		return 0;
 	}
 	const char* vShaderCode = vertexCode.c_str();
 	const char * fShaderCode = fragmentCode.c_str();
@@ -92,7 +98,7 @@ Shader::Shader(const std::string & vertexPath, const std::string & fragmentPath,
 	glDeleteShader(fragment);
 	if (geometryPath != "")
 		glDeleteShader(geometry);
-
+	return 1;
 }
 
 // activate the shader

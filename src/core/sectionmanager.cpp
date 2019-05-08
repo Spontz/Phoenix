@@ -68,14 +68,10 @@ tSectionID sectionID[] = {
 
 // Init vars
 SectionManager::SectionManager() {
-	
-}
-
-void SectionManager::init() {
-	LOG->Info(LOG_MED, "SectionManager Inited. Clearing internal lists...");
 	this->loadSection.clear();
 	this->execSection.clear();
 }
+
 
 // Adds a Section into the queue
 // Returns the section ID or -1 if the section could not be added

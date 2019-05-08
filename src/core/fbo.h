@@ -18,7 +18,7 @@ class Fbo {
 public:
 	
 	int width, height;
-	int iformat, format, ttype;
+	int iformat, format, ttype, components;
 	bool use_linear;
 	GLuint fboID;				// Our handle to the FBO
 	GLuint depthBufferID;		// Our handle to the depth render buffer

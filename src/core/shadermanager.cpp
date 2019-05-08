@@ -7,11 +7,6 @@
 
 // Init vars
 ShaderManager::ShaderManager() {
-	
-}
-
-void ShaderManager::init() {
-	LOG->Info(LOG_MED, "ShaderManager Inited. Clearing internal lists...");
 	shader.clear();
 }
 
@@ -31,9 +26,8 @@ int ShaderManager::addShader(string path_vert, string path_frag, string path_geo
 		}
 	}
 	// if we must load the shader...
-	Shader *new_shad = NULL;
-	new_shad = new Shader(path_vert, path_frag, path_geo);
-	if (new_shad) {
+	Shader *new_shad = new Shader();
+	if (new_shad->load(path_vert, path_frag, path_geo)) {
 		shader.push_back(new_shad);
 		shad_id = (int)shader.size() - 1;
 		LOG->Info(LOG_MED, "Shader %s, %s [id: %d] loaded OK", path_vert.c_str(), path_frag.c_str(), shad_id);
@@ -42,6 +36,11 @@ int ShaderManager::addShader(string path_vert, string path_frag, string path_geo
 		LOG->Error("Could not load shader: %s, %s", path_vert.c_str(), path_frag.c_str());
 	
 	return shad_id;
+}
+
+void ShaderManager::unbindShaders()
+{
+	glUseProgram(0);
 }
 
 
