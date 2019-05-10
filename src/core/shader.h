@@ -12,8 +12,6 @@
 #include <sstream>
 #include <iostream>
 #include "main.h"
-#include "core/utils/logger.h"
-
 
 
 class Shader

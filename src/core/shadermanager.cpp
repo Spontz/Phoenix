@@ -30,7 +30,7 @@ int ShaderManager::addShader(string path_vert, string path_frag, string path_geo
 	if (new_shad->load(path_vert, path_frag, path_geo)) {
 		shader.push_back(new_shad);
 		shad_id = (int)shader.size() - 1;
-		LOG->Info(LOG_MED, "Shader %s, %s [id: %d] loaded OK", path_vert.c_str(), path_frag.c_str(), shad_id);
+		LOG->Info(LOG_MED, "Shader [id: %d, gl_id: %d]: %s, %s  loaded OK", shad_id, new_shad->ID, path_vert.c_str(), path_frag.c_str());
 	}
 	else
 		LOG->Error("Could not load shader: %s, %s", path_vert.c_str(), path_frag.c_str());
