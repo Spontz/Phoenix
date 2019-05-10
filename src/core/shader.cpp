@@ -160,12 +160,12 @@ void Shader::setValue(const char *name, const glm::mat4 &mat) const
 
 // Get uniform location
 // ------------------------------------------------------------------------
-GLint Shader::getUniformLocation(int program_index, const char *name) const
+GLint Shader::getUniformLocation(const char *name) const
 {
 	GLint val;
 	val = glGetUniformLocation(ID, name);
 	if (val == -1)
-		LOG->Info(LOG_HIGH, "Warning: Shader uniform variable '%s' not found in vs '%s' or in ps '%s'", name, vertexShader_Filename, fragmentShader_Filename);
+		LOG->Info(LOG_HIGH, "Warning: Shader uniform variable '%s' not found in vs '%s' or in ps '%s'", name, vertexShader_Filename.c_str(), fragmentShader_Filename.c_str());
 	return val;
 }
 
@@ -183,7 +183,7 @@ void Shader::checkCompileErrors(GLuint shader, std::string type)
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
 			infoLog = (GLchar*)malloc(size);
 			glGetShaderInfoLog(shader, size, &p_size, infoLog);
-			LOG->Error("Shader Compilation Error: type %s, log: %s", type.c_str(), infoLog);
+			LOG->Error("Shader Compilation Error: file %s, %s, log: %s", this->vertexShader_Filename.c_str(), this->fragmentShader_Filename.c_str(), infoLog);
 			free(infoLog);
 		}
 	}
@@ -193,7 +193,7 @@ void Shader::checkCompileErrors(GLuint shader, std::string type)
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
 			infoLog = (GLchar*)malloc(size);
 			glGetProgramInfoLog(shader, size, &p_size, infoLog);
-			LOG->Error("Shader Linking Error type %s, log: %s", type.c_str(), infoLog);
+			LOG->Error("Shader Linking Error: file %s, %s, log: %s", this->vertexShader_Filename.c_str(), this->fragmentShader_Filename.c_str(), infoLog);
 			free(infoLog);
 		}
 	}

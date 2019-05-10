@@ -42,7 +42,7 @@ public:
 	void setValue(const char *name, const glm::mat3 &mat) const;
 	void setValue(const char *name, const glm::mat4 &mat) const;
 
-	GLint getUniformLocation(int program_index, const char *varname) const;
+	GLint getUniformLocation(const char *varname) const;
 
 private:
 	// utility function for checking shader compilation/linking errors.

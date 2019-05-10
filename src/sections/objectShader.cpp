@@ -59,9 +59,15 @@ void sObjectShader::load() {
 	local->exprPosition->SymbolTable.add_variable("sy", local->sy);
 	local->exprPosition->SymbolTable.add_variable("sz", local->sz);
 	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
-	if (!local->exprPosition->Parser.compile(local->exprPosition->expression, local->exprPosition->Expression)) {
-		LOG->Error("Error in formula, please check Section %s, ID: %s, file: %s. Equation: %s", this->type_str.c_str(), this->identifier.c_str(), this->DataSource.c_str(), local->exprPosition->expression.c_str());
-	}
+	local->exprPosition->compileFormula();
+
+	// Check locations
+	int tmp_loc;
+	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
+	//my_shader->getUniformLocation("Color");
+	tmp_loc = my_shader->getUniformLocation("projection");
+	tmp_loc = my_shader->getUniformLocation("view");
+	tmp_loc = my_shader->getUniformLocation("model");
 
 }
 
@@ -84,7 +90,7 @@ void sObjectShader::exec() {
 		glClear(GL_DEPTH_BUFFER_BIT);
 	my_shader->use();
 	// Set the color
-	my_shader->setValue("Color", glm::vec3(sin(DEMO->runTime), cos(DEMO->runTime), sin(DEMO->runTime / 2.0f)));
+	//my_shader->setValue("Color", glm::vec3(sin(DEMO->runTime), cos(DEMO->runTime), sin(DEMO->runTime / 2.0f)));
 
 	// view/projection transformations
 	float zoom = DEMO->camera->Zoom;

@@ -9,30 +9,35 @@
 
 typedef struct {
 	char		name[MAXSIZE_VAR_NAME];
+	GLint		loc;
 	float		value;
 	mathDriver	*eva;
 } varFloat;				// Structure for a evaluation FLOAT
 
 typedef struct {
 	char		name[MAXSIZE_VAR_NAME];
+	GLint		loc;
 	float		value[2];
 	mathDriver	*eva;
 } varVec2;				// Structure for a evaluation VEC2
 
 typedef struct {
 	char		name[MAXSIZE_VAR_NAME];
+	GLint		loc;
 	float		value[3];
 	mathDriver	*eva;
 } varVec3;				// Structure for a evaluation VEC3
 
 typedef struct {
 	char		name[MAXSIZE_VAR_NAME];
+	GLint		loc;
 	float		value[4];
 	mathDriver	*eva;
 } varVec4;				// Structure for a evaluation VEC4
 
 typedef struct {
 	char		name[MAXSIZE_VAR_NAME];
+	GLint		loc; 
 	int			texture;	// Engine internal texture ID
 	int			texGLid;	// Texture ID (for binding it)
 } varSampler2D;				// Structure for a evaluation Sampler2D (TEXTURE)
@@ -125,48 +130,58 @@ void sGLSLShaderBind::load() {
 			num = max_shader_reached(local->vfloat_num++);
 			vfloat = &(local->vfloat[num]);
 			strcpy(vfloat->name, var_name);
+			vfloat->loc = my_shader->getUniformLocation(vfloat->name);
 			vfloat->eva = new mathDriver(this);
 			vfloat->eva->expression = var_value;
 			vfloat->eva->SymbolTable.add_variable("v1", vfloat->value);
+			vfloat->eva->compileFormula();
+			
 		}
 		else if (strcmp(var_type, "vec2") == 0)	// VEC2 detected
 		{
 			num = max_shader_reached(local->vec2_num++);
 			vec2 = &(local->vec2[num]);
 			strcpy(vec2->name, var_name);
+			vec2->loc = my_shader->getUniformLocation(vec2->name);
 			vec2->eva = new mathDriver(this);
 			vec2->eva->expression = var_value;
 			vec2->eva->SymbolTable.add_variable("v1", vec2->value[0]);
 			vec2->eva->SymbolTable.add_variable("v2", vec2->value[1]);
+			vec2->eva->compileFormula();
 		}
 		else if (strcmp(var_type, "vec3") == 0)	// VEC3 detected
 		{
 			num = max_shader_reached(local->vec3_num++);
 			vec3 = &(local->vec3[num]);
 			strcpy(vec3->name, var_name);
+			vec3->loc = my_shader->getUniformLocation(vec3->name);
 			vec3->eva = new mathDriver(this);
 			vec3->eva->expression = var_value;
 			vec3->eva->SymbolTable.add_variable("v1", vec3->value[0]);
 			vec3->eva->SymbolTable.add_variable("v2", vec3->value[1]);
 			vec3->eva->SymbolTable.add_variable("v3", vec3->value[2]);
+			vec3->eva->compileFormula();
 		}
 		else if (strcmp(var_type, "vec4") == 0)	// VEC4 detected
 		{
 			num = max_shader_reached(local->vec4_num++);
 			vec4 = &(local->vec4[num]);
 			strcpy(vec4->name, var_name);
+			vec4->loc = my_shader->getUniformLocation(vec4->name);
 			vec4->eva = new mathDriver(this);
 			vec4->eva->expression = var_value;
 			vec4->eva->SymbolTable.add_variable("v1", vec4->value[0]);
 			vec4->eva->SymbolTable.add_variable("v2", vec4->value[1]);
 			vec4->eva->SymbolTable.add_variable("v3", vec4->value[2]);
 			vec4->eva->SymbolTable.add_variable("v4", vec4->value[3]);
+			vec4->eva->compileFormula();
 		}
 		else if (strcmp(var_type, "sampler2D") == 0)	// Texture (sampler2D) detected
 		{
 			num = max_shader_reached(local->sampler2D_num++);
 			sampler2D = &(local->sampler2D[num]);
 			strcpy(sampler2D->name, var_name);
+			sampler2D->loc = my_shader->getUniformLocation(sampler2D->name);
 			// If sampler2D is a fbo...
 			if (0 == strncmp("fbo", var_value, 3)) {
 				int fbonum;
@@ -222,25 +237,19 @@ void sGLSLShaderBind::exec() {
 	for (i = 0; i < local->vec2_num; i++) {
 		vec2 = &(local->vec2[i]);
 		vec2->eva->Expression.value();
-		my_shader->setValue(vec2->name, vec2->value[0]);
-		my_shader->setValue(vec2->name, vec2->value[1]);
+		my_shader->setValue(vec2->name, glm::vec2(vec2->value[0], vec2->value[1]));
 	}
 
 	for (i = 0; i < local->vec3_num; i++) {
 		vec3 = &(local->vec3[i]);
 		vec3->eva->Expression.value();
-		my_shader->setValue(vec3->name, vec3->value[0]);
-		my_shader->setValue(vec3->name, vec3->value[1]);
-		my_shader->setValue(vec3->name, vec3->value[2]);
+		my_shader->setValue(vec3->name, glm::vec3(vec3->value[0], vec3->value[1], vec3->value[2]));
 	}
 
 	for (i = 0; i < local->vec4_num; i++) {
 		vec4 = &(local->vec4[i]);
 		vec4->eva->Expression.value();
-		my_shader->setValue(vec4->name, vec4->value[0]);
-		my_shader->setValue(vec4->name, vec4->value[1]);
-		my_shader->setValue(vec4->name, vec4->value[2]);
-		my_shader->setValue(vec4->name, vec4->value[3]);
+		my_shader->setValue(vec4->name, glm::vec4(vec4->value[0], vec4->value[1], vec4->value[2], vec4->value[3]));
 	}
 
 	for (i = local->sampler2D_num - 1; i >= 0; i--) {
