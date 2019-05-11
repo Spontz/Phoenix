@@ -10,8 +10,7 @@ static glslshaderbind_section *local;
 
 // ******************************************************************
 
-sGLSLShaderBind::sGLSLShaderBind()
-{
+sGLSLShaderBind::sGLSLShaderBind() {
 	type = SectionType::GLSLShaderBind;
 }
 

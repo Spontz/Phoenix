@@ -49,6 +49,7 @@ void error_callback(int, const char* err_str)
 	LOG->Error("GLFW Error: %s", err_str);
 }
 
+/*
 void window_size_callback(GLFWwindow * window, int width, int height) {
 	GLDRV->width = width;
 	GLDRV->height = height;
@@ -62,7 +63,7 @@ void window_size_callback(GLFWwindow * window, int width, int height) {
 
 	GLDRV->initRender(true);
 }
-
+*/
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (DEMO->debug) {
@@ -211,6 +212,7 @@ void glDriver::initGraphics() {
 	// Create a windowed mode window and its OpenGL context
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -227,7 +229,7 @@ void glDriver::initGraphics() {
 	glfwMakeContextCurrent(window);
 
 	// Configure GLFW callbacks
-	glfwSetWindowSizeCallback(window, window_size_callback);
+	//glfwSetWindowSizeCallback(window, window_size_callback);
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
@@ -327,7 +329,11 @@ void glDriver::initRender(int clear)
 
 void glDriver::setViewport(int x, int y, GLsizei width, GLsizei height)
 {
-	glViewport(0, 0, this->width, this->height);
+	this->vpXOffset = x;
+	this->vpYOffset = y;
+	this->vpWidth = width;
+	this->vpHeight = height;
+	glViewport(x, y, width, height);
 }
 
 
@@ -347,7 +353,7 @@ bool glDriver::checkGLError(char * pOut)
 		case GL_INVALID_OPERATION:				strcpy(pOut, (const char*)"INVALID_OPERATION");				break;
 		case GL_STACK_OVERFLOW:					strcpy(pOut, (const char*)"STACK_OVERFLOW");				break;
 		case GL_STACK_UNDERFLOW:				strcpy(pOut, (const char*)"STACK_UNDERFLOW");				break;
-		case GL_OUT_OF_MEMORY:					strcpy(pOut, (const char*)"INVALID_VALUE");					break;
+		case GL_OUT_OF_MEMORY:					strcpy(pOut, (const char*)"OUT_OF_MEMORY");					break;
 		case GL_INVALID_FRAMEBUFFER_OPERATION:	strcpy(pOut, (const char*)"INVALID_FRAMEBUFFER_OPERATION");	break;
 		default:								strcpy(pOut, (const char*)"UNHANDLED ERROR");				break;
 		}

@@ -17,19 +17,21 @@ Resource* Resource::GetResource() {
 void Resource::loadAllResources()
 {
 	LOG->Info(LOG_LOW, "Start Loading Engine Internal Resources");
-	Load_Obj_Quad();
-	Load_Shdr_Basic();
+	Load_Obj_Quad_ColorTextured();
+	Load_Obj_Quad_FBO();
+	Load_Shaders();
 	Load_Tex_Spontz();
 	Load_Text_Fonts();
 }
 
 Resource::Resource() {
-	obj_quad = 0;
+	obj_quad_ColorText = 0;
+	obj_quad_FBO = 0;
 	shdr_basic = -1;
 	demoDir = DEMO->demoDir;
 }
 
-void Resource::Load_Obj_Quad()
+void Resource::Load_Obj_Quad_ColorTextured()
 {
 	float vertices[] = {
 		// positions	// colors	// texture coords
@@ -43,11 +45,11 @@ void Resource::Load_Obj_Quad()
 		1, 2, 3  // second triangle
 	};
 	unsigned int VBO, EBO;
-	glGenVertexArrays(1, &obj_quad);
+	glGenVertexArrays(1, &obj_quad_ColorText);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 
-	glBindVertexArray(obj_quad);
+	glBindVertexArray(obj_quad_ColorText);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -66,15 +68,47 @@ void Resource::Load_Obj_Quad()
 	glEnableVertexAttribArray(2);
 }
 
-void Resource::Load_Shdr_Basic()
+void Resource::Load_Obj_Quad_FBO()
+{
+	// vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates. NOTE that this plane is now much smaller and at the top of the screen
+	float quadVertices[] = {
+	// positions   // texCoords
+	 -1,  1,  0, 1,
+	 -1, -1,  0, 0,
+	  1, -1,  1, 0,
+
+	 -1,  1,  0, 1,
+	  1, -1,  1, 0,
+	  1,  1,  1, 1
+	};
+
+	unsigned int quadVBO;
+	glGenVertexArrays(1, &obj_quad_FBO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(obj_quad_FBO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+}
+
+
+void Resource::Load_Shaders()
 {
 	/////////////////////// BASIC: Textured shader
 	shdr_basic = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/basic.vert", demoDir + "/resources/shaders/basic/basic.frag");
-	if (shdr_basic != -1) {
+	if (shdr_basic != -1)
 		DEMO->shaderManager.shader[shdr_basic]->use();
-	}
 	else
 		LOG->Error("Could not load Basic shader!");
+	/////////////////////// BASIC: Shader to be used for FBO
+	shdr_basicFBO = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/basicFBO.vert", demoDir + "/resources/shaders/basic/basicFBO.frag");
+	if (shdr_basicFBO != -1)
+		DEMO->shaderManager.shader[shdr_basicFBO]->use();
+	else
+		LOG->Error("Could not load Basic FBO shader!");
 
 }
 
@@ -98,19 +132,17 @@ void Resource::Draw_Obj_Quad(int texture_id, int shader_id)
 {
 	DEMO->textureManager.texture[texture_id]->bind();
 	DEMO->shaderManager.shader[shader_id]->use();
-	glBindVertexArray(obj_quad);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // size of indices is 6
+	glBindVertexArray(obj_quad_ColorText);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
 }
 
-// Draw a Quad in full screen. Spontz memeber picure used
+// Draw a Quad in full screen
 void Resource::Draw_Obj_Quad()
 {
-	//Texture *tex = DEMO->textureManager.texture[tex_tv];
 	Shader *shad = DEMO->shaderManager.shader[shdr_basic];
-	//tex->active();
-	//tex->bind();
 	shad->setValue("texture_diffuse1", 0);
-	glBindVertexArray(obj_quad);
+	glBindVertexArray(obj_quad_ColorText);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 }
@@ -120,8 +152,20 @@ void Resource::Draw_Obj_Quad(int texture_id)
 {
 	DEMO->textureManager.texture[texture_id]->bind();
 	Draw_Shdr_Basic();
-	glBindVertexArray(obj_quad);
+	glBindVertexArray(obj_quad_ColorText);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+}
+
+// Draw a Quad with a FBO
+void Resource::Draw_Obj_QuadFBO(int fbo_num)
+{
+	glBindVertexArray(obj_quad_FBO);
+	DEMO->shaderManager.shader[RES->shdr_basicFBO]->use();
+	DEMO->shaderManager.shader[RES->shdr_basicFBO]->setValue("screenTexture", 0);
+	DEMO->fboManager.bind_tex(fbo_num);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
 }
 
 void Resource::Draw_Shdr_Basic()

@@ -15,20 +15,6 @@ typedef struct {
 tSectionID sectionID[] = {
 	{"loading", SectionType::Loading },
 
-	{"efxAccum",			SectionType::Efx_Accum},
-	{"efxBlackWhite",		SectionType::Efx_BlackWhite},
-	{"efxBoxBlur",			SectionType::Efx_BoxBlur},
-	{"efxFader",			SectionType::Efx_Fader},
-	{"efxFog",				SectionType::Efx_Fog},
-	{"efxGlow",				SectionType::Efx_Glow},
-	{"efxHighPassFilter",	SectionType::Efx_HighPassFilter},
-	{"efxInverse",			SectionType::Efx_Inverse},
-	{"efxMotionBlur",		SectionType::Efx_MotionBlur},
-	{"efxMotionBlurAccum",	SectionType::Efx_MotionBlurAccum},
-	{"efxRadialBlur2",		SectionType::Efx_RadialBlur2},
-	{"efxRadialGlow",		SectionType::Efx_RadialGlow},
-	{"efxRenderMesh2",		SectionType::Efx_RenderMesh2},
-
 	// built-in sections
 	{"background",			SectionType::Background},
 	{"video",				SectionType::Video},
@@ -53,10 +39,9 @@ tSectionID sectionID[] = {
 	{"rayMatrix",			SectionType::RayMatrix},
 	{"sound",				SectionType::Sound},
 	{"beatDetect",			SectionType::BeatDetect},
-	{"saveBuffer",			SectionType::SaveBuffer},
-	{"fbobind",				SectionType::RenderBuffer},
-	{"fbounbind",			SectionType::Fbobind},
-	{"renderFbo",			SectionType::Fbounbind},
+	{"fbobind",				SectionType::FboBind},
+	{"fbounbind",			SectionType::FboUnbind},
+	{"renderfbo",			SectionType::RenderFbo},
 	{"glslshaderquad",		SectionType::GLSLShaderQuad},
 	{"glslshaderbind",		SectionType::GLSLShaderBind},
 	{"glslshaderunbind",	SectionType::GLSLShaderUnbind},
@@ -90,14 +75,23 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 	case SectionType::Background:
 		mySection = new sBackground();
 		break;
-	case SectionType::ObjectShader:
-		mySection = new sObjectShader();
+	case SectionType::FboBind:
+		mySection = new sFboBind();
+		break;
+	case SectionType::FboUnbind:
+		mySection = new sFboUnbind();
+		break;
+	case SectionType::RenderFbo:
+		mySection = new sRenderFbo();
 		break;
 	case SectionType::GLSLShaderBind:
 		mySection = new sGLSLShaderBind();
 		break;
 	case SectionType::GLSLShaderUnbind:
 		mySection = new sGLSLShaderUnbind();
+		break;
+	case SectionType::ObjectShader:
+		mySection = new sObjectShader();
 		break;
 	case SectionType::NOT_FOUND:
 		break;

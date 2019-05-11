@@ -20,9 +20,9 @@ public:
 	int width, height;
 	int iformat, format, ttype, components;
 	bool use_linear;
-	GLuint fboID;				// Our handle to the FBO
-	GLuint depthBufferID;		// Our handle to the depth render buffer
-	GLuint textureID;			// Our handle to the Open GL texture ID
+	GLuint frameBufferID;		// Our handle to the Frame Buffer
+	GLuint renderBufferID;		// Our handle to the Render Buffer
+	GLuint textureBufferID;		// Our handle to the Texture Color buffer attachment
 
 	Fbo();
 	virtual ~Fbo();

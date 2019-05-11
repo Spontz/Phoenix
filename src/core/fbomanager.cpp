@@ -11,6 +11,36 @@ FboManager::FboManager() {
 	mem = 0;
 }
 
+void FboManager::active(int index) const
+{
+	glActiveTexture(GL_TEXTURE0 + index);
+}
+
+void FboManager::bind(int fbo_num)
+{
+	if (fbo_num < fbo.size()) {
+		Fbo *my_fbo = fbo[fbo_num];
+		my_fbo->bind();
+		// Adjust the viewport to the fbo size
+		GLDRV->setViewport(0, 0, my_fbo->width, my_fbo->height);
+	}
+}
+
+void FboManager::bind_tex(int fbo_num)
+{
+	if (fbo_num < fbo.size()) {
+		Fbo *my_fbo = fbo[fbo_num];
+		my_fbo->bind_tex();
+	}
+}
+
+void FboManager::unbind()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// Restore the driver viewport
+	GLDRV->setViewport(0, 0, GLDRV->width, GLDRV->height);
+}
+
 // Adds a Fbo into the queue, returns the ID of the texture added
 int FboManager::addFbo(int width, int height, int iformat, int format, int type, int components) {
 	int fbo_id = -1;
@@ -33,7 +63,7 @@ int FboManager::addFbo(int width, int height, int iformat, int format, int type,
 int FboManager::getOpenGLTextureID(int index)
 {
 	if (index < fbo.size())
-		return fbo[index]->textureID;
+		return fbo[index]->textureBufferID;
 	else
 		return -1;
 }

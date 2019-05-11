@@ -21,8 +21,7 @@ static objectShader_section *local;
 
 // ******************************************************************
 
-sObjectShader::sObjectShader()
-{
+sObjectShader::sObjectShader() {
 	type = SectionType::ObjectShader;
 }
 
@@ -82,7 +81,6 @@ void sObjectShader::exec() {
 	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
 	
 	// Evaluate the expression
-	//local->exprPosition->updateVars();
 	local->exprPosition->Expression.value();
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -114,7 +112,7 @@ void sObjectShader::exec() {
 
 	my_model->Draw(*my_shader);
 
-	//DEMO->text->RenderText("hola", 0, -1, 1, glm::vec3(1, 0, 0));
+	DEMO->text->RenderText("hola", 0, -1, 1, glm::vec3(1, 0, 0));
 
 	//DEMO->text->RenderText("hola", sin(DEMO->runTime), cos(DEMO->runTime), sin(DEMO->runTime), glm::vec3(1, 0, 0));
 	//glEnable(GL_CULL_FACE);
