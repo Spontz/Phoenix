@@ -9,7 +9,6 @@ Section::Section() {
 	type = 0;
 	identifier = "No ID defined";
 	DataSource = "";
-	//staticSectionIndex = 0;
 	startTime	= 0;
 	endTime		= 0;
 	duration	= 0;

@@ -14,11 +14,11 @@ sFboBind::sFboBind() {
 	type = SectionType::FboBind;
 }
 
-void sFboBind::load() {
+bool sFboBind::load() {
 	// script validation
 	if (this->paramNum < 3) {
 		LOG->Error("FboBind [%s]: 3 params are needed: fbo to use, clear the screen buffer, clear depth buffer", this->identifier.c_str());
-		return;
+		return false;
 	}
 
 	local = (fbobind_section*) malloc(sizeof(fbobind_section));
@@ -28,6 +28,7 @@ void sFboBind::load() {
 	local->fbo = (int)this->param[0];
 	local->clearScreen = (int)this->param[1];
 	local->clearDepth = (int)this->param[2];
+	return true;
 }
 
 void sFboBind::init() {

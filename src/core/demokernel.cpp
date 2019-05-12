@@ -568,9 +568,10 @@ void demokernel::initSectionQueues() {
 	this->loadedSections = 0;
 	for (i = 0; i < this->sectionManager.loadSection.size(); i++) {
 		sec_id = this->sectionManager.loadSection[i];
-		this->sectionManager.section[sec_id]->load();
-		this->sectionManager.section[sec_id]->loaded = TRUE;
-		++this->loadedSections;
+		if (this->sectionManager.section[sec_id]->load()) {
+			this->sectionManager.section[sec_id]->loaded = TRUE;
+			++this->loadedSections;
+		}
 		
 		// Update loading
 		ds_loading->exec();

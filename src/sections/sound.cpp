@@ -27,19 +27,19 @@ sSound::sSound()
 	type = SectionType::Sound;
 }
 
-void sSound::load() {
+bool sSound::load() {
 	if (!DEMO->sound) {
-		return;
+		return false;
 	}
 
 	if (this->stringNum != 1) {
 		LOG->Error("Sound [%s]: 1 string needed: path to the sound file", this->identifier.c_str());
-		return;
+		return false;
 	}
 
 	if (this->paramNum != 1) {
 		LOG->Error("Sound [%s]: 1 param needed: volume of the sound (0.0 to 1.0)", this->identifier.c_str()); 
-		return;
+		return false;
 	}
 
 	local = (sound_section*)malloc(sizeof(sound_section));
@@ -61,8 +61,11 @@ void sSound::load() {
 
 	string file = DEMO->demoDir + this->strings[0];
 	local->str = BASS_StreamCreateFile(FALSE, file.c_str(), 0, 0, BASS_STREAM_PRESCAN);
-	if (local->str == 0)
+	if (local->str == 0) {
 		LOG->Error("Sound [%s]: Cannot read file: %s - Error Code: %i", this->identifier.c_str(), file.c_str(), BASS_ErrorGetCode());
+		return false;
+	}
+	return true;
 }
 
 void sSound::init() {

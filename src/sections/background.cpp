@@ -17,11 +17,11 @@ sBackground::sBackground() {
 	type = SectionType::Background;
 }
 
-void sBackground::load() {
+bool sBackground::load() {
 	// script validation
 	if ((this->stringNum != 1) || (this->paramNum != 1)) {
 		LOG->Error("Background [%s]: 1 string and 1 param needed", this->identifier.c_str());
-		return;
+		return false;
 	}
 
 	local = (background_section*)malloc(sizeof(background_section));
@@ -42,7 +42,8 @@ void sBackground::load() {
 	string s_dir = DEMO->demoDir;
 	local->texture = DEMO->textureManager.addTexture(s_dir + this->strings[0], true);
 	if (local->texture == -1)
-		return;
+		return false;
+	return true;
 }
 
 void sBackground::init() {

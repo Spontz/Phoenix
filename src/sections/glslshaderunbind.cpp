@@ -5,8 +5,8 @@ sGLSLShaderUnbind::sGLSLShaderUnbind() {
 	type = SectionType::GLSLShaderUnbind;
 }
 
-void sGLSLShaderUnbind::load() {
-	
+bool sGLSLShaderUnbind::load() {
+	return true;
 }
 
 void sGLSLShaderUnbind::init() {

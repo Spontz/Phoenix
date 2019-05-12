@@ -14,7 +14,7 @@ sGLSLShaderBind::sGLSLShaderBind() {
 	type = SectionType::GLSLShaderBind;
 }
 
-void sGLSLShaderBind::load() {
+bool sGLSLShaderBind::load() {
 	
 	string s_demo = DEMO->demoDir;
 	Shader*			my_shader;
@@ -23,7 +23,7 @@ void sGLSLShaderBind::load() {
 	// 2 strings needed: Vertex and fragment shader path
 	if (this->stringNum < 2) {
 		LOG->Error("GLSLShaderBind [%s]: 2 strings are needed: vertex and fragment shader files", this->identifier.c_str());
-		return;
+		return false;
 	}
 
 	local = (glslshaderbind_section*) malloc(sizeof(glslshaderbind_section));
@@ -33,7 +33,7 @@ void sGLSLShaderBind::load() {
 	local->shader = DEMO->shaderManager.addShader(s_demo + this->strings[0], s_demo + this->strings[1]);
 
 	if (local->shader == -1)
-		return;
+		return false;
 	
 	my_shader = DEMO->shaderManager.shader[local->shader];
 	my_shader->use();
@@ -48,6 +48,7 @@ void sGLSLShaderBind::load() {
 
 	// Unbind any shader used
 	DEMO->shaderManager.unbindShaders();
+	return true;
 }
 
 void sGLSLShaderBind::init() {

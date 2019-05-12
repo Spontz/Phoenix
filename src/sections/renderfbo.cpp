@@ -16,16 +16,16 @@ sRenderFbo::sRenderFbo() {
 }
 
 
-void sRenderFbo::load() {
+bool sRenderFbo::load() {
 	// script validation
 	if (this->paramNum < 4) {
 		LOG->Error("RenderFbo [%s]: 4 params are needed: fbo to use, clear the screen buffer, clear depth buffer and fullscreen", this->identifier.c_str());
-		return;
+		return false;
 	}
 	// Check for the right kind of parameters
 	if ((this->param[0] < -1.0f) || (this->param[0] > (float)FBO_BUFFERS)) {
 		LOG->Error("RenderFbo [%s]: Invalid texture fbo number: %i", this->identifier.c_str(), this->param[0]);
-		return;
+		return false;
 	}
 
 	local = (renderfbo_section*) malloc(sizeof(renderfbo_section));
@@ -37,6 +37,7 @@ void sRenderFbo::load() {
 	local->clearDepth = (int)this->param[2];
 	local->fullscreen = (int)this->param[3];
 
+	return true;
 }
 
 void sRenderFbo::init() {

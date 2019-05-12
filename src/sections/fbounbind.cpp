@@ -13,11 +13,11 @@ sFboUnbind::sFboUnbind() {
 	type = SectionType::FboUnbind;
 }
 
-void sFboUnbind::load() {
+bool sFboUnbind::load() {
 	// script validation
 	if (this->paramNum < 2) {
 		LOG->Error("FboUnbind [%s]: 2 params are needed: clear the screen buffer, clear depth buffer", this->identifier.c_str());
-		return;
+		return false;
 	}
 
 	local = (fbounbind_section*) malloc(sizeof(fbounbind_section));
@@ -26,6 +26,7 @@ void sFboUnbind::load() {
 	// load parameters
 	local->clearScreen = (int)this->param[0];
 	local->clearDepth = (int)this->param[1];
+	return true;
 }
 
 void sFboUnbind::init() {

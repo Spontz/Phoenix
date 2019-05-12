@@ -4,8 +4,8 @@ sLoading::sLoading() {
 	type = SectionType::Loading;
 }
 
-void sLoading::load() {
-	
+bool sLoading::load() {
+	return true;
 }
 
 void sLoading::init() {

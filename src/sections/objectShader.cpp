@@ -25,12 +25,12 @@ sObjectShader::sObjectShader() {
 	type = SectionType::ObjectShader;
 }
 
-void sObjectShader::load() {
+bool sObjectShader::load() {
 	string s_demo = DEMO->demoDir;
 	// script validation - TODO: Put this on a common function from "section"
 	if ((this->paramNum != 1) || (this->stringNum < 6)) {
 		LOG->Error("ObjectShader [%s]: 1 param and 10 strings needed", this->identifier.c_str());
-		return;
+		return false;
 	}
 
 	local = (objectShader_section*)malloc(sizeof(objectShader_section));
@@ -60,14 +60,7 @@ void sObjectShader::load() {
 	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
 	local->exprPosition->compileFormula();
 
-	// Check locations
-	int tmp_loc;
-	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
-	//my_shader->getUniformLocation("Color");
-	tmp_loc = my_shader->getUniformLocation("projection");
-	tmp_loc = my_shader->getUniformLocation("view");
-	tmp_loc = my_shader->getUniformLocation("model");
-
+	return true;
 }
 
 void sObjectShader::init() {
