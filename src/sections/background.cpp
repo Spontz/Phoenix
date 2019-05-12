@@ -8,6 +8,7 @@ typedef enum
 
 typedef struct {
 	int								texture;
+	int								shader;
 	enum_background_drawing_mode	mode;
 } background_section;
 
@@ -38,8 +39,11 @@ bool sBackground::load() {
 		LOG->Error("Background [%s]: Invalid value for param[0]", this->identifier.c_str());
 	}
 
-	// Background texture load
 	string s_dir = DEMO->demoDir;
+
+	// Load the shader for drawing the quad
+	local->shader = DEMO->shaderManager.addShader(s_dir + "/resources/shaders/sections/background_texquad.vert", s_dir + "/resources/shaders/sections/background_texquad.frag");
+	// Background texture load
 	local->texture = DEMO->textureManager.addTexture(s_dir + this->strings[0], true);
 	if (local->texture == -1)
 		return false;
@@ -59,26 +63,15 @@ void sBackground::exec() {
 			glBlendFunc(this->sfactor, this->dfactor);
 			glEnable(GL_BLEND);
 		}
-
-		// Load the Basic Shader
-		Shader *my_shad = DEMO->shaderManager.shader[RES->shdr_basic];
 		// Load the background texture
 		Texture *my_tex = DEMO->textureManager.texture[local->texture];
-
-		my_shad->use();
-		my_shad->setValue("texture_diffuse1", 0);
-
 		// Texture and View aspect ratio, stored for Keeping image proportions
 		float tex_aspect = (float)my_tex->width / (float)my_tex->height;
 		float view_aspect = (float)GLDRV->width / (float)GLDRV->height;
 
-		
-		
 		// Put orthogonal mode
-		glm::mat4 projection = DEMO->camera->getOrthoMatrix_Projection();
-		glm::mat4 view = DEMO->camera->getOrthoMatrix_View();
 		glm::mat4 model = glm::mat4(1.0f);
-	
+
 		// Change the model matrix, in order to scale the image and keep proportions of the image
 		float new_tex_width_scaled = 1;
 		float new_tex_height_scaled = 1;
@@ -92,25 +85,13 @@ void sBackground::exec() {
 		}
 		model = glm::scale(model, glm::vec3(new_tex_width_scaled, new_tex_height_scaled, 0.0f));
 		
-
-		// Send matrices to shader
-		my_shad->setValue("model", model);
-		my_shad->setValue("view", view);
-		my_shad->setValue("projection", projection);
-
-		my_tex->active();
-		my_tex->bind();
-
-		RES->Draw_Obj_Quad();
-		
+		RES->Draw_Obj_QuadTex(local->shader, &model, local->texture);
 
 		if (this->hasBlend)
 			glDisable(GL_BLEND);
 	}
 	glEnable(GL_DEPTH_TEST);
 }
-
-
 
 void sBackground::end() {
 	LOG->Info(LOG_HIGH, "Background has finished!");

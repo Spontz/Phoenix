@@ -104,7 +104,7 @@ void Resource::Load_Shaders()
 	else
 		LOG->Error("Could not load Basic shader!");
 	/////////////////////// BASIC: Shader to be used for FBO
-	shdr_basicFBO = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/basicFBO.vert", demoDir + "/resources/shaders/basic/basicFBO.frag");
+	shdr_basicFBO = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/basicQuadFBO.vert", demoDir + "/resources/shaders/basic/basicQuadFBO.frag");
 	if (shdr_basicFBO != -1)
 		DEMO->shaderManager.shader[shdr_basicFBO]->use();
 	else
@@ -138,10 +138,19 @@ void Resource::Draw_Obj_Quad(int texture_id, int shader_id)
 }
 
 // Draw a Quad in full screen
-void Resource::Draw_Obj_Quad()
+void Resource::Draw_Obj_Quad(glm::mat4 *model, glm::mat4 *view, glm::mat4 *projection, int tex_num)
 {
 	Shader *shad = DEMO->shaderManager.shader[shdr_basic];
+	shad->use();
+	shad->setValue("model", *model);
+	shad->setValue("view", *view);
+	shad->setValue("projection", *projection);
 	shad->setValue("texture_diffuse1", 0);
+
+	Texture *tex = DEMO->textureManager.texture[tex_num];
+	tex->active();
+	tex->bind();
+
 	glBindVertexArray(obj_quad_ColorText);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
@@ -164,6 +173,19 @@ void Resource::Draw_Obj_QuadFBO(int fbo_num)
 	DEMO->shaderManager.shader[RES->shdr_basicFBO]->use();
 	DEMO->shaderManager.shader[RES->shdr_basicFBO]->setValue("screenTexture", 0);
 	DEMO->fboManager.bind_tex(fbo_num);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
+void Resource::Draw_Obj_QuadTex(int shader_num, glm::mat4 *model, int tex_num)
+{
+	Shader *my_shad = DEMO->shaderManager.shader[shader_num];
+	my_shad->use();
+	my_shad->setValue("model", *model);
+
+	glBindVertexArray(obj_quad_FBO);
+	DEMO->textureManager.texture[tex_num]->active();
+	DEMO->textureManager.texture[tex_num]->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
