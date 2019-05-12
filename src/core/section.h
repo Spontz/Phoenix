@@ -34,12 +34,13 @@ public:
 	int			ended;								// 1: Section ended; 0: Section not ended
 	float		runTime;							// seconds elapsed since section start
 	int			hasBlend;							// has blending function parameters?
+	int			blendEquation;						// Blend Equation
 	int			sfactor;							// default source blending factor
 	int			dfactor;							// default dest blending factor
 	int			hasAlpha;							// has alpha function parameters?
 	int			alphaFunc;							// alpha function
-	float		alpha1;								// alpha reference value (hack: no se sabe bien que es esto), renombrar estas variables y documentar aqui
-	float		alpha2;								// alpha reference value (hack: no se sabe bien que es esto), renombrar estas variables y documentar aqui
+	float		alpha1;								// TODO: alpha reference value (hack: no se sabe bien que es esto), renombrar estas variables y documentar aqui
+	float		alpha2;								// TODO: alpha reference value (hack: no se sabe bien que es esto), renombrar estas variables y documentar aqui
 	int			paramNum;							// number of parameters
 	float		param[SECTION_PARAMS];				// float parameters
 	int			stringNum;							// number of strings

@@ -173,6 +173,7 @@ private:
 	int getSectionByName(char *name);
 	int getCodeByName(char *name, glTable_t *table, int size);
 	int getBlendCodeByName(char *name);
+	int getBlendEquationCodeByName(char *name);
 	int getAlphaCodeByName(char *name);
 	int getRenderModeByName(char *name);
 };

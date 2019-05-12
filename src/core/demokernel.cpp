@@ -115,24 +115,25 @@ static tScriptCommand scriptCommand[] = {
 // ******************************************************************
 
 // defined section commands
-#define SECTION_IDENTIFIER	0
-#define SECTION_START		1
-#define SECTION_END			2
-#define SECTION_LAYER		3
-#define SECTION_BLEND		4
-#define SECTION_ALPHA		5
-#define SECTION_PARAM		6
-#define SECTION_STRING		7
-#define SECTION_SPLINE		8
-#define SECTION_MODIFIER	9
-#define SECTION_ENABLED    10
+#define SECTION_IDENTIFIER		0
+#define SECTION_START			1
+#define SECTION_END				2
+#define SECTION_LAYER			3
+#define SECTION_BLEND			4
+#define SECTION_BLEND_EQUATION	5
+#define SECTION_ALPHA			6
+#define SECTION_PARAM			7
+#define SECTION_STRING			8
+#define SECTION_SPLINE			9
+#define SECTION_MODIFIER		10
+#define SECTION_ENABLED			11
 
 // defined section reserved keys
-#define SECTION_COMMANDS_NUMBER 11
+#define SECTION_COMMANDS_NUMBER 12
 
 static char *scriptSectionCommand[SECTION_COMMANDS_NUMBER] = {
-	"id", "start", "end", "layer", "blend", "alpha",
-	"param", "string", "spline", "modify", "enabled"
+	"id", "start", "end", "layer", "blend", "blendequation",
+	"alpha", "param", "string", "spline", "modify", "enabled"
 };
 
 // ******************************************************************
@@ -156,6 +157,17 @@ glTable_t blendFunc[BLEND_FUNC] = {
 	{ "SRC_COLOR",					GL_SRC_COLOR					},
 	{ "ONE_MINUS_SRC_COLOR",		GL_ONE_MINUS_SRC_COLOR			},
 };
+
+// ******************************************************************
+
+glTable_t blendEquationFunc[] = {
+	{ "ADD",				GL_FUNC_ADD				},
+	{ "SUBTRACT",			GL_FUNC_SUBTRACT		},
+	{ "REVERSE_SUBTRACT",	GL_FUNC_REVERSE_SUBTRACT}
+};
+
+#define BLEND_EQUATION_FUNC (sizeof(blendEquationFunc) / sizeof(glTable_t))
+
 
 // ******************************************************************
 
@@ -870,6 +882,13 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 				LOG->Info(LOG_LOW, "  Section blend mode: source %i and destination %i", new_sec->sfactor, new_sec->dfactor);
 				break;
 
+			case SECTION_BLEND_EQUATION:
+				values = sscanf(value, "%s", tmp);
+				if (values != 1) LOG->Error("Invalid blend equation in file %s, line: %s", sFile.c_str(), line);
+				new_sec->blendEquation = getBlendEquationCodeByName(tmp);
+				LOG->Info(LOG_LOW, "  Section blend equation: %i", new_sec->blendEquation);
+				break;
+
 			case SECTION_ALPHA:
 				values = sscanf(value, "%s %f %f", tmp, &new_sec->alpha1, &new_sec->alpha2);
 				switch (values) {
@@ -992,6 +1011,10 @@ int demokernel::getCodeByName(char *name, glTable_t *table, int size) {
 
 int demokernel::getBlendCodeByName(char *name) {
 	return getCodeByName(name, blendFunc, BLEND_FUNC);
+}
+
+int demokernel::getBlendEquationCodeByName(char *name) {
+	return getCodeByName(name, blendEquationFunc, BLEND_EQUATION_FUNC);
 }
 
 int demokernel::getAlphaCodeByName(char *name) {

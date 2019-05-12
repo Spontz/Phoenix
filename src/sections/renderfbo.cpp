@@ -54,7 +54,13 @@ void sRenderFbo::exec() {
 	if (this->hasBlend) {
 		glEnable(GL_BLEND);
 		glBlendFunc(this->sfactor, this->dfactor);
+		if (this->blendEquation>0)
+			glBlendEquation(this->blendEquation);
+		//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glBlendFunc(GL_ONE, GL_ONE);
+		//glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 	}
 	glDisable(GL_DEPTH_TEST);
 	{

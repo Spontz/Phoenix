@@ -281,6 +281,8 @@ void glDriver::initGraphics() {
 void glDriver::initStates()
 {
 	glDisable(GL_BLEND);						// blending disabled
+	glBlendFunc(GL_ONE, GL_ONE);				// Additive blending function by default
+	glBlendEquation(GL_FUNC_ADD);				// ADD function by default
 
 	glDisable(GL_CULL_FACE);					// cull face disabled
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	// draw cwise and ccwise in fill mode

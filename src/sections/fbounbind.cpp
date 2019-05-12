@@ -41,8 +41,8 @@ void sFboUnbind::exec() {
 	DEMO->fboManager.unbind();
 
 	// Clear the screen and depth buffers depending of the parameters passed by the user
-	if (local->clearScreen) glClear(GL_COLOR_BUFFER_BIT);
-	if (local->clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
+	if (local->clearScreen)	glClear(GL_COLOR_BUFFER_BIT);
+	if (local->clearDepth)	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 void sFboUnbind::end() {
