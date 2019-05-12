@@ -657,7 +657,7 @@ void demokernel::processSectionQueues() {
 
 
 	// prepare engine for render
-	GLDRV->initRender(TRUE);
+	GLDRV->initRender(true);
 	
 	// Run Exec sections
 	LOG->Info(LOG_LOW,"  Running Exec Sections...");

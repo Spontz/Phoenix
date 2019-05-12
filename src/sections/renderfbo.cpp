@@ -51,20 +51,20 @@ void sRenderFbo::exec() {
 	if (local->clearScreen) glClear(GL_COLOR_BUFFER_BIT);
 	if (local->clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
 	
+	if (this->hasBlend) {
+		glEnable(GL_BLEND);
+		glBlendFunc(this->sfactor, this->dfactor);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
 	glDisable(GL_DEPTH_TEST);
 	{
-		if (this->hasBlend)
-		{
-			glBlendFunc(this->sfactor, this->dfactor);
-			glEnable(GL_BLEND);
-		}
-		
 		RES->Draw_Obj_QuadFBO(local->fbo);
-		
-		if (this->hasBlend)
-			glDisable(GL_BLEND);
 	}
+
 	glEnable(GL_DEPTH_TEST);
+	if (this->hasBlend)
+		glDisable(GL_BLEND);
+
 }
 
 void sRenderFbo::end() {

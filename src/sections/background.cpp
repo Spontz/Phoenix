@@ -56,13 +56,13 @@ void sBackground::init() {
 void sBackground::exec() {
 	local = (background_section *)this->vars;
 	
+	if (this->hasBlend) {
+		glEnable(GL_BLEND);
+		glBlendFunc(this->sfactor, this->dfactor);
+	}
+
 	glDisable(GL_DEPTH_TEST);
 	{
-		if (this->hasBlend)
-		{
-			glBlendFunc(this->sfactor, this->dfactor);
-			glEnable(GL_BLEND);
-		}
 		// Load the background texture
 		Texture *my_tex = DEMO->textureManager.texture[local->texture];
 		// Texture and View aspect ratio, stored for Keeping image proportions
@@ -86,11 +86,11 @@ void sBackground::exec() {
 		model = glm::scale(model, glm::vec3(new_tex_width_scaled, new_tex_height_scaled, 0.0f));
 		
 		RES->Draw_Obj_QuadTex(local->shader, &model, local->texture);
-
-		if (this->hasBlend)
-			glDisable(GL_BLEND);
 	}
 	glEnable(GL_DEPTH_TEST);
+
+	if (this->hasBlend)
+		glDisable(GL_BLEND);
 }
 
 void sBackground::end() {

@@ -305,17 +305,12 @@ void glDriver::initRender(int clear)
 	TimeCurrentFrame = static_cast<float>(glfwGetTime());
 	TimeDelta = TimeCurrentFrame - TimeLastFrame;
 
-	// set the viewport to the correct size // TODO: S'ha de areglar el tema dels viewports....
-	//glViewport(this->vpXOffset, this->vpYOffset, this->vpWidth, this->vpHeight);
+	// set the viewport to the correct size
 	setViewport(0, 0, this->width, this->height);
-	this->vpXOffset = 0;
-	this->vpYOffset = 0;
-	this->vpWidth = this->width;
-	this->vpHeight = this->height;
-
+	
 	// clear some buffers if needed
 	if (clear) {
-		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+		glClearColor(0, 0, 0, 0);
 
 		if (this->stencil > 0) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
