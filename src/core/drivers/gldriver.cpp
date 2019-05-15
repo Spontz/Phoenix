@@ -94,7 +94,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	DEMO->camera->ProcessMouseScroll((float)yoffset);
 }
 
-void glErrorCallback(GLenum source, GLenum type,
+void APIENTRY glErrorCallback(GLenum source, GLenum type,
 	GLuint id,
 	GLenum severity,
 	GLsizei length,

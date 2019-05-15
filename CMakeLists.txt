@@ -81,7 +81,7 @@ else()
 endif()
 
 # Put all libraries into a variable
-set(LIBS glfw3 opengl32 ws2_32 assimp STB_IMAGE GLAD bass freetype)
+set(LIBS glfw3 opengl32 ws2_32 assimp bass freetype STB_IMAGE GLAD)
 
 # Define the include DIRs
 include_directories(
