@@ -20,6 +20,7 @@ using namespace std;
 #include "core/drivers/gldriver.h"
 #include "core/drivers/bassdriver.h"
 #include "core/drivers/mathdriver.h"
+#include "core/drivers/netdriver.h"
 
 #include "core/resource/resource.h"
 

@@ -20,10 +20,12 @@ int main(int argc, char *argv[]) {
 	LOG->Info(LOG_MED, "Loading Scripts");
 	DEMO->load_spos();
 	
-	if (DEMO->slaveMode)
-		LOG->Info(LOG_MED, "Running in network slave mode");
+	if (DEMO->slaveMode) {
+		NETDRV->init(28000);	// Init network on port 28000
+		LOG->Info(LOG_HIGH, "Running in network slave mode");
+	}
 	else
-		LOG->Info(LOG_MED, "Running in standalone mode");
+		LOG->Info(LOG_HIGH, "Running in standalone mode");
 
 
 	LOG->Info(LOG_HIGH, "Initializing demo!");
