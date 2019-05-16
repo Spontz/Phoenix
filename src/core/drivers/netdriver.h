@@ -19,6 +19,7 @@ public:
 
 	netDriver();
 	void init(int port);
+	void update();
 	virtual ~netDriver();
 
 	

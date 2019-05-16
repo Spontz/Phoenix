@@ -91,13 +91,18 @@ void netDriver::init(int port)
 	dyad_init();
 
 	dyad_Stream *serv = dyad_newStream();
-	//dyad_setNoDelay(serv, 1);
-	dyad_setUpdateTimeout(0);
+	//dyad_setNoDelay(serv, 1); // Disable Nagle's algorithm
+	dyad_setUpdateTimeout(0);	// Disable waiting
 	dyad_addListener(serv, DYAD_EVENT_ERROR, onError, NULL);
 	dyad_addListener(serv, DYAD_EVENT_ACCEPT, onAccept, NULL);
 	dyad_addListener(serv, DYAD_EVENT_LISTEN, onListen, NULL);
 	dyad_listenEx(serv, "0.0.0.0", port, 511);
 	inited = true;
+}
+
+void netDriver::update()
+{
+	dyad_update();
 }
 
 netDriver::~netDriver()

@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
 	DEMO->load_spos();
 	
 	if (DEMO->slaveMode) {
-		NETDRV->init(28000);	// Init network on port 28000
 		LOG->Info(LOG_HIGH, "Running in network slave mode");
+		NETDRV->init(28000);	// Init network on port 28000
 	}
 	else
 		LOG->Info(LOG_HIGH, "Running in standalone mode");

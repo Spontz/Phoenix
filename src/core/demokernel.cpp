@@ -362,6 +362,10 @@ void demokernel::doExec() {
 	// update sound driver once a frame //TODO: Not needed!
 	if (this->sound)
 		BASSDRV->update();
+
+	// Update network driver
+	if (this->slaveMode)
+		NETDRV->update();
 }
 
 void demokernel::playDemo()
