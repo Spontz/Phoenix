@@ -23,6 +23,7 @@ public:
 	virtual ~netDriver();
 
 	const char *getVersion();
+	char * processMessage(char *message);
 
 	
 private:

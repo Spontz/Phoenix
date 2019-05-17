@@ -138,6 +138,8 @@ public:
 
 	// Scripts (SPO files) management
 	void load_spos();
+	bool load_scriptFromNetwork(string sScript);
+	int load_scriptData(string sScript, string sFile);
 
 	// Demo control
 	void playDemo();
@@ -145,6 +147,10 @@ public:
 	void restartDemo();
 	void rewindDemo();
 	void fastforwardDemo();
+
+	void setStartTime(float theTime);
+	void setCurrentTime(float theTime);
+	void setEndTime(float theTime);
 
 	
 private:
@@ -169,7 +175,6 @@ private:
 	// Scripts (SPO files) management
 	void load_spo(string sFile);
 	string load_file(string sFile);
-	void load_scriptData(string sScript, string sFile);
 	int getSectionByName(char *name);
 	int getCodeByName(char *name, glTable_t *table, int size);
 	int getBlendCodeByName(char *name);

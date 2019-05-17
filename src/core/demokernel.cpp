@@ -415,6 +415,35 @@ void demokernel::fastforwardDemo()
 	if (this->sound) BASSDRV->stop();
 }
 
+void demokernel::setStartTime(float theTime)
+{
+	// Correct the time if it has an invalud value
+	if (theTime < 0) theTime = 0;
+	else if (theTime > this->endTime) theTime = this->endTime;
+
+	// Set the new time
+	this->startTime = theTime;
+}
+
+void demokernel::setCurrentTime(float theTime)
+{
+	// Correct the time if it has an invalud value
+	if (theTime < 0) theTime = 0;
+
+	// Set the new time
+	this->runTime = theTime;
+}
+
+void demokernel::setEndTime(float theTime)
+{
+	// Correct the time if it has an invalud value
+	if (theTime < 0) theTime = 0;
+	else if (theTime < this->startTime) theTime = this->startTime;
+
+	// Set the new time
+	this->endTime = theTime;
+}
+
 void demokernel::closeDemo() {
 	GLDRV->close();
 }
@@ -438,7 +467,19 @@ void demokernel::load_spos() {
 	LOG->Info(LOG_MED,"Finished loading all files.");
 }
 
-
+bool demokernel::load_scriptFromNetwork(string sScript)
+{
+	Section *my_sec;
+	int sec_id;
+	sec_id = this->load_scriptData(sScript, "Network");
+	if (sec_id >= 0)
+		my_sec = this->sectionManager.section[sec_id];
+	// Load the data from the section
+	if (my_sec->load())
+		return true;
+	else
+		return false;
+}
 
 void demokernel::initTimer()
 {
@@ -750,7 +791,7 @@ string demokernel::load_file(string sFile) {
 	return buffer;
 }
 
-void demokernel::load_scriptData(string sScript, string sFile) {
+int demokernel::load_scriptData(string sScript, string sFile) {
 	const char*		name = "";
 	char			line[256], key[512], value[512], tmp[512], tmp2[512];
 	int				lineNum, com, i, values;
@@ -804,7 +845,7 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 			}
 			else {
 				LOG->Error("Section %s not supported! File skipped", key);
-				return;
+				return sec_id;
 			}
 		}
 		// If we have already loaded the section type, then load it's parameters
@@ -998,6 +1039,7 @@ void demokernel::load_scriptData(string sScript, string sFile) {
 		
 		}
 	}
+	return sec_id;
 }
 
 int demokernel::getCodeByName(char *name, glTable_t *table, int size) {
