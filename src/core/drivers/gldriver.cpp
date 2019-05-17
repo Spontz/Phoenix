@@ -201,8 +201,13 @@ glDriver::glDriver() {
 
 void glDriver::initFramework() {
 	// Initialize the library
-	if (!glfwInit())
+	if (!glfwInit()) {
 		LOG->Error("GL Framework could not be initialized!");
+		return;
+	}
+	else {
+		LOG->Info(LOG_MED, "GLFW library version is: %s", glfwGetVersionString());
+	}
 }
 
 void glDriver::initGraphics() {

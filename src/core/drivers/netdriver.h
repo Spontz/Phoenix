@@ -22,10 +22,11 @@ public:
 	void update();
 	virtual ~netDriver();
 
+	const char *getVersion();
+
 	
 private:
 	static netDriver* m_pThis;
-
 };
 
 #endif

@@ -234,6 +234,7 @@ void demokernel::initDemo() {
 	// initialize graphics driver
 	GLDRV->initGraphics();
 	LOG->Info(LOG_HIGH,"OpenGL environment created");
+	LOG->Info(LOG_MED, "OpenGL library version is: %s", glGetString(GL_VERSION));
 	
 	// initialize sound driver
 	if (this->sound)
@@ -244,13 +245,13 @@ void demokernel::initDemo() {
 	// Start loading Basic resources
 	RES->loadAllResources();
 
-	/*
-	// TODO: Implement network management
-	if (demoSystem.slaveMode) {
-		// initialize network driver
-		network_init();
+	if (DEMO->slaveMode) {
+		LOG->Info(LOG_HIGH, "Running in network slave mode");
+		NETDRV->init(28000);	// Init network on port 28000
+		LOG->Info(LOG_MED, "Network Dyad.c library version is: %s", NETDRV->getVersion());
 	}
-	*/
+	else
+		LOG->Info(LOG_HIGH, "Running in standalone mode");
 
 	// initialize global control variables
 	this->initControlVars();
