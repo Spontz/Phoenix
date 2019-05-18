@@ -57,6 +57,13 @@ public:
 
 	SectionManager();
 	int addSection(string key, string DataSource, int enabled);		// Adds a Section of a given type
+	void	toggleSection(string identifier);
+	void	deleteSection(string identifier);
+	void	updateSection(string identifier, string sScript);
+	void	setSectionsStartTime(string amount, string identifiers);
+	void	setSectionsEndTime(string amount, string identifiers);
+	void	setSectionLayer(string layer, string identifier);
+
 private:
 	SectionType getSectionType(string key);
 

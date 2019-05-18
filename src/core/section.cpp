@@ -13,10 +13,10 @@ Section::Section() {
 	endTime			= 0;
 	duration		= 0;
 	layer			= 0;
-	enabled			= 0;	// Disabled by default
-	inited			= 0;	// Not inited by default
-	loaded			= 0;	// Not loaded by default
-	ended			= 0;	// Not ended by default
+	enabled			= false;	// Disabled by default
+	inited			= false;	// Not inited by default
+	loaded			= false;	// Not loaded by default
+	ended			= false;	// Not ended by default
 	runTime			= 0;
 	hasBlend		= 0;
 	blendEquation	= 0;

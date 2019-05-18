@@ -475,10 +475,11 @@ bool demokernel::load_scriptFromNetwork(string sScript)
 	if (sec_id >= 0)
 		my_sec = this->sectionManager.section[sec_id];
 	// Load the data from the section
-	if (my_sec->load())
-		return true;
-	else
-		return false;
+	my_sec->loaded = my_sec->load();
+	if (my_sec->loaded)
+		LOG->Info(LOG_LOW, "  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, my_sec->identifier.c_str(), my_sec->DataSource.c_str());
+
+	return my_sec->loaded;
 }
 
 void demokernel::initTimer()
@@ -596,7 +597,6 @@ void demokernel::initSectionQueues() {
 	ds_loading->exec();
 	ds_loading->loaded = TRUE;
 	ds_loading->inited = TRUE;
-	ds_loading->inited = TRUE;
 
 	LOG->Info(LOG_MED,"  Loading section loaded, inited and executed for first time");
 
@@ -625,14 +625,15 @@ void demokernel::initSectionQueues() {
 	this->loadedSections = 0;
 	for (i = 0; i < this->sectionManager.loadSection.size(); i++) {
 		sec_id = this->sectionManager.loadSection[i];
-		if (this->sectionManager.section[sec_id]->load()) {
-			this->sectionManager.section[sec_id]->loaded = TRUE;
+		ds = this->sectionManager.section[sec_id];
+		if (ds->load()) {
+			ds->loaded = TRUE;
 			++this->loadedSections;
 		}
 		
 		// Update loading
 		ds_loading->exec();
-		LOG->Info(LOG_LOW, "  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, this->sectionManager.section[sec_id]->identifier.c_str(), this->sectionManager.section[sec_id]->DataSource.c_str());
+		LOG->Info(LOG_LOW, "  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, ds->identifier.c_str(), ds->DataSource.c_str());
 
 		if (this->exitDemo) {
 			this->closeDemo();

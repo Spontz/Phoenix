@@ -27,6 +27,8 @@ public:
 
 	
 private:
+	char * getParamString(char *message, int requestedParameter);
+	float getParamFloat(char *message, int requestedParameter);
 	static netDriver* m_pThis;
 };
 

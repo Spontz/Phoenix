@@ -15,7 +15,7 @@ using namespace std;
 #define SPZ_STL(a) _##a
 
 // Returns the requested parameter from the passed message (first parameter is 1) as a string
-char * getParamString(char *message, int requestedParameter) {
+char * netDriver::getParamString(char *message, int requestedParameter) {
 	char *theParameter;
 	int counter = 1;
 
@@ -30,7 +30,7 @@ char * getParamString(char *message, int requestedParameter) {
 }
 
 // Returns the requested parameter from the passed message (first parameter is 1) as a floating point number
-float getParamFloat(char *message, int requestedParameter) {
+float netDriver::getParamFloat(char *message, int requestedParameter) {
 	float theFloatResult;
 	char *theStringResult;
 
@@ -42,26 +42,6 @@ float getParamFloat(char *message, int requestedParameter) {
 	// Return the result
 	return theFloatResult;
 }
-
-/*
-void SendResponse(dyad_Event *e, char *message) {
-	char theResponse[4096];
-	char *identifier, *type, *action;
-
-	identifier = getParamString(message, 1);
-	type = getParamString(message, 2);
-	action = getParamString(message, 3);
-	char theResult[] = "OK";
-	char theInformation[] = "";
-
-	sprintf((char *)theResponse, "%s::%s::%f::%d::%f::%s", identifier, theResult, DEMO->fps, DEMO->state, DEMO->runTime, theInformation);
-
-	dyad_write(e->stream, theResponse, (int)strlen(theResponse));
-	LOG->Info(LOG_LOW, "Sending response: %s\n", theResponse);
-	dyad_end(e->stream);
-}
-*/
-// ***********************************
 
 void onData(dyad_Event *e) {
 	char *theResponse;
@@ -182,20 +162,12 @@ char * netDriver::processMessage(char * message)
 			}
 		}
 		
-		else if (strcmp(action, "toggle") == 0) { theResult = "OK"; }
-		else if (strcmp(action, "delete") == 0) { theResult = "OK"; }
-		else if (strcmp(action, "update") == 0) { theResult = "OK"; }
-		else if (strcmp(action, "setStartTime") == 0) { theResult = "OK"; }
-		else if (strcmp(action, "setEndTime") == 0) { theResult = "OK"; }
-		else if (strcmp(action, "setLayer") == 0) { theResult = "OK"; }
-		/*
-		else if (strcmp(action, "toggle") == 0) { dkernel_toggleSection(getParamString(message, 4)); theResult = "OK"; }
-		else if (strcmp(action, "delete") == 0) { dkernel_deleteSection(getParamString(message, 4)); theResult = "OK"; }
-		else if (strcmp(action, "update") == 0) { dkernel_updateSection(getParamString(message, 4), getParamString(message, 5)); theResult = "OK"; }
-		else if (strcmp(action, "setStartTime") == 0) { dkernel_setSectionsStartTime(getParamString(message, 4), getParamString(message, 5)); theResult = "OK"; }
-		else if (strcmp(action, "setEndTime") == 0) { dkernel_setSectionsEndTime(getParamString(message, 4), getParamString(message, 5)); theResult = "OK"; }
-		else if (strcmp(action, "setLayer") == 0) { dkernel_setSectionsLayer(getParamString(message, 4), getParamString(message, 5)); theResult = "OK"; }
-		*/
+		else if (strcmp(action, "toggle") == 0)			{ DEMO->sectionManager.toggleSection(getParamString(message, 4));										theResult = "OK"; }
+		else if (strcmp(action, "delete") == 0)			{ DEMO->sectionManager.deleteSection(getParamString(message, 4));										theResult = "OK"; }
+		else if (strcmp(action, "update") == 0)			{ DEMO->sectionManager.updateSection(getParamString(message, 4), getParamString(message, 5));			theResult = "OK"; }
+		else if (strcmp(action, "setStartTime") == 0)	{ DEMO->sectionManager.setSectionsStartTime(getParamString(message, 4), getParamString(message, 5));	theResult = "OK"; }
+		else if (strcmp(action, "setEndTime") == 0)		{ DEMO->sectionManager.setSectionsEndTime(getParamString(message, 4), getParamString(message, 5));		theResult = "OK"; }
+		else if (strcmp(action, "setLayer") == 0)		{ DEMO->sectionManager.setSectionLayer(getParamString(message, 4), getParamString(message, 5));		theResult = "OK"; }
 		else {
 			theResult = "NOK";
 			sprintf((char *)theInformation, "Unknown section (%s)", message);
@@ -216,5 +188,5 @@ char * netDriver::processMessage(char * message)
 	free(theInformation);
 
 	// and return the response (will be freed later)
-	return theResponse;//return (char *)theResponse;
+	return theResponse;
 }
