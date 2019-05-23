@@ -7,6 +7,7 @@ Phoenix demoengine by Spontz
 * Show time on console: RETURN
 * Show time on screen: T (only works if the engine is in debug mode)
 * Show FPS's on screen: U (only works if the engine is in debug mode)
+* Show FBO's content on screen: F (only works if the engine is in debug mode)
 * Show sound histogram + Beat detection on screen: I (only works if the engine is in debug mode) --> Not implemented yet
 
 ## Playback control
