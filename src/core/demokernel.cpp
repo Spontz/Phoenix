@@ -733,17 +733,6 @@ void demokernel::processSectionQueues() {
 
 	LOG->Info(LOG_MED,"End queue processing!");
 
-	/*
-	// restore viewport
-	gldrv_initRender(FALSE);
-
-	// capture frame if we want to record a video
-	if (this->record)	GLDRV->capture();
-
-	// expand RTT to fullscreen
-	gldrv_endRender();
-	*/
-
 	if (this->debug) {
 		if (this->drawFps)
 			GLDRV->drawFps();

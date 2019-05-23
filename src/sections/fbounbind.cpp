@@ -37,7 +37,7 @@ void sFboUnbind::exec() {
 
 	local = (fbounbind_section*)this->vars;
 
-	// Unbind the fbo, and restore viewport
+	// Unbind the fbo
 	DEMO->fboManager.unbind();
 
 	// Clear the screen and depth buffers depending of the parameters passed by the user
