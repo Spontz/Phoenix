@@ -590,6 +590,8 @@ void demokernel::initSectionQueues() {
 	this->drawTiming = 1;
 	this->drawSound = 0;
 
+	this->drawFbo = 0;
+
 	
 	// preload, load and init loading section
 	ds_loading->load();
@@ -747,6 +749,8 @@ void demokernel::processSectionQueues() {
 			GLDRV->drawFps();
 		if (this->drawTiming)
 			GLDRV->drawTiming();
+		if (this->drawFbo)
+			GLDRV->drawFbo();
 	}
 	
 	// swap buffer

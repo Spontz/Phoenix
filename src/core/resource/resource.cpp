@@ -19,6 +19,7 @@ void Resource::loadAllResources()
 	LOG->Info(LOG_LOW, "Start Loading Engine Internal Resources");
 	Load_Obj_Quad_ColorTextured();
 	Load_Obj_Quad_FBO();
+	Load_Obj_Quad_FBO_Debug();
 	Load_Shaders();
 	Load_Tex_Spontz();
 	Load_Text_Fonts();
@@ -70,7 +71,6 @@ void Resource::Load_Obj_Quad_ColorTextured()
 
 void Resource::Load_Obj_Quad_FBO()
 {
-	// vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates. NOTE that this plane is now much smaller and at the top of the screen
 	float quadVertices[] = {
 	// positions   // texCoords
 	 -1,  1,  0, 1,
@@ -93,6 +93,37 @@ void Resource::Load_Obj_Quad_FBO()
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 }
+
+void Resource::Load_Obj_Quad_FBO_Debug()
+{
+	float inc = 2.0f / NUM_FBO_DEBUG; // Increment
+
+	for (int i = 0; i < NUM_FBO_DEBUG; i++) {
+		float quadVertices[] = {
+			// positions   // texCoords
+			 -1 + (inc*i),		-1+inc,	0, 1,
+			 -1 + (inc*i),		-1,		0, 0,
+			 -1 + inc + (inc*i),-1,		1, 0,
+
+			 -1 + (inc*i),		-1+inc,	0, 1,
+			 -1 + inc + (inc*i),-1,		1, 0,
+			 -1 + inc + (inc*i),-1+inc,	1, 1
+		};
+
+		unsigned int quadVBO;
+		glGenVertexArrays(1, &obj_quad_FBO_Debug[i]);
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(obj_quad_FBO_Debug[i]);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+	}
+	
+}
+
 
 
 void Resource::Load_Shaders()
@@ -170,6 +201,17 @@ void Resource::Draw_Obj_Quad(int texture_id)
 void Resource::Draw_Obj_QuadFBO(int fbo_num)
 {
 	glBindVertexArray(obj_quad_FBO);
+	DEMO->shaderManager.shader[RES->shdr_basicFBO]->use();
+	DEMO->shaderManager.shader[RES->shdr_basicFBO]->setValue("screenTexture", 0);
+	DEMO->fboManager.bind_tex(fbo_num);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
+// Draw the Debug Quads with a FBO
+void Resource::Draw_Obj_QuadFBO_Debug(int quad, int fbo_num)
+{
+	glBindVertexArray(obj_quad_FBO_Debug[quad]);
 	DEMO->shaderManager.shader[RES->shdr_basicFBO]->use();
 	DEMO->shaderManager.shader[RES->shdr_basicFBO]->setValue("screenTexture", 0);
 	DEMO->fboManager.bind_tex(fbo_num);

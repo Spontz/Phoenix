@@ -68,6 +68,7 @@ public:
 
 	void drawFps();
 	void drawTiming();
+	void drawFbo();
 	void processInput();
 
 	int window_should_close();

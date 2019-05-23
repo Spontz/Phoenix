@@ -66,7 +66,6 @@ void sRenderFbo::exec() {
 	{
 		RES->Draw_Obj_QuadFBO(local->fbo);
 	}
-
 	glEnable(GL_DEPTH_TEST);
 	if (this->hasBlend)
 		glDisable(GL_BLEND);

@@ -135,6 +135,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				DEMO->drawFps = !DEMO->drawFps;
 			else if (key == KEY_SHOWSOUND)
 				DEMO->drawSound = !DEMO->drawSound;
+			else if (key == KEY_SHOWFBO) {
+				DEMO->drawFbo++;
+				if(DEMO->drawFbo>=7)
+					DEMO->drawFbo=0;
+			}
+				
 			else if (key == KEY_CAPTURE) {
 				DEMO->camera->CapturePos();
 			}
@@ -397,7 +403,21 @@ void glDriver::drawTiming() {
 	DEMO->text->glPrintf(-1, 0.5f, "%s", state);
 }
 
+// Draw the Fbo output
+void glDriver::drawFbo() {
+	glDisable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE);
+	glDisable(GL_DEPTH_TEST);
 
+	int fbo_num_min = ((DEMO->drawFbo - 1)*NUM_FBO_DEBUG);
+	int fbo_num_max = (NUM_FBO_DEBUG-1)+ ((DEMO->drawFbo - 1)*NUM_FBO_DEBUG);
+	DEMO->text->glPrintf(-1, 0.4f, "Showing FBO's: %d to %d", fbo_num_min, fbo_num_max);
+	for (int i = 0; i < NUM_FBO_DEBUG; i++) {
+		int fbo_num = (0+i)+((DEMO->drawFbo-1)*NUM_FBO_DEBUG);
+		RES->Draw_Obj_QuadFBO_Debug(i, fbo_num);
+	}
+	glEnable(GL_DEPTH_TEST);
+}
 int glDriver::getTextureFormatByName(char *name) {
 	for (int i = 0; i < TEXTURE_MODE; i++) {
 		if (_strcmpi(name, textureModes[i].name) == 0) {

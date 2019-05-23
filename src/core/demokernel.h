@@ -122,6 +122,9 @@ public:
 	char drawTiming;							// Draw time of the demo
 	char drawFps;								// Draw FPS's of the demo
 
+	// Drawing
+	char drawFbo;								// Draw FBO's
+
 	// engine state variables
 	//matrix_t	m_VariableMatrix[MAX_SVE_VARIABLE_ID + 1];
 
