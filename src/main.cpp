@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[]) {
 	DEMO->getArguments(argc, argv);
-
+	
 	// Define the Log level
 	LOG->log_level = LOG_HIGH; // Define the highest log detail level
 	#ifdef _DEBUG
@@ -18,9 +18,8 @@ int main(int argc, char *argv[]) {
 	// Initialize the GL Framework
 	GLDRV->initFramework();
 	
-	// Get "demo" folder path
-	//DEMO->getArguments(argc, argv);
 	LOG->Info(LOG_HIGH, "Phoenix Visuals Engine starting up: Let's make some noise!");
+
 
 	LOG->Info(LOG_MED, "Loading Scripts");
 	DEMO->load_spos();
