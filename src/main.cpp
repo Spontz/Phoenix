@@ -7,15 +7,20 @@
 
 
 int main(int argc, char *argv[]) {
+	DEMO->getArguments(argc, argv);
+
 	// Define the Log level
-	LOG->log_level = LOG_LOW; // Define the log with the lowest detail
+	LOG->log_level = LOG_HIGH; // Define the highest log detail level
+	#ifdef _DEBUG
+	LOG->log_level = LOG_LOW; // Define the lowest log detail level
+	#endif
 
 	// Initialize the GL Framework
 	GLDRV->initFramework();
-	LOG->Info(LOG_HIGH, "Phoenix Visuals Engine starting up: Let's make some noise!");
 	
 	// Get "demo" folder path
-	DEMO->getArguments(argc, argv);
+	//DEMO->getArguments(argc, argv);
+	LOG->Info(LOG_HIGH, "Phoenix Visuals Engine starting up: Let's make some noise!");
 
 	LOG->Info(LOG_MED, "Loading Scripts");
 	DEMO->load_spos();

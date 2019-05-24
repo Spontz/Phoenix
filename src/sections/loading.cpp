@@ -85,12 +85,11 @@ void sLoading::exec() {
 	// Draw the Loading bar
 	glm::mat4 model = glm::mat4(1.0f);
 
-	model = glm::translate(model, glm::vec3(local->tx, local->ty, 0));  // Move the bar down
+	model = glm::translate(model, glm::vec3(local->tx, local->ty, 0));  // Move the bar
 	model = glm::scale(model, glm::vec3(zero2one, local->sy, 0));		// Scale the bar
 	RES->Draw_Obj_QuadTex(local->tex_bar, &model);
 
 	GLDRV->swap_buffers();
-	Sleep(200);
 }
 
 void sLoading::end() {

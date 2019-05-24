@@ -194,7 +194,10 @@ demokernel * demokernel::getInstance() {
 demokernel::demokernel() {
 	// initialize global kernel variables
 	this->demoName = "Phoneix Spontz Demoengine";
+//	this->debug = FALSE;
+//#ifdef _DEBUG
 	this->debug = TRUE;
+//#endif
 	this->record = FALSE;
 	this->recordFps = 60.0f;
 	this->loop = TRUE;
@@ -203,6 +206,7 @@ demokernel::demokernel() {
 	this->startTime = 0.0f;
 	this->endTime = 20.0f;
 	this->slaveMode = FALSE;
+	this->beat = 0.0f;
 	this->beat_ratio = 1.4f;
 	this->beat_fadeout = 4.0f;
 }
@@ -258,11 +262,6 @@ void demokernel::initDemo() {
 
 	// prepare sections
 	this->initSectionQueues();
-
-	/*
-	// initialize debugging font
-	text_load_font(&debugFont, strDebugFont, 16, 16, "data/fonts/font.tga");
-	*/
 
 	// get initial sync timer values
 	this->initTimer();

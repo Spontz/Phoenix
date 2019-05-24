@@ -61,7 +61,6 @@ void CLogger::Error(const char *message, ...) {
 		va_end(argptr);
 		sprintf_s(chain, "Error [%s] %s", Util::CurrentTime().c_str(), text);
 		m_Logfile << chain << "\n";
-		//}
 #ifdef WIN32
 		OutputDebugStringA(chain);
 		if (text[0] != '\0' || text[strlen(text) - 1] != '\n')

@@ -3,7 +3,7 @@
 
 typedef struct {
 	int				shader;
-	ShaderVars*		vars;
+	ShaderVars		*vars;
 } glslshaderbind_section;
 
 static glslshaderbind_section *local;
