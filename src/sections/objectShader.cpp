@@ -44,6 +44,8 @@ bool sObjectShader::load() {
 	// Load model and shader
 	local->model = DEMO->modelManager.addModel(s_demo + this->strings[0]);
 	local->shader = DEMO->shaderManager.addShader(s_demo + this->strings[1], s_demo + this->strings[2]);
+	if (local->model < 0 || local->shader < 0)
+		return false;
 
 	local->exprPosition = new mathDriver(this);
 	// Load positions, process constants and compile expression

@@ -478,6 +478,8 @@ bool demokernel::load_scriptFromNetwork(string sScript)
 	my_sec->loaded = my_sec->load();
 	if (my_sec->loaded)
 		LOG->Info(LOG_LOW, "  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, my_sec->identifier.c_str(), my_sec->DataSource.c_str());
+	else
+		LOG->Error("  Section %d [id: %s, DataSource: %s] not loaded properly!", sec_id, my_sec->identifier.c_str(), my_sec->DataSource.c_str());
 
 	return my_sec->loaded;
 }
@@ -635,7 +637,10 @@ void demokernel::initSectionQueues() {
 		
 		// Update loading
 		ds_loading->exec();
-		LOG->Info(LOG_LOW, "  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, ds->identifier.c_str(), ds->DataSource.c_str());
+		if (ds->loaded)
+			LOG->Info(LOG_LOW, "  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, ds->identifier.c_str(), ds->DataSource.c_str());
+		else
+			LOG->Error("  Section %d [id: %s, DataSource: %s] not loaded properly!", sec_id, ds->identifier.c_str(), ds->DataSource.c_str());
 
 		if (this->exitDemo) {
 			this->closeDemo();
