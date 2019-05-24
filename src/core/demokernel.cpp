@@ -632,8 +632,8 @@ void demokernel::initSectionQueues() {
 		ds = this->sectionManager.section[sec_id];
 		if (ds->load()) {
 			ds->loaded = TRUE;
-			++this->loadedSections;
 		}
+		++this->loadedSections; // Incrmeent the loading sections even if it has not been sucesfully loaded, because it's just for the "loading" screen
 		
 		// Update loading
 		ds_loading->exec();

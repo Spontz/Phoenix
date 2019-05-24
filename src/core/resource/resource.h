@@ -19,14 +19,16 @@ public:
 	void loadAllResources();
 
 	void Draw_QuadFS(int textureNum);	// Draws a quad with fullscreen (the texture number from the texture manager should be specified)
+	void Draw_QuadFS(int textureNum, float alpha);	// Draws a quad with fullscreen with alpha (the texture number from the texture manager should be specified)
 	void Draw_QuadFBOFS(int fbo_num);	// Draws a quad with fullscreen (the fbo number from the fbo manager should be specified)
 	void Draw_Obj_QuadTex(int textureNum, glm::mat4 *model);
 
 	void Draw_Obj_QuadFBO_Debug(int quad, int fbo_num);
 	int tex_tv, tex_isaac2, tex_shotgan, tex_shotgan2, tex_merlucin, tex_xphere;
-	int tex_LoadingFront, tex_LoadingBack;
+
 	// Shaders
 	int shdr_QuadTex;		// Draws a textured quad
+	int shdr_QuadTexAlpha;	// Draws a textured quad with alpha
 	int shdr_QuadTexModel;	// Draws a textured quad with model matrix
 private:
 

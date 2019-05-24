@@ -95,14 +95,13 @@ void Resource::Load_Obj_Quad_FBO_Debug()
 void Resource::Load_Shaders()
 {
 	shdr_QuadTex = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTex.vert", demoDir + "/resources/shaders/basic/QuadTex.frag");
+	shdr_QuadTexAlpha = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTexAlpha.vert", demoDir + "/resources/shaders/basic/QuadTexAlpha.frag");
 	shdr_QuadTexModel = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTexModel.vert", demoDir + "/resources/shaders/basic/QuadTexModel.frag");
 }
 
 // Load textures for loading screen
 void Resource::Load_Tex_LoadingScreen()
 {
-	tex_LoadingFront = DEMO->textureManager.addTexture(demoDir + "/resources/textures/loadingfront.jpg");
-	tex_LoadingBack = DEMO->textureManager.addTexture(demoDir + "/resources/textures/loadingback.jpg");
 }
 
 void Resource::Load_Tex_Spontz()
@@ -124,9 +123,24 @@ void Resource::Load_Text_Fonts()
 // Draw a Quad with texture in full screen
 void Resource::Draw_QuadFS(int textureNum)
 {
+	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTex];
+
 	glBindVertexArray(obj_quadFullscreen);
-	DEMO->shaderManager.shader[RES->shdr_QuadTex]->use();//TODO: Crear variable "Shader *My_shad" y usarla, como mas abajo hago
-	DEMO->shaderManager.shader[RES->shdr_QuadTex]->setValue("screenTexture", 0);
+	my_shad->use();
+	my_shad->setValue("screenTexture", 0);
+	DEMO->textureManager.texture[textureNum]->bind();
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
+void Resource::Draw_QuadFS(int textureNum, float alpha)
+{
+	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTexAlpha];
+
+	glBindVertexArray(obj_quadFullscreen);
+	my_shad->use();
+	my_shad->setValue("alpha", alpha);
+	my_shad->setValue("screenTexture", 0);
 	DEMO->textureManager.texture[textureNum]->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
@@ -135,9 +149,11 @@ void Resource::Draw_QuadFS(int textureNum)
 // Draw a Quad with a FBO in full screen
 void Resource::Draw_QuadFBOFS(int fboNum)
 {
+	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTex];
+
 	glBindVertexArray(obj_quadFullscreen);
-	DEMO->shaderManager.shader[RES->shdr_QuadTex]->use();//TODO: Crear variable "Shader *My_shad" y usarla, como mas abajo hago
-	DEMO->shaderManager.shader[RES->shdr_QuadTex]->setValue("screenTexture", 0);
+	my_shad->use();
+	my_shad->setValue("screenTexture", 0);
 	DEMO->fboManager.bind_tex(fboNum);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
