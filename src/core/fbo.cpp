@@ -15,8 +15,9 @@ Fbo::Fbo(): use_linear(true), textureBufferID(0)
 
 Fbo::~Fbo()
 {
-	//TODO: Fix! no es deleteTextures, em sembla...
 	if (textureBufferID != 0) {
+		glDeleteFramebuffers(1, &frameBufferID);
+		glDeleteRenderbuffers(1, &renderBufferID);
 		glDeleteTextures(1, &textureBufferID);
 		textureBufferID = 0;
 	}
@@ -99,9 +100,6 @@ void Fbo::bind() const
 void Fbo::bind_tex() const
 {
 	glBindTexture(GL_TEXTURE_2D, this->textureBufferID);
-	// TODO: Implement this in the manager
-	//tex_reset_bind();	// Me must advise to the texture array that an fbo has been used 
-	//fbo_current_tex = fbo->id_tex;
 }
 
 void Fbo::active(int index) const

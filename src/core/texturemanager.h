@@ -15,7 +15,7 @@ public:
 	float mem;						// Texture memory in MegaBytes
 
 	TextureManager();
-	int addTexture(string path, bool flip = false);
+	int addTexture(string path, bool flip = true);
 	int	getOpenGLTextureID(int index);
 
 private:

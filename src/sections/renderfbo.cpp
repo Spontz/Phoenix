@@ -56,15 +56,10 @@ void sRenderFbo::exec() {
 		glBlendFunc(this->sfactor, this->dfactor);
 		if (this->blendEquation>0)
 			glBlendEquation(this->blendEquation);
-		//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		//glBlendFunc(GL_ONE, GL_ONE);
-		//glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-		//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 	}
 	glDisable(GL_DEPTH_TEST);
 	{
-		RES->Draw_Obj_QuadFBO(local->fbo);
+		RES->Draw_QuadFBOFS(local->fbo);
 	}
 	glEnable(GL_DEPTH_TEST);
 	if (this->hasBlend)

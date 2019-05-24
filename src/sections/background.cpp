@@ -85,7 +85,7 @@ void sBackground::exec() {
 		}
 		model = glm::scale(model, glm::vec3(new_tex_width_scaled, new_tex_height_scaled, 0.0f));
 		
-		RES->Draw_Obj_QuadTex(local->shader, &model, local->texture);
+		RES->Draw_Obj_QuadTex(local->texture, &model);
 	}
 	glEnable(GL_DEPTH_TEST);
 

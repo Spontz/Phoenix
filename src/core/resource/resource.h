@@ -18,27 +18,27 @@ public:
 	static Resource* GetResource();
 	void loadAllResources();
 
-	void Draw_Obj_Quad(int texture_id, int shader_id);
-	void Draw_Obj_Quad(int texture_id);
-	void Draw_Obj_Quad(glm::mat4 *model, glm::mat4 *view, glm::mat4 *projection, int tex_num);
-	void Draw_Obj_QuadFBO(int fbo_num);
+	void Draw_QuadFS(int textureNum);	// Draws a quad with fullscreen (the texture number from the texture manager should be specified)
+	void Draw_QuadFBOFS(int fbo_num);	// Draws a quad with fullscreen (the fbo number from the fbo manager should be specified)
+	void Draw_Obj_QuadTex(int textureNum, glm::mat4 *model);
+
 	void Draw_Obj_QuadFBO_Debug(int quad, int fbo_num);
-	void Draw_Obj_QuadTex(int shader_num, glm::mat4 *model, int tex_num);
-	void Draw_Shdr_Basic();
 	int tex_tv, tex_isaac2, tex_shotgan, tex_shotgan2, tex_merlucin, tex_xphere;
-	int shdr_basic, shdr_basicFBO;
+	int tex_LoadingFront, tex_LoadingBack;
+	// Shaders
+	int shdr_QuadTex;		// Draws a textured quad
+	int shdr_QuadTexModel;	// Draws a textured quad with model matrix
 private:
 
-	unsigned int obj_quad_ColorText;
-	unsigned int obj_quad_FBO;
+	unsigned int obj_quadFullscreen;
 	unsigned int obj_quad_FBO_Debug[NUM_FBO_DEBUG];
 	string demoDir;
 	Resource();
 
-	void Load_Obj_Quad_ColorTextured();
-	void Load_Obj_Quad_FBO();
+	void Load_Obj_QuadFullscreen();
 	void Load_Obj_Quad_FBO_Debug();// Load debugging Quads for FBO
 	void Load_Shaders();
+	void Load_Tex_LoadingScreen();
 	void Load_Tex_Spontz();
 	void Load_Text_Fonts();
 

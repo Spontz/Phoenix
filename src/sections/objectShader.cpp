@@ -59,7 +59,7 @@ bool sObjectShader::load() {
 	local->exprPosition->SymbolTable.add_variable("sz", local->sz);
 	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
 	local->exprPosition->compileFormula();
-
+	Sleep(500); // TEMP for loading section
 	return true;
 }
 

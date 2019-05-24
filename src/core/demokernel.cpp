@@ -596,9 +596,9 @@ void demokernel::initSectionQueues() {
 	// preload, load and init loading section
 	ds_loading->load();
 	ds_loading->init();
-	ds_loading->exec();
 	ds_loading->loaded = TRUE;
 	ds_loading->inited = TRUE;
+	ds_loading->exec();
 
 	LOG->Info(LOG_MED,"  Loading section loaded, inited and executed for first time");
 

@@ -17,59 +17,27 @@ Resource* Resource::GetResource() {
 void Resource::loadAllResources()
 {
 	LOG->Info(LOG_LOW, "Start Loading Engine Internal Resources");
-	Load_Obj_Quad_ColorTextured();
-	Load_Obj_Quad_FBO();
+	// Load Objects
+	Load_Obj_QuadFullscreen();
 	Load_Obj_Quad_FBO_Debug();
+	// Load Shaders
 	Load_Shaders();
-	Load_Tex_Spontz();
-	Load_Text_Fonts();
+	// Load Textures
+	Load_Tex_LoadingScreen();	// Loading screen textures
+	Load_Tex_Spontz();			// Spontz ridiculous pictures
+	// Load Fonts
+	Load_Text_Fonts();			// Text fonts
 }
 
 Resource::Resource() {
-	obj_quad_ColorText = 0;
-	obj_quad_FBO = 0;
-	shdr_basic = -1;
+	obj_quadFullscreen = 0;
+	shdr_QuadTex = -1;
+	shdr_QuadTexModel = -1;
 	demoDir = DEMO->demoDir;
 }
 
-void Resource::Load_Obj_Quad_ColorTextured()
-{
-	float vertices[] = {
-		// positions	// colors	// texture coords
-		 1,  1, 0,		1, 0, 0,	1, 0, // top right
-		 1, -1, 0,		0, 1, 0,	1, 1, // bottom right
-		-1, -1, 0,		0, 0, 1,	0, 1, // bottom left
-		-1,  1, 0,		1, 1, 0,	0, 0  // top left 
-	};
-	unsigned int indices[] = {
-		0, 1, 3, // first triangle
-		1, 2, 3  // second triangle
-	};
-	unsigned int VBO, EBO;
-	glGenVertexArrays(1, &obj_quad_ColorText);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
 
-	glBindVertexArray(obj_quad_ColorText);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	// texture coord attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-}
-
-void Resource::Load_Obj_Quad_FBO()
+void Resource::Load_Obj_QuadFullscreen()
 {
 	float quadVertices[] = {
 	// positions   // texCoords
@@ -83,9 +51,9 @@ void Resource::Load_Obj_Quad_FBO()
 	};
 
 	unsigned int quadVBO;
-	glGenVertexArrays(1, &obj_quad_FBO);
+	glGenVertexArrays(1, &obj_quadFullscreen);
 	glGenBuffers(1, &quadVBO);
-	glBindVertexArray(obj_quad_FBO);
+	glBindVertexArray(obj_quadFullscreen);
 	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
@@ -124,23 +92,17 @@ void Resource::Load_Obj_Quad_FBO_Debug()
 	
 }
 
-
-
 void Resource::Load_Shaders()
 {
-	/////////////////////// BASIC: Textured shader
-	shdr_basic = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/basic.vert", demoDir + "/resources/shaders/basic/basic.frag");
-	if (shdr_basic != -1)
-		DEMO->shaderManager.shader[shdr_basic]->use();
-	else
-		LOG->Error("Could not load Basic shader!");
-	/////////////////////// BASIC: Shader to be used for FBO
-	shdr_basicFBO = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/basicQuadFBO.vert", demoDir + "/resources/shaders/basic/basicQuadFBO.frag");
-	if (shdr_basicFBO != -1)
-		DEMO->shaderManager.shader[shdr_basicFBO]->use();
-	else
-		LOG->Error("Could not load Basic FBO shader!");
+	shdr_QuadTex = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTex.vert", demoDir + "/resources/shaders/basic/QuadTex.frag");
+	shdr_QuadTexModel = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTexModel.vert", demoDir + "/resources/shaders/basic/QuadTexModel.frag");
+}
 
+// Load textures for loading screen
+void Resource::Load_Tex_LoadingScreen()
+{
+	tex_LoadingFront = DEMO->textureManager.addTexture(demoDir + "/resources/textures/loadingfront.jpg");
+	tex_LoadingBack = DEMO->textureManager.addTexture(demoDir + "/resources/textures/loadingback.jpg");
 }
 
 void Resource::Load_Tex_Spontz()
@@ -158,52 +120,39 @@ void Resource::Load_Text_Fonts()
 	DEMO->text = new Font(48, demoDir + "/resources/fonts/arial.ttf", demoDir + "/resources/shaders/font/font.vert", demoDir + "/resources/shaders/font/font.frag");
 }
 
-// Draw a Quad in full screen. A texture and a Shader can be specified
-void Resource::Draw_Obj_Quad(int texture_id, int shader_id)
+
+// Draw a Quad with texture in full screen
+void Resource::Draw_QuadFS(int textureNum)
 {
-	DEMO->textureManager.texture[texture_id]->bind();
-	DEMO->shaderManager.shader[shader_id]->use();
-	glBindVertexArray(obj_quad_ColorText);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(obj_quadFullscreen);
+	DEMO->shaderManager.shader[RES->shdr_QuadTex]->use();//TODO: Crear variable "Shader *My_shad" y usarla, como mas abajo hago
+	DEMO->shaderManager.shader[RES->shdr_QuadTex]->setValue("screenTexture", 0);
+	DEMO->textureManager.texture[textureNum]->bind();
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
 
-// Draw a Quad in full screen
-void Resource::Draw_Obj_Quad(glm::mat4 *model, glm::mat4 *view, glm::mat4 *projection, int tex_num)
+// Draw a Quad with a FBO in full screen
+void Resource::Draw_QuadFBOFS(int fboNum)
 {
-	Shader *shad = DEMO->shaderManager.shader[shdr_basic];
-	shad->use();
-	shad->setValue("model", *model);
-	shad->setValue("view", *view);
-	shad->setValue("projection", *projection);
-	shad->setValue("texture_diffuse1", 0);
-
-	Texture *tex = DEMO->textureManager.texture[tex_num];
-	tex->active();
-	tex->bind();
-
-	glBindVertexArray(obj_quad_ColorText);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(obj_quadFullscreen);
+	DEMO->shaderManager.shader[RES->shdr_QuadTex]->use();//TODO: Crear variable "Shader *My_shad" y usarla, como mas abajo hago
+	DEMO->shaderManager.shader[RES->shdr_QuadTex]->setValue("screenTexture", 0);
+	DEMO->fboManager.bind_tex(fboNum);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
 
-// Draw a Quad in full screen. A texture can be specified. Textured shader will be applied
-void Resource::Draw_Obj_Quad(int texture_id)
+// Draw a Quad in full screen. A texture can be specified and a model matrix
+void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *model)
 {
-	DEMO->textureManager.texture[texture_id]->bind();
-	Draw_Shdr_Basic();
-	glBindVertexArray(obj_quad_ColorText);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
-}
-
-// Draw a Quad with a FBO
-void Resource::Draw_Obj_QuadFBO(int fbo_num)
-{
-	glBindVertexArray(obj_quad_FBO);
-	DEMO->shaderManager.shader[RES->shdr_basicFBO]->use();
-	DEMO->shaderManager.shader[RES->shdr_basicFBO]->setValue("screenTexture", 0);
-	DEMO->fboManager.bind_tex(fbo_num);
+	glBindVertexArray(obj_quadFullscreen);
+	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTexModel];
+	my_shad->use();
+	my_shad->setValue("model", *model);
+	my_shad->setValue("screenTexture", 0);
+	DEMO->textureManager.texture[textureNum]->active();
+	DEMO->textureManager.texture[textureNum]->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
@@ -212,29 +161,11 @@ void Resource::Draw_Obj_QuadFBO(int fbo_num)
 void Resource::Draw_Obj_QuadFBO_Debug(int quad, int fbo_num)
 {
 	glBindVertexArray(obj_quad_FBO_Debug[quad]);
-	DEMO->shaderManager.shader[RES->shdr_basicFBO]->use();
-	DEMO->shaderManager.shader[RES->shdr_basicFBO]->setValue("screenTexture", 0);
+	DEMO->shaderManager.shader[RES->shdr_QuadTex]->use();
+	DEMO->shaderManager.shader[RES->shdr_QuadTex]->setValue("screenTexture", 0);
 	DEMO->fboManager.bind_tex(fbo_num);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
-}
-
-void Resource::Draw_Obj_QuadTex(int shader_num, glm::mat4 *model, int tex_num)
-{
-	Shader *my_shad = DEMO->shaderManager.shader[shader_num];
-	my_shad->use();
-	my_shad->setValue("model", *model);
-
-	glBindVertexArray(obj_quad_FBO);
-	DEMO->textureManager.texture[tex_num]->active();
-	DEMO->textureManager.texture[tex_num]->bind();
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
-}
-
-void Resource::Draw_Shdr_Basic()
-{
-	DEMO->shaderManager.shader[shdr_basic]->use();
 }
 
 
