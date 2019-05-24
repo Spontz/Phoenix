@@ -40,7 +40,6 @@ private:
 	void Load_Obj_QuadFullscreen();
 	void Load_Obj_Quad_FBO_Debug();// Load debugging Quads for FBO
 	void Load_Shaders();
-	void Load_Tex_LoadingScreen();
 	void Load_Tex_Spontz();
 	void Load_Text_Fonts();
 

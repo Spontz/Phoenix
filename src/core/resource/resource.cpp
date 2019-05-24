@@ -23,7 +23,6 @@ void Resource::loadAllResources()
 	// Load Shaders
 	Load_Shaders();
 	// Load Textures
-	Load_Tex_LoadingScreen();	// Loading screen textures
 	Load_Tex_Spontz();			// Spontz ridiculous pictures
 	// Load Fonts
 	Load_Text_Fonts();			// Text fonts
@@ -97,11 +96,6 @@ void Resource::Load_Shaders()
 	shdr_QuadTex = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTex.vert", demoDir + "/resources/shaders/basic/QuadTex.frag");
 	shdr_QuadTexAlpha = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTexAlpha.vert", demoDir + "/resources/shaders/basic/QuadTexAlpha.frag");
 	shdr_QuadTexModel = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTexModel.vert", demoDir + "/resources/shaders/basic/QuadTexModel.frag");
-}
-
-// Load textures for loading screen
-void Resource::Load_Tex_LoadingScreen()
-{
 }
 
 void Resource::Load_Tex_Spontz()

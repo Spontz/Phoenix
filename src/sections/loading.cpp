@@ -75,10 +75,8 @@ void sLoading::exec() {
 	glBlendFunc(GL_ONE, GL_ONE);
 	glDisable(GL_DEPTH_TEST);
 		// Background
-		//RES->Draw_QuadFS(RES->tex_LoadingBack, 1-zero2one);
 		RES->Draw_QuadFS(local->tex_back, 1 - zero2one);
 		// Foreground
-		//RES->Draw_QuadFS(RES->tex_LoadingFront, zero2one); 
 		RES->Draw_QuadFS(local->tex_front, zero2one);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
@@ -88,10 +86,11 @@ void sLoading::exec() {
 	glm::mat4 model = glm::mat4(1.0f);
 
 	model = glm::translate(model, glm::vec3(local->tx, local->ty, 0));  // Move the bar down
-	model = glm::scale(model, glm::vec3(zero2one, local->sy, 0)); // Scale the bar
+	model = glm::scale(model, glm::vec3(zero2one, local->sy, 0));		// Scale the bar
 	RES->Draw_Obj_QuadTex(local->tex_bar, &model);
 
 	GLDRV->swap_buffers();
+	Sleep(200);
 }
 
 void sLoading::end() {
