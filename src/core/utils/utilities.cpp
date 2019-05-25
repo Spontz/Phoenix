@@ -3,10 +3,8 @@
 
 #include "utilities.h"
 
-const std::string Util::CurrentTime() {
-	char	buf[80];
-	sprintf_s(buf, "%.4f", (float)glfwGetTime());
-	return buf;
+const double Util::CurrentTime() {
+	return glfwGetTime();
 }
 
 // Given a text, this routine extracts the first line (Starting from the given character position)
