@@ -39,13 +39,8 @@ void CLogger::Info(char level, const char *message, ...) {
 		va_start(argptr, message);
 		vsprintf_s(text, message, argptr);
 		va_end(argptr);
-		sprintf_s(chain, "Info  [%s] %s", Util::CurrentTime().c_str(), text);
-		m_Logfile << chain << "\n";
-#ifdef WIN32
-		OutputDebugStringA(chain);
-		if (text[0] != '\0' || text[strlen(text) - 1] != '\n')
-			OutputDebugStringA("\n");
-#endif
+		sprintf_s(chain, "Info  [%s] %s\n", Util::CurrentTime().c_str(), text);
+		m_Logfile << chain;
 	}
 }
 
@@ -59,9 +54,9 @@ void CLogger::Error(const char *message, ...) {
 		va_start(argptr, message);
 		vsprintf_s(text, message, argptr);
 		va_end(argptr);
-		sprintf_s(chain, "Error [%s] %s", Util::CurrentTime().c_str(), text);
-		m_Logfile << chain << "\n";
-#ifdef WIN32
+		sprintf_s(chain, "Error [%s] %s\n", Util::CurrentTime().c_str(), text);
+		m_Logfile << chain;
+#ifdef _DEBUG
 		OutputDebugStringA(chain);
 		if (text[0] != '\0' || text[strlen(text) - 1] != '\n')
 			OutputDebugStringA("\n");
