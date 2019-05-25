@@ -359,9 +359,9 @@ void demokernel::doExec() {
 		this->processTimer();
 	}
 	
-	// update sound driver once a frame //TODO: Not needed!
-	if (this->sound)
-		BASSDRV->update();
+	// update sound driver once a frame (seems that is not needed)
+	//if (this->sound)
+	//	BASSDRV->update();
 
 	// Update network driver
 	if (this->slaveMode)
@@ -393,6 +393,7 @@ void demokernel::restartDemo()
 	this->state = DEMO_PLAY;
 	if (this->sound) {
 		// PERE: There is no need to free sound, isn't it??
+		BASSDRV->pause();
 		//BASSDRV->end();
 		//BASSDRV->init();
 	}

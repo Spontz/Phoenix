@@ -148,7 +148,7 @@ void SectionManager::setSectionsStartTime(string amount, string identifiers)
 	std::stringstream ss(identifiers);
 	string ident;
 
-	// TODO: Seems that this is not needed, sections are always sent one by one...
+	// TODO: Seems that this is not needed, sections are always sent one by one... Ask Ivan if the editor is sending the secitons one bye one or splitted by comas
 
 	// Split the identifiers, separated by coma, and put it into "identifier" vector
 	while (ss >> ident)

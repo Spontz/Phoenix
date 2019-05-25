@@ -51,9 +51,3 @@ void bassDriver::end() {
 float bassDriver::sound_cpu() {
 	return BASS_GetCPU();
 }
-
-int bassDriver::sound_channels() {
-	// TODO: To be implemented in BASS, as it was in FMOD
-	//return FSOUND_GetChannelsPlaying();
-	return 0;
-}

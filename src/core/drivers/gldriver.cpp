@@ -144,6 +144,14 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			else if (key == KEY_CAPTURE) {
 				DEMO->camera->CapturePos();
 			}
+			else if (key == KEY_CAMRESET) {
+				DEMO->camera->Reset();
+			}
+			else if (key == KEY_MULTIPLIER) {
+				DEMO->camera->MovementSpeed = DEMO->camera->MovementSpeed + 5;
+				if (DEMO->camera->MovementSpeed > 50)
+					DEMO->camera->MovementSpeed = 5.0f; // Return to original camera speed
+			}
 
 		}
 	}
@@ -400,7 +408,8 @@ void glDriver::drawTiming() {
 	DEMO->text->glPrintf(-1, 0.8f, "%d - %.1f/%.1f", DEMO->frameCount, DEMO->runTime, DEMO->endTime);
 	DEMO->text->glPrintf(-1, 0.7f, "sound %0.1f", BASSDRV->sound_cpu());
 	DEMO->text->glPrintf(-1, 0.6f, "texmem %.2fM", DEMO->textureManager.mem);
-	DEMO->text->glPrintf(-1, 0.5f, "%s", state);
+	DEMO->text->glPrintf(-1, 0.5f, "Cam Speed: %.0f", DEMO->camera->MovementSpeed);
+	DEMO->text->glPrintf(-1, 0.4f, "%s", state);
 }
 
 // Draw the Fbo output
@@ -411,7 +420,7 @@ void glDriver::drawFbo() {
 
 	int fbo_num_min = ((DEMO->drawFbo - 1)*NUM_FBO_DEBUG);
 	int fbo_num_max = (NUM_FBO_DEBUG-1)+ ((DEMO->drawFbo - 1)*NUM_FBO_DEBUG);
-	DEMO->text->glPrintf(-1, 0.4f, "Showing FBO's: %d to %d", fbo_num_min, fbo_num_max);
+	DEMO->text->glPrintf(-1, -0.5f, "Showing FBO's: %d to %d", fbo_num_min, fbo_num_max);
 	for (int i = 0; i < NUM_FBO_DEBUG; i++) {
 		int fbo_num = (0+i)+((DEMO->drawFbo-1)*NUM_FBO_DEBUG);
 		RES->Draw_Obj_QuadFBO_Debug(i, fbo_num);

@@ -38,7 +38,7 @@
 #define KEY_FOVDOWN			GLFW_KEY_A
 #define KEY_ROLLUP			GLFW_KEY_W
 #define KEY_ROLLDOWN	    GLFW_KEY_S
-#define KEY_MULTIPLIER		GLFW_KEY_RIGHT_SHIFT
+#define KEY_MULTIPLIER		GLFW_KEY_RIGHT_ALT
 
 // definition of spline control keys
 #define KEY_NUM_1			GLFW_KEY_1

@@ -97,6 +97,9 @@ void sSound::init() {
 			LOG->Error("Sound [%s]: BASS_ChannelSetPosition returned error: %i", this->identifier.c_str(), BASS_ErrorGetCode());
 	}
 	
+	if (FALSE == BASS_Start())
+		LOG->Error("Sound [%s]: BASS_Start returned error: %i", this->identifier.c_str(), BASS_ErrorGetCode());
+
 	if (FALSE == BASS_ChannelPlay(local->str, FALSE))
 		LOG->Error("Sound [%s]: BASS_ChannelPlay returned error: %i", this->identifier.c_str(), BASS_ErrorGetCode());
 		
@@ -161,52 +164,6 @@ void sSound::exec() {
 		}
 		local->energy[BUFFER_SAMPLES - 1] = instant;
 	}
-
-	//TODO: Draw the spectrum analyzer... it's worth it¿?
-	/*
-	// Spectrum drawing (Only in debug mode, when the timing information is also being displayed)
-	if ((DEMO->debug) && (DEMO->drawSound)) {
-		glDisable(GL_DEPTH_TEST);
-
-		if (this->hasBlend) {
-			glEnable(GL_BLEND);
-			glBlendFunc(mySection->sfactor, mySection->dfactor);
-		}
-		camera_set2d();
-		glDisable(GL_TEXTURE_2D);
-		glColor4f(1, 1, 1, 1);
-		glBegin(GL_LINES);
-		for (i = 0; i < BUFFER_SAMPLES; i++) {
-			glVertex2f(i / 640.0f, fft[i]);
-			glVertex2f(i / 640.0f, 0);
-		}
-		glEnd();
-
-		// Draws a quad when a beat is detected
-		if (local->intensity > 0) {
-			glColor4f(local->intensity, local->intensity, local->intensity, local->intensity);
-			//tex_bind(local->texture);
-			glBegin(GL_QUADS);
-			glTexCoord2f(0, 0);
-			glVertex2f(0.9f, 0.9f);
-
-			glTexCoord2f(1, 0);
-			glVertex2f(1, 0.9f);
-
-			glTexCoord2f(1, 1);
-			glVertex2f(1, 1);
-
-			glTexCoord2f(0, 1);
-			glVertex2f(0.9f, 1);
-			glEnd();
-		}
-		camera_restore();
-
-		if (this->hasBlend) glDisable(GL_BLEND);
-		glEnable(GL_DEPTH_TEST);
-	}
-	*/
-	
 }
 
 void sSound::end() {

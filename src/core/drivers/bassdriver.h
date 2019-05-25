@@ -25,7 +25,6 @@ public:
 	void end();
 
 	float sound_cpu();
-	int sound_channels();
 
 private:
 

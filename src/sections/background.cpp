@@ -2,8 +2,8 @@
 
 typedef enum
 {
-	background_drawing_mode__fit_to_viewport = 0,	// ajusta la imagen para que ocupe todo el viewport (con distorsion de aspect)
-	background_drawing_mode__fit_to_content = 1		// ajusta la imagen para se vea completa (sin distorsion de aspect)
+	background_drawing_mode__fit_to_viewport = 0,	// adjust the image to fit all the viewport, but it may break the image aspect ratio
+	background_drawing_mode__fit_to_content = 1		// adjust the image in order to be seen completelly, but keeping the image aspect ratio
 } enum_background_drawing_mode;
 
 typedef struct {

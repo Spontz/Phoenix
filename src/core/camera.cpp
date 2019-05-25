@@ -39,6 +39,20 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 	updateCameraVectors();
 }
 
+void Camera::Reset()
+{
+	Front = glm::vec3(0.0f, 0.0f, -1.0f);
+	MovementSpeed = SPEED;
+	MouseSensitivity = SENSITIVITY;
+	Zoom = ZOOM;
+
+	Position = glm::vec3(0.0f, 0.0f, 3.0f);
+	WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+	Yaw = YAW;
+	Pitch = PITCH;
+	updateCameraVectors();
+}
+
 glm::mat4 Camera::GetViewMatrix()
 {
 	return glm::lookAt(Position, Position + Front, Up);
