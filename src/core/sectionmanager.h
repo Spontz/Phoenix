@@ -17,9 +17,7 @@ enum SectionType {
 
 	Background,
 	Video,
-	sCamera,
-	sCamera2,
-	sCamera3,
+	CameraSec,
 	Image,
 	Image2,
 	Image2D,

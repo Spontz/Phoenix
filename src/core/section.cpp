@@ -33,13 +33,14 @@ Section::Section() {
 	for (i=0; i<SECTION_STRINGS; i++)
 		strings[i] = "";
 	splineNum	= 0;
-	// TODO: Add splines support
-	//Motion*		splines[SECTION_SPLINES];			// spline pointers
-	for (i = 0; i < SECTION_SPLINES; i++) {
-		splineFiles[i] = "";
-		splineDuration[i] = 0;
+}
+
+void Section::loadSplines()
+{
+	int i;
+
+	for (i = 0; i < this->splineNum; i++) {
+		this->spline[i]->load();
 	}
-	
-	
 }
 

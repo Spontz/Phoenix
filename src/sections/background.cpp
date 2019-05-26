@@ -94,5 +94,4 @@ void sBackground::exec() {
 }
 
 void sBackground::end() {
-	LOG->Info(LOG_HIGH, "Background has finished!");
 }

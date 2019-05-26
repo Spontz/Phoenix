@@ -11,6 +11,7 @@ using namespace std;
 
 class sLoading : public Section { public:	sLoading();  bool load(); void init(); void exec(); void end(); };
 class sSound : public Section { public:	sSound();  bool load(); void init(); void exec(); void end(); };
+class sCamera : public Section { public:	sCamera();  bool load(); void init(); void exec(); void end(); };
 class sBackground : public Section { public:	sBackground();  bool load(); void init(); void exec(); void end(); };
 class sFboBind : public Section { public:	sFboBind();  bool load(); void init(); void exec(); void end(); };
 class sFboUnbind : public Section { public:	sFboUnbind();  bool load(); void init(); void exec(); void end(); };

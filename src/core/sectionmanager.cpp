@@ -18,9 +18,7 @@ tSectionID sectionID[] = {
 	// built-in sections
 	{"background",			SectionType::Background},
 	{"video",				SectionType::Video},
-	{"camera",				SectionType::sCamera},
-	{"camera2",				SectionType::sCamera2},
-	{"camera3",				SectionType::sCamera3},
+	{"camera",				SectionType::CameraSec},
 	{"image",				SectionType::Image},
 	{"image2",				SectionType::Image2},
 	{"image2D",				SectionType::Image2D},
@@ -71,6 +69,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::Sound:
 		mySection = new sSound();
+		break;
+	case SectionType::CameraSec:
+		mySection = new sCamera();
 		break;
 	case SectionType::Background:
 		mySection = new sBackground();
@@ -172,8 +173,15 @@ void SectionManager::setSectionsStartTime(string amount, string identifiers)
 			if (ds->identifier == identifier[j]) {
 				ds->startTime = startTime;
 				ds->duration = ds->endTime - ds->startTime;
+				// If the section has splines, reload it. This way they are recalculated
+				if (ds->splineNum > 0) {
+					for (int k = 0; k < ds->splineNum; k++) {
+						ds->spline[k]->duration = ds->duration;
+					}
+					ds->loadSplines();
+				}
 				LOG->Info(LOG_LOW, "Section [%s] changed StartTime: %.3f", ds->identifier.c_str(), ds->startTime);
-				// TODO: We should reload splines here
+
 			}
 		}
 	}
@@ -206,8 +214,14 @@ void SectionManager::setSectionsEndTime(string amount, string identifiers)
 			if (ds->identifier == identifier[j]) {
 				ds->endTime = endTime;
 				ds->duration = ds->endTime - ds->startTime;
+				// If the section has splines, reload it. This way they are recalculated
+				if (ds->splineNum > 0) {
+					for (int k = 0; k < ds->splineNum; k++) {
+						ds->spline[k]->duration = ds->duration;
+					}
+					ds->loadSplines();
+				}
 				LOG->Info(LOG_LOW, "Section [%s] changed EndTime: %.3f", ds->identifier.c_str(), ds->endTime);
-				// TODO: We should reload splines here
 			}
 		}
 	}

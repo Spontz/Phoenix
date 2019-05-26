@@ -91,7 +91,8 @@ int Util::getFloatVector(char *line, float *vector, int max) {
 
 		// convert string to float
 		if (n > 0) {
-			if (chan >= max) return 0;// error("Script parser: too many floats in vector '%s'", line);
+			if (chan >= max)
+				return -1;// error("Script parser: too many floats in vector '%s'", line);
 			sscanf(result, "%f", &vector[chan]);
 			chan++;
 		}

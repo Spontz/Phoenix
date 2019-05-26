@@ -5,6 +5,7 @@
 #define DEMOKERNEL_H
 
 #include <iostream>
+#include "core/spline.h"
 #include "core/section.h"
 #include "core/sectionmanager.h"
 #include "sections/sections.h"
@@ -77,8 +78,8 @@ public:
 	FboManager		fboManager;
 	ModelManager	modelManager;
 	ShaderManager	shaderManager;
-	Camera *camera;		//TODO: Implement a camera manager... does it makes sense¿?
-	Font	*text;
+	Camera			*camera;
+	Font			*text;
 
 	// loading information
 	//int numSections;
@@ -174,17 +175,14 @@ private:
 	void reInitSectionQueues();		// ReInit Section Queues
 	void processSectionQueues();	// Process Section Queues
 
-
 	// Scripts (SPO files) management
 	void load_spo(string sFile);
 	int load_scriptData(string sScript, string sFile);
 	string load_file(string sFile);
-	int getSectionByName(char *name);
 	int getCodeByName(char *name, glTable_t *table, int size);
 	int getBlendCodeByName(char *name);
 	int getBlendEquationCodeByName(char *name);
 	int getAlphaCodeByName(char *name);
-	int getRenderModeByName(char *name);
 };
 // ******************************************************************
 

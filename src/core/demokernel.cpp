@@ -616,9 +616,8 @@ void demokernel::initSectionQueues() {
 			// If the section is not the "loading", then we add id to the Ready Section lst
 			if (ds->type != SectionType::Loading) {
 				this->sectionManager.loadSection.push_back(i);
-				// TODO: SPLINES Support
 				// load section splines (to avoid code load in the sections)
-				//loadSplines(ds);
+				//loadSplines(ds); // TODO: Delete this once splines are working
 			}
 		}
 	}
@@ -798,6 +797,7 @@ int demokernel::load_scriptData(string sScript, string sFile) {
 	unsigned int	startPosition = 0;
 	int				sec_id = -1;
 	Section			*new_sec = NULL;
+	Spline			*new_spl = NULL;
 
 	// initialize script parse variables
 	lineNum = 0;
@@ -988,10 +988,12 @@ int demokernel::load_scriptData(string sScript, string sFile) {
 					LOG->Error("Invalid spline");
 					break;
 				}
-				new_sec->splineFiles[new_sec->splineNum] = _strdup(tmp);
-				new_sec->splineDuration[new_sec->splineNum] = fvalue;
+				new_spl = new Spline();
+				new_spl->filename = _strdup(tmp); //TODO: És necessari el _strdup?? pq no "=" i ja esta?
+				new_spl->duration = fvalue;
+				new_sec->spline.push_back(new_spl);
 				new_sec->splineNum++;
-				LOG->Info(LOG_LOW, "  Loaded Spline");
+				LOG->Info(LOG_LOW, "  Loaded Spline: %s", new_spl->filename.c_str());
 				break;
 
 			default:
@@ -1064,23 +1066,4 @@ int demokernel::getBlendEquationCodeByName(char *name) {
 
 int demokernel::getAlphaCodeByName(char *name) {
 	return getCodeByName(name, alphaFunc, ALPHA_FUNC);
-}
-
-int demokernel::getRenderModeByName(char *name) {
-	//return getCodeByName(name, renderMode, RENDER_MODE);
-	return -1;
-}
-
-
-int demokernel::getSectionByName(char * name) {
-	/*	int i;
-
-		// get section index
-		for (i = 0; i < SECTIONS_NUMBER; i++) {
-			if (_strcmpi(name, sectionFunction[i].scriptName) == 0) {
-				return i;
-			}
-		}
-		*/
-	return -1;
 }

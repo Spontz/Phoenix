@@ -117,6 +117,16 @@ void Camera::CapturePos()
 	camFile.close();
 }
 
+void Camera::setCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch, float zoom)
+{
+	Position = position;
+	WorldUp = up;
+	Yaw = yaw;
+	Pitch = pitch;
+	Zoom = zoom;
+	updateCameraVectors();
+}
+
 glm::mat4 Camera::getOrthoMatrix_Projection()
 {
 	return glm::ortho(-1, 1, 1, -1, -1, 2);;

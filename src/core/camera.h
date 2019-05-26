@@ -58,6 +58,7 @@ public:
 	// Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
 	void ProcessMouseScroll(float yoffset);
 	void CapturePos();
+	void setCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch, float zoom);
 	glm::mat4 getOrthoMatrix_Projection();
 	glm::mat4 getOrthoMatrix_View();
 
