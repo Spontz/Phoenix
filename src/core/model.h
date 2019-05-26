@@ -32,8 +32,9 @@ class Model
 public:
 	vector<int> textures_loaded;
 	vector<Mesh> meshes;
-	string directory;
-	string filename;
+	string directory;	// Path of the model file
+	string filename;	// Name of the model file
+	string filepath;	// Full path of the model file
 	bool gammaCorrection;
 
 	// constructor, expects a filepath to a 3D model.

@@ -17,7 +17,7 @@ int ModelManager::addModel(string path) {
 
 	// check if Model is already loaded, then we just return the ID of our Model
 	for (i = 0; i < model.size(); i++) {
-		if (model[i]->filename.compare(path) == 0) {
+		if (model[i]->filepath.compare(path) == 0) {
 			return i;
 		}
 	}

@@ -35,19 +35,19 @@ void Model::Draw(Shader shader)
 
 void Model::loadModel(string const &path)
 {
-	filename = path;
+	filepath = path;
 	// read file via ASSIMP
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 	// check for errors
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 	{
-		LOG->Error("Error loading file [%s]: %s", filename.c_str(), importer.GetErrorString());
+		LOG->Error("Error loading file [%s]: %s", filepath.c_str(), importer.GetErrorString());
 		return;
 	}
-	// retrieve the directory path of the filepath
-	directory = filename.substr(0, filename.find_last_of('/'));
-
+	// retrieve the directory path of the filepath and the filename
+	directory = filepath.substr(0, filepath.find_last_of('/'));
+	filename = filepath.substr(filepath.find_last_of('/')+1, filepath.length());
 	// process ASSIMP's root node recursively
 	processNode(scene->mRootNode, scene);
 }
@@ -159,9 +159,12 @@ vector<int> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, str
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
 		aiString filepath;
+		string fullpath;
 		mat->GetTexture(type, i, &filepath);
-		string fullpath = directory + "/" + filepath.C_Str();
-		int tex = DEMO->textureManager.addTexture(fullpath.c_str());
+		if (0 == strcmp(filepath.C_Str(), "$texture_dummy.bmp")) // Prevent a bug in assimp: In some cases, the texture by default is named "$texture_dummy.bmp", we change this to "<model_name.jpg>"
+			filepath = filename.substr(0, filename.find_last_of('.')) + ".jpg";
+		fullpath = directory + "/" + filepath.C_Str();
+		int tex = DEMO->textureManager.addTexture(fullpath.c_str(), false);
 		textures.push_back(tex);
 	}
 	return textures;
