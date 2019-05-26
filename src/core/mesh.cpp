@@ -40,6 +40,8 @@ void Mesh::Draw(Shader shader)
 	unsigned int heightNr = 1;
 	for (unsigned int i = 0; i < textures.size(); i++)
 	{
+		if (textures[i] == -1) // Avoid illegal access
+			return;
 		Texture *tex = DEMO->textureManager.texture[textures[i]];
 		tex->active(i);		// active proper texture unit before binding
 		// retrieve texture number (the N in diffuse_textureN)

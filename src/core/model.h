@@ -30,6 +30,7 @@ using namespace std;
 class Model
 {
 public:
+	const aiScene* scene;
 	vector<int> textures_loaded;
 	vector<Mesh> meshes;
 	string directory;	// Path of the model file

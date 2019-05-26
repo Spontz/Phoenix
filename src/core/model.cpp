@@ -38,7 +38,7 @@ void Model::loadModel(string const &path)
 	filepath = path;
 	// read file via ASSIMP
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals);
 	// check for errors
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 	{
@@ -161,8 +161,8 @@ vector<int> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, str
 		aiString filepath;
 		string fullpath;
 		mat->GetTexture(type, i, &filepath);
-		if (0 == strcmp(filepath.C_Str(), "$texture_dummy.bmp")) // Prevent a bug in assimp: In some cases, the texture by default is named "$texture_dummy.bmp", we change this to "<model_name.jpg>"
-			filepath = filename.substr(0, filename.find_last_of('.')) + ".jpg";
+		if (0 == strcmp(filepath.C_Str(), "$texture_dummy.bmp"))				// Prevent a bug in assimp: In some cases, the texture by default is named "$texture_dummy.bmp"
+			filepath = filename.substr(0, filename.find_last_of('.')) + ".jpg";	// In that case, we change this to "<model_name.jpg>"
 		fullpath = directory + "/" + filepath.C_Str();
 		int tex = DEMO->textureManager.addTexture(fullpath.c_str(), false);
 		textures.push_back(tex);
