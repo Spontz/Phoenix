@@ -45,8 +45,7 @@ Font::Font(int size, string font_path, string vshader_path, string fshader_path)
 	// First we need to know the Atlas texture size, and create it
 	width = 0;
 	height = 0;
-	//int roww = 0;
-	//int rowh = 0;
+	int char_width = 0; // We will add 1 pixed to the with, to avoid interferences between chars
 	for (GLubyte c = 32; c < 128; c++) {
 		// Load character glyph 
 		if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
@@ -55,12 +54,13 @@ Font::Font(int size, string font_path, string vshader_path, string fshader_path)
 		}
 		
 		// Calculate atlas size
-		width += glyphSlot->bitmap.width;
+		char_width = glyphSlot->bitmap.width + 1;
+		width += char_width;
 		height = (int)std::fmax(height, glyphSlot->bitmap.rows);
 	}
 	// Generate the Atlas texture
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
-	glActiveTexture(GL_TEXTURE0);// Needed¿?
+	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	glTexImage2D(GL_TEXTURE_2D,	0, GL_RED,	width, height, 0, GL_RED, GL_UNSIGNED_BYTE, 0); // Load an empty texture, we will fill it later with glTexSubImage2D
@@ -74,12 +74,14 @@ Font::Font(int size, string font_path, string vshader_path, string fshader_path)
 	// Now we put all the characters into the texture
 	int ox = 0;
 	int oy = 0;
+	char_width = 0;
 	for (GLubyte c = 32; c < 128; c++) {
 		// Load character glyph 
 		if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
 			LOG->Error("Freetype: Failed to load Glyph");
 			continue;
 		}
+		char_width = glyphSlot->bitmap.width + 1;
 		glTexSubImage2D(GL_TEXTURE_2D, 0, ox, oy, glyphSlot->bitmap.width, glyphSlot->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyphSlot->bitmap.buffer);
 		//LOG->Info(LOG_LOW, "Inserted char %c, texture in %dx%d pixels, size: %dx%d", c, ox, oy, glyphSlot->bitmap.width, glyphSlot->bitmap.rows);
 		// Now store character for later use
@@ -92,7 +94,7 @@ Font::Font(int size, string font_path, string vshader_path, string fshader_path)
 		//LOG->Info(LOG_LOW, "Inserted char %c, size: %dx%d, offset: %.4f, offsetSize: %.4f", c, character.Size.x, character.Size.y, character.coordOffset.x, (float)(character.Size.x) / (float)width);
 		Characters.insert(std::pair<GLchar, Char>(c, character));
 
-		ox += glyphSlot->bitmap.width;
+		ox += char_width;
 	}
 	
 	// Free memory
