@@ -112,10 +112,10 @@ void sObjectShader::exec() {
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(local->tx, local->ty, local->tz));
+	model = glm::rotate(model, glm::radians(local->rx), glm::vec3(1, 0, 0));
+	model = glm::rotate(model, glm::radians(local->ry), glm::vec3(0, 1, 0));
+	model = glm::rotate(model, glm::radians(local->rz), glm::vec3(0, 0, 1));
 	model = glm::scale(model, glm::vec3(local->sx, local->sy, local->sz));
-	model = glm::rotate(model, (float)local->rx, glm::vec3(1, 0, 0));
-	model = glm::rotate(model, (float)local->ry, glm::vec3(0, 1, 0));
-	model = glm::rotate(model, (float)local->rz, glm::vec3(0, 0, 1));
 	my_shader->setValue("model", model);
 
 	// Set any other value to shader
