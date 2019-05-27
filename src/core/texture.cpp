@@ -55,7 +55,7 @@ bool Texture::load(const std::string & file_name, bool flip)
 		is_loaded = true;
 	}
 	else
-		LOG->Error("Falied loading texture form file: %s", filename.c_str());
+		LOG->Error("Failed loading texture form file: %s", filename.c_str());
 
 	stbi_image_free(data);
 
