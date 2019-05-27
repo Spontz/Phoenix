@@ -9,6 +9,7 @@ typedef struct {
 	int			shader;
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
+	SkinnedMesh *my_SKmesh; // TODO: Replace this shit for a model, and use modelmanager
 
 	float	tx,ty,tz;// Translation
 	float	rx,ry,rz;// Rotation
@@ -25,8 +26,6 @@ static objectAnimShader_section *local;
 sObjectAnimShader::sObjectAnimShader() {
 	type = SectionType::ObjectAnimShader;
 }
-
-static SkinnedMesh *my_SKmesh;
 
 bool sObjectAnimShader::load() {
 	string s_demo = DEMO->demoDir;
@@ -45,8 +44,8 @@ bool sObjectAnimShader::load() {
 	
 
 	// Load model and shader
-	my_SKmesh = new SkinnedMesh();
-	my_SKmesh->loadMesh(s_demo + this->strings[0]);
+	local->my_SKmesh = new SkinnedMesh();
+	local->my_SKmesh->loadMesh(s_demo + this->strings[0]);
 	local->model = DEMO->modelManager.addModel(s_demo + this->strings[0]);
 	local->shader = DEMO->shaderManager.addShader(s_demo + this->strings[1], s_demo + this->strings[2]);
 	if (local->model < 0 || local->shader < 0)
@@ -117,10 +116,10 @@ void sObjectAnimShader::exec() {
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(local->tx, local->ty, local->tz));
+	model = glm::rotate(model, glm::radians(local->rx), glm::vec3(1, 0, 0));
+	model = glm::rotate(model, glm::radians(local->ry), glm::vec3(0, 1, 0));
+	model = glm::rotate(model, glm::radians(local->rz), glm::vec3(0, 0, 1));
 	model = glm::scale(model, glm::vec3(local->sx, local->sy, local->sz));
-	model = glm::rotate(model, (float)local->rx, glm::vec3(1, 0, 0));
-	model = glm::rotate(model, (float)local->ry, glm::vec3(0, 1, 0));
-	model = glm::rotate(model, (float)local->rz, glm::vec3(0, 0, 1));
 	my_shader->setValue("model", model);
 
 	// Set any other value to shader
@@ -152,17 +151,24 @@ void sObjectAnimShader::exec() {
 		sampler2D = local->vars->sampler2D[i];
 		my_shader->setValue(sampler2D->name, sampler2D->texGLid);
 	}
+	// Guarrada para pasar una textura
+	glUniform1i(glGetUniformLocation(my_shader->ID, "texture_diffuse1"), 0); // Pick some random texture
+	DEMO->textureManager.texture[0]->active();
+	DEMO->textureManager.texture[0]->bind();
+	//////// End guarrada
 
 	// Send Bones info to shader
-	vector<glm::mat4> Transforms;
-	my_SKmesh->boneTransform(100, Transforms);
-	glUniformMatrix4fv(glGetUniformLocation(my_shader->ID, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
-	my_SKmesh->render(my_shader->ID);
+	//vector<glm::mat4> Transforms;
+	//my_SKmesh->boneTransform(0, Transforms);
+	//glUniformMatrix4fv(glGetUniformLocation(my_shader->ID, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
+	local->my_SKmesh->setBoneTransformations(my_shader->ID, this->runTime);
+	local->my_SKmesh->render(my_shader->ID);
 	//std::vector<glm::mat4> transforms = my_model->boneTransform("./data/pool/models/anim/anim.md5anim", 0);// this->runTime);
 	//glUniformMatrix4fv(glGetUniformLocation(my_shader->ID, "gBones"), (GLsizei)transforms.size(), GL_FALSE, glm::value_ptr(transforms[0]));
 	
 	//Sleep(1000);
-	
+	//my_model->Draw(*my_shader);
+
 	if (local->drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

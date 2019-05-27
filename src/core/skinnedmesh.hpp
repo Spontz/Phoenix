@@ -26,6 +26,9 @@ public:
 	SkinnedMesh();
 	~SkinnedMesh();
 
+	unsigned int getNumAnimations();
+	void setAnimation(unsigned int a);
+
 	bool loadMesh(const std::string& fileName);
 
 	void render(const GLuint& shaderProgram);
@@ -36,6 +39,7 @@ public:
 	}
 
 	void boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transforms);
+	void setBoneTransformations(GLuint shaderProgram, GLfloat currentTime);
 
 private:
 #define NUM_BONES_PER_VERTEX 4
@@ -136,6 +140,8 @@ private:
 
 	/* duration of the animation, can be changed if frames are not present in all interval */
 	double animDuration;
+
+	unsigned int currentAnimation;
 
 	const aiScene* m_pScene;
 	Assimp::Importer m_Importer;

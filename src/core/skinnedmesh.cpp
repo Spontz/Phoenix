@@ -1,6 +1,8 @@
 #include "skinnedmesh.hpp"
 
 #include <iostream>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm\gtx\string_cast.hpp>
 
 #define POSITION_LOCATION    0
 #define NORMAL_LOCATION      1
@@ -13,17 +15,39 @@ static inline glm::vec3 vec3_cast(const aiVector3D &v) { return glm::vec3(v.x, v
 static inline glm::vec2 vec2_cast(const aiVector3D &v) { return glm::vec2(v.x, v.y); } // it's aiVector3D because assimp's texture coordinates use that
 static inline glm::quat quat_cast(const aiQuaternion &q) { return glm::quat(q.w, q.x, q.y, q.z); }
 static inline glm::mat4 mat4_cast(const aiMatrix4x4 &m) { return glm::transpose(glm::make_mat4(&m.a1)); }
+static inline glm::mat4 mat4_cast(const aiMatrix3x3 &m) {
+	return glm::mat4(
+		m.a1, m.a2, m.a3, 0.0f,
+		m.b1, m.b2, m.b3, 0.0f,
+		m.c1, m.c2, m.c3, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f);
+}
 
 
+
+void SkinnedMesh::setBoneTransformations(GLuint shaderProgram, GLfloat currentTime)
+{
+	std::vector<glm::mat4> Transforms;
+	boneTransform((float)currentTime, Transforms);
+	for (unsigned int i = 0; i < Transforms.size(); ++i)
+	{
+		const std::string name = "gBones[" + std::to_string(i) + "]";
+		//LOG->Info(LOG_LOW, "Transforms: %s", glm::to_string(Transforms[i]).c_str());
+		GLuint boneTransform = glGetUniformLocation(shaderProgram, name.c_str());
+		//glUniformMatrix4fv(boneTransform, 1, GL_FALSE, glm::value_ptr(Transforms[i]));
+		Transforms[i] = glm::transpose(Transforms[i]);
+		glUniformMatrix4fv(boneTransform, 1, GL_TRUE, glm::value_ptr(Transforms[i]));
+	}
+}
 
 glm::mat3 aiMatrix3x3ToGlm(const aiMatrix3x3 &from)
 {
 	glm::mat3 to;
 	//the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
-	to[0][0] = from.a1; to[1][0] = from.a2;	to[2][0] = from.a3; 
-	to[0][1] = from.b1; to[1][1] = from.b2;	to[2][1] = from.b3; 
-	to[0][2] = from.c1; to[1][2] = from.c2;	to[2][2] = from.c3; 
-	
+	to[0][0] = from.a1; to[1][0] = from.a2;	to[2][0] = from.a3;
+	to[0][1] = from.b1; to[1][1] = from.b2;	to[2][1] = from.b3;
+	to[0][2] = from.c1; to[1][2] = from.c2;	to[2][2] = from.c3;
+
 	return to;
 }
 
@@ -51,7 +75,7 @@ void SkinnedMesh::VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
 }
 
 /* Init */
-SkinnedMesh::SkinnedMesh()
+SkinnedMesh::SkinnedMesh():currentAnimation(0)
 {
 	m_VAO = 0;
 	for (unsigned int i = 0; i < NUM_VBs; ++i)
@@ -69,6 +93,8 @@ SkinnedMesh::~SkinnedMesh()
 
 void SkinnedMesh::Clear()
 {
+	/* Textures must not be deleted because they are GLuint */
+
 	/* Deletes VBOs */
 	if (m_Buffers[0] != 0)
 		glDeleteBuffers(NUM_VBs, m_Buffers);
@@ -110,12 +136,33 @@ bool SkinnedMesh::loadMesh(const std::string& fileName)
 	else
 	{
 		std::cout << "Error parsing : " << fileName << " : " << m_Importer.GetErrorString() << std::endl;
+		return false;
 	}
 
 	/* Make sure the VAO is not changed from the outside */
 	glBindVertexArray(0);
 
+	/*
+	for (int i = 0; i < m_Entries.size(); i++) {
+		LOG->Info(LOG_LOW, "Info for Mesh num: %d", i);
+		LOG->Info(LOG_LOW, "NumIndices: %d", m_Entries[i].NumIndices);
+		LOG->Info(LOG_LOW, "BaseVertex: %d", m_Entries[i].BaseVertex);
+		LOG->Info(LOG_LOW, "BaseIndex: %d", m_Entries[i].BaseIndex);
+		LOG->Info(LOG_LOW, "MaterialIndex: %d", m_Entries[i].MaterialIndex);
+	}
+	*/
 	return ret;
+}
+
+unsigned int SkinnedMesh::getNumAnimations()
+{
+	return m_pScene->mNumAnimations;
+}
+
+void SkinnedMesh::setAnimation(unsigned int a)
+{
+	if (a >= 0 && a < getNumAnimations())
+		currentAnimation = a;
 }
 
 bool SkinnedMesh::InitFromScene(const aiScene* pScene, const std::string& fileName)
@@ -334,7 +381,20 @@ void SkinnedMesh::render(const GLuint& shaderProgram)
 	glBindVertexArray(m_VAO);
 
 	for (unsigned int i = 0; i < m_Entries.size(); i++) {
-		
+		const unsigned int MaterialIndex = m_Entries[i].MaterialIndex;
+
+		assert(MaterialIndex < m_Textures.size());
+
+		//if (m_Textures[MaterialIndex]) {
+		//	glActiveTexture(GL_TEXTURE0);
+		//	glBindTexture(GL_TEXTURE_2D, m_Textures[MaterialIndex]);
+
+
+			/* the texture uniform */
+			//GLint textureLocation = glGetUniformLocation(shaderProgram, "texture1");
+			//glUniform1i(textureLocation, 0);
+		//}
+
 		glDrawElementsBaseVertex(GL_TRIANGLES,
 			m_Entries[i].NumIndices,
 			GL_UNSIGNED_INT,
@@ -449,7 +509,7 @@ void SkinnedMesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, co
 {
 	std::string NodeName(pNode->mName.data);
 
-	const aiAnimation* pAnimation = m_pScene->mAnimations[0];
+	const aiAnimation* pAnimation = m_pScene->mAnimations[currentAnimation];
 
 	aiMatrix4x4 tp1 = pNode->mTransformation;
 	glm::mat4 NodeTransformation = aiMatrix4x4ToGlm(tp1);
@@ -459,27 +519,25 @@ void SkinnedMesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, co
 		// Interpolate scaling and generate scaling transformation matrix
 		aiVector3D Scaling;
 		CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
-		glm::mat4 ScalingM;
-		
+		glm::mat4 ScalingM = glm::mat4(1.0);
 		ScalingM = glm::scale(ScalingM, glm::vec3(Scaling.x, Scaling.y, Scaling.z));
-
+		
 		// Interpolate rotation and generate rotation transformation matrix
 		aiQuaternion RotationQ;
 		CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-		aiMatrix3x3 tp = RotationQ.GetMatrix();
-		glm::mat4 RotationM = aiMatrix3x3ToGlm(tp);
+		glm::mat4 RotationM = mat4_cast(RotationQ.GetMatrix());
 
 		// Interpolate translation and generate translation transformation matrix
 		aiVector3D Translation;
-		
 		CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
-		glm::mat4 TranslationM;
+		glm::mat4 TranslationM = glm::mat4(1.0f);
 		TranslationM = glm::translate(TranslationM, glm::vec3(Translation.x, Translation.y, Translation.z));
 
 		// Combine the above transformations
 		NodeTransformation = TranslationM * RotationM *ScalingM;
 	}
-
+	
+	// Combine with node Transformation with Parent Transformation
 	glm::mat4 GlobalTransformation = ParentTransform * NodeTransformation;
 
 	if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) {
@@ -494,20 +552,27 @@ void SkinnedMesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, co
 
 void SkinnedMesh::boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transforms)
 {
-	glm::mat4 Identity = glm::mat4();
+	glm::mat4 Identity = glm::mat4(1.0f);
 	
-    /* The original code with the buggy animation duration */
-	//animDuration = (float)m_pScene->mAnimations[0]->mDuration;
+	//TODO: I think that this line does not make any sense... because its overwritten later
+	animDuration = (float)m_pScene->mAnimations[currentAnimation]->mDuration;
 
-	/* Calc animation duration from last frame */
-	unsigned int numPosKeys = m_pScene->mAnimations[0]->mChannels[0]->mNumPositionKeys;
-	animDuration = m_pScene->mAnimations[0]->mChannels[0]->mPositionKeys[numPosKeys - 1].mTime;
+	/* Calc animation duration */
+	unsigned int numPosKeys = m_pScene->mAnimations[currentAnimation]->mChannels[0]->mNumPositionKeys;
+	animDuration = m_pScene->mAnimations[currentAnimation]->mChannels[0]->mPositionKeys[numPosKeys - 1].mTime;
+	//std::cout << "Anim time actual : " << m_pScene->mAnimations[currentAnimation]->mChannels[0]->mPositionKeys[numPosKeys-1].mTime << std::endl;
 
-	float TicksPerSecond = (float)(m_pScene->mAnimations[0]->mTicksPerSecond != 0 ? (float)m_pScene->mAnimations[0]->mTicksPerSecond : 25.0f);
-
+	float TicksPerSecond = (float)(m_pScene->mAnimations[currentAnimation]->mTicksPerSecond != 0 ? m_pScene->mAnimations[currentAnimation]->mTicksPerSecond : 25.0f);
+	//TicksPerSecond = 3;
 	float TimeInTicks = timeInSeconds * TicksPerSecond;
-	float AnimationTime = fmod(TimeInTicks, (float)animDuration); //TODO:Change animDuration from double to float, because everything here is in double!
-	
+	float AnimationTime = fmod(TimeInTicks, animDuration);
+
+	LOG->Info(LOG_LOW, "Ticks per second: %f", TicksPerSecond);
+	LOG->Info(LOG_LOW, "Time in seconds: %f", timeInSeconds);
+	LOG->Info(LOG_LOW, "Time in ticks: %f", TimeInTicks);
+	LOG->Info(LOG_LOW, "Animation time ticks: %f", AnimationTime);
+	LOG->Info(LOG_LOW, "Animation duration in ticks: %f", animDuration); //m_pScene->mAnimations[currentAnimation]->mDuration);
+
 	ReadNodeHeirarchy(AnimationTime, m_pScene->mRootNode, Identity);
 
 	Transforms.resize(m_NumBones);
