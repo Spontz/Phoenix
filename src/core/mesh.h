@@ -22,7 +22,6 @@
 #include <iostream>
 #include <vector>
 
-
 using namespace std;
 
 struct Vertex {
@@ -35,11 +34,13 @@ struct Vertex {
 
 class Mesh {
 public:
-	vector<Vertex> vertices;
-	vector<unsigned int> indices;
-	vector<int> textures;
+	vector<Vertex>			vertices;
+	vector<unsigned int>	indices;
+	vector<int>				textures;
 	unsigned int VAO;
 
+	// TODO: implement baseVertex and baseIndex, for drawing meshes even more faster with one single array of vertices
+	// add: unsigned int baseVertex, unsigned int baseIndex
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<int> textures);
 	// render the mesh
 	void Draw(Shader shader);

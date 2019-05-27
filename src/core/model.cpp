@@ -24,9 +24,6 @@
 #include <vector>
 using namespace std;
 
-
-
-
 void Model::Draw(Shader shader)
 {
 	for (unsigned int i = 0; i < meshes.size(); i++)
@@ -68,7 +65,6 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 	{
 		processNode(node->mChildren[i], scene);
 	}
-
 }
 
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
@@ -77,6 +73,11 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;
 	vector<int> textures;
+
+	if (mesh->mTangents = NULL)
+		LOG->Info(LOG_LOW, "Warning, the loaded mesh has no Tangents! Normal will be copied there.");
+	if (mesh->mBitangents = NULL)
+		LOG->Info(LOG_LOW, "Warning, the loaded mesh has no BiTangents! Normal will be copied there.");
 
 	// Walk through each of the mesh's vertices
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
@@ -105,16 +106,21 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 		}
 		else
 			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
-		// tangent
-		vector.x = mesh->mTangents[i].x;
-		vector.y = mesh->mTangents[i].y;
-		vector.z = mesh->mTangents[i].z;
-		vertex.Tangent = vector;
-		// bitangent
-		vector.x = mesh->mBitangents[i].x;
-		vector.y = mesh->mBitangents[i].y;
-		vector.z = mesh->mBitangents[i].z;
-		vertex.Bitangent = vector;
+		if (mesh->mTangents) {
+			// tangent
+			vector.x = mesh->mTangents[i].x;
+			vector.y = mesh->mTangents[i].y;
+			vector.z = mesh->mTangents[i].z;
+		}
+		vertex.Tangent = vector;	// The normal is copied to the Tangent (TODO: this is OK?)
+		if (mesh->mBitangents) {
+			// bitangent
+			vector.x = mesh->mBitangents[i].x;
+			vector.y = mesh->mBitangents[i].y;
+			vector.z = mesh->mBitangents[i].z;
+		}
+		vertex.Bitangent = vector;	// The normal is copied to the BiTangent (TODO: this is OK?)
+		
 		vertices.push_back(vertex);
 	}
 	// now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.

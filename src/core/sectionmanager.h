@@ -27,7 +27,7 @@ enum SectionType {
 	ObjectMorph,
 	ObjectMorph2,
 	ObjectShader,
-	ObjectShader2,
+	ObjectAnimShader,
 	ObjectMatrix,
 	ParticleMatrix2,
 	ParticleMatrix3,

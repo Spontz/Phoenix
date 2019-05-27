@@ -14,6 +14,7 @@
 #include "core/shader.h"
 #include "core/texture.h"
 #include "core/model.h"
+#include "core/skinnedmesh.hpp"
 
 #define GLDRV glDriver::getInstance()
 

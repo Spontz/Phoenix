@@ -28,7 +28,7 @@ tSectionID sectionID[] = {
 	{"objectMorph",			SectionType::ObjectMorph},
 	{"objectMorph2",		SectionType::ObjectMorph2},
 	{"objectShader",		SectionType::ObjectShader},
-	{"objectShader2",		SectionType::ObjectShader2},
+	{"objectAnimShader",	SectionType::ObjectAnimShader},
 	{"objectMatrix",		SectionType::ObjectMatrix },
 	{"particleMatrix2",		SectionType::ParticleMatrix2},
 	{"particleMatrix3",		SectionType::ParticleMatrix3},
@@ -93,6 +93,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::ObjectShader:
 		mySection = new sObjectShader();
+		break;
+	case SectionType::ObjectAnimShader:
+		mySection = new sObjectAnimShader();
 		break;
 	case SectionType::NOT_FOUND:
 		break;

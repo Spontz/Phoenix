@@ -17,6 +17,7 @@ class sFboBind : public Section { public:	sFboBind();  bool load(); void init();
 class sFboUnbind : public Section { public:	sFboUnbind();  bool load(); void init(); void exec(); void end(); };
 class sRenderFbo : public Section { public:	sRenderFbo();  bool load(); void init(); void exec(); void end(); };
 class sObjectShader : public Section { public:	sObjectShader();  bool load(); void init(); void exec(); void end(); };
+class sObjectAnimShader : public Section { public:	sObjectAnimShader();  bool load(); void init(); void exec(); void end(); };
 class sGLSLShaderBind : public Section { public: sGLSLShaderBind(); bool load(); void init(); void exec(); void end(); };
 class sGLSLShaderUnbind : public Section { public: sGLSLShaderUnbind(); bool load(); void init(); void exec(); void end(); };
 
