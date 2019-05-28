@@ -12,18 +12,12 @@
 #define BONE_ID_LOCATION     3
 #define BONE_WEIGHT_LOCATION 4
 
-// For converting between ASSIMP and glm (may be useful later)
+// For converting between ASSIMP and glm
 static inline glm::vec3 vec3_cast(const aiVector3D &v) { return glm::vec3(v.x, v.y, v.z); }
 static inline glm::vec2 vec2_cast(const aiVector3D &v) { return glm::vec2(v.x, v.y); } // it's aiVector3D because assimp's texture coordinates use that
 static inline glm::quat quat_cast(const aiQuaternion &q) { return glm::quat(q.w, q.x, q.y, q.z); }
 static inline glm::mat4 mat4_cast(const aiMatrix4x4 &m) { return glm::transpose(glm::make_mat4(&m.a1)); }
-static inline glm::mat4 mat4_cast(const aiMatrix3x3 &m) {
-	return glm::mat4(
-		m.a1, m.a2, m.a3, 0.0f,
-		m.b1, m.b2, m.b3, 0.0f,
-		m.c1, m.c2, m.c3, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f);
-}
+static inline glm::mat4 mat4_cast(const aiMatrix3x3 &m) { return glm::transpose(glm::make_mat3(&m.a1)); }
 
 
 
@@ -31,35 +25,7 @@ void SkinnedMesh::setBoneTransformations(GLuint shaderProgram, GLfloat currentTi
 {
 	std::vector<glm::mat4> Transforms;
 	boneTransform((float)currentTime, Transforms);
-	for (unsigned int i = 0; i < Transforms.size(); ++i)
-	{
-		const std::string name = "gBones[" + std::to_string(i) + "]";
-		//LOG->Info(LOG_LOW, "Transforms: %s", glm::to_string(Transforms[i]).c_str());
-		GLuint boneTransform = glGetUniformLocation(shaderProgram, name.c_str());
-		glUniformMatrix4fv(boneTransform, 1, GL_FALSE, glm::value_ptr(Transforms[i]));
-	}
-}
-
-glm::mat3 aiMatrix3x3ToGlm(const aiMatrix3x3 &from)
-{
-	glm::mat3 to;
-	//the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
-	to[0][0] = from.a1; to[1][0] = from.a2;	to[2][0] = from.a3;
-	to[0][1] = from.b1; to[1][1] = from.b2;	to[2][1] = from.b3;
-	to[0][2] = from.c1; to[1][2] = from.c2;	to[2][2] = from.c3;
-
-	return to;
-}
-
-glm::mat4 aiMatrix4x4ToGlm(const aiMatrix4x4 &from)
-{
-	glm::mat4 to;
-	//the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
-	to[0][0] = from.a1; to[1][0] = from.a2;	to[2][0] = from.a3; to[3][0] = from.a4;
-	to[0][1] = from.b1; to[1][1] = from.b2;	to[2][1] = from.b3; to[3][1] = from.b4;
-	to[0][2] = from.c1; to[1][2] = from.c2;	to[2][2] = from.c3; to[3][2] = from.c4;
-	to[0][3] = from.d1; to[1][3] = from.d2;	to[2][3] = from.d3; to[3][3] = from.d4;
-	return to;
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
 }
 
 /* Adds a new Bone */
@@ -127,8 +93,7 @@ bool SkinnedMesh::loadMesh(const std::string& fileName)
 	if (m_pScene)
 	{
 		/* Get transformation matrix for nodes(vertices relative to boes) */
-		aiMatrix4x4 tp1 = m_pScene->mRootNode->mTransformation;
-		m_GlobalInverseTransform = aiMatrix4x4ToGlm(tp1);
+		m_GlobalInverseTransform = mat4_cast(m_pScene->mRootNode->mTransformation);
 		m_GlobalInverseTransform =  glm::inverse(m_GlobalInverseTransform);
 		
 		ret = InitFromScene(m_pScene, fileName);
@@ -142,15 +107,6 @@ bool SkinnedMesh::loadMesh(const std::string& fileName)
 	/* Make sure the VAO is not changed from the outside */
 	glBindVertexArray(0);
 
-	/*
-	for (int i = 0; i < m_Entries.size(); i++) {
-		LOG->Info(LOG_LOW, "Info for Mesh num: %d", i);
-		LOG->Info(LOG_LOW, "NumIndices: %d", m_Entries[i].NumIndices);
-		LOG->Info(LOG_LOW, "BaseVertex: %d", m_Entries[i].BaseVertex);
-		LOG->Info(LOG_LOW, "BaseIndex: %d", m_Entries[i].BaseIndex);
-		LOG->Info(LOG_LOW, "MaterialIndex: %d", m_Entries[i].MaterialIndex);
-	}
-	*/
 	return ret;
 }
 
@@ -307,8 +263,7 @@ void SkinnedMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::ve
 			BoneInfo bi;
 			m_BoneInfo.push_back(bi);
 
-			aiMatrix4x4 tp1 = pMesh->mBones[i]->mOffsetMatrix;
-			m_BoneInfo[BoneIndex].BoneOffset = aiMatrix4x4ToGlm(tp1);
+			m_BoneInfo[BoneIndex].BoneOffset = mat4_cast(pMesh->mBones[i]->mOffsetMatrix);
 			m_BoneMapping[BoneName] = BoneIndex;
 		}
 		else
