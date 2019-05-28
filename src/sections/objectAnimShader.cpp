@@ -153,8 +153,8 @@ void sObjectAnimShader::exec() {
 	}
 	// Guarrada para pasar una textura
 	glUniform1i(glGetUniformLocation(my_shader->ID, "texture_diffuse1"), 0); // Pick some random texture
-	DEMO->textureManager.texture[0]->active();
-	DEMO->textureManager.texture[0]->bind();
+	DEMO->textureManager.texture[8]->active();
+	DEMO->textureManager.texture[8]->bind();
 	//////// End guarrada
 
 	// Send Bones info to shader
@@ -166,9 +166,6 @@ void sObjectAnimShader::exec() {
 	//std::vector<glm::mat4> transforms = my_model->boneTransform("./data/pool/models/anim/anim.md5anim", 0);// this->runTime);
 	//glUniformMatrix4fv(glGetUniformLocation(my_shader->ID, "gBones"), (GLsizei)transforms.size(), GL_FALSE, glm::value_ptr(transforms[0]));
 	
-	//Sleep(1000);
-	//my_model->Draw(*my_shader);
-
 	if (local->drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

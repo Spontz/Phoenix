@@ -36,8 +36,6 @@ void SkinnedMesh::setBoneTransformations(GLuint shaderProgram, GLfloat currentTi
 		const std::string name = "gBones[" + std::to_string(i) + "]";
 		//LOG->Info(LOG_LOW, "Transforms: %s", glm::to_string(Transforms[i]).c_str());
 		GLuint boneTransform = glGetUniformLocation(shaderProgram, name.c_str());
-		//glUniformMatrix4fv(boneTransform, 1, GL_FALSE, glm::value_ptr(Transforms[i]));
-		//Transforms[i] = glm::transpose(Transforms[i]);
 		glUniformMatrix4fv(boneTransform, 1, GL_FALSE, glm::value_ptr(Transforms[i]));
 	}
 }
@@ -521,24 +519,18 @@ void SkinnedMesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, co
 		// Interpolate scaling and generate scaling transformation matrix
 		aiVector3D Scaling;
 		CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
-		//glm::mat4 ScalingM = glm::mat4(1.0);
-		//ScalingM = glm::scale(ScalingM, glm::vec3(Scaling.x, Scaling.y, Scaling.z));
 		glm::vec3 scale = glm::vec3(Scaling.x, Scaling.y, Scaling.z);
 		glm::mat4 ScalingM = glm::scale(glm::mat4(1.0f), scale);
 		
 		// Interpolate rotation and generate rotation transformation matrix
 		aiQuaternion RotationQ;
 		CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-		//glm::mat4 RotationM = mat4_cast(RotationQ.GetMatrix());
-		//glm::quat rotation(RotationQ.x, RotationQ.y, RotationQ.z, RotationQ.w);
-		glm::quat rotation(RotationQ.w, RotationQ.x, RotationQ.y, RotationQ.z);
+		glm::quat rotation = quat_cast(RotationQ);
 		glm::mat4 RotationM = glm::toMat4(rotation);
 
 		// Interpolate translation and generate translation transformation matrix
 		aiVector3D Translation;
 		CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
-		//glm::mat4 TranslationM = glm::mat4(1.0f);
-		//TranslationM = glm::translate(TranslationM, glm::vec3(Translation.x, Translation.y, Translation.z));
 		glm::vec3 translation = glm::vec3(Translation.x, Translation.y, Translation.z);
 		glm::mat4 TranslationM = glm::translate(glm::mat4(1.0f), translation);
 
@@ -569,18 +561,11 @@ void SkinnedMesh::boneTransform(float timeInSeconds, std::vector<glm::mat4>& Tra
 	/* Calc animation duration */
 	unsigned int numPosKeys = m_pScene->mAnimations[currentAnimation]->mChannels[0]->mNumPositionKeys;
 	animDuration = m_pScene->mAnimations[currentAnimation]->mChannels[0]->mPositionKeys[numPosKeys - 1].mTime;
-	//std::cout << "Anim time actual : " << m_pScene->mAnimations[currentAnimation]->mChannels[0]->mPositionKeys[numPosKeys-1].mTime << std::endl;
 
 	float TicksPerSecond = (float)(m_pScene->mAnimations[currentAnimation]->mTicksPerSecond != 0 ? m_pScene->mAnimations[currentAnimation]->mTicksPerSecond : 25.0f);
 	//TicksPerSecond = 3;
 	float TimeInTicks = timeInSeconds * TicksPerSecond;
 	float AnimationTime = fmod(TimeInTicks, animDuration);
-
-	LOG->Info(LOG_LOW, "Ticks per second: %f", TicksPerSecond);
-	LOG->Info(LOG_LOW, "Time in seconds: %f", timeInSeconds);
-	LOG->Info(LOG_LOW, "Time in ticks: %f", TimeInTicks);
-	LOG->Info(LOG_LOW, "Animation time ticks: %f", AnimationTime);
-	LOG->Info(LOG_LOW, "Animation duration in ticks: %f", animDuration); //m_pScene->mAnimations[currentAnimation]->mDuration);
 
 	ReadNodeHeirarchy(AnimationTime, m_pScene->mRootNode, Identity);
 
