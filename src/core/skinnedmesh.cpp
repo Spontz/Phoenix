@@ -3,6 +3,8 @@
 #include <iostream>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm\gtx\string_cast.hpp>
+#include <glm\gtx\quaternion.hpp>
+
 
 #define POSITION_LOCATION    0
 #define NORMAL_LOCATION      1
@@ -35,8 +37,8 @@ void SkinnedMesh::setBoneTransformations(GLuint shaderProgram, GLfloat currentTi
 		//LOG->Info(LOG_LOW, "Transforms: %s", glm::to_string(Transforms[i]).c_str());
 		GLuint boneTransform = glGetUniformLocation(shaderProgram, name.c_str());
 		//glUniformMatrix4fv(boneTransform, 1, GL_FALSE, glm::value_ptr(Transforms[i]));
-		Transforms[i] = glm::transpose(Transforms[i]);
-		glUniformMatrix4fv(boneTransform, 1, GL_TRUE, glm::value_ptr(Transforms[i]));
+		//Transforms[i] = glm::transpose(Transforms[i]);
+		glUniformMatrix4fv(boneTransform, 1, GL_FALSE, glm::value_ptr(Transforms[i]));
 	}
 }
 
@@ -511,27 +513,34 @@ void SkinnedMesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, co
 
 	const aiAnimation* pAnimation = m_pScene->mAnimations[currentAnimation];
 
-	aiMatrix4x4 tp1 = pNode->mTransformation;
-	glm::mat4 NodeTransformation = aiMatrix4x4ToGlm(tp1);
+	glm::mat4 NodeTransformation = mat4_cast(pNode->mTransformation);
+	
 	const aiNodeAnim* pNodeAnim = FindNodeAnim(pAnimation, NodeName);
 
 	if (pNodeAnim) {
 		// Interpolate scaling and generate scaling transformation matrix
 		aiVector3D Scaling;
 		CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
-		glm::mat4 ScalingM = glm::mat4(1.0);
-		ScalingM = glm::scale(ScalingM, glm::vec3(Scaling.x, Scaling.y, Scaling.z));
+		//glm::mat4 ScalingM = glm::mat4(1.0);
+		//ScalingM = glm::scale(ScalingM, glm::vec3(Scaling.x, Scaling.y, Scaling.z));
+		glm::vec3 scale = glm::vec3(Scaling.x, Scaling.y, Scaling.z);
+		glm::mat4 ScalingM = glm::scale(glm::mat4(1.0f), scale);
 		
 		// Interpolate rotation and generate rotation transformation matrix
 		aiQuaternion RotationQ;
 		CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-		glm::mat4 RotationM = mat4_cast(RotationQ.GetMatrix());
+		//glm::mat4 RotationM = mat4_cast(RotationQ.GetMatrix());
+		//glm::quat rotation(RotationQ.x, RotationQ.y, RotationQ.z, RotationQ.w);
+		glm::quat rotation(RotationQ.w, RotationQ.x, RotationQ.y, RotationQ.z);
+		glm::mat4 RotationM = glm::toMat4(rotation);
 
 		// Interpolate translation and generate translation transformation matrix
 		aiVector3D Translation;
 		CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
-		glm::mat4 TranslationM = glm::mat4(1.0f);
-		TranslationM = glm::translate(TranslationM, glm::vec3(Translation.x, Translation.y, Translation.z));
+		//glm::mat4 TranslationM = glm::mat4(1.0f);
+		//TranslationM = glm::translate(TranslationM, glm::vec3(Translation.x, Translation.y, Translation.z));
+		glm::vec3 translation = glm::vec3(Translation.x, Translation.y, Translation.z);
+		glm::mat4 TranslationM = glm::translate(glm::mat4(1.0f), translation);
 
 		// Combine the above transformations
 		NodeTransformation = TranslationM * RotationM *ScalingM;
