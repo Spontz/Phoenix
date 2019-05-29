@@ -56,11 +56,7 @@ void sBackground::init() {
 void sBackground::exec() {
 	local = (background_section *)this->vars;
 	
-	if (this->hasBlend) {
-		glEnable(GL_BLEND);
-		glBlendFunc(this->sfactor, this->dfactor);
-	}
-
+	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
 		// Load the background texture
@@ -88,9 +84,7 @@ void sBackground::exec() {
 		RES->Draw_Obj_QuadTex(local->texture, &model);
 	}
 	glEnable(GL_DEPTH_TEST);
-
-	if (this->hasBlend)
-		glDisable(GL_BLEND);
+	EvalBlendingEnd();
 }
 
 void sBackground::end() {
