@@ -45,7 +45,6 @@ public:
 	// Current viewport (this data depends on: width, height and AspectRatio)
 	int				vpWidth, vpHeight, vpYOffset, vpXOffset;
 	int				bpp;
-	int				zbuffer;
 	int				stencil;
 	int				accum;
 	int				multisampling;

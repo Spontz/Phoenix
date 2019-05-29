@@ -28,16 +28,9 @@ public:
 
 	unsigned int getNumAnimations();
 	void setAnimation(unsigned int a);
-
 	bool loadMesh(const std::string& fileName);
 
 	void render(const GLuint& shaderProgram);
-
-	unsigned int numBones() const
-	{
-		return m_NumBones;
-	}
-
 	void boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transforms);
 	void setBoneTransformations(GLuint shaderProgram, GLfloat currentTime);
 
@@ -58,7 +51,6 @@ private:
 
 	struct VertexBoneData
 	{
-		/* de pastrat numarul de elemente al IDs & Weights */
 		unsigned int IDs[NUM_BONES_PER_VERTEX];
 		float Weights[NUM_BONES_PER_VERTEX];
 

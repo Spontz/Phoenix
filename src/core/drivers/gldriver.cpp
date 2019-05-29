@@ -198,7 +198,6 @@ glDriver::glDriver() {
 	saveInfo = 0;
 	AspectRatio = 0;
 	bpp = 32;
-	zbuffer = 16;
 	stencil = 0;
 	accum = 0;
 	multisampling = 0;

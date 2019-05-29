@@ -23,9 +23,11 @@ static inline glm::mat4 mat4_cast(const aiMatrix3x3 &m) { return glm::transpose(
 
 void SkinnedMesh::setBoneTransformations(GLuint shaderProgram, GLfloat currentTime)
 {
-	std::vector<glm::mat4> Transforms;
-	boneTransform((float)currentTime, Transforms);
-	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
+	if (m_pScene->HasAnimations()) {
+		std::vector<glm::mat4> Transforms;
+		boneTransform((float)currentTime, Transforms);
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
+	}
 }
 
 /* Adds a new Bone */

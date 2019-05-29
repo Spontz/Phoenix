@@ -92,6 +92,11 @@ void sObjectShader::exec() {
 	Model *my_model = DEMO->modelManager.model[local->model];
 	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
 	
+	if (this->hasBlend) {
+		glEnable(GL_BLEND);
+		glBlendFunc(this->sfactor, this->dfactor);
+	}
+
 	// Evaluate the expression
 	local->exprPosition->Expression.value();
 
@@ -103,7 +108,7 @@ void sObjectShader::exec() {
 
 	// view/projection transformations
 	float zoom = DEMO->camera->Zoom;
-	glm::mat4 projection = glm::perspective(glm::radians(zoom), (float)GLDRV->width / (float)GLDRV->height, 0.1f, 100.0f);
+	glm::mat4 projection = glm::perspective(glm::radians(zoom), (float)GLDRV->width / (float)GLDRV->height, 0.1f, 10000.0f);
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
 	my_shader->setValue("projection", projection);
 	my_shader->setValue("view", view);
@@ -153,7 +158,8 @@ void sObjectShader::exec() {
 	
 	if (local->drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+	if (this->hasBlend)
+		glDisable(GL_BLEND);
 }
 
 void sObjectShader::end() {

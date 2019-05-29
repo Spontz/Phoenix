@@ -94,7 +94,6 @@ void Fbo::bind() const
 {
 	// Bind buffers and make attachments
 	glBindFramebuffer(GL_FRAMEBUFFER, this->frameBufferID);
-	glEnable(GL_DEPTH_TEST);
 }
 
 void Fbo::bind_tex() const
