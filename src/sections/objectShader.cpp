@@ -92,10 +92,8 @@ void sObjectShader::exec() {
 	Model *my_model = DEMO->modelManager.model[local->model];
 	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
 	
-	if (this->hasBlend) {
-		glEnable(GL_BLEND);
-		glBlendFunc(this->sfactor, this->dfactor);
-	}
+	// Start evaluating blending
+	EvalBlendingStart();
 
 	// Evaluate the expression
 	local->exprPosition->Expression.value();
@@ -158,8 +156,9 @@ void sObjectShader::exec() {
 	
 	if (local->drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	if (this->hasBlend)
-		glDisable(GL_BLEND);
+	
+	// End evaluating blending
+	EvalBlendingEnd();
 }
 
 void sObjectShader::end() {

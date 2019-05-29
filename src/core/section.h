@@ -57,6 +57,10 @@ public:
 	Section();
 	virtual ~Section() {};
 
+	// Blending management
+	void EvalBlendingStart();
+	void EvalBlendingEnd();
+
 	// Splines management
 	void loadSplines();
 	// ******************************************************************

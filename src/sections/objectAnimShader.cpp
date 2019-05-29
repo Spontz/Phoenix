@@ -96,6 +96,9 @@ void sObjectAnimShader::exec() {
 	Model *my_model = DEMO->modelManager.model[local->model];
 	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
 	
+	// Start evaluating blending
+	EvalBlendingStart();
+
 	// Evaluate the expression
 	local->exprPosition->Expression.value();
 
@@ -169,6 +172,8 @@ void sObjectAnimShader::exec() {
 	if (local->drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+	// End evaluating blending
+	EvalBlendingEnd();
 }
 
 void sObjectAnimShader::end() {

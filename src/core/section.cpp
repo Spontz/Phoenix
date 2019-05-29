@@ -2,7 +2,7 @@
 // Spontz Demogroup
 
 #include "section.h"
-
+#include "main.h"
 
 Section::Section() {
 	int i			= 0;
@@ -33,6 +33,25 @@ Section::Section() {
 	for (i=0; i<SECTION_STRINGS; i++)
 		strings[i] = "";
 	splineNum	= 0;
+}
+
+void Section::EvalBlendingStart()
+{
+	if (this->hasBlend) {
+		glEnable(GL_BLEND);
+		glBlendFunc(this->sfactor, this->dfactor);
+		if (this->blendEquation > 0)
+			glBlendEquation(this->blendEquation);
+	}
+}
+
+void Section::EvalBlendingEnd()
+{
+	if (this->hasBlend) {
+		glDisable(GL_BLEND);
+		if (this->blendEquation > 0)
+			glBlendEquation(GL_FUNC_ADD);
+	}
 }
 
 void Section::loadSplines()
