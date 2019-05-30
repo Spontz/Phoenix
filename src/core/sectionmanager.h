@@ -29,6 +29,7 @@ enum SectionType {
 	ObjectShader,
 	ObjectAnimShader,
 	ObjectMatrix,
+	DrawSkybox,
 	ParticleMatrix2,
 	ParticleMatrix3,
 	ParticleTex2,

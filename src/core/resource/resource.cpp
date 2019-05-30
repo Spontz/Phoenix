@@ -20,6 +20,7 @@ void Resource::loadAllResources()
 	// Load Objects
 	Load_Obj_QuadFullscreen();
 	Load_Obj_Quad_FBO_Debug();
+	Load_Obj_Skybox();
 	// Load Shaders
 	Load_Shaders();
 	// Load Textures
@@ -91,11 +92,69 @@ void Resource::Load_Obj_Quad_FBO_Debug()
 	
 }
 
+void Resource::Load_Obj_Skybox()
+{
+	float skyboxVertices[] = {
+		// positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f
+	};
+	// skybox VAO generation
+	unsigned int skyboxVBO;
+	glGenVertexArrays(1, &obj_skybox);
+	glGenBuffers(1, &skyboxVBO);
+	glBindVertexArray(obj_skybox);
+	glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+}
+
 void Resource::Load_Shaders()
 {
 	shdr_QuadTex = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTex.vert", demoDir + "/resources/shaders/basic/QuadTex.frag");
 	shdr_QuadTexAlpha = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTexAlpha.vert", demoDir + "/resources/shaders/basic/QuadTexAlpha.frag");
 	shdr_QuadTexModel = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTexModel.vert", demoDir + "/resources/shaders/basic/QuadTexModel.frag");
+	shdr_Skybox = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/skybox/skybox.vert", demoDir + "/resources/shaders/skybox/skybox.frag");
 }
 
 void Resource::Load_Tex_Spontz()
@@ -164,6 +223,16 @@ void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *model)
 	DEMO->textureManager.texture[textureNum]->active();
 	DEMO->textureManager.texture[textureNum]->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
+void Resource::Draw_Skybox(int cubemap)
+{
+	// TODO: Añadir el shader como parámetro, para que lo pinte todo aqui, con la matriz de modelo y toda la pesca
+	glBindVertexArray(obj_skybox);
+	DEMO->textureManager.cubemap[cubemap]->active();
+	DEMO->textureManager.cubemap[cubemap]->bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 }
 

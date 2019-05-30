@@ -306,7 +306,7 @@ void glDriver::initStates()
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	// draw cwise and ccwise in fill mode
 
 	glEnable(GL_DEPTH_TEST);					// depth test enabled
-	glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL
+	glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL - TODO: Should be LESS according learnopengl.com
 	// Enable multisampling
 	if (this->multisampling)
 		glEnable(GL_MULTISAMPLE);

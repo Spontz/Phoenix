@@ -16,6 +16,7 @@ class sBackground : public Section { public:	sBackground();  bool load(); void i
 class sFboBind : public Section { public:	sFboBind();  bool load(); void init(); void exec(); void end(); };
 class sFboUnbind : public Section { public:	sFboUnbind();  bool load(); void init(); void exec(); void end(); };
 class sRenderFbo : public Section { public:	sRenderFbo();  bool load(); void init(); void exec(); void end(); };
+class sDrawSkybox : public Section { public:	sDrawSkybox();  bool load(); void init(); void exec(); void end(); };
 class sObjectShader : public Section { public:	sObjectShader();  bool load(); void init(); void exec(); void end(); };
 class sObjectAnimShader : public Section { public:	sObjectAnimShader();  bool load(); void init(); void exec(); void end(); };
 class sGLSLShaderBind : public Section { public: sGLSLShaderBind(); bool load(); void init(); void exec(); void end(); };

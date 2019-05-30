@@ -27,7 +27,7 @@ bool Texture::load(const std::string & file_name, bool flip)
 	if (filename.empty())
 		return false;
 
-	bool is_loaded = false;
+	bool is_loaded = true;
 
 	unsigned char* data = stbi_load((filename).c_str(), &width, &height, &components, 0);
 
@@ -52,16 +52,19 @@ bool Texture::load(const std::string & file_name, bool flip)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		is_loaded = true;
 	}
-	else
+	else {
 		LOG->Error("Failed loading texture form file: %s", filename.c_str());
+		is_loaded = false;
+	}
 
+	stbi_set_flip_vertically_on_load(false); // Set always to "false"
 	stbi_image_free(data);
 
 	return is_loaded;
 }
 
+// TODO: It has no sense to be in the texture object, it should be in the texture manager object
 void Texture::active(int index) const
 {
 	glActiveTexture(GL_TEXTURE0 + index);
