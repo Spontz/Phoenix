@@ -41,6 +41,15 @@ bool Cubemap::load(vector<std::string> faces_file_name, bool flip)
 		}
 		stbi_image_free(data);
 	}
+	// Check if the cubemap images sizes are OK
+	for (unsigned int i = 0; i < faces_file_name.size(); i++)
+	{
+		if ((this->width[0] != this->width[i]) || (this->height[0] != this->height[i])) {
+			LOG->Error("The cubemap image %s has a different size from the first one. Please check that all cubemap images have same size", faces_file_name[i].c_str());
+			is_loaded = false;
+		}
+	}
+
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
