@@ -165,7 +165,7 @@ GLint Shader::getUniformLocation(const char *name) const
 	GLint val;
 	val = glGetUniformLocation(ID, name);
 	if (val == -1)
-		LOG->Info(LOG_HIGH, "Warning: Shader uniform variable '%s' not found in vs '%s' or in ps '%s'", name, vertexShader_Filename.c_str(), fragmentShader_Filename.c_str());
+		LOG->Info(LOG_MED, "Warning: Shader uniform variable '%s' not found in vs '%s' or in ps '%s'", name, vertexShader_Filename.c_str(), fragmentShader_Filename.c_str());
 	return val;
 }
 

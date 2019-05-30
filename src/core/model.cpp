@@ -74,10 +74,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	vector<unsigned int> indices;
 	vector<int> textures;
 
-	if (mesh->mTangents = NULL)
-		LOG->Info(LOG_LOW, "Warning, the loaded mesh has no Tangents! Normal will be copied there.");
-	if (mesh->mBitangents = NULL)
-		LOG->Info(LOG_LOW, "Warning, the loaded mesh has no BiTangents! Normal will be copied there.");
+	if (mesh->HasTangentsAndBitangents() == false)
+		LOG->Info(LOG_MED, "Warning, the loaded mesh has no Tangents and BiTangents! Normal will be copied there.");
 
 	// Walk through each of the mesh's vertices
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
@@ -106,21 +104,23 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 		}
 		else
 			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
-		if (mesh->mTangents) {
+		if (mesh->HasTangentsAndBitangents()) {
 			// tangent
 			vector.x = mesh->mTangents[i].x;
 			vector.y = mesh->mTangents[i].y;
 			vector.z = mesh->mTangents[i].z;
-		}
-		vertex.Tangent = vector;	// The normal is copied to the Tangent (TODO: this is OK?)
-		if (mesh->mBitangents) {
+			vertex.Tangent = vector;
 			// bitangent
 			vector.x = mesh->mBitangents[i].x;
 			vector.y = mesh->mBitangents[i].y;
 			vector.z = mesh->mBitangents[i].z;
+			vertex.Bitangent = vector;
 		}
-		vertex.Bitangent = vector;	// The normal is copied to the BiTangent (TODO: this is OK?)
-		
+		else {
+			vertex.Tangent = glm::vec3(0, 0, 0);
+			vertex.Bitangent = glm::vec3(0, 0, 0);
+		}
+			
 		vertices.push_back(vertex);
 	}
 	// now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.

@@ -123,7 +123,7 @@ void sSound::exec() {
 		local->prev_volume = local->volume;
 	}
 
-	if (FALSE == BASS_ChannelGetData(local->str, fft, BASS_DATA_FFT1024)) {	// get the FFT data
+	if (-1 == BASS_ChannelGetData(local->str, fft, BASS_DATA_FFT1024)) {	// get the FFT data
 		int BASS_err = BASS_ErrorGetCode();
 		if ((BASS_err > 0) && (BASS_err != BASS_ERROR_ENDED))
 			LOG->Error("Sound [%s]: BASS_ChannelGetData returned error: %i", this->identifier.c_str(), BASS_err);
