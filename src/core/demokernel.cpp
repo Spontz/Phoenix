@@ -375,8 +375,8 @@ void demokernel::playDemo()
 		// reinit section queues
 		this->reInitSectionQueues();
 
-		// unpause the sound
-		if (this->sound) BASSDRV->play();
+		// unpause the sound - FIX: its not needed, because each sound section takes care of it... under investigation, but it can be removed.
+		//if (this->sound) BASSDRV->play();
 	}
 }
 
@@ -391,10 +391,7 @@ void demokernel::restartDemo()
 {
 	this->state = DEMO_PLAY;
 	if (this->sound) {
-		// PERE: There is no need to free sound, isn't it??
-		BASSDRV->pause();
-		//BASSDRV->end();
-		//BASSDRV->init();
+		BASSDRV->stop();
 	}
 
 	this->initControlVars();
