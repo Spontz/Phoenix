@@ -31,7 +31,6 @@ bool sGLSLShaderBind::load() {
 
 	// load Shader
 	local->shader = DEMO->shaderManager.addShader(s_demo + this->strings[0], s_demo + this->strings[1]);
-
 	if (local->shader == -1)
 		return false;
 	
@@ -61,6 +60,8 @@ void sGLSLShaderBind::exec() {
 	varVec2*		vec2;
 	varVec3*		vec3;
 	varVec4*		vec4;
+	varMat3*		mat3;
+	varMat4*		mat4;
 	varSampler2D*	sampler2D;
 
 	local = (glslshaderbind_section*)this->vars;
@@ -93,6 +94,25 @@ void sGLSLShaderBind::exec() {
 		vec4 = local->vars->vec4[i];
 		vec4->eva->Expression.value();
 		my_shader->setValue(vec4->name, glm::vec4(vec4->value[0], vec4->value[1], vec4->value[2], vec4->value[3]));
+	}
+
+	for (i = 0; i < local->vars->mat3.size(); i++) {
+		mat3 = local->vars->mat3[i];
+		mat3->eva->Expression.value();
+		// TODO: Probar si esto funciona asi:
+		//my_shader->setValue(mat3->name, glm::mat3(mat3->value[0]));
+		my_shader->setValue(mat3->name, glm::mat3(	mat3->value[0], mat3->value[1], mat3->value[2],
+													mat3->value[3], mat3->value[4], mat3->value[5],
+													mat3->value[6], mat3->value[7], mat3->value[8]));
+	}
+
+	for (i = 0; i < local->vars->mat4.size(); i++) {
+		mat4 = local->vars->mat4[i];
+		mat4->eva->Expression.value();
+		my_shader->setValue(mat4->name, glm::mat4(	mat4->value[0],  mat4->value[1],  mat4->value[2],  mat4->value[3],
+													mat4->value[4],  mat4->value[5],  mat4->value[6],  mat4->value[7], 
+													mat4->value[8],  mat4->value[9],  mat4->value[10], mat4->value[11], 
+													mat4->value[12], mat4->value[13], mat4->value[14], mat4->value[15]));
 	}
 
 	for (i = (int)local->vars->sampler2D.size() - 1; i >= 0; i--) {

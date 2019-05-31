@@ -24,7 +24,7 @@ tSectionID sectionID[] = {
 	{"image2D",				SectionType::Image2D},
 	{"imageMatrix",			SectionType::ImageMatrix},
 	{"imagePart",			SectionType::ImagePart},
-	{"light",				SectionType::Light},
+	{"light",				SectionType::LightSec},
 	{"objectMorph",			SectionType::ObjectMorph},
 	{"objectMorph2",		SectionType::ObjectMorph2},
 	{"objectShader",		SectionType::ObjectShader},
@@ -39,6 +39,7 @@ tSectionID sectionID[] = {
 	{"sound",				SectionType::Sound},
 	{"beatDetect",			SectionType::BeatDetect},
 	{"fbobind",				SectionType::FboBind},
+	{"fbodepthbind",		SectionType::FboDepthBind},
 	{"fbounbind",			SectionType::FboUnbind},
 	{"renderfbo",			SectionType::RenderFbo},
 	{"glslshaderquad",		SectionType::GLSLShaderQuad},
@@ -79,6 +80,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::FboBind:
 		mySection = new sFboBind();
+		break;
+	case SectionType::FboDepthBind:
+		mySection = new sFboDepthBind();
 		break;
 	case SectionType::FboUnbind:
 		mySection = new sFboUnbind();

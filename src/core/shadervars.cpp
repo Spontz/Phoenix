@@ -82,6 +82,51 @@ bool ShaderVars::ReadString(const char * string_var)
 		var->eva->compileFormula();
 		vec4.push_back(var);
 	}
+	else if (strcmp(var_type, "mat3") == 0)	// MAT3 detected
+	{
+		varMat3 *var = new varMat3();
+		strcpy(var->name, var_name);
+		var->loc = my_shader->getUniformLocation(var->name);
+		var->eva = new mathDriver(this->my_section);
+		var->eva->expression = var_value;
+		var->eva->SymbolTable.add_variable("v1", var->value[0]);
+		var->eva->SymbolTable.add_variable("v2", var->value[1]);
+		var->eva->SymbolTable.add_variable("v3", var->value[2]);
+		var->eva->SymbolTable.add_variable("v4", var->value[3]);
+		var->eva->SymbolTable.add_variable("v5", var->value[4]);
+		var->eva->SymbolTable.add_variable("v6", var->value[5]);
+		var->eva->SymbolTable.add_variable("v7", var->value[6]);
+		var->eva->SymbolTable.add_variable("v8", var->value[7]);
+		var->eva->SymbolTable.add_variable("v9", var->value[8]);
+		var->eva->compileFormula();
+		mat3.push_back(var);
+	}
+	else if (strcmp(var_type, "mat4") == 0)	// MAT4 detected
+	{
+		varMat4 *var = new varMat4();
+		strcpy(var->name, var_name);
+		var->loc = my_shader->getUniformLocation(var->name);
+		var->eva = new mathDriver(this->my_section);
+		var->eva->expression = var_value;
+		var->eva->SymbolTable.add_variable("v1", var->value[0]);
+		var->eva->SymbolTable.add_variable("v2", var->value[1]);
+		var->eva->SymbolTable.add_variable("v3", var->value[2]);
+		var->eva->SymbolTable.add_variable("v4", var->value[3]);
+		var->eva->SymbolTable.add_variable("v5", var->value[4]);
+		var->eva->SymbolTable.add_variable("v6", var->value[5]);
+		var->eva->SymbolTable.add_variable("v7", var->value[6]);
+		var->eva->SymbolTable.add_variable("v8", var->value[7]);
+		var->eva->SymbolTable.add_variable("v9", var->value[8]);
+		var->eva->SymbolTable.add_variable("v10", var->value[9]);
+		var->eva->SymbolTable.add_variable("v11", var->value[10]);
+		var->eva->SymbolTable.add_variable("v12", var->value[11]);
+		var->eva->SymbolTable.add_variable("v13", var->value[12]);
+		var->eva->SymbolTable.add_variable("v14", var->value[13]);
+		var->eva->SymbolTable.add_variable("v15", var->value[14]);
+		var->eva->SymbolTable.add_variable("v16", var->value[15]);
+		var->eva->compileFormula();
+		mat4.push_back(var);
+	}
 	else if (strcmp(var_type, "sampler2D") == 0)	// Texture (sampler2D) detected
 	{
 		varSampler2D *var = new varSampler2D();

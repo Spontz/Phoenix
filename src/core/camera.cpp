@@ -129,7 +129,7 @@ void Camera::setCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch,
 
 glm::mat4 Camera::getOrthoMatrix_Projection()
 {
-	return glm::ortho(-1, 1, 1, -1, -1, 2);;
+	return glm::ortho(-1, 1, 1, -1, -1, 2);
 }
 
 glm::mat4 Camera::getOrthoMatrix_View()

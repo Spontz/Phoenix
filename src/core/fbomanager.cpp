@@ -20,9 +20,9 @@ void FboManager::bind(int fbo_num)
 {
 	if (fbo_num < fbo.size()) {
 		Fbo *my_fbo = fbo[fbo_num];
-		my_fbo->bind();
 		// Adjust the viewport to the fbo size
 		GLDRV->setViewport(0, 0, my_fbo->width, my_fbo->height);
+		my_fbo->bind();
 	}
 }
 

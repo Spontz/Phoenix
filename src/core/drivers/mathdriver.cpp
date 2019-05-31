@@ -32,18 +32,54 @@ mathDriver::mathDriver(Section *sec) {
 		SymbolTable.add_variable("cam_zoom", DEMO->camera->Zoom);
 	}
 	else {
-		SymbolTable.add_constant("cam_pos_x", 0.0f);
-		SymbolTable.add_constant("cam_pos_y", 0.0f);
-		SymbolTable.add_constant("cam_pos_z", 0.0f);
+		SymbolTable.add_constant("cam_pos_x", 0);
+		SymbolTable.add_constant("cam_pos_y", 0);
+		SymbolTable.add_constant("cam_pos_z", 0);
 
-		SymbolTable.add_constant("cam_up_x", 0.0f);
-		SymbolTable.add_constant("cam_up_y", 0.0f);
-		SymbolTable.add_constant("cam_up_z", 100.0f);
+		SymbolTable.add_constant("cam_up_x", 0);
+		SymbolTable.add_constant("cam_up_y", 0);
+		SymbolTable.add_constant("cam_up_z", 100);
 
-		SymbolTable.add_constant("cam_yaw", 0.0f);
-		SymbolTable.add_constant("cam_pitch", 0.0f);
-		SymbolTable.add_constant("cam_zoom", 0.0f);
+		SymbolTable.add_constant("cam_yaw", 0);
+		SymbolTable.add_constant("cam_pitch", 0);
+		SymbolTable.add_constant("cam_zoom", 0);
 	}
+
+	// Light values
+	// Camera values
+	if (DEMO->light != NULL) {
+		SymbolTable.add_variable("light_pos_x", DEMO->light->Position.x);
+		SymbolTable.add_variable("light_pos_y", DEMO->light->Position.y);
+		SymbolTable.add_variable("light_pos_z", DEMO->light->Position.z);
+
+		SymbolTable.add_variable("light_look_x", DEMO->light->lookAt.x);
+		SymbolTable.add_variable("light_look_y", DEMO->light->lookAt.y);
+		SymbolTable.add_variable("light_look_z", DEMO->light->lookAt.z);
+
+		SymbolTable.add_variable("light_col_r", DEMO->light->color.x);
+		SymbolTable.add_variable("light_col_g", DEMO->light->color.y);
+		SymbolTable.add_variable("light_col_b", DEMO->light->color.z);
+
+		SymbolTable.add_variable("light_ambient", DEMO->light->ambientStrenght);
+		SymbolTable.add_variable("light_specular", DEMO->light->specularStrenght);
+	}
+	else {
+		SymbolTable.add_constant("light_pos_x", 0);
+		SymbolTable.add_constant("light_pos_y", 10);
+		SymbolTable.add_constant("light_pos_z", 0);
+
+		SymbolTable.add_constant("light_look_x", 0);
+		SymbolTable.add_constant("light_look_y", 0);
+		SymbolTable.add_constant("light_look_z", 0);
+
+		SymbolTable.add_constant("light_col_r", 1);
+		SymbolTable.add_constant("light_col_g", 0);
+		SymbolTable.add_constant("light_col_b", 0);
+
+		SymbolTable.add_constant("light_ambient", 0.2f);
+		SymbolTable.add_constant("light_specular", 0.5f);
+	}
+
 
 	// Graphic constants
 	SymbolTable.add_constant("vpWidth", (float)GLDRV->vpWidth);

@@ -21,7 +21,7 @@ static drawSkybox_section *local;
 // ******************************************************************
 
 sDrawSkybox::sDrawSkybox() {
-	type = SectionType::ObjectShader;
+	type = SectionType::DrawSkybox;
 }
 
 bool sDrawSkybox::load() {

@@ -48,6 +48,20 @@ typedef struct {
 } varVec4;				// Structure for a evaluation VEC4
 
 typedef struct {
+	char		name[MAXSIZE_VAR_NAME];
+	GLint		loc;
+	float		value[9];
+	mathDriver	*eva;
+} varMat3;				// Structure for a evaluation MAT3
+
+typedef struct {
+	char		name[MAXSIZE_VAR_NAME];
+	GLint		loc;
+	float		value[16];
+	mathDriver	*eva;
+} varMat4;				// Structure for a evaluation MAT4
+
+typedef struct {
 	char			name[MAXSIZE_VAR_NAME];
 	GLint			loc;
 	int				texture;	// Engine internal texture ID
@@ -62,6 +76,8 @@ public:
 	std::vector<varVec2*>		vec2;
 	std::vector<varVec3*>		vec3;
 	std::vector<varVec4*>		vec4;
+	std::vector<varMat3*>		mat3;
+	std::vector<varMat4*>		mat4;
 	std::vector<varSampler2D*>	sampler2D;
 
 	// constructor generates the shader on the fly

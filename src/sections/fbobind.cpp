@@ -28,6 +28,12 @@ bool sFboBind::load() {
 	local->fbo = (int)this->param[0];
 	local->clearScreen = (int)this->param[1];
 	local->clearDepth = (int)this->param[2];
+
+	if (local->fbo >= DEMO->fboManager.fbo.size()) {
+		LOG->Error("FboBind [%s]: The fbo number %i cannot be accessed, check graphics.spo file", this->identifier.c_str(), local->fbo);
+		return false;
+	}
+
 	return true;
 }
 

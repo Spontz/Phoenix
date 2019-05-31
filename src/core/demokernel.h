@@ -16,6 +16,7 @@
 #include "core/shadermanager.h"
 #include "core/font.h"
 #include "core/camera.h"
+#include "core/light.h"
 
 // ******************************************************************
 
@@ -79,6 +80,7 @@ public:
 	ModelManager	modelManager;
 	ShaderManager	shaderManager;
 	Camera			*camera;
+	Light			*light;
 	Font			*text;
 
 	// loading information
