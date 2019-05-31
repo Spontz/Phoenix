@@ -24,12 +24,16 @@
 
 # Engine formulas and variables
 ## Formulas
+
 The formulas that can be used in the engine, can be like this:
+
 [source]
 ----
 string tx:=0;ty:=-1.75;tz:=0;
 ----
+
 Or, if using shaders, like this:
+
 [source]
 ----
 string float scale v1:=1+0.25*beat;
