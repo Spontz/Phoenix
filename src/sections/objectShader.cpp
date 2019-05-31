@@ -104,6 +104,17 @@ void sObjectShader::exec() {
 		glClear(GL_DEPTH_BUFFER_BIT);
 	my_shader->use();
 
+	// For ShadowMapping
+	float near_plane = 0.1f, far_plane = 70.5f;
+	DEMO->light->Position.x = 86*sin(this->runTime/2.0f); // La luz recorre el pasillo (en teoría)
+	DEMO->light->Position.y = 61;
+	DEMO->light->Position.z = -18;
+	DEMO->light->CalcSpaceMatrix(-100.0f, 100.0f, -100.0f, 100.0f, near_plane, far_plane);;
+	// Send the matrix
+	my_shader->setValue("lightSpaceMatrix", DEMO->light->SpaceMatrix);
+	
+	// End ShadowMapping
+
 	// view/projection transformations
 	float zoom = DEMO->camera->Zoom;
 	glm::mat4 projection = glm::perspective(glm::radians(zoom), (float)GLDRV->width / (float)GLDRV->height, 0.1f, 10000.0f);
@@ -148,8 +159,13 @@ void sObjectShader::exec() {
 
 	for (i = (int)local->vars->sampler2D.size() - 1; i >= 0; i--) {
 		sampler2D = local->vars->sampler2D[i];
+		// TODO: Canviar això del Active per:
+		// DEMO->textureManager.active(i); --> Sha de crear el mètode a nivell de manager, perque ara està a nivell de textura i no te sentit
+		glActiveTexture(GL_TEXTURE0 + i); // Creo que está mal, debería ser texture 1 pq la 0 se pasa en el modelo ya
 		my_shader->setValue(sampler2D->name, sampler2D->texGLid);
 	}
+	// Add support for MAT3 and MAT4 here:
+
 
 	my_model->Draw(*my_shader);
 

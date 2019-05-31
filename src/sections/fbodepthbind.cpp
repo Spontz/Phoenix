@@ -81,21 +81,24 @@ void sFboDepthBind::exec() {
 	my_shader->use();
 	
 	// Put the camera into the light position
-	glm::mat4 lightProjection, lightView;
+	//glm::mat4 lightProjection, lightView;
 	glm::mat4 lightSpaceMatrix;
 	float near_plane = 1.0f, far_plane = 70.5f;
 
-	DEMO->light->Position.x = 10 * sin(this->runTime);
-	DEMO->light->Position.y = 10 * cos(this->runTime);
+	DEMO->light->Position.x = 10 * sin(12.0f);// this->runTime);
+	DEMO->light->Position.y = 10 * cos(10.0f);// this->runTime);
 
-	lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, near_plane, far_plane);				// Switch to ortogonal view TODO: Review this numbers
-	lightView = glm::lookAt(DEMO->light->Position, DEMO->light->lookAt, glm::vec3(0.0, 1.0, 0.0));	// View from the light perspective
-	lightSpaceMatrix = lightProjection * lightView;
+	//lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, near_plane, far_plane);				// Switch to ortogonal view TODO: Review this numbers
+	//lightView = glm::lookAt(DEMO->light->Position, DEMO->light->lookAt, glm::vec3(0.0, 1.0, 0.0));	// View from the light perspective
+	//lightSpaceMatrix = lightProjection * lightView;
+
+	DEMO->light->CalcSpaceMatrix(-100.0f, 100.0f, -100.0f, 100.0f, near_plane, far_plane);
+	glm::mat4 lsm = glm::mat4(DEMO->light->SpaceMatrix);
 	
 	// Enable the buffer in which we are going to paint
 	DEMO->fboManager.bind(local->fbo);
 	// Send to the shader the variables like the light position
-	my_shader->setValue("lightSpaceMatrix", lightSpaceMatrix);
+	//my_shader->setValue("lightSpaceMatrix", lsm);
 
 	// Clear the screen and depth buffers depending of the parameters passed by the user
 	if (local->clearScreen)	glClear(GL_COLOR_BUFFER_BIT);
