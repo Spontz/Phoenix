@@ -35,6 +35,7 @@ glTexTable_t textureModes[] = {
 	{ "RGBA_16F",		GL_RGBA16F,				GL_RGBA,			GL_FLOAT,			4},
 	{ "RGB_32F",		GL_RGB32F,				GL_RGB,				GL_FLOAT,			3},
 	{ "RGBA_32F",		GL_RGBA32F,				GL_RGBA,			GL_FLOAT,			4},
+	{ "DEPTH",			GL_DEPTH_COMPONENT,		GL_DEPTH_COMPONENT,	GL_FLOAT,			1}
 };
 #define TEXTURE_MODE (sizeof(textureModes) / sizeof(glTexTable_t))
 
@@ -283,7 +284,7 @@ void glDriver::initGraphics() {
 			this->fbo[i].tex_components = getTextureComponentsByName(this->fbo[i].format);
 			// Check if the format is valid
 			if (this->fbo[i].tex_format > 0) {
-				DEMO->fboManager.addFbo(this->fbo[i].width, this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type, this->fbo[i].tex_components);
+				DEMO->fboManager.addFbo(this->fbo[i].format, this->fbo[i].width, this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type, this->fbo[i].tex_components);
 				LOG->Info(LOG_LOW, "Fbo %i uploaded: width: %i, height: %i, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_components, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
 			}
 			else {

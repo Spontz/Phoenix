@@ -19,7 +19,7 @@ public:
 	void bind(int fbo_num);
 	void bind_tex(int fbo_num);
 	void unbind();
-	int addFbo(int width, int height, int iformat, int format, int type, int components);
+	int addFbo(string engine_format, int width, int height, int iformat, int format, int type, int components);
 	int	getOpenGLTextureID(int index);
 
 private:

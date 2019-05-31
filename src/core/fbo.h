@@ -27,7 +27,8 @@ public:
 	Fbo();
 	virtual ~Fbo();
 
-	bool upload(int index, int width, int height, int iformat, int format, int type);
+	bool uploadColor(int index, int Width, int Height, int iFormat, int Format, int Type);
+	bool uploadDepth(int index, int Width, int Height, int iFormat, int Format, int Type);
 	void bind() const;
 	void bind_tex() const;
 	void active(int index = 0) const;
