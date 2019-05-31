@@ -83,10 +83,13 @@ void sFboDepthBind::exec() {
 	// Put the camera into the light position
 	glm::mat4 lightProjection, lightView;
 	glm::mat4 lightSpaceMatrix;
-	float near_plane = 1.0f, far_plane = 7.5f;
+	float near_plane = 1.0f, far_plane = 70.5f;
 
-	lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);				// Switch to ortogonal view TODO: Review this numbers
-	lightView = glm::lookAt(glm::vec3(0,10,0), glm::vec3(0,0,0), glm::vec3(0.0, 1.0, 0.0));	// View from the light perspective
+	DEMO->light->Position.x = 10 * sin(this->runTime);
+	DEMO->light->Position.y = 10 * cos(this->runTime);
+
+	lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, near_plane, far_plane);				// Switch to ortogonal view TODO: Review this numbers
+	lightView = glm::lookAt(DEMO->light->Position, DEMO->light->lookAt, glm::vec3(0.0, 1.0, 0.0));	// View from the light perspective
 	lightSpaceMatrix = lightProjection * lightView;
 	
 	// Enable the buffer in which we are going to paint

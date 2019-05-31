@@ -21,7 +21,7 @@ public:
 	float specularStrenght;	// Strengt of the specular color (from 0.0 to 1.0)
 
 	// Constructor with vectors
-	Light(glm::vec3 position = glm::vec3(0.0f, 10.0f, 0.0f));
+	Light(glm::vec3 position = glm::vec3(10.0f, 10.0f, 0.0f));
 
 private:
 };

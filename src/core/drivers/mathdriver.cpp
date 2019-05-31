@@ -64,7 +64,7 @@ mathDriver::mathDriver(Section *sec) {
 		SymbolTable.add_variable("light_specular", DEMO->light->specularStrenght);
 	}
 	else {
-		SymbolTable.add_constant("light_pos_x", 0);
+		SymbolTable.add_constant("light_pos_x", 10);
 		SymbolTable.add_constant("light_pos_y", 10);
 		SymbolTable.add_constant("light_pos_z", 0);
 
