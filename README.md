@@ -24,7 +24,6 @@
 
 # Engine formulas and variables
 ## Formulas
-
 The formulas that can be used in the engine, can be like this:
 
 `string tx:=0;ty:=-1.75;tz:=0;`
@@ -35,12 +34,15 @@ Or, if using shaders, like this:
 
 `string vec3 color v1:=1.0;v2:=1+5.0*beat;v3:=1.0;`
 
+
+
 ## Considerations when writing formulas:
 
 * No spaces should be placed into a formula, even between the variables.
 * Equal (=) is written like this: `:=`, for example: `string float scale v1:=10*beat;`
 * At the end of any formula, we should write a semicolon `;`, for example: `string float scale v1:=10*beat;`
 * If you want to write multiple formulas, split them also with semicolon, for example: `string float rotation v1:=90*sin(t);v2:=0;v3:=180*cos(t);`
+* A complete description of the formulas you can make can be found here: https://archive.codeplex.com/?p=fastmathparser
 
 ## Variables
 
