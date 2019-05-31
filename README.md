@@ -27,18 +27,13 @@
 
 The formulas that can be used in the engine, can be like this:
 
-[source]
-----
-string tx:=0;ty:=-1.75;tz:=0;
-----
+`string tx:=0;ty:=-1.75;tz:=0;`
 
 Or, if using shaders, like this:
 
-[source]
-----
-string float scale v1:=1+0.25*beat;
-string vec3 color v1:=1.0;v2:=1+5.0*beat;v3:=1.0;
-----
+`string float scale v1:=1+0.25*beat;`
+
+`string vec3 color v1:=1.0;v2:=1+5.0*beat;v3:=1.0;`
 
 ## Considerations when writing formulas:
 
