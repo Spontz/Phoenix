@@ -14,7 +14,25 @@
 #include "core/shadervars.h"
 
 
+size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
+{
+	size_t pos = txt.find(ch);
+	size_t initialPos = 0;
+	strs.clear();
 
+	// Decompose statement
+	while (pos != std::string::npos) {
+		strs.push_back(txt.substr(initialPos, pos - initialPos));
+		initialPos = pos + 1;
+
+		pos = txt.find(ch, initialPos);
+	}
+
+	// Add the last one
+	strs.push_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
+
+	return strs.size();
+}
 
 ShaderVars::ShaderVars(Section* sec, Shader* shad)
 {
@@ -27,10 +45,35 @@ bool ShaderVars::ReadString(const char * string_var)
 	char	var_name[MAXSIZE_VAR_NAME];
 	char	var_type[MAXSIZE_VAR_TYPE];
 	char	var_value[MAXSIZE_VAR_EVAL];
+	int		var_UnitId;	// Useful for sampler2D
 	string s_demo = DEMO->demoDir;
 
-	sscanf(string_var, "%s %s %s", var_type, var_name, var_value);	// Read one string and store values on temporary strings for further evaluation
-	LOG->Info(LOG_MED, "Shader Variable read [section: %s, shader gl_id: %d]: string_type [%s], string_name [%s], string_value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_value);
+	std::vector<string>	vars;
+	
+	split(string_var, vars, ' ');	// Split the main string by spaces
+
+	if (vars.size() < 3) {
+		LOG->Error("Error reading Shader Variable [section: %s], format is: 'string <var_type> <var_name> <var_value>', but the string was: 'string %s'", my_section->type_str.c_str(), string_var);
+		return false;
+	}
+
+	if (vars[0] != "sampler2D") {
+		strcpy(var_type, vars[0].c_str());
+		strcpy(var_name, vars[1].c_str());
+		strcpy(var_value, vars[2].c_str());
+		LOG->Info(LOG_MED, "Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_value);
+	}
+	else {	// If its a sampler, we need also the ID
+		strcpy(var_type, vars[0].c_str());
+		strcpy(var_name, vars[1].c_str());
+		var_UnitId = std::atoi(vars[2].c_str());
+		if (vars.size() != 4) {
+			LOG->Error("Error reading Shader Variable [section: %s], sampler2D format is: 'string sampler2D <texture_name> <texture_unit_id> <texture_value>', but the string was: 'string %s'", my_section->type_str.c_str(), string_var);
+			return false;
+		}
+		strcpy(var_value, vars[3].c_str());
+		LOG->Info(LOG_MED, "Shader Variable read [section: %s, shader gl_id: %d]: string_type [%s], string_name [%s], string_id [%d], string_value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_type, var_value);
+	}
 
 	if (strcmp(var_type, "float") == 0)	// FLOAT detected
 	{
@@ -132,6 +175,7 @@ bool ShaderVars::ReadString(const char * string_var)
 		varSampler2D *var = new varSampler2D();
 		strcpy(var->name, var_name);
 		var->loc = my_shader->getUniformLocation(var->name);
+		var->texUnitID = var_UnitId;
 		// If sampler2D is a fbo...
 		if (0 == strncmp("fbo", var_value, 3)) {
 			int fbonum;

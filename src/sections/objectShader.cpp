@@ -161,8 +161,9 @@ void sObjectShader::exec() {
 		sampler2D = local->vars->sampler2D[i];
 		// TODO: Canviar això del Active per:
 		// DEMO->textureManager.active(i); --> Sha de crear el mètode a nivell de manager, perque ara està a nivell de textura i no te sentit
-		glActiveTexture(GL_TEXTURE0 + i); // Creo que está mal, debería ser texture 1 pq la 0 se pasa en el modelo ya
-		my_shader->setValue(sampler2D->name, sampler2D->texGLid);
+		glActiveTexture(GL_TEXTURE0 + sampler2D->texUnitID);
+		my_shader->setValue(sampler2D->name, sampler2D->texUnitID); // El set s'ha de fer sol al principi! no cal fer-lo a cada frame!!
+		glBindTexture(GL_TEXTURE_2D, sampler2D->texGLid);		
 	}
 	// Add support for MAT3 and MAT4 here:
 

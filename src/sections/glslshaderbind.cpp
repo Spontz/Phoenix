@@ -117,6 +117,7 @@ void sGLSLShaderBind::exec() {
 
 	for (i = (int)local->vars->sampler2D.size() - 1; i >= 0; i--) {
 		sampler2D = local->vars->sampler2D[i];
+		glActiveTexture(GL_TEXTURE0 + sampler2D->texUnitID);
 		my_shader->setValue(sampler2D->name, sampler2D->texGLid);
 	}
 }

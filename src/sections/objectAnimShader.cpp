@@ -152,7 +152,11 @@ void sObjectAnimShader::exec() {
 
 	for (i = (int)local->vars->sampler2D.size() - 1; i >= 0; i--) {
 		sampler2D = local->vars->sampler2D[i];
-		my_shader->setValue(sampler2D->name, sampler2D->texGLid);
+		// TODO: Canviar això del Active per:
+		// DEMO->textureManager.active(i); --> Sha de crear el mètode a nivell de manager, perque ara està a nivell de textura i no te sentit
+		glActiveTexture(GL_TEXTURE0 + sampler2D->texUnitID);
+		my_shader->setValue(sampler2D->name, sampler2D->texUnitID); // El set s'ha de fer sol al principi! no cal fer-lo a cada frame!!
+		glBindTexture(GL_TEXTURE_2D, sampler2D->texGLid);
 	}
 	// Guarrada para pasar una textura
 	glUniform1i(glGetUniformLocation(my_shader->ID, "texture_diffuse1"), 0); // Pick some random texture

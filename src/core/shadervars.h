@@ -66,6 +66,7 @@ typedef struct {
 	GLint			loc;
 	int				texture;	// Engine internal texture ID
 	int				texGLid;	// Texture ID (for binding it)
+	int				texUnitID;	// Texture unit ID (for glActiveTexture)
 } varSampler2D;				// Structure for a evaluation Sampler2D (TEXTURE)
 
 
