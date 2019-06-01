@@ -212,6 +212,16 @@ void Resource::Draw_QuadFBOFS(int fboNum)
 	glBindVertexArray(0);
 }
 
+// Draw a Quad with a FBO in full screen but no shader is called (needs a glslshaderbind section before)
+void Resource::Draw_QuadFBOFS_noShader(int fboNum)
+{
+	glBindVertexArray(obj_quadFullscreen);
+	//DEMO->fboManager.bind_tex(fboNum);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
+
 // Draw a Quad in full screen. A texture can be specified and a model matrix
 void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *model)
 {
@@ -225,6 +235,7 @@ void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *model)
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
+
 
 void Resource::Draw_Skybox(int cubemap)
 {

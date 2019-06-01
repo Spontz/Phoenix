@@ -55,7 +55,8 @@ void sRenderFbo::exec() {
 
 	glDisable(GL_DEPTH_TEST);
 	{
-		RES->Draw_QuadFBOFS(local->fbo);
+		//RES->Draw_QuadFBOFS(local->fbo);
+		RES->Draw_QuadFBOFS_noShader(local->fbo);
 	}
 	glEnable(GL_DEPTH_TEST);
 

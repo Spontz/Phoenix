@@ -29,35 +29,35 @@ typedef struct {
 typedef struct {
 	char		name[MAXSIZE_VAR_NAME];
 	GLint		loc;
-	float		value[2];
+	glm::vec2	value;
 	mathDriver	*eva;
 } varVec2;				// Structure for a evaluation VEC2
 
 typedef struct {
 	char		name[MAXSIZE_VAR_NAME];
 	GLint		loc;
-	float		value[3];
+	glm::vec3	value;
 	mathDriver	*eva;
 } varVec3;				// Structure for a evaluation VEC3
 
 typedef struct {
 	char		name[MAXSIZE_VAR_NAME];
 	GLint		loc;
-	float		value[4];
+	glm::vec4	value;
 	mathDriver	*eva;
 } varVec4;				// Structure for a evaluation VEC4
 
 typedef struct {
 	char		name[MAXSIZE_VAR_NAME];
 	GLint		loc;
-	float		value[9];
+	glm::mat3	value;
 	mathDriver	*eva;
 } varMat3;				// Structure for a evaluation MAT3
 
 typedef struct {
 	char		name[MAXSIZE_VAR_NAME];
 	GLint		loc;
-	float		value[16];
+	glm::mat4	value;
 	mathDriver	*eva;
 } varMat4;				// Structure for a evaluation MAT4
 
@@ -84,11 +84,14 @@ public:
 	// constructor generates the shader on the fly
 	ShaderVars(Section* sec, Shader* shad);
 	bool ReadString(const char *string_var); // Reads a string that contains vars and add it
-	
+	void setValues(bool loading);
 
 private:
 	Shader* my_shader;		// Shader where the vars are poiting
 	Section* my_section;	// Section where the vars are needed (required for formula variables, like time, etc.)
+
+	size_t splitString(const std::string &txt, std::vector<std::string> &strs, char ch);
+
 
 };
 #endif

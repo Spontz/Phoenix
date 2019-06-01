@@ -14,25 +14,7 @@
 #include "core/shadervars.h"
 
 
-size_t split(const std::string &txt, std::vector<std::string> &strs, char ch)
-{
-	size_t pos = txt.find(ch);
-	size_t initialPos = 0;
-	strs.clear();
 
-	// Decompose statement
-	while (pos != std::string::npos) {
-		strs.push_back(txt.substr(initialPos, pos - initialPos));
-		initialPos = pos + 1;
-
-		pos = txt.find(ch, initialPos);
-	}
-
-	// Add the last one
-	strs.push_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
-
-	return strs.size();
-}
 
 ShaderVars::ShaderVars(Section* sec, Shader* shad)
 {
@@ -50,7 +32,7 @@ bool ShaderVars::ReadString(const char * string_var)
 
 	std::vector<string>	vars;
 	
-	split(string_var, vars, ' ');	// Split the main string by spaces
+	splitString(string_var, vars, ' ');	// Split the main string by spaces
 
 	if (vars.size() < 3) {
 		LOG->Error("Error reading Shader Variable [section: %s], format is: 'string <var_type> <var_name> <var_value>', but the string was: 'string %s'", my_section->type_str.c_str(), string_var);
@@ -132,15 +114,15 @@ bool ShaderVars::ReadString(const char * string_var)
 		var->loc = my_shader->getUniformLocation(var->name);
 		var->eva = new mathDriver(this->my_section);
 		var->eva->expression = var_value;
-		var->eva->SymbolTable.add_variable("v1", var->value[0]);
-		var->eva->SymbolTable.add_variable("v2", var->value[1]);
-		var->eva->SymbolTable.add_variable("v3", var->value[2]);
-		var->eva->SymbolTable.add_variable("v4", var->value[3]);
-		var->eva->SymbolTable.add_variable("v5", var->value[4]);
-		var->eva->SymbolTable.add_variable("v6", var->value[5]);
-		var->eva->SymbolTable.add_variable("v7", var->value[6]);
-		var->eva->SymbolTable.add_variable("v8", var->value[7]);
-		var->eva->SymbolTable.add_variable("v9", var->value[8]);
+		var->eva->SymbolTable.add_variable("v1", var->value[0][0]);
+		var->eva->SymbolTable.add_variable("v2", var->value[0][1]);
+		var->eva->SymbolTable.add_variable("v3", var->value[0][2]);
+		var->eva->SymbolTable.add_variable("v4", var->value[1][0]);
+		var->eva->SymbolTable.add_variable("v5", var->value[1][1]);
+		var->eva->SymbolTable.add_variable("v6", var->value[1][2]);
+		var->eva->SymbolTable.add_variable("v7", var->value[2][0]);
+		var->eva->SymbolTable.add_variable("v8", var->value[2][1]);
+		var->eva->SymbolTable.add_variable("v9", var->value[2][2]);
 		var->eva->compileFormula();
 		mat3.push_back(var);
 	}
@@ -151,22 +133,22 @@ bool ShaderVars::ReadString(const char * string_var)
 		var->loc = my_shader->getUniformLocation(var->name);
 		var->eva = new mathDriver(this->my_section);
 		var->eva->expression = var_value;
-		var->eva->SymbolTable.add_variable("v1", var->value[0]);
-		var->eva->SymbolTable.add_variable("v2", var->value[1]);
-		var->eva->SymbolTable.add_variable("v3", var->value[2]);
-		var->eva->SymbolTable.add_variable("v4", var->value[3]);
-		var->eva->SymbolTable.add_variable("v5", var->value[4]);
-		var->eva->SymbolTable.add_variable("v6", var->value[5]);
-		var->eva->SymbolTable.add_variable("v7", var->value[6]);
-		var->eva->SymbolTable.add_variable("v8", var->value[7]);
-		var->eva->SymbolTable.add_variable("v9", var->value[8]);
-		var->eva->SymbolTable.add_variable("v10", var->value[9]);
-		var->eva->SymbolTable.add_variable("v11", var->value[10]);
-		var->eva->SymbolTable.add_variable("v12", var->value[11]);
-		var->eva->SymbolTable.add_variable("v13", var->value[12]);
-		var->eva->SymbolTable.add_variable("v14", var->value[13]);
-		var->eva->SymbolTable.add_variable("v15", var->value[14]);
-		var->eva->SymbolTable.add_variable("v16", var->value[15]);
+		var->eva->SymbolTable.add_variable( "v1", var->value[0][0]);
+		var->eva->SymbolTable.add_variable( "v2", var->value[0][1]);
+		var->eva->SymbolTable.add_variable( "v3", var->value[0][2]);
+		var->eva->SymbolTable.add_variable( "v4", var->value[0][3]);
+		var->eva->SymbolTable.add_variable( "v5", var->value[1][0]);
+		var->eva->SymbolTable.add_variable( "v6", var->value[1][1]);
+		var->eva->SymbolTable.add_variable( "v7", var->value[1][2]);
+		var->eva->SymbolTable.add_variable( "v8", var->value[1][3]);
+		var->eva->SymbolTable.add_variable( "v9", var->value[2][0]);
+		var->eva->SymbolTable.add_variable("v10", var->value[2][1]);
+		var->eva->SymbolTable.add_variable("v11", var->value[2][2]);
+		var->eva->SymbolTable.add_variable("v12", var->value[2][3]);
+		var->eva->SymbolTable.add_variable("v13", var->value[3][0]);
+		var->eva->SymbolTable.add_variable("v14", var->value[3][1]);
+		var->eva->SymbolTable.add_variable("v15", var->value[3][2]);
+		var->eva->SymbolTable.add_variable("v16", var->value[3][3]);
 		var->eva->compileFormula();
 		mat4.push_back(var);
 	}
@@ -199,3 +181,79 @@ bool ShaderVars::ReadString(const char * string_var)
 	return true;
 }
 
+// Set all the shader values
+void ShaderVars::setValues(bool loading)
+{
+	unsigned int i = 0;
+	varFloat*		my_vfloat;
+	varVec2*		my_vec2;
+	varVec3*		my_vec3;
+	varVec4*		my_vec4;
+	varMat3*		my_mat3;
+	varMat4*		my_mat4;
+	varSampler2D*	my_sampler2D;
+
+	for (i = 0; i < vfloat.size(); i++) {
+		my_vfloat = vfloat[i];
+		my_vfloat->eva->Expression.value();
+		my_shader->setValue(my_vfloat->name, my_vfloat->value);
+	}
+
+	for (i = 0; i < vec2.size(); i++) {
+		my_vec2 = vec2[i];
+		my_vec2->eva->Expression.value();
+		my_shader->setValue(my_vec2->name, my_vec2->value);
+	}
+
+	for (i = 0; i < vec3.size(); i++) {
+		my_vec3 = vec3[i];
+		my_vec3->eva->Expression.value();
+		my_shader->setValue(my_vec3->name, my_vec3->value);
+	}
+	for (i = 0; i < vec4.size(); i++) {
+		my_vec4 = vec4[i];
+		my_vec4->eva->Expression.value();
+		my_shader->setValue(my_vec4->name, my_vec4->value);
+	}
+
+	for (i = 0; i < mat3.size(); i++) {
+		my_mat3 = mat3[i];
+		my_mat3->eva->Expression.value();
+		my_shader->setValue(my_mat3->name, my_mat3->value);
+	}
+
+	for (i = 0; i < mat4.size(); i++) {
+		my_mat4 = mat4[i];
+		my_mat4->eva->Expression.value();
+		my_shader->setValue(my_mat4->name, my_mat4->value);
+	}
+
+	for (i = 0; i < sampler2D.size(); i++) {
+		my_sampler2D = sampler2D[i];
+		if (loading)	// If we are not loading it, there is no need to set the value
+			my_shader->setValue(my_sampler2D->name, my_sampler2D->texUnitID);
+		glActiveTexture(GL_TEXTURE0 + my_sampler2D->texUnitID);
+		glBindTexture(GL_TEXTURE_2D, my_sampler2D->texGLid);
+	}
+}
+
+// Splits a stirng in several strings, splitted by character 'ch'
+size_t ShaderVars::splitString(const std::string &txt, std::vector<std::string> &strs, char ch)
+{
+	size_t pos = txt.find(ch);
+	size_t initialPos = 0;
+	strs.clear();
+
+	// Decompose statement
+	while (pos != std::string::npos) {
+		strs.push_back(txt.substr(initialPos, pos - initialPos));
+		initialPos = pos + 1;
+
+		pos = txt.find(ch, initialPos);
+	}
+
+	// Add the last one
+	strs.push_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
+
+	return strs.size();
+}
