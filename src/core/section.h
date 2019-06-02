@@ -8,9 +8,6 @@
 #include "spline.h"
 using namespace std;
 
-#define SECTION_PARAMS		32
-#define SECTION_STRINGS		32
-#define SECTION_SPLINES		32
 #define SECTION_MODIFIERS	32
 
 typedef struct {
@@ -43,12 +40,10 @@ public:
 	int					alphaFunc;							// alpha function
 	float				alpha1;								// TODO: alpha reference value (hack: no se sabe bien que es esto), renombrar estas variables y documentar aqui
 	float				alpha2;								// TODO: alpha reference value (hack: no se sabe bien que es esto), renombrar estas variables y documentar aqui
-	int					paramNum;							// number of parameters
-	float				param[SECTION_PARAMS];				// float parameters
-	int					stringNum;							// number of strings
-	string				strings[SECTION_STRINGS];			// string parameters
-	int					splineNum;							// number of splines
-	vector <Spline*>	spline;								// Splines
+	vector<float>		param;								// float parameters
+	vector<string>		strings;							// string parameters
+	vector<string>		uniform;							// string of uniform parameters
+	vector<Spline*>		spline;								// Splines
 	//float		splineDuration[SECTION_SPLINES];	// spline duration in seconds // TODO: To delete once is working
 	void*		vars;								// pointer to section local variables
 
@@ -61,8 +56,6 @@ public:
 	void EvalBlendingStart();
 	void EvalBlendingEnd();
 
-	// Splines management
-	void loadSplines();
 	// ******************************************************************
 
 	virtual bool load() { return true; };	// load data from disk

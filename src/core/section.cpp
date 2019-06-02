@@ -26,13 +26,6 @@ Section::Section() {
 	alphaFunc		= 0;
 	alpha1			= 0;
 	alpha2			= 0;
-	paramNum		= 0;
-	for (i = 0; i<SECTION_PARAMS; i++)
-		param[i]	= 0;
-	stringNum	= 0;
-	for (i=0; i<SECTION_STRINGS; i++)
-		strings[i] = "";
-	splineNum	= 0;
 }
 
 void Section::EvalBlendingStart()
@@ -53,13 +46,3 @@ void Section::EvalBlendingEnd()
 			glBlendEquation(GL_FUNC_ADD);
 	}
 }
-
-void Section::loadSplines()
-{
-	int i;
-
-	for (i = 0; i < this->splineNum; i++) {
-		this->spline[i]->load();
-	}
-}
-

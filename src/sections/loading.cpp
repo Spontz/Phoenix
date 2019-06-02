@@ -23,7 +23,7 @@ sLoading::sLoading() {
 bool sLoading::load() {
 	string s_demo = DEMO->demoDir;
 	// script validation
-	if ((this->paramNum != 3) || (this->stringNum != 3)) {
+	if ((this->param.size() != 3) || (this->strings.size() != 3)) {
 		LOG->Error("Loading [%s]: 3 strings and 3 params needed. Using default values.", this->identifier.c_str());
 		byDefault = 1;
 	}

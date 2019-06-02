@@ -32,13 +32,8 @@ bool sSound::load() {
 		return false;
 	}
 
-	if (this->stringNum != 1) {
-		LOG->Error("Sound [%s]: 1 string needed: path to the sound file", this->identifier.c_str());
-		return false;
-	}
-
-	if (this->paramNum != 1) {
-		LOG->Error("Sound [%s]: 1 param needed: volume of the sound (0.0 to 1.0)", this->identifier.c_str()); 
+	if (this->param.size() != 1 || this->strings.size() != 1) {
+		LOG->Error("Sound [%s]: 1 param and 1 string needed: volume (0.0 to 1.0), and path to the sound file", this->identifier.c_str());
 		return false;
 	}
 

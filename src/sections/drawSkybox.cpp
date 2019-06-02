@@ -26,7 +26,7 @@ sDrawSkybox::sDrawSkybox() {
 
 bool sDrawSkybox::load() {
 	string s_demo = DEMO->demoDir;
-	if ((this->paramNum < 2) || (this->stringNum < 8)) {
+	if ((this->param.size() != 2) || (this->strings.size() != 8)) {
 		LOG->Error("DrawSkybox [%s]: 2 param and 8 strings needed: enable depthBuffer, drawWireframe + 6 strings with skybox faces, 2 strings with rot and scale", this->identifier.c_str());
 		return false;
 	}

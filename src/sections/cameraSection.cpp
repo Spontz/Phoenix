@@ -12,7 +12,7 @@ sCamera::sCamera() {
 
 bool sCamera::load() {
 	// script validation
-	if ((this->splineNum != 1) || (this->paramNum != 1)) {
+	if ((this->spline.size() != 1) || (this->param.size() != 1)) {
 		LOG->Error("Camera [%s]: 1 spline and 1 param needed", this->identifier.c_str());
 		return false;
 	}
@@ -21,7 +21,9 @@ bool sCamera::load() {
 	this->vars = (void *)local;
 
 	// Load the camera splines
-	this->loadSplines();
+	for (int i = 0; i < this->spline.size(); i++) {
+		this->spline[i]->load();
+	}
 	
 	return true;
 }

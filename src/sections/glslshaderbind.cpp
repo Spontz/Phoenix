@@ -21,7 +21,7 @@ bool sGLSLShaderBind::load() {
 
 	// script validation
 	// 2 strings needed: Vertex and fragment shader path
-	if (this->stringNum < 2) {
+	if (this->strings.size() != 2) {
 		LOG->Error("GLSLShaderBind [%s]: 2 strings are needed: vertex and fragment shader files", this->identifier.c_str());
 		return false;
 	}
@@ -40,9 +40,9 @@ bool sGLSLShaderBind::load() {
 	// Create variables
 	local->vars = new ShaderVars(this, my_shader);
 	
-	// Read the variables
-	for (int i = 2; i < this->stringNum; i++) {
-		local->vars->ReadString(this->strings[i].c_str());
+	// Read the uniform variables
+	for (int i = 0; i < this->uniform.size(); i++) {
+		local->vars->ReadString(this->uniform[i].c_str());
 	}
 
 	// Set the values

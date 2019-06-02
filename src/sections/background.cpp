@@ -20,7 +20,7 @@ sBackground::sBackground() {
 
 bool sBackground::load() {
 	// script validation
-	if ((this->stringNum != 1) || (this->paramNum != 1)) {
+	if ((this->strings.size() != 1) || (this->param.size() != 1)) {
 		LOG->Error("Background [%s]: 1 string and 1 param needed", this->identifier.c_str());
 		return false;
 	}

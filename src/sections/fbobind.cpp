@@ -16,7 +16,7 @@ sFboBind::sFboBind() {
 
 bool sFboBind::load() {
 	// script validation
-	if (this->paramNum < 3) {
+	if (this->param.size() != 3) {
 		LOG->Error("FboBind [%s]: 3 params are needed: fbo to use, clear the screen buffer, clear depth buffer", this->identifier.c_str());
 		return false;
 	}

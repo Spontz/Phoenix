@@ -35,7 +35,7 @@ bool ShaderVars::ReadString(const char * string_var)
 	splitString(string_var, vars, ' ');	// Split the main string by spaces
 
 	if (vars.size() < 3) {
-		LOG->Error("Error reading Shader Variable [section: %s], format is: 'string <var_type> <var_name> <var_value>', but the string was: 'string %s'", my_section->type_str.c_str(), string_var);
+		LOG->Error("Error reading Shader Variable [section: %s], format is: 'uniform <var_type> <var_name> <var_value>', but the string was: 'uniform %s'", my_section->type_str.c_str(), string_var);
 		return false;
 	}
 
@@ -50,7 +50,7 @@ bool ShaderVars::ReadString(const char * string_var)
 		strcpy(var_name, vars[1].c_str());
 		var_UnitId = std::atoi(vars[2].c_str());
 		if (vars.size() != 4) {
-			LOG->Error("Error reading Shader Variable [section: %s], sampler2D format is: 'string sampler2D <texture_name> <texture_unit_id> <texture_value>', but the string was: 'string %s'", my_section->type_str.c_str(), string_var);
+			LOG->Error("Error reading Shader Variable [section: %s], sampler2D format is: 'uniform sampler2D <texture_name> <texture_unit_id> <texture_value>', but the string was: 'uniform %s'", my_section->type_str.c_str(), string_var);
 			return false;
 		}
 		strcpy(var_value, vars[3].c_str());
@@ -181,7 +181,7 @@ bool ShaderVars::ReadString(const char * string_var)
 	return true;
 }
 
-// Set all the shader values
+// Set all the shader values. Please note that the shader must be used before!!
 void ShaderVars::setValues(bool loading)
 {
 	unsigned int i = 0;

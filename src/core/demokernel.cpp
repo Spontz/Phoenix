@@ -122,16 +122,17 @@ static tScriptCommand scriptCommand[] = {
 #define SECTION_ALPHA			6
 #define SECTION_PARAM			7
 #define SECTION_STRING			8
-#define SECTION_SPLINE			9
-#define SECTION_MODIFIER		10
-#define SECTION_ENABLED			11
+#define SECTION_UNIFORM			9
+#define SECTION_SPLINE			10
+#define SECTION_MODIFIER		11
+#define SECTION_ENABLED			12
 
 // defined section reserved keys
-#define SECTION_COMMANDS_NUMBER 12
+#define SECTION_COMMANDS_NUMBER 13
 
 static char *scriptSectionCommand[SECTION_COMMANDS_NUMBER] = {
 	"id", "start", "end", "layer", "blend", "blendequation",
-	"alpha", "param", "string", "spline", "modify", "enabled"
+	"alpha", "param", "string", "uniform", "spline", "modify", "enabled"
 };
 
 // ******************************************************************
@@ -868,6 +869,9 @@ int demokernel::load_scriptData(string sScript, string sFile) {
 				case 's':
 					com = SECTION_STRING;
 					break;
+				case 'u':
+					com = SECTION_UNIFORM;
+					break;
 				case 'c':
 					com = SECTION_SPLINE;
 					break;
@@ -952,29 +956,22 @@ int demokernel::load_scriptData(string sScript, string sFile) {
 				break;
 
 			case SECTION_PARAM:
-				if (new_sec->paramNum >= SECTION_PARAMS)
-					LOG->Error("Too many parameters, engine is limited to %i parameters", SECTION_PARAMS);
-
-				values = Util::getFloatVector(value, &new_sec->param[new_sec->paramNum], SECTION_PARAMS);
-				new_sec->paramNum += values;
-
-				LOG->Info(LOG_LOW, "  Section parameter: %s = %f (%i found)", key, new_sec->param[new_sec->paramNum - 1], values);
+				fvalue = Util::getFloat(value);
+				new_sec->param.push_back(fvalue);
+				LOG->Info(LOG_LOW, "  Section parameter: %s = %f", key, fvalue);
 				break;
 
 			case SECTION_STRING:
-				if (new_sec->stringNum >= SECTION_STRINGS)
-					LOG->Error("Too many strings, engine is limited to %i strings", SECTION_STRINGS);
-
-				new_sec->strings[new_sec->stringNum] = _strdup(value);
-				new_sec->stringNum++;
-
+				new_sec->strings.push_back(_strdup(value));
 				LOG->Info(LOG_LOW, "  Loaded string: \"%s\"", value);
 				break;
 
-			case SECTION_SPLINE:
-				if (new_sec->splineNum >= SECTION_SPLINES)
-					LOG->Error("Too many splines, engine is limited to %i splines", SECTION_SPLINES);
+			case SECTION_UNIFORM:
+				new_sec->uniform.push_back(_strdup(value));
+				LOG->Info(LOG_LOW, "  Loaded uniform: \"%s\"", value);
+				break;
 
+			case SECTION_SPLINE:
 				values = sscanf(value, "%s %f", tmp, &fvalue);
 
 				switch (values) {
@@ -991,7 +988,6 @@ int demokernel::load_scriptData(string sScript, string sFile) {
 				new_spl->filename = _strdup(tmp); //TODO: És necessari el _strdup?? pq no "=" i ja esta?
 				new_spl->duration = fvalue;
 				new_sec->spline.push_back(new_spl);
-				new_sec->splineNum++;
 				LOG->Info(LOG_LOW, "  Loaded Spline: %s", new_spl->filename.c_str());
 				break;
 

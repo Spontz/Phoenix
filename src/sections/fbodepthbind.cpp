@@ -28,12 +28,12 @@ bool sFboDepthBind::load() {
 	string s_demo = DEMO->demoDir;
 
 	// script validation
-	if (this->paramNum < 3) {
+	if (this->param.size() != 3) {
 		LOG->Error("FboDepthBind [%s]: 3 params are needed: DEPTH fbo to use, clear the screen buffer, clear depth buffer", this->identifier.c_str());
 		return false;
 	}
 
-	if (this->stringNum < 2) {
+	if (this->strings.size() != 2) {
 		LOG->Error("FboDepthBind [%s]: 2 strings are needed: vertex and fragment shader files", this->identifier.c_str());
 		return false;
 	}

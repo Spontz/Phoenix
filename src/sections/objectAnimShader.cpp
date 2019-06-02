@@ -29,7 +29,7 @@ sObjectAnimShader::sObjectAnimShader() {
 
 bool sObjectAnimShader::load() {
 	string s_demo = DEMO->demoDir;
-	if ((this->paramNum != 2) || (this->stringNum < 6)) {
+	if ((this->param.size() != 2) || (this->strings.size() != 6)) {
 		LOG->Error("ObjectShader [%s]: 2 param and 6 strings needed", this->identifier.c_str());
 		return false;
 	}
@@ -73,8 +73,8 @@ bool sObjectAnimShader::load() {
 	local->vars = new ShaderVars(this, my_shader);
 
 	// Read the any other shader variables
-	for (int i = 6; i < this->stringNum; i++) {
-		local->vars->ReadString(this->strings[i].c_str());
+	for (int i = 0; i < this->uniform.size(); i++) {
+		local->vars->ReadString(this->uniform[i].c_str());
 	}
 
 	// Set the values
@@ -88,12 +88,6 @@ void sObjectAnimShader::init() {
 }
 
 void sObjectAnimShader::exec() {
-	int i;
-	varFloat*		vfloat;
-	varVec2*		vec2;
-	varVec3*		vec3;
-	varVec4*		vec4;
-	varSampler2D*	sampler2D;
 
 	local = (objectAnimShader_section *)this->vars;
 

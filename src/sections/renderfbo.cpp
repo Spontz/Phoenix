@@ -18,7 +18,7 @@ sRenderFbo::sRenderFbo() {
 
 bool sRenderFbo::load() {
 	// script validation
-	if (this->paramNum < 4) {
+	if (this->param.size() != 4) {
 		LOG->Error("RenderFbo [%s]: 4 params are needed: fbo to use, clear the screen buffer, clear depth buffer and fullscreen", this->identifier.c_str());
 		return false;
 	}

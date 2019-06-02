@@ -102,4 +102,39 @@ int Util::getFloatVector(char *line, float *vector, int max) {
 	return chan;
 }
 
+float Util::getFloat(char *line) {
+
+	char result[256], *s;
+	int offset, n;
+	float value;
+
+	
+	offset = 0;
+	do {
+		// read separators
+		s = &line[offset];
+		while ((s[0] == '{') || (s[0] == ' ') || (s[0] == ',') || (s[0] == '\t')) {
+			s++;
+			offset++;
+		}
+
+		// read the float
+		n = 0;
+		while (((s[0] >= '0') && (s[0] <= '9')) || (s[0] == '.') || (s[0] == '-')) {
+			result[n++] = s++[0];
+			offset++;
+		}
+		result[n] = 0;
+
+		// convert string to float
+		if (n > 0) {
+			sscanf(result, "%f", &value);
+			return value;
+		}
+
+	} while (n > 0);
+
+	return 0;
+}
+
 
