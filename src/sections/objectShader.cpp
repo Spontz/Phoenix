@@ -62,18 +62,18 @@ bool sObjectShader::load() {
 	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
 	local->exprPosition->compileFormula();
 
-	// Read any shader variables
+	// Create Shader variables
 	Shader *my_shader;
 	my_shader = DEMO->shaderManager.shader[local->shader];
 	my_shader->use();
 	local->vars = new ShaderVars(this, my_shader);
 
-	// Read the any other shader variables
+	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
 		local->vars->ReadString(this->uniform[i].c_str());
 	}
 
-	// Set the values
+	// Set shader variables values
 	local->vars->setValues(true);
 
 	return true;

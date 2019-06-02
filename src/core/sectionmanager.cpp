@@ -41,10 +41,9 @@ tSectionID sectionID[] = {
 	{"fbobind",				SectionType::FboBind},
 	{"fbodepthbind",		SectionType::FboDepthBind},
 	{"fbounbind",			SectionType::FboUnbind},
-	{"renderfbo",			SectionType::RenderFbo},
+	{"renderFbo",			SectionType::RenderFbo},
+	{"renderQuad",			SectionType::RenderQuad},
 	{"glslshaderquad",		SectionType::GLSLShaderQuad},
-	{"glslshaderbind",		SectionType::GLSLShaderBind},
-	{"glslshaderunbind",	SectionType::GLSLShaderUnbind},
 	{"renderShadowMapping",	SectionType::RenderShadowMapping}
 };
 
@@ -90,11 +89,8 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 	case SectionType::RenderFbo:
 		mySection = new sRenderFbo();
 		break;
-	case SectionType::GLSLShaderBind:
-		mySection = new sGLSLShaderBind();
-		break;
-	case SectionType::GLSLShaderUnbind:
-		mySection = new sGLSLShaderUnbind();
+	case SectionType::RenderQuad:
+		mySection = new sRenderQuad();
 		break;
 	case SectionType::ObjectShader:
 		mySection = new sObjectShader();

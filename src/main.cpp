@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
 	DEMO->initDemo();
 	LOG->Info(LOG_HIGH, "Initializing main loop!");
 	DEMO->mainLoop();
+	LOG->Info(LOG_LOW, "Average Framerate: %.2f", (float)DEMO->frameCount/DEMO->runTime);
 	LOG->Info(LOG_HIGH, "Closing demo. We hope you enjoyed watching this demo! See you next time! Watch more at www.spontz.org");
 	DEMO->closeDemo();
 	LOG->CloseLogFile();

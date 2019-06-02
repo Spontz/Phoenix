@@ -18,10 +18,11 @@ public:
 	static Resource* GetResource();
 	void loadAllResources();
 
+	void Draw_QuadFS();								// Draws a quad in fullscreen
 	void Draw_QuadFS(int textureNum);				// Draws a quad with fullscreen (the texture number from the texture manager should be specified)
 	void Draw_QuadFS(int textureNum, float alpha);	// Draws a quad with fullscreen with alpha (the texture number from the texture manager should be specified)
 	void Draw_QuadFBOFS(int fbo_num);				// Draws a quad with fullscreen (the fbo number from the fbo manager should be specified)
-	void Draw_QuadFBOFS_noShader(int fboNum);		// Draws a quad with fullscreen (the fbo number from the fbo manager should be specified), but with no shader (a glslshader needs to be called previously)
+	//void Draw_QuadFBOFS_noShader(int fboNum);		// Draws a quad with fullscreen (the fbo number from the fbo manager should be specified), but with no shader (a glslshader needs to be called previously)
 	void Draw_Obj_QuadTex(int textureNum, glm::mat4 *model);
 	void Draw_Skybox(int cubemap);					// Draws a skybox for a given cubemap texture
 

@@ -41,9 +41,8 @@ enum SectionType {
 	FboDepthBind,
 	FboUnbind,
 	RenderFbo,
+	RenderQuad,
 	GLSLShaderQuad,
-	GLSLShaderBind,
-	GLSLShaderUnbind,
 	RenderShadowMapping
 };
 

@@ -54,7 +54,7 @@ bool ShaderVars::ReadString(const char * string_var)
 			return false;
 		}
 		strcpy(var_value, vars[3].c_str());
-		LOG->Info(LOG_MED, "Shader Variable read [section: %s, shader gl_id: %d]: string_type [%s], string_name [%s], string_id [%d], string_value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_type, var_value);
+		LOG->Info(LOG_MED, "Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], id [%d], value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_UnitId, var_value);
 	}
 
 	if (strcmp(var_type, "float") == 0)	// FLOAT detected

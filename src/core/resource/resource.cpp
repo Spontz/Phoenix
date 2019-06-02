@@ -186,6 +186,7 @@ void Resource::Draw_QuadFS(int textureNum)
 	glBindVertexArray(0);
 }
 
+// TODO: To delete
 void Resource::Draw_QuadFS(int textureNum, float alpha)
 {
 	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTexAlpha];
@@ -212,11 +213,10 @@ void Resource::Draw_QuadFBOFS(int fboNum)
 	glBindVertexArray(0);
 }
 
-// Draw a Quad with a FBO in full screen but no shader is called (needs a glslshaderbind section before)
-void Resource::Draw_QuadFBOFS_noShader(int fboNum)
+// Draw a Quad with a FBO in full screen but no shader is called (needs a shader->use() call before)
+void Resource::Draw_QuadFS()
 {
 	glBindVertexArray(obj_quadFullscreen);
-	//DEMO->fboManager.bind_tex(fboNum);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }

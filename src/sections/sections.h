@@ -18,9 +18,8 @@ class sFboDepthBind : public Section { public:	sFboDepthBind();  bool load(); vo
 class sFboUnbind : public Section { public:	sFboUnbind();  bool load(); void init(); void exec(); void end(); };
 class sRenderFbo : public Section { public:	sRenderFbo();  bool load(); void init(); void exec(); void end(); };
 class sDrawSkybox : public Section { public:	sDrawSkybox();  bool load(); void init(); void exec(); void end(); };
+class sRenderQuad : public Section { public:	sRenderQuad();  bool load(); void init(); void exec(); void end(); };
 class sObjectShader : public Section { public:	sObjectShader();  bool load(); void init(); void exec(); void end(); };
 class sObjectAnimShader : public Section { public:	sObjectAnimShader();  bool load(); void init(); void exec(); void end(); };
-class sGLSLShaderBind : public Section { public: sGLSLShaderBind(); bool load(); void init(); void exec(); void end(); };
-class sGLSLShaderUnbind : public Section { public: sGLSLShaderUnbind(); bool load(); void init(); void exec(); void end(); };
 
 #endif
