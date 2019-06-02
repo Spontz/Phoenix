@@ -38,7 +38,6 @@ tSectionID sectionID[] = {
 	{"rayMatrix",			SectionType::RayMatrix},
 	{"sound",				SectionType::Sound},
 	{"fboBind",				SectionType::FboBind},
-	{"fboDepthBind",		SectionType::FboDepthBind},
 	{"fboUnbind",			SectionType::FboUnbind},
 	{"renderFbo",			SectionType::RenderFbo},
 	{"renderQuad",			SectionType::RenderQuad},
@@ -72,14 +71,14 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 	case SectionType::CameraSec:
 		mySection = new sCamera();
 		break;
+	case SectionType::LightSec:
+		mySection = new sLight();
+		break;
 	case SectionType::Background:
 		mySection = new sBackground();
 		break;
 	case SectionType::FboBind:
 		mySection = new sFboBind();
-		break;
-	case SectionType::FboDepthBind:
-		mySection = new sFboDepthBind();
 		break;
 	case SectionType::FboUnbind:
 		mySection = new sFboUnbind();

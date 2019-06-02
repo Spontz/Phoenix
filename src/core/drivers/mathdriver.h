@@ -22,8 +22,14 @@ public:
 	exprtk::expression<float>	Expression;
 	exprtk::parser<float> Parser;
 
+	/*exprtk::symbol_table<glm::mat4> SymbolMatTable;
+	exprtk::expression<glm::mat4>	ExpressionMat;
+	exprtk::parser<glm::mat4> ParserMat;
+	*/
+
 	mathDriver(Section *sec);
 	void compileFormula();
+	//void compileFormulaMat();
 
 private:
 

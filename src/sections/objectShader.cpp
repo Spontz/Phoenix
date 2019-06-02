@@ -49,7 +49,7 @@ bool sObjectShader::load() {
 
 	local->exprPosition = new mathDriver(this);
 	// Load positions, process constants and compile expression
-	local->exprPosition->expression = std::string(this->strings[3]) + this->strings[4] + this->strings[5]; // Concatenate the 3 positioning strings (position+rotation+scale)
+	local->exprPosition->expression = this->strings[3] + this->strings[4] + this->strings[5]; // Concatenate the 3 positioning strings (position+rotation+scale)
 	local->exprPosition->SymbolTable.add_variable("tx", local->tx);
 	local->exprPosition->SymbolTable.add_variable("ty", local->ty);
 	local->exprPosition->SymbolTable.add_variable("tz", local->tz);
@@ -102,16 +102,6 @@ void sObjectShader::exec() {
 	my_shader->use();
 
 	// For ShadowMapping
-	float near_plane = 0.1f, far_plane = 100;
-	//DEMO->light->Position.x = 86*sin(this->runTime/2.0f); // La luz recorre el pasillo (en teoría)
-	DEMO->light->Position.x = -377;
-	DEMO->light->Position.y = 218;
-	DEMO->light->Position.z = -243;
-
-	DEMO->light->Position = DEMO->camera->Position;
-
-	DEMO->light->CalcSpaceMatrix(-50.0f, 50.0f, -50.0f, 50.0f, near_plane, far_plane);;
-	// Send the matrix
 	my_shader->setValue("lightSpaceMatrix", DEMO->light->SpaceMatrix);
 	
 	// End ShadowMapping

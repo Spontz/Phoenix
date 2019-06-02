@@ -133,6 +133,9 @@ bool ShaderVars::ReadString(const char * string_var)
 		var->loc = my_shader->getUniformLocation(var->name);
 		var->eva = new mathDriver(this->my_section);
 		var->eva->expression = var_value;
+		//var->eva->SymbolMatTable.add_variable("v1", var->value);
+		//var->eva->compileFormulaMat();
+		
 		var->eva->SymbolTable.add_variable( "v1", var->value[0][0]);
 		var->eva->SymbolTable.add_variable( "v2", var->value[0][1]);
 		var->eva->SymbolTable.add_variable( "v3", var->value[0][2]);
@@ -150,6 +153,7 @@ bool ShaderVars::ReadString(const char * string_var)
 		var->eva->SymbolTable.add_variable("v15", var->value[3][2]);
 		var->eva->SymbolTable.add_variable("v16", var->value[3][3]);
 		var->eva->compileFormula();
+
 		mat4.push_back(var);
 	}
 	else if (strcmp(var_type, "sampler2D") == 0)	// Texture (sampler2D) detected

@@ -18,8 +18,8 @@ public:
 	glm::vec3 lookAt;		// In case it's a directional light, where is looking at
 	glm::vec3 color;		// Color of our light
 	glm::mat4 SpaceMatrix;	// READ ONLY: Ligth space matrix, useful for shaders
-	float ambientStrenght;	// Strengt of the ambient color (from 0.0 to 1.0)
-	float specularStrenght;	// Strengt of the specular color (from 0.0 to 1.0)
+	float ambientStrength;	// Strength of the ambient color (from 0.0 to 1.0)
+	float specularStrength;	// Strength of the specular color (from 0.0 to 1.0)
 
 	// Constructor with vectors
 	Light(glm::vec3 position = glm::vec3(10.0f, 10.0f, 0.0f));

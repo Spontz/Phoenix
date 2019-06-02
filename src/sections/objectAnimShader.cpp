@@ -53,7 +53,7 @@ bool sObjectAnimShader::load() {
 
 	local->exprPosition = new mathDriver(this);
 	// Load positions, process constants and compile expression
-	local->exprPosition->expression = std::string(this->strings[3]) + this->strings[4] + this->strings[5]; // Concatenate the 3 positioning strings (position+rotation+scale)
+	local->exprPosition->expression = this->strings[3] + this->strings[4] + this->strings[5]; // Concatenate the 3 positioning strings (position+rotation+scale)
 	local->exprPosition->SymbolTable.add_variable("tx", local->tx);
 	local->exprPosition->SymbolTable.add_variable("ty", local->ty);
 	local->exprPosition->SymbolTable.add_variable("tz", local->tz);
