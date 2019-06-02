@@ -87,7 +87,7 @@ void sFboDepthBind::exec() {
 
 	DEMO->light->Position.x = 10 * sin(12.0f);// this->runTime);
 	DEMO->light->Position.y = 10 * cos(10.0f);// this->runTime);
-
+	
 	//lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, near_plane, far_plane);				// Switch to ortogonal view TODO: Review this numbers
 	//lightView = glm::lookAt(DEMO->light->Position, DEMO->light->lookAt, glm::vec3(0.0, 1.0, 0.0));	// View from the light perspective
 	//lightSpaceMatrix = lightProjection * lightView;

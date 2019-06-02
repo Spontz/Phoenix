@@ -152,6 +152,7 @@ void Resource::Load_Obj_Skybox()
 void Resource::Load_Shaders()
 {
 	shdr_QuadTex = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTex.vert", demoDir + "/resources/shaders/basic/QuadTex.frag");
+	shdr_QuadDepth = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadDepth.vert", demoDir + "/resources/shaders/basic/QuadDepth.frag");
 	shdr_QuadTexAlpha = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTexAlpha.vert", demoDir + "/resources/shaders/basic/QuadTexAlpha.frag");
 	shdr_QuadTexModel = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTexModel.vert", demoDir + "/resources/shaders/basic/QuadTexModel.frag");
 	shdr_Skybox = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/skybox/skybox.vert", demoDir + "/resources/shaders/skybox/skybox.frag");
@@ -250,9 +251,16 @@ void Resource::Draw_Skybox(int cubemap)
 // Draw the Debug Quads with a FBO
 void Resource::Draw_Obj_QuadFBO_Debug(int quad, int fbo_num)
 {
+	int shader;
+	if (DEMO->fboManager.fbo[fbo_num]->engineFormat == "DEPTH") // If we are drawing a DEPTH fbo, then we need to use another shader
+		shader = RES->shdr_QuadDepth;
+	else
+		shader = RES->shdr_QuadTex;
+
 	glBindVertexArray(obj_quad_FBO_Debug[quad]);
-	DEMO->shaderManager.shader[RES->shdr_QuadTex]->use();
-	DEMO->shaderManager.shader[RES->shdr_QuadTex]->setValue("screenTexture", 0);
+	DEMO->shaderManager.shader[shader]->use();
+	DEMO->shaderManager.shader[shader]->setValue("screenTexture", 0);
+	DEMO->fboManager.active(0);
 	DEMO->fboManager.bind_tex(fbo_num);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);

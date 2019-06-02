@@ -102,11 +102,15 @@ void sObjectShader::exec() {
 	my_shader->use();
 
 	// For ShadowMapping
-	float near_plane = 0.1f, far_plane = 70.5f;
-	DEMO->light->Position.x = 86*sin(this->runTime/2.0f); // La luz recorre el pasillo (en teoría)
-	DEMO->light->Position.y = 61;
-	DEMO->light->Position.z = -18;
-	DEMO->light->CalcSpaceMatrix(-100.0f, 100.0f, -100.0f, 100.0f, near_plane, far_plane);;
+	float near_plane = 0.1f, far_plane = 100;
+	//DEMO->light->Position.x = 86*sin(this->runTime/2.0f); // La luz recorre el pasillo (en teoría)
+	DEMO->light->Position.x = -377;
+	DEMO->light->Position.y = 218;
+	DEMO->light->Position.z = -243;
+
+	DEMO->light->Position = DEMO->camera->Position;
+
+	DEMO->light->CalcSpaceMatrix(-50.0f, 50.0f, -50.0f, 50.0f, near_plane, far_plane);;
 	// Send the matrix
 	my_shader->setValue("lightSpaceMatrix", DEMO->light->SpaceMatrix);
 	

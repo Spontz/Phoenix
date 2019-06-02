@@ -12,7 +12,7 @@ TextureManager::TextureManager() {
 }
 
 // Adds a Texture into the queue, returns the Number of the texture added
-int TextureManager::addTexture(string path, bool flip) {
+int TextureManager::addTexture(string path, bool flip, string type) {
 	unsigned int i;
 	int tex_num = -1;
 
@@ -25,6 +25,7 @@ int TextureManager::addTexture(string path, bool flip) {
 	// if we must load the texture...
 	Texture *new_tex = new Texture();
 	if (new_tex->load(path, flip)) {
+		new_tex->type = type;
 		texture.push_back(new_tex);
 		mem += (float)(new_tex->width * new_tex->height * new_tex->components)/ 1048576.0f;		// increase the texture mem
 		tex_num = (int)texture.size() - 1;

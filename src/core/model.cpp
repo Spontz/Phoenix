@@ -45,6 +45,7 @@ void Model::loadModel(string const &path)
 	// retrieve the directory path of the filepath and the filename
 	directory = filepath.substr(0, filepath.find_last_of('/'));
 	filename = filepath.substr(filepath.find_last_of('/')+1, filepath.length());
+	LOG->Info(LOG_LOW, "Loading Model: %s", filename.c_str());
 	// process ASSIMP's root node recursively
 	processNode(scene->mRootNode, scene);
 }
@@ -73,6 +74,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;
 	vector<int> textures;
+	LOG->Info(LOG_LOW, "Loading mesh: %s", mesh->mName.C_Str());
 
 	if (mesh->HasTangentsAndBitangents() == false)
 		LOG->Info(LOG_MED, "Warning, the loaded mesh has no Tangents and BiTangents! Normal will be copied there.");
@@ -143,15 +145,19 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	// 1. diffuse maps
 	vector<int> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+	LOG->Info(LOG_LOW, "  The mesh has %d diffuseMaps", diffuseMaps.size());
 	// 2. specular maps
 	vector<int> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+	LOG->Info(LOG_LOW, "  The mesh has %d specularMaps", specularMaps.size());
 	// 3. normal maps
 	std::vector<int> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
 	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+	LOG->Info(LOG_LOW, "  The mesh has %d normalMaps", normalMaps.size());
 	// 4. height maps
 	std::vector<int> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+	LOG->Info(LOG_LOW, "  The mesh has %d heightMaps", heightMaps.size());
 
 	// return a mesh object created from the extracted mesh data
 	return Mesh(vertices, indices, textures);
@@ -170,7 +176,7 @@ vector<int> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, str
 		if (0 == strcmp(filepath.C_Str(), "$texture_dummy.bmp"))				// Prevent a bug in assimp: In some cases, the texture by default is named "$texture_dummy.bmp"
 			filepath = filename.substr(0, filename.find_last_of('.')) + ".jpg";	// In that case, we change this to "<model_name.jpg>"
 		fullpath = directory + "/" + filepath.C_Str();
-		int tex = DEMO->textureManager.addTexture(fullpath.c_str(), false);
+		int tex = DEMO->textureManager.addTexture(fullpath.c_str(), false, typeName);
 		textures.push_back(tex);
 	}
 	return textures;

@@ -31,6 +31,7 @@ public:
 
 	// Shaders
 	int shdr_QuadTex;		// Draws a textured quad
+	int shdr_QuadDepth;		// Draws a depth texture quad
 	int shdr_QuadTexAlpha;	// Draws a textured quad with alpha
 	int shdr_QuadTexModel;	// Draws a textured quad with model matrix
 	int shdr_Skybox;		// Draws a skybox
