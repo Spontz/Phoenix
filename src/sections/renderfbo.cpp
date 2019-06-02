@@ -4,7 +4,6 @@ typedef struct {
 	int		fbo;
 	char	clearScreen;	// Clear Screen buffer
 	char	clearDepth;		// Clear Depth buffer
-	char	fullscreen;		// fullscreen restore
 } renderfbo_section;
 
 static renderfbo_section *local;

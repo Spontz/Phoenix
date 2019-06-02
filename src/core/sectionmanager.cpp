@@ -37,13 +37,11 @@ tSectionID sectionID[] = {
 	{"ray",					SectionType::Ray},
 	{"rayMatrix",			SectionType::RayMatrix},
 	{"sound",				SectionType::Sound},
-	{"beatDetect",			SectionType::BeatDetect},
-	{"fbobind",				SectionType::FboBind},
-	{"fbodepthbind",		SectionType::FboDepthBind},
-	{"fbounbind",			SectionType::FboUnbind},
+	{"fboBind",				SectionType::FboBind},
+	{"fboDepthBind",		SectionType::FboDepthBind},
+	{"fboUnbind",			SectionType::FboUnbind},
 	{"renderFbo",			SectionType::RenderFbo},
 	{"renderQuad",			SectionType::RenderQuad},
-	{"glslshaderquad",		SectionType::GLSLShaderQuad},
 	{"renderShadowMapping",	SectionType::RenderShadowMapping}
 };
 
