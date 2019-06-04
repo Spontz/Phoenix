@@ -410,7 +410,8 @@ void glDriver::drawTiming() {
 	DEMO->text->glPrintf(-1, 0.6f, "texmem: %.2fmb", DEMO->textureManager.mem);
 	DEMO->text->glPrintf(-1, 0.5f, "Cam Speed: %.0f", DEMO->camera->MovementSpeed);
 	DEMO->text->glPrintf(-1, 0.4f, "Cam Pos: %.1f,%.1f,%.1f", DEMO->camera->Position.x,DEMO->camera->Position.y,DEMO->camera->Position.z);
-	DEMO->text->glPrintf(-1, 0.3f, "%s", state);
+	DEMO->text->glPrintf(-1, 0.3f, "Cam Front: %.1f,%.1f,%.1f", DEMO->camera->Front.x, DEMO->camera->Front.y, DEMO->camera->Front.z);
+	DEMO->text->glPrintf(-1, 0.2f, "%s", state);
 }
 
 // Draw the Fbo output

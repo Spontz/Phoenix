@@ -66,7 +66,6 @@ bool Texture::load(const std::string & file_name, bool flip)
 	return is_loaded;
 }
 
-// TODO: It has no sense to be in the texture object, it should be in the texture manager object
 void Texture::active(int index) const
 {
 	glActiveTexture(GL_TEXTURE0 + index);

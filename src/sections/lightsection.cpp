@@ -66,8 +66,11 @@ void sLight::exec() {
 	// Evaluate the expression
 	local->exprLight->Expression.value();
 
-	if (local->linkPostoCamera)
+	if (local->linkPostoCamera) {
 		DEMO->light->Position = DEMO->camera->Position;
+		DEMO->light->lookAt = DEMO->camera->Position+ (DEMO->camera->Front*10.0f);
+	}
+		
 
 	if (local->shadowMapping){
 		// Calculate the Space Matrix of our camera for being used in other sections

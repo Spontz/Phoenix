@@ -187,7 +187,7 @@ void Resource::Draw_QuadFS(int textureNum)
 	glBindVertexArray(0);
 }
 
-// TODO: To delete
+// Draw a Quad with texture in full screen with alpha
 void Resource::Draw_QuadFS(int textureNum, float alpha)
 {
 	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTexAlpha];
@@ -240,7 +240,6 @@ void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *model)
 
 void Resource::Draw_Skybox(int cubemap)
 {
-	// TODO: Añadir el shader como parámetro, para que lo pinte todo aqui, con la matriz de modelo y toda la pesca
 	glBindVertexArray(obj_skybox);
 	DEMO->textureManager.cubemap[cubemap]->active();
 	DEMO->textureManager.cubemap[cubemap]->bind();
