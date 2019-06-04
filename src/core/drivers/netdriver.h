@@ -13,9 +13,9 @@ class netDriver {
 public:
 	int		port;
 	bool	inited;
+	string	messageToSend;
 
 	static netDriver* getInstance();
-
 
 	netDriver();
 	void init(int port);
@@ -24,9 +24,10 @@ public:
 
 	const char *getVersion();
 	char * processMessage(char *message);
+	void sendMessage(string message);
 
-	
 private:
+
 	char * getParamString(char *message, int requestedParameter);
 	float getParamFloat(char *message, int requestedParameter);
 	static netDriver* m_pThis;

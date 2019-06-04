@@ -59,5 +59,11 @@ void CLogger::Error(const char *message, ...) {
 #ifdef _DEBUG
 		OutputDebugStringA(chain);
 #endif
+		if (DEMO->slaveMode == 1) {
+			string message = "ERROR::";
+			message += chain;
+			NETDRV->sendMessage(message);
+		}
+
 	}
 }

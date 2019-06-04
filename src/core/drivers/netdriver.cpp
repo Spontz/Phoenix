@@ -43,7 +43,7 @@ float netDriver::getParamFloat(char *message, int requestedParameter) {
 	return theFloatResult;
 }
 
-void onData(dyad_Event *e) {
+void onData_SendResponse(dyad_Event *e) {
 	char *theResponse;
 	
 	theResponse = NETDRV->processMessage(e->data);
@@ -53,7 +53,7 @@ void onData(dyad_Event *e) {
 }
 
 void onAccept(dyad_Event *e) {
-	dyad_addListener(e->remote, DYAD_EVENT_DATA, onData, NULL);
+	dyad_addListener(e->remote, DYAD_EVENT_DATA, onData_SendResponse, NULL);
 }
 
 void onListen(dyad_Event *e) {
@@ -82,16 +82,19 @@ netDriver::netDriver()
 
 void netDriver::init(int port)
 {
+	this->messageToSend = "";
 	this->port = port;
 	dyad_init();
 
 	dyad_Stream *serv = dyad_newStream();
 	//dyad_setNoDelay(serv, 1); // Disable Nagle's algorithm
 	dyad_setUpdateTimeout(0);	// Disable waiting
+	// Listeners for answering responses from the editor
 	dyad_addListener(serv, DYAD_EVENT_ERROR, onError, NULL);
 	dyad_addListener(serv, DYAD_EVENT_ACCEPT, onAccept, NULL);
 	dyad_addListener(serv, DYAD_EVENT_LISTEN, onListen, NULL);
 	dyad_listenEx(serv, "0.0.0.0", port, 511);
+
 	inited = true;
 }
 
@@ -189,4 +192,26 @@ char * netDriver::processMessage(char * message)
 
 	// and return the response (will be freed later)
 	return theResponse;
+}
+
+///////////// Send message
+
+void onData_SendMessage(dyad_Event *e) {
+	// Send the response and close the connection
+	dyad_write(e->stream, NETDRV->messageToSend.c_str(), (int)NETDRV->messageToSend.length());
+	LOG->Info(LOG_LOW, "Sending message: [%s]", NETDRV->messageToSend.c_str());
+	dyad_end(e->stream);
+}
+
+void onConnect(dyad_Event *e) {
+	LOG->Info(LOG_LOW, "Connected to demo editor, sending message...");
+}
+
+void netDriver::sendMessage(string message)
+{
+	this->messageToSend = message;
+	dyad_Stream *serv = dyad_newStream();
+	//dyad_addListener(serv, DYAD_EVENT_CONNECT, onConnect, NULL);
+	dyad_addListener(serv, DYAD_EVENT_DATA, onData_SendMessage, NULL);
+	dyad_connect(serv, "0.0.0.0", port);	
 }
