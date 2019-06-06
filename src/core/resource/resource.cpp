@@ -182,6 +182,7 @@ void Resource::Draw_QuadFS(int textureNum)
 	glBindVertexArray(obj_quadFullscreen);
 	my_shad->use();
 	my_shad->setValue("screenTexture", 0);
+	DEMO->textureManager.texture[textureNum]->active();
 	DEMO->textureManager.texture[textureNum]->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
@@ -196,6 +197,7 @@ void Resource::Draw_QuadFS(int textureNum, float alpha)
 	my_shad->use();
 	my_shad->setValue("alpha", alpha);
 	my_shad->setValue("screenTexture", 0);
+	DEMO->textureManager.texture[textureNum]->active();
 	DEMO->textureManager.texture[textureNum]->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
@@ -209,6 +211,7 @@ void Resource::Draw_QuadFBOFS(int fboNum)
 	glBindVertexArray(obj_quadFullscreen);
 	my_shad->use();
 	my_shad->setValue("screenTexture", 0);
+	DEMO->fboManager.active();
 	DEMO->fboManager.bind_tex(fboNum);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
@@ -259,7 +262,7 @@ void Resource::Draw_Obj_QuadFBO_Debug(int quad, int fbo_num)
 	glBindVertexArray(obj_quad_FBO_Debug[quad]);
 	DEMO->shaderManager.shader[shader]->use();
 	DEMO->shaderManager.shader[shader]->setValue("screenTexture", 0);
-	DEMO->fboManager.active(0);
+	DEMO->fboManager.active();
 	DEMO->fboManager.bind_tex(fbo_num);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
