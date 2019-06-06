@@ -711,10 +711,12 @@ void demokernel::processSectionQueues() {
 	for (i = 0; i < this->sectionManager.execSection.size(); i++) {
 		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
 		ds = this->sectionManager.section[sec_id];
-		ds->runTime = DEMO->runTime - ds->startTime;
-		ds->init();			// Init the Section
-		ds->inited = TRUE;
-		LOG->Info(LOG_LOW, "  Section %d [layer: %d id: %s type: %s] inited", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
+		if (ds->inited == FALSE) {
+			ds->runTime = DEMO->runTime - ds->startTime;
+			ds->init();			// Init the Section
+			ds->inited = TRUE;
+			LOG->Info(LOG_LOW, "  Section %d [layer: %d id: %s type: %s] inited", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
+		}
 	}
 
 
