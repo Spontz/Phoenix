@@ -17,31 +17,17 @@ tSectionID sectionID[] = {
 
 	// built-in sections
 	{"background",			SectionType::Background},
-	{"video",				SectionType::Video},
 	{"camera",				SectionType::CameraSec},
-	{"image",				SectionType::Image},
-	{"image2",				SectionType::Image2},
-	{"image2D",				SectionType::Image2D},
-	{"imageMatrix",			SectionType::ImageMatrix},
-	{"imagePart",			SectionType::ImagePart},
 	{"light",				SectionType::LightSec},
-	{"objectMorph",			SectionType::ObjectMorph},
-	{"objectMorph2",		SectionType::ObjectMorph2},
 	{"objectShader",		SectionType::ObjectShader},
 	{"objectAnimShader",	SectionType::ObjectAnimShader},
 	{"drawSkybox",			SectionType::DrawSkybox},
-	{"objectMatrix",		SectionType::ObjectMatrix },
-	{"particleMatrix2",		SectionType::ParticleMatrix2},
-	{"particleMatrix3",		SectionType::ParticleMatrix3},
-	{"particleTex2",		SectionType::ParticleTex2},
-	{"ray",					SectionType::Ray},
-	{"rayMatrix",			SectionType::RayMatrix},
+	{"particleMatrix",		SectionType::ParticleMatrix},
 	{"sound",				SectionType::Sound},
 	{"fboBind",				SectionType::FboBind},
 	{"fboUnbind",			SectionType::FboUnbind},
 	{"renderFbo",			SectionType::RenderFbo},
 	{"renderQuad",			SectionType::RenderQuad},
-	{"renderShadowMapping",	SectionType::RenderShadowMapping}
 };
 
 #define SECTIONS_NUMBER ((sizeof(sectionID) / sizeof(tSectionID)))
@@ -97,6 +83,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::DrawSkybox:
 		mySection = new sDrawSkybox();
+		break;
+	case SectionType::ParticleMatrix:
+		mySection = new sParticleMatrix();
 		break;
 	case SectionType::NOT_FOUND:
 		break;

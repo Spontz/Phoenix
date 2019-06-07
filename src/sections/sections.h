@@ -21,5 +21,6 @@ class sDrawSkybox : public Section { public:	sDrawSkybox();  bool load(); void i
 class sRenderQuad : public Section { public:	sRenderQuad();  bool load(); void init(); void exec(); void end(); };
 class sObjectShader : public Section { public:	sObjectShader();  bool load(); void init(); void exec(); void end(); };
 class sObjectAnimShader : public Section { public:	sObjectAnimShader();  bool load(); void init(); void exec(); void end(); };
+class sParticleMatrix : public Section { public:	sParticleMatrix();  bool load(); void init(); void exec(); void end(); };
 
 #endif

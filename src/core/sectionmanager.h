@@ -19,30 +19,15 @@ enum SectionType {
 	Video,
 	CameraSec,
 	LightSec, 
-	Image,
-	Image2,
-	Image2D,
-	ImageMatrix,
-	ImagePart,
-	ObjectMorph,
-	ObjectMorph2,
 	ObjectShader,
 	ObjectAnimShader,
-	ObjectMatrix,
 	DrawSkybox,
-	ParticleMatrix2,
-	ParticleMatrix3,
-	ParticleTex2,
-	Ray,
-	RayMatrix,
+	ParticleMatrix,
 	Sound,
-	BeatDetect,
 	FboBind,
 	FboUnbind,
 	RenderFbo,
-	RenderQuad,
-	GLSLShaderQuad,
-	RenderShadowMapping
+	RenderQuad
 };
 
 
