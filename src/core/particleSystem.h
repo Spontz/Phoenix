@@ -48,6 +48,7 @@ public:
 private:
 	int shaderNum;		// Shader number used for drawing the Particles
 	int textureNum;		// Texture number used for drawing the Particles
+	GLuint particleVA;				// Particle Vertex Array Object
 	GLuint particleBillboardBuffer;	// Billboard vertex buffer with the quad for drawing the Particles
 	GLuint particlePosBuffer;		// Buffer with each particle position
 	GLuint particleColBuffer;		// Buffer with each particle color

@@ -89,7 +89,7 @@ void ParticleSystem::calcParticlesProperties(float currentTime, glm::vec3 Camera
 {
 	float delta = currentTime - this->timeLifeStarts;	// Calculate the time has passed since the beggining
 	// Simulate all particles
-	unsigned int ParticlesCount = 0;
+	this->numPartCount = 0;
 	for (unsigned int i = 0; i < this->numMaxPart; i++) {
 
 		Particle& p = this->particle[i]; // shortcut
@@ -107,16 +107,16 @@ void ParticleSystem::calcParticlesProperties(float currentTime, glm::vec3 Camera
 				//ParticlesContainer[i].pos += glm::vec3(0.0f,10.0f, 0.0f) * (float)delta;
 
 				// Fill the GPU buffer
-				g_partPosData[4 * ParticlesCount + 0] = p.pos.x;
-				g_partPosData[4 * ParticlesCount + 1] = p.pos.y;
-				g_partPosData[4 * ParticlesCount + 2] = p.pos.z;
+				g_partPosData[4 * this->numPartCount + 0] = p.pos.x;
+				g_partPosData[4 * this->numPartCount + 1] = p.pos.y;
+				g_partPosData[4 * this->numPartCount + 2] = p.pos.z;
 
-				g_partPosData[4 * ParticlesCount + 3] = p.size;
+				g_partPosData[4 * this->numPartCount + 3] = p.size;
 
-				g_partColorData[4 * ParticlesCount + 0] = p.r;
-				g_partColorData[4 * ParticlesCount + 1] = p.g;
-				g_partColorData[4 * ParticlesCount + 2] = p.b;
-				g_partColorData[4 * ParticlesCount + 3] = p.a;
+				g_partColorData[4 * this->numPartCount + 0] = p.r;
+				g_partColorData[4 * this->numPartCount + 1] = p.g;
+				g_partColorData[4 * this->numPartCount + 2] = p.b;
+				g_partColorData[4 * this->numPartCount + 3] = p.a;
 
 			}
 			else {
@@ -124,7 +124,7 @@ void ParticleSystem::calcParticlesProperties(float currentTime, glm::vec3 Camera
 				p.cameraDistance = -1.0f;
 			}
 
-			ParticlesCount++;
+			this->numPartCount++;
 
 		}
 	}
@@ -158,10 +158,12 @@ void ParticleSystem::SortParticles()
 
 void ParticleSystem::Draw()
 {
+	glBindVertexArray(this->particleVA);
+
 	// Update the buffers that OpenGL uses for rendering.
-		// There are much more sophisticated means to stream data from the CPU to the GPU, 
-		// but this is outside the scope of this tutorial.
-		// http://www.opengl.org/wiki/Buffer_Object_Streaming
+	// There are much more sophisticated means to stream data from the CPU to the GPU, 
+	// but this is outside the scope of this tutorial.
+	// http://www.opengl.org/wiki/Buffer_Object_Streaming
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, this->particlePosBuffer);
@@ -178,8 +180,10 @@ void ParticleSystem::Draw()
 
 	
 	// 1rst attribute buffer : vertices
+	// TODO: Esto podría estar en el Setup, no?? ver mesh.cpp línea 60
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, this->particleBillboardBuffer);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*3, (void*)0);
 	glVertexAttribPointer(
 		0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
 		3,                  // size
@@ -232,7 +236,7 @@ void ParticleSystem::Draw()
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
 
-
+	glBindVertexArray(0);
 
 }
 
@@ -246,6 +250,10 @@ void ParticleSystem::genObjectBuffer()
 		 -0.5f,  0.5f, 0.0f,
 		  0.5f,  0.5f, 0.0f,
 	};
+	
+	glGenVertexArrays(1, &this->particleVA);	// Particle Vertex Array
+	glBindVertexArray(this->particleVA);
+
 	glGenBuffers(1, &this->particleBillboardBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, this->particleBillboardBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
