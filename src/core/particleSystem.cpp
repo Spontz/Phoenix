@@ -7,6 +7,9 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
+#define PART_BILLBOARD_LOCATION	0
+#define PART_CENTER_LOCATION	1
+#define PART_COLOR_LOCATION		2
 
 using namespace std;
 
@@ -53,14 +56,17 @@ ParticleSystem::ParticleSystem(unsigned int numMaxParticles)
 }
 
 // Generate new particles
-void ParticleSystem::genNewParticles(unsigned int numNewPart)
+void ParticleSystem::genNewParticles(float bornTime, unsigned int numNewPart)
 {
 	for (unsigned int i = 0; i < numNewPart; i++) {
 		int particleIndex = FindUnusedParticle();
-		this->particle[particleIndex].life = 5.0f; // This particle will live 5 seconds.
+		this->particle[particleIndex].life = 2.0f; // This particle will live 5 seconds.
+		this->particle[particleIndex].lifeNorm = 5.0f; // Particle Life normalized always go from 1.0 to 0.0
+		this->particle[particleIndex].bornTime = bornTime;
+		this->particle[particleIndex].dieTime = bornTime + this->particle[particleIndex].life;
 		this->particle[particleIndex].pos = glm::vec3(0, 0, 0);
 
-		float spread = 1.5f;
+		float spread = 2.5f;
 		glm::vec3 maindir = glm::vec3(0.0f, 10.0f, 0.0f);
 		// Very bad way to generate a random direction; 
 		// See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
@@ -78,45 +84,54 @@ void ParticleSystem::genNewParticles(unsigned int numNewPart)
 		this->particle[particleIndex].r = rand() % 256;
 		this->particle[particleIndex].g = rand() % 256;
 		this->particle[particleIndex].b = rand() % 256;
-		this->particle[particleIndex].a = (rand() % 256) / 3;
+		this->particle[particleIndex].a = 255;// (rand() % 256) / 3;
 
 		this->particle[particleIndex].size = (rand() % 1000) / 2000.0f + 0.1f;
 
 	}
+	LOG->Info(LOG_LOW, "ParticleCount: %d", this->numPartCount);
 }
 
 void ParticleSystem::calcParticlesProperties(float currentTime, glm::vec3 CameraPosition)
 {
-	float delta = currentTime - this->timeLifeStarts;	// Calculate the time has passed since the beggining
+
+	if (currentTime > 1.0)
+		int kk = 0;
 	// Simulate all particles
 	this->numPartCount = 0;
+	unsigned int PartPos;
 	for (unsigned int i = 0; i < this->numMaxPart; i++) {
 
 		Particle& p = this->particle[i]; // shortcut
 
 		if (p.life > 0.0f) {
 
-			// Decrease life
-			p.life -= delta;
+			// Calculate the new life of the pariticle
+			p.life = p.dieTime - currentTime;
+			p.lifeNorm = (p.dieTime - currentTime) / (p.dieTime - p.bornTime);
+			//p.life -= delta;
 			if (p.life > 0.0f) {
 
 				// Simulate simple physics : gravity only, no collisions
-				p.speed += glm::vec3(0.0f, -9.81f, 0.0f) * (float)delta * 0.5f;
-				p.pos += p.speed * (float)delta;
+				//p.speed += glm::vec3(0.0f, -9.81f, 0.0f) * (p.lifeNorm * 0.005f);
+				//p.pos += (p.speed * p.lifeNorm)*0.005f;
+				//p.speed = glm::vec3(0.0f, 10.0f, 0.0f) + (glm::vec3(0.0f, -9.81f, 0.0f) * (p.lifeNorm * 0.5f));
+				float t = currentTime - p.bornTime;
+				p.pos = (p.speed*0.5f+glm::vec3(0.0f, 10.0f, 0.0f))*t + 0.5f*(glm::vec3(0.0f, -9.81f, 0.0f)*(t*t));
 				p.cameraDistance = glm::length2(p.pos - CameraPosition);
-				//ParticlesContainer[i].pos += glm::vec3(0.0f,10.0f, 0.0f) * (float)delta;
 
 				// Fill the GPU buffer
-				g_partPosData[4 * this->numPartCount + 0] = p.pos.x;
-				g_partPosData[4 * this->numPartCount + 1] = p.pos.y;
-				g_partPosData[4 * this->numPartCount + 2] = p.pos.z;
+				PartPos = 4 * this->numPartCount; // Calc the buffer position (each Pos and Color are 4 components)
+				g_partPosData[PartPos + 0] = p.pos.x;
+				g_partPosData[PartPos + 1] = p.pos.y;
+				g_partPosData[PartPos + 2] = p.pos.z;
 
-				g_partPosData[4 * this->numPartCount + 3] = p.size;
+				g_partPosData[PartPos + 3] = p.size;
 
-				g_partColorData[4 * this->numPartCount + 0] = p.r;
-				g_partColorData[4 * this->numPartCount + 1] = p.g;
-				g_partColorData[4 * this->numPartCount + 2] = p.b;
-				g_partColorData[4 * this->numPartCount + 3] = p.a;
+				g_partColorData[PartPos + 0] = p.r;
+				g_partColorData[PartPos + 1] = p.g;
+				g_partColorData[PartPos + 2] = p.b;
+				g_partColorData[PartPos + 3] = (unsigned char)(255.0f*p.lifeNorm);
 
 			}
 			else {
@@ -128,7 +143,6 @@ void ParticleSystem::calcParticlesProperties(float currentTime, glm::vec3 Camera
 
 		}
 	}
-
 	SortParticles();
 }
 
@@ -158,7 +172,7 @@ void ParticleSystem::SortParticles()
 
 void ParticleSystem::Draw()
 {
-	glBindVertexArray(this->particleVA);
+	glBindVertexArray(this->particleVAO);
 
 	// Update the buffers that OpenGL uses for rendering.
 	// There are much more sophisticated means to stream data from the CPU to the GPU, 
@@ -176,9 +190,12 @@ void ParticleSystem::Draw()
 
 
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	//glBlendFunc(GL_ONE, GL_ONE);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 
-	
 	// 1rst attribute buffer : vertices
 	// TODO: Esto podría estar en el Setup, no?? ver mesh.cpp línea 60
 	glEnableVertexAttribArray(0);
@@ -217,6 +234,7 @@ void ParticleSystem::Draw()
 		(void*)0                          // array buffer offset
 	);
 
+
 	// These functions are specific to glDrawArrays*Instanced*.
 	// The first parameter is the attribute buffer we're talking about.
 	// The second parameter is the "rate at which generic vertex attributes advance when rendering multiple instances"
@@ -237,7 +255,7 @@ void ParticleSystem::Draw()
 	glDisableVertexAttribArray(2);
 
 	glBindVertexArray(0);
-
+	glDisable(GL_BLEND);
 }
 
 void ParticleSystem::genObjectBuffer()
@@ -251,22 +269,43 @@ void ParticleSystem::genObjectBuffer()
 		  0.5f,  0.5f, 0.0f,
 	};
 	
-	glGenVertexArrays(1, &this->particleVA);	// Particle Vertex Array
-	glBindVertexArray(this->particleVA);
+	// Generation of VAO and it's buffers
+	glGenVertexArrays(1, &this->particleVAO);	// Particle Vertex Array Object
+	glGenBuffers(1, &this->particleBillboardBuffer);	// Particle buffer: quad
+	glGenBuffers(1, &this->particlePosBuffer);			// Particle positions + size buffer
+	glGenBuffers(1, &this->particleColBuffer);			// Particle colors bufer
 
-	glGenBuffers(1, &this->particleBillboardBuffer);
+	glBindVertexArray(this->particleVAO);
+	// 1st buffer: quad
 	glBindBuffer(GL_ARRAY_BUFFER, this->particleBillboardBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-	// The VBO containing the positions and sizes of the particles
-	glGenBuffers(1, &this->particlePosBuffer);
+	// 2nd buffer: The VBO containing the positions and sizes of the particles
 	glBindBuffer(GL_ARRAY_BUFFER, this->particlePosBuffer);
-	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
-	glBufferData(GL_ARRAY_BUFFER, this->numMaxPart * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, this->numMaxPart * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW); 	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
 
-	// The VBO containing the colors of the particles
-	glGenBuffers(1, &this->particleColBuffer);
+	// 3rd buffer: The VBO containing the colors of the particles
 	glBindBuffer(GL_ARRAY_BUFFER, this->particleColBuffer);
-	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
-	glBufferData(GL_ARRAY_BUFFER, this->numMaxPart * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, this->numMaxPart * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
+
+	// Set the vertex attribute pointers
+	// 1st attribute pointer: vertex Positions
+	glEnableVertexAttribArray(PART_BILLBOARD_LOCATION);
+	//glBindBuffer(GL_ARRAY_BUFFER, this->particleBillboardBuffer);
+	glVertexAttribPointer(PART_BILLBOARD_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0); //3=size, 0=stride
+	//glVertexAttribPointer(PART_BILLBOARD_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(float)*3, (void*)0); //TODO: Should be this, right?: 3=size, sizeof(float)*3=stride
+
+	// 2nd attribute buffer : positions of particles' centers
+	glEnableVertexAttribArray(PART_CENTER_LOCATION);
+	//glBindBuffer(GL_ARRAY_BUFFER, this->particlePosBuffer);
+	glVertexAttribPointer(PART_CENTER_LOCATION, 4, GL_FLOAT, GL_FALSE, 0, (void*)0); //4=size (xyz+size), 0=stride
+
+	// 3rd attribute buffer : particles' colors
+	glEnableVertexAttribArray(PART_COLOR_LOCATION);
+	//glBindBuffer(GL_ARRAY_BUFFER, this->particleColBuffer);
+	// TODO: Creo que no vale la pena poner unsigned byte, con floats vamos que nos matamos
+	glVertexAttribPointer(PART_COLOR_LOCATION, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, (void*)0); //4=size (rgba), normalized=true (this means that the chars will be accessible with floats in the shader), 0=stride
+
+	glBindVertexArray(0);
+
 }

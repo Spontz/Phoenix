@@ -46,9 +46,10 @@ void sParticleMatrix::exec() {
 
 
 	// Generate new particles
-	local->pSystem->genNewParticles(this->runTime*10);
+	//if (this->runTime == 0.0f)
+		local->pSystem->genNewParticles(this->runTime, 1);
 	local->pSystem->calcParticlesProperties(this->runTime, DEMO->camera->Position);
-	LOG->Info(LOG_LOW, "Section run time: %.3f", this->runTime);
+	
 
 	/////////////////////////
 	// DRAW start

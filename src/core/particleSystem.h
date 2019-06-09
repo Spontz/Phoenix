@@ -13,7 +13,10 @@ struct Particle {
 	glm::vec3 speed;			// Speed
 	unsigned char r, g, b, a;	// Color
 	float size, angle, weight;
+	float bornTime;				// Time when particle was born
+	float dieTime;				// Time when particle will die
 	float life;					// Remaining life of the particle. if < 0 : dead and unused.
+	float lifeNorm;				// Remaining life of the particle normalized (from 1 to 0). if < 0 : dead and unused.
 
 	float cameraDistance;		// Distance to the camera. If the particle is dead, the value is -1
 	
@@ -38,7 +41,7 @@ public:
 	ParticleSystem(unsigned int numMaxParticles);
 	
 	// Generate new Particles
-	void genNewParticles(unsigned int numNewPart);
+	void genNewParticles(float bornTime, unsigned int numNewPart);
 	// Calculate new Particles postion, color, life, etc... Based on the current time -> Should be called on each frame
 	void calcParticlesProperties(float currentTime, glm::vec3 CameraPosition);
 	unsigned int FindUnusedParticle();	// Finds a Particle in ParticlesContainer which isn't used yet.
@@ -48,7 +51,7 @@ public:
 private:
 	int shaderNum;		// Shader number used for drawing the Particles
 	int textureNum;		// Texture number used for drawing the Particles
-	GLuint particleVA;				// Particle Vertex Array Object
+	GLuint particleVAO;				// Particle Vertex Array Object
 	GLuint particleBillboardBuffer;	// Billboard vertex buffer with the quad for drawing the Particles
 	GLuint particlePosBuffer;		// Buffer with each particle position
 	GLuint particleColBuffer;		// Buffer with each particle color
