@@ -4,308 +4,265 @@
 #include "main.h"
 #include "core/particleSystem.h"
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/norm.hpp>
-
-#define PART_BILLBOARD_LOCATION	0
-#define PART_CENTER_LOCATION	1
-#define PART_COLOR_LOCATION		2
-
 using namespace std;
 
-ParticleSystem::ParticleSystem(unsigned int numMaxParticles)
+#define MAX_PARTICLES 10000
+#define PARTICLE_LIFETIME 10.0f
+
+#define PARTICLE_TYPE_LAUNCHER 0.0f
+#define PARTICLE_TYPE_SHELL 1.0f
+#define PARTICLE_TYPE_SECONDARY_SHELL 2.0f
+
+#define RANDOM_TEXTURE_UNIT 3
+
+struct Particle
 {
-	this->timeLifeStarts = 0;
-	this->lastUsedParticle = 0;
-	this->numMaxPart = numMaxParticles;
-	this->particle = new Particle[this->numMaxPart];
-	this->g_partPosData = new GLfloat[this->numMaxPart * 4];	// TODO: Should be 3, isn't it? (xyz)
-	this->g_partColorData = new GLubyte[this->numMaxPart * 4];	// *4, because RGBA
+	float Type;
+	glm::vec3 Pos;
+	glm::vec3 Vel;
+	float LifetimeMillis;
+};
 
-	for (unsigned int i = 0; i < this->numMaxPart; i++) {
-		this->particle[i].pos = glm::vec3(0);
-		this->particle[i].speed = glm::vec3(0);
-		this->particle[i].r = 255;
-		this->particle[i].g = 255;
-		this->particle[i].b = 255;
-		this->particle[i].a = 255;
-		this->particle[i].size = 1;
-		this->particle[i].angle = 0;
-		this->particle[i].weight = 1;
-		this->particle[i].life = -1;			// All particles dead by default
-		this->particle[i].cameraDistance = -1;
-	}
 
-	// Load the Shader
-	string demoDir = DEMO->demoDir;
-	this->shaderNum = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/particleSystem/particleSystem.vert", demoDir + "/resources/shaders/particleSystem/particleSystem.frag");
-	if (this->shaderNum < 0)
-		LOG->Error("Error loading shader for the Particle System");
-	else
-		this->shader = DEMO->shaderManager.shader[this->shaderNum];
+ParticleSystem::ParticleSystem()
+{
+	m_currVB = 0;
+	m_currTFB = 1;
+	m_isFirst = true;
+	m_time = 0;
+	m_pTexture = NULL;
 
-	// Load the texture
-	this->textureNum = DEMO->textureManager.addTexture(demoDir + "/resources/textures/part_fire.jpg");
-	if (this->textureNum < 0)
-		LOG->Error("Error loading texture for the Particle System");
-	else
-		this->texture = DEMO->textureManager.texture[this->textureNum];
-
-	// Generate the Object Buffers (Billboard, Position Buffer, Color Buffer, etc...)
-	this->genObjectBuffer();
+	ZERO_MEM(m_transformFeedback);
+	ZERO_MEM(m_particleBuffer);
 }
 
-// Generate new particles
-void ParticleSystem::genNewParticles(float bornTime, unsigned int numNewPart)
+
+ParticleSystem::~ParticleSystem()
 {
-	for (unsigned int i = 0; i < numNewPart; i++) {
-		int particleIndex = FindUnusedParticle();
-		this->particle[particleIndex].life = 2.0f; // This particle will live 5 seconds.
-		this->particle[particleIndex].lifeNorm = 5.0f; // Particle Life normalized always go from 1.0 to 0.0
-		this->particle[particleIndex].bornTime = bornTime;
-		this->particle[particleIndex].dieTime = bornTime + this->particle[particleIndex].life;
-		this->particle[particleIndex].pos = glm::vec3(0, 0, 0);
+	SAFE_DELETE(m_pTexture);
 
-		float spread = 2.5f;
-		glm::vec3 maindir = glm::vec3(0.0f, 10.0f, 0.0f);
-		// Very bad way to generate a random direction; 
-		// See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
-		// combined with some user-controlled parameters (main direction, spread, etc)
-		glm::vec3 randomdir = glm::vec3(
-			(rand() % 2000 - 1000.0f) / 1000.0f,
-			(rand() % 2000 - 1000.0f) / 1000.0f,
-			(rand() % 2000 - 1000.0f) / 1000.0f
-		);
-
-		this->particle[particleIndex].speed = maindir + randomdir * spread; // Calculate the speed of the particle
-
-
-		// Very bad way to generate a random color
-		this->particle[particleIndex].r = rand() % 256;
-		this->particle[particleIndex].g = rand() % 256;
-		this->particle[particleIndex].b = rand() % 256;
-		this->particle[particleIndex].a = 255;// (rand() % 256) / 3;
-
-		this->particle[particleIndex].size = (rand() % 1000) / 2000.0f + 0.1f;
-
-	}
-	LOG->Info(LOG_LOW, "ParticleCount: %d", this->numPartCount);
-}
-
-void ParticleSystem::calcParticlesProperties(float currentTime, glm::vec3 CameraPosition)
-{
-
-	if (currentTime > 1.0)
-		int kk = 0;
-	// Simulate all particles
-	this->numPartCount = 0;
-	unsigned int PartPos;
-	for (unsigned int i = 0; i < this->numMaxPart; i++) {
-
-		Particle& p = this->particle[i]; // shortcut
-
-		if (p.life > 0.0f) {
-
-			// Calculate the new life of the pariticle
-			p.life = p.dieTime - currentTime;
-			p.lifeNorm = (p.dieTime - currentTime) / (p.dieTime - p.bornTime);
-			//p.life -= delta;
-			if (p.life > 0.0f) {
-
-				// Simulate simple physics : gravity only, no collisions
-				//p.speed += glm::vec3(0.0f, -9.81f, 0.0f) * (p.lifeNorm * 0.005f);
-				//p.pos += (p.speed * p.lifeNorm)*0.005f;
-				//p.speed = glm::vec3(0.0f, 10.0f, 0.0f) + (glm::vec3(0.0f, -9.81f, 0.0f) * (p.lifeNorm * 0.5f));
-				float t = currentTime - p.bornTime;
-				p.pos = (p.speed*0.5f+glm::vec3(0.0f, 10.0f, 0.0f))*t + 0.5f*(glm::vec3(0.0f, -9.81f, 0.0f)*(t*t));
-				p.cameraDistance = glm::length2(p.pos - CameraPosition);
-
-				// Fill the GPU buffer
-				PartPos = 4 * this->numPartCount; // Calc the buffer position (each Pos and Color are 4 components)
-				g_partPosData[PartPos + 0] = p.pos.x;
-				g_partPosData[PartPos + 1] = p.pos.y;
-				g_partPosData[PartPos + 2] = p.pos.z;
-
-				g_partPosData[PartPos + 3] = p.size;
-
-				g_partColorData[PartPos + 0] = p.r;
-				g_partColorData[PartPos + 1] = p.g;
-				g_partColorData[PartPos + 2] = p.b;
-				g_partColorData[PartPos + 3] = (unsigned char)(255.0f*p.lifeNorm);
-
-			}
-			else {
-				// Particles that just died will be put at the end of the buffer in SortParticles();
-				p.cameraDistance = -1.0f;
-			}
-
-			this->numPartCount++;
-
-		}
-	}
-	SortParticles();
-}
-
-unsigned int ParticleSystem::FindUnusedParticle() {
-
-	for (unsigned int i = this->lastUsedParticle; i < this->numMaxPart; i++) {
-		if (this->particle[i].life < 0) {
-			this->lastUsedParticle = i;
-			return i;
-		}
+	if (m_transformFeedback[0] != 0) {
+		glDeleteTransformFeedbacks(2, m_transformFeedback);
 	}
 
-	for (unsigned int i = 0; i < this->lastUsedParticle; i++) {
-		if (this->particle[i].life < 0) {
-			this->lastUsedParticle = i;
-			return i;
-		}
+	if (m_particleBuffer[0] != 0) {
+		glDeleteBuffers(2, m_particleBuffer);
+	}
+}
+
+
+bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
+{
+	Particle Particles[MAX_PARTICLES];
+	ZERO_MEM(Particles);
+
+	Particles[0].Type = PARTICLE_TYPE_LAUNCHER;
+	Particles[0].Pos = Pos;
+	Particles[0].Vel = glm::vec3(0.0f, 0.01f, 0.0f);
+	Particles[0].LifetimeMillis = 0.0f;
+
+	// Gen buffers
+	glGenTransformFeedbacks(2, m_transformFeedback);
+	glGenBuffers(2, m_particleBuffer);
+
+
+	for (unsigned int i = 0; i < 2; i++) {
+		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
+		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Particles), Particles, GL_DYNAMIC_DRAW);
+		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 	}
 
-	return 0; // All particles are taken, override the first one
+	if (!initParticleSystem()) {
+		return false;
+	}
+
+	// Send the variables to the Particle System shader
+	Shader *particleSystem_shader = DEMO->shaderManager.shader[particleSystemShader];
+	particleSystem_shader->use();
+	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
+	particleSystem_shader->setValue("gLauncherLifetime", 100.0f);
+	particleSystem_shader->setValue("gShellLifetime", 10000.0f);
+	particleSystem_shader->setValue("gSecondaryShellLifetime", 2500.0f);
+
+	if (!initRandomTexture(1000)) {
+		return false;
+	}
+
+	bindRandomTexture(RANDOM_TEXTURE_UNIT);
+	//m_randomTexture.Bind(RANDOM_TEXTURE_UNIT);
+
+	if (!initBillboard()) {
+		return false;
+	}
+
+	//Use the billboard shader and send variables
+	Shader *my_shader;
+	my_shader = DEMO->shaderManager.shader[billboardShader];
+	my_shader->use();
+	my_shader->setValue("gColorMap", 0); // Set color map to 0
+	my_shader->setValue("gBillboardSize", 0.01f);	// Set billboard size
+	
+	string s_dir = DEMO->demoDir;
+	m_pTextureNum = DEMO->textureManager.addTexture(s_dir + "/resources/textures/part_redfireworks.jpg"); //TODO: Use any other texture, configure in the section
+	m_pTexture = DEMO->textureManager.texture[m_pTextureNum];
+
+	//return GLCheckError();
+	return true; // TODO: check errors, etc etc...
 }
 
-void ParticleSystem::SortParticles()
+
+void ParticleSystem::Render(int DeltaTimeMillis, const glm::mat4 &VP, const glm::vec3 &CameraPos)
 {
-	std::sort(&this->particle[0], &this->particle[this->numMaxPart]);
+	m_time += DeltaTimeMillis;
+
+	UpdateParticles(DeltaTimeMillis);
+
+	RenderParticles(VP, CameraPos);
+
+	m_currVB = m_currTFB;
+	m_currTFB = (m_currTFB + 1) & 0x1;
 }
 
-void ParticleSystem::Draw()
+
+void ParticleSystem::UpdateParticles(int DeltaTimeMillis)
 {
-	glBindVertexArray(this->particleVAO);
+	Shader *particleSystem_shader = DEMO->shaderManager.shader[particleSystemShader];
+	particleSystem_shader->use();
+	particleSystem_shader->setValue("gTime", (float)this->m_time); // TODO: Esto se ha de ajustar... la variable m_time ha de ser un float sin milisegundos ni mierdas
+	particleSystem_shader->setValue("gDeltaTimeMillis", (float)DeltaTimeMillis); // TODO: Esto se ha de ajustar... la variable DeltaTimeMillis ha de ser un float sin milisegundos ni mierdas
+	//m_updateTechnique.Enable();
+	//m_updateTechnique.SetTime(m_time);
+	//m_updateTechnique.SetDeltaTimeMillis(DeltaTimeMillis);
 
-	// Update the buffers that OpenGL uses for rendering.
-	// There are much more sophisticated means to stream data from the CPU to the GPU, 
-	// but this is outside the scope of this tutorial.
-	// http://www.opengl.org/wiki/Buffer_Object_Streaming
+	bindRandomTexture(RANDOM_TEXTURE_UNIT);
+	//m_randomTexture.Bind(RANDOM_TEXTURE_UNIT);
 
+	glEnable(GL_RASTERIZER_DISCARD);
 
-	glBindBuffer(GL_ARRAY_BUFFER, this->particlePosBuffer);
-	glBufferData(GL_ARRAY_BUFFER, this->numMaxPart * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW); // Buffer orphaning, a common way to improve streaming perf. See above link for details.
-	glBufferSubData(GL_ARRAY_BUFFER, 0, this->numPartCount * sizeof(GLfloat) * 4, this->g_partPosData);
+	glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
+	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[m_currTFB]);
 
-	glBindBuffer(GL_ARRAY_BUFFER, this->particleColBuffer);
-	glBufferData(GL_ARRAY_BUFFER, this->numMaxPart *4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW); // Buffer orphaning, a common way to improve streaming perf. See above link for details.
-	glBufferSubData(GL_ARRAY_BUFFER, 0, this->numPartCount * sizeof(GLubyte) * 4, this->g_partColorData);
-
-
-	glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	//glBlendFunc(GL_ONE, GL_ONE);
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-
-	// 1rst attribute buffer : vertices
-	// TODO: Esto podría estar en el Setup, no?? ver mesh.cpp línea 60
 	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, this->particleBillboardBuffer);
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*3, (void*)0);
-	glVertexAttribPointer(
-		0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
-		3,                  // size
-		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
-		0,                  // stride
-		(void*)0            // array buffer offset
-	);
-
-	// 2nd attribute buffer : positions of particles' centers
 	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, this->particlePosBuffer);
-	glVertexAttribPointer(
-		1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-		4,                                // size : x + y + z + size => 4
-		GL_FLOAT,                         // type
-		GL_FALSE,                         // normalized?
-		0,                                // stride
-		(void*)0                          // array buffer offset
-	);
-
-	// 3rd attribute buffer : particles' colors
 	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, this->particleColBuffer);
-	glVertexAttribPointer(
-		2,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-		4,                                // size : r + g + b + a => 4
-		GL_UNSIGNED_BYTE,                 // type
-		GL_TRUE,                          // normalized?    *** YES, this means that the unsigned char[4] will be accessible with a vec4 (floats) in the shader ***
-		0,                                // stride
-		(void*)0                          // array buffer offset
-	);
+	glEnableVertexAttribArray(3);
 
+	glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), 0);						// type
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)4);		// position
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)16);		// velocity
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)28);		// lifetime
 
-	// These functions are specific to glDrawArrays*Instanced*.
-	// The first parameter is the attribute buffer we're talking about.
-	// The second parameter is the "rate at which generic vertex attributes advance when rendering multiple instances"
-	// http://www.opengl.org/sdk/docs/man/xhtml/glVertexAttribDivisor.xml
-	glVertexAttribDivisor(0, 0); // particles vertices : always reuse the same 4 vertices -> 0
-	glVertexAttribDivisor(1, 1); // positions : one per quad (its center)                 -> 1
-	glVertexAttribDivisor(2, 1); // color : one per quad                                  -> 1
+	glBeginTransformFeedback(GL_POINTS);
 
-	// Draw the particles !
-	// This draws many times a small triangle_strip (which looks like a quad).
-	// This is equivalent to :
-	// for(i in ParticlesCount) : glDrawArrays(GL_TRIANGLE_STRIP, 0, 4), 
-	// but faster.
-	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, this->numPartCount);
+	if (m_isFirst) {
+		glDrawArrays(GL_POINTS, 0, 1);
+
+		m_isFirst = false;
+	}
+	else {
+		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currVB]);
+	}
+
+	glEndTransformFeedback();
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
-
-	glBindVertexArray(0);
-	glDisable(GL_BLEND);
+	glDisableVertexAttribArray(3);
 }
 
-void ParticleSystem::genObjectBuffer()
+
+void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::vec3 &CameraPos)
 {
-	// The VBO containing the 4 vertices of the particles.
-	// Thanks to instancing, they will be shared by all particles.
-	static const GLfloat g_vertex_buffer_data[] = {
-		 -0.5f, -0.5f, 0.0f,
-		  0.5f, -0.5f, 0.0f,
-		 -0.5f,  0.5f, 0.0f,
-		  0.5f,  0.5f, 0.0f,
-	};
-	
-	// Generation of VAO and it's buffers
-	glGenVertexArrays(1, &this->particleVAO);	// Particle Vertex Array Object
-	glGenBuffers(1, &this->particleBillboardBuffer);	// Particle buffer: quad
-	glGenBuffers(1, &this->particlePosBuffer);			// Particle positions + size buffer
-	glGenBuffers(1, &this->particleColBuffer);			// Particle colors bufer
+	//Use the billboard shader and send variables
+	Shader *my_shader;
+	my_shader = DEMO->shaderManager.shader[billboardShader];
+	my_shader->use();
+	my_shader->setValue("gCameraPos", CameraPos); // Set camera position
+	my_shader->setValue("gVP", VP);	// Set billboard size
 
-	glBindVertexArray(this->particleVAO);
-	// 1st buffer: quad
-	glBindBuffer(GL_ARRAY_BUFFER, this->particleBillboardBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+	// Activate texture
+	m_pTexture->active(0);
+	m_pTexture->bind();
 
-	// 2nd buffer: The VBO containing the positions and sizes of the particles
-	glBindBuffer(GL_ARRAY_BUFFER, this->particlePosBuffer);
-	glBufferData(GL_ARRAY_BUFFER, this->numMaxPart * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW); 	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
+	glDisable(GL_RASTERIZER_DISCARD);
 
-	// 3rd buffer: The VBO containing the colors of the particles
-	glBindBuffer(GL_ARRAY_BUFFER, this->particleColBuffer);
-	glBufferData(GL_ARRAY_BUFFER, this->numMaxPart * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
+	glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currTFB]);
 
-	// Set the vertex attribute pointers
-	// 1st attribute pointer: vertex Positions
-	glEnableVertexAttribArray(PART_BILLBOARD_LOCATION);
-	//glBindBuffer(GL_ARRAY_BUFFER, this->particleBillboardBuffer);
-	glVertexAttribPointer(PART_BILLBOARD_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0); //3=size, 0=stride
-	//glVertexAttribPointer(PART_BILLBOARD_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(float)*3, (void*)0); //TODO: Should be this, right?: 3=size, sizeof(float)*3=stride
+	glEnableVertexAttribArray(0);
 
-	// 2nd attribute buffer : positions of particles' centers
-	glEnableVertexAttribArray(PART_CENTER_LOCATION);
-	//glBindBuffer(GL_ARRAY_BUFFER, this->particlePosBuffer);
-	glVertexAttribPointer(PART_CENTER_LOCATION, 4, GL_FLOAT, GL_FALSE, 0, (void*)0); //4=size (xyz+size), 0=stride
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)4);  // position
 
-	// 3rd attribute buffer : particles' colors
-	glEnableVertexAttribArray(PART_COLOR_LOCATION);
-	//glBindBuffer(GL_ARRAY_BUFFER, this->particleColBuffer);
-	// TODO: Creo que no vale la pena poner unsigned byte, con floats vamos que nos matamos
-	glVertexAttribPointer(PART_COLOR_LOCATION, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, (void*)0); //4=size (rgba), normalized=true (this means that the chars will be accessible with floats in the shader), 0=stride
+	glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
 
-	glBindVertexArray(0);
+	glDisableVertexAttribArray(0);
+}
 
+bool ParticleSystem::initBillboard()
+{
+	string demoDir = DEMO->demoDir;
+	billboardShader = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/particleSystem/billboard.vs",
+													demoDir + "/resources/shaders/particleSystem/billboard.fs",
+													demoDir + "/resources/shaders/particleSystem/billboard.gs");
+	if (billboardShader < 0)
+		return false;
+	return true;
+}
+
+bool ParticleSystem::initParticleSystem()
+{
+	string demoDir = DEMO->demoDir;
+	particleSystemShader = DEMO->shaderManager.addShader(	demoDir + "/resources/shaders/particleSystem/ps_update.vs",
+															demoDir + "/resources/shaders/particleSystem/ps_update.fs",
+															demoDir + "/resources/shaders/particleSystem/ps_update.gs");
+	if (particleSystemShader < 0)
+		return false;
+
+	// TODO: Implement this "glTransformFeedbackVaryings" into the shader class
+
+	Shader *my_shader = DEMO->shaderManager.shader[particleSystemShader];
+	const GLchar* Varyings[4];
+	Varyings[0] = "Type1";
+	Varyings[1] = "Position1";
+	Varyings[2] = "Velocity1";
+	Varyings[3] = "Age1";
+
+	glTransformFeedbackVaryings(my_shader->ID, 4, Varyings, GL_INTERLEAVED_ATTRIBS);
+
+	return true;
+}
+
+// TODO: Fix this guarrada
+float RandomFloat()
+{
+	float Max = RAND_MAX;
+	return ((float)rand() / Max);
+}
+
+bool ParticleSystem::initRandomTexture(unsigned int Size)
+{
+	glm::vec3* pRandomData = new glm::vec3[Size];
+	for (unsigned int i = 0; i < Size; i++) {
+		pRandomData[i].x = RandomFloat();
+		pRandomData[i].y = RandomFloat();
+		pRandomData[i].z = RandomFloat();
+	}
+
+	glGenTextures(1, &m_textureRandID);
+	glBindTexture(GL_TEXTURE_1D, m_textureRandID);
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, Size, 0, GL_RGB, GL_FLOAT, pRandomData);
+	glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+
+	delete[] pRandomData;
+
+	return true;
+}
+
+void ParticleSystem::bindRandomTexture(unsigned int TextureUnit)
+{
+	glActiveTexture(GL_TEXTURE0 + TextureUnit);
+	glBindTexture(GL_TEXTURE_1D, m_textureRandID);
 }

@@ -10,6 +10,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#define ZERO_MEM(a) memset(a, 0, sizeof(a))
+#define ZERO_MEM_VAR(var) memset(&var, 0, sizeof(var))
+#define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
+#define SAFE_DELETE(p) if (p) { delete p; p = NULL; }
 
 namespace Util {
 	const double CurrentTime();

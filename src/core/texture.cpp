@@ -71,7 +71,7 @@ void Texture::active(int index) const
 	glActiveTexture(GL_TEXTURE0 + index);
 }
 
-void Texture::bind() const
+void Texture::bind() const // TODO: It does not have any sense to have "active" and "bind" splitted, it should be in the same method
 {
 	glBindTexture(GL_TEXTURE_2D, textureID);
 }

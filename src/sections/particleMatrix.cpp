@@ -1,9 +1,11 @@
 #include "main.h"
 #include "core\particleSystem.h"
+#include "core\particleSystem_tf.h"
 
 typedef struct {
 	unsigned int numParticles;
 	ParticleSystem *pSystem;
+	CParticleSystemTransformFeedback *pSystem2;
 
 } particleMatrix_section;
 
@@ -28,13 +30,34 @@ bool sParticleMatrix::load() {
 	local->numParticles = (unsigned int)this->param[0];
 	
 	// Create the particle system
-	local->pSystem = new ParticleSystem(local->numParticles);
+	local->pSystem = new ParticleSystem();// (local->numParticles);
+	glm::vec3 Position(0.0f);
+	local->pSystem->InitParticleSystem(Position);
+
+	// Create the particle system 2
+	local->pSystem2 = new CParticleSystemTransformFeedback();
+	local->pSystem2->InitalizeParticleSystem();
 	
+	local->pSystem2->SetGeneratorProperties(
+		glm::vec3(0.0f, 0.0f, 0.0f), // Where the particles are generated
+		glm::vec3(-5, 0, -5), // Minimal velocity
+		glm::vec3(5, 20, 5), // Maximal velocity
+		glm::vec3(0, -5, 0), // Gravity force applied to particles
+		glm::vec3(0.0f, 0.5f, 1.0f), // Color (light blue)
+		1.5f, // Minimum lifetime in seconds
+		3.0f, // Maximum lifetime in seconds
+		0.75f, // Rendered size
+		0.02f, // Spawn every 0.05 seconds
+		30); // And spawn 30 particles
+
 	return true;
 }
 
 void sParticleMatrix::init() {
 }
+
+
+float lastTime = 0;
 
 void sParticleMatrix::exec() {
 	local = (particleMatrix_section *)this->vars;
@@ -43,11 +66,22 @@ void sParticleMatrix::exec() {
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
 	glm::mat4 vp = projection * view;	//TODO: This mutliplication should be done in the shader, by passing the 2 matrix
 	
+	// Render particles: Using Geometry shader 1
+	//local->pSystem->Render(this->runTime * 1000, vp, DEMO->camera->Position);
 
+	// Render particles: Using Geometry shader 2
+	local->pSystem2->SetMatrices(&projection, DEMO->camera->Position, DEMO->camera->Front, DEMO->camera->Up);
+	
+	float delta = this->runTime - lastTime;
+	lastTime = this->runTime;
+	local->pSystem2->UpdateParticles(delta);
+	local->pSystem2->RenderParticles();
 
-	// Generate new particles
-	//if (this->runTime == 0.0f)
-		local->pSystem->genNewParticles(this->runTime, 1);
+	
+	
+	/*
+	// Generate new particles - Not using geometry shaders
+	local->pSystem->genNewParticles(this->runTime, 1);
 	local->pSystem->calcParticlesProperties(this->runTime, DEMO->camera->Position);
 	
 
@@ -66,6 +100,7 @@ void sParticleMatrix::exec() {
 
 
 	local->pSystem->Draw();
+	*/
 
 }
 
