@@ -38,12 +38,12 @@ file(GLOB_RECURSE HEADER_FILES
 	${CMAKE_SOURCE_DIR}/src/*.h
 	${CMAKE_SOURCE_DIR}/src/*.hpp)
 
-# Configure assets header file
-#configure_file(src/helpers/RootDir.h.in src/helpers/RootDir.h)
-#include_directories(${CMAKE_BINARY_DIR}/src)
+# Add resource files (icons)
+file(GLOB_RECURSE RESOURCE_FILES 
+	${CMAKE_SOURCE_DIR}/res/*.rc)
 
 # Define the executable
-add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} ${RESOURCE_FILES})
 
 # We need a CMAKE_DIR with some code to find external dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
