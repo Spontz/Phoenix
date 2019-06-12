@@ -29,11 +29,13 @@ void CLogger::CloseLogFile()
 		m_Logfile.close();
 }
 
+#define STR_MAX_SIZE 2048
+
 void CLogger::Info(char level, const char *message, ...) {
 	va_list argptr;
-	char text[1024];
-	char chain[1024];
-
+	char text[STR_MAX_SIZE];
+	char chain[STR_MAX_SIZE];
+	// TODO use strings instead of arrays os fixed size to avoid errors!!!
 	// write down the trace to the standard output
 	if (DEMO->debug && this->log_level >= level) {
 		va_start(argptr, message);
@@ -46,9 +48,9 @@ void CLogger::Info(char level, const char *message, ...) {
 
 void CLogger::Error(const char *message, ...) {
 	va_list argptr;
-	char text[1024];
-	char chain[1024];
-
+	char text[STR_MAX_SIZE];
+	char chain[STR_MAX_SIZE];
+	// TODO use strings instead of arrays os fixed size to avoid errors!!!
 	// write down the trace to the standard output
 	if (DEMO->debug) {
 		va_start(argptr, message);
