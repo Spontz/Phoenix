@@ -33,7 +33,6 @@ Resource::Resource() {
 	obj_quadFullscreen = 0;
 	shdr_QuadTex = -1;
 	shdr_QuadTexModel = -1;
-	demoDir = DEMO->demoDir;
 }
 
 
@@ -151,26 +150,26 @@ void Resource::Load_Obj_Skybox()
 
 void Resource::Load_Shaders()
 {
-	shdr_QuadTex = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTex.vert", demoDir + "/resources/shaders/basic/QuadTex.frag");
-	shdr_QuadDepth = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadDepth.vert", demoDir + "/resources/shaders/basic/QuadDepth.frag");
-	shdr_QuadTexAlpha = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTexAlpha.vert", demoDir + "/resources/shaders/basic/QuadTexAlpha.frag");
-	shdr_QuadTexModel = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/basic/QuadTexModel.vert", demoDir + "/resources/shaders/basic/QuadTexModel.frag");
-	shdr_Skybox = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/skybox/skybox.vert", demoDir + "/resources/shaders/skybox/skybox.frag");
+	shdr_QuadTex = DEMO->shaderManager.addShader("/resources/shaders/basic/QuadTex.vert", "/resources/shaders/basic/QuadTex.frag");
+	shdr_QuadDepth = DEMO->shaderManager.addShader("/resources/shaders/basic/QuadDepth.vert", "/resources/shaders/basic/QuadDepth.frag");
+	shdr_QuadTexAlpha = DEMO->shaderManager.addShader("/resources/shaders/basic/QuadTexAlpha.vert", "/resources/shaders/basic/QuadTexAlpha.frag");
+	shdr_QuadTexModel = DEMO->shaderManager.addShader("/resources/shaders/basic/QuadTexModel.vert", "/resources/shaders/basic/QuadTexModel.frag");
+	shdr_Skybox = DEMO->shaderManager.addShader("/resources/shaders/skybox/skybox.vert", "/resources/shaders/skybox/skybox.frag");
 }
 
 void Resource::Load_Tex_Spontz()
 {
-	tex_tv = DEMO->textureManager.addTexture(demoDir + "/resources/textures/tv.jpg");
-	tex_isaac2 = DEMO->textureManager.addTexture(demoDir + "/resources/textures/isaac2.jpg");
-	tex_shotgan = DEMO->textureManager.addTexture(demoDir + "/resources/textures/shotgan.jpg");
-	tex_shotgan2 = DEMO->textureManager.addTexture(demoDir + "/resources/textures/shotgan2.jpg");
-	tex_merlucin = DEMO->textureManager.addTexture(demoDir + "/resources/textures/merlucin.jpg");
-	tex_xphere = DEMO->textureManager.addTexture(demoDir + "/resources/textures/xphere.jpg");
+	tex_tv = DEMO->textureManager.addTexture("/resources/textures/tv.jpg");
+	tex_isaac2 = DEMO->textureManager.addTexture("/resources/textures/isaac2.jpg");
+	tex_shotgan = DEMO->textureManager.addTexture("/resources/textures/shotgan.jpg");
+	tex_shotgan2 = DEMO->textureManager.addTexture("/resources/textures/shotgan2.jpg");
+	tex_merlucin = DEMO->textureManager.addTexture("/resources/textures/merlucin.jpg");
+	tex_xphere = DEMO->textureManager.addTexture("/resources/textures/xphere.jpg");
 }
 
 void Resource::Load_Text_Fonts()
 {
-	DEMO->text = new Font(48, demoDir + "/resources/fonts/arial.ttf", demoDir + "/resources/shaders/font/font.vert", demoDir + "/resources/shaders/font/font.frag");
+	DEMO->text = new Font(48, "/resources/fonts/arial.ttf", "/resources/shaders/font/font.vert", "/resources/shaders/font/font.frag");
 }
 
 

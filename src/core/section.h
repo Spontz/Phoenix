@@ -44,7 +44,6 @@ public:
 	vector<string>		strings;							// string parameters
 	vector<string>		uniform;							// string of uniform parameters
 	vector<Spline*>		spline;								// Splines
-	//float		splineDuration[SECTION_SPLINES];	// spline duration in seconds // TODO: To delete once is working
 	void*		vars;										// pointer to section local variables
 
 

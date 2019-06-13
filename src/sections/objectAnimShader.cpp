@@ -28,7 +28,6 @@ sObjectAnimShader::sObjectAnimShader() {
 }
 
 bool sObjectAnimShader::load() {
-	string s_demo = DEMO->demoDir;
 	if ((this->param.size() != 2) || (this->strings.size() != 6)) {
 		LOG->Error("ObjectShader [%s]: 2 param and 6 strings needed", this->identifier.c_str());
 		return false;
@@ -45,9 +44,9 @@ bool sObjectAnimShader::load() {
 
 	// Load model and shader
 	local->my_SKmesh = new SkinnedMesh();
-	local->my_SKmesh->loadMesh(s_demo + this->strings[0]);
-	local->model = DEMO->modelManager.addModel(s_demo + this->strings[0]);
-	local->shader = DEMO->shaderManager.addShader(s_demo + this->strings[1], s_demo + this->strings[2]);
+	local->my_SKmesh->loadMesh(this->strings[0]);
+	local->model = DEMO->modelManager.addModel(this->strings[0]);
+	local->shader = DEMO->shaderManager.addShader(this->strings[1], this->strings[2]);
 	if (local->model < 0 || local->shader < 0)
 		return false;
 

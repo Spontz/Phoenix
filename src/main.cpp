@@ -14,10 +14,16 @@ int main(int argc, char *argv[]) {
 	#ifdef _DEBUG
 	LOG->log_level = LOG_LOW; // Define the lowest log detail level
 	#endif
-
+	
 	// Initialize the GL Framework
 	GLDRV->initFramework();
 	
+	// Check the data folder
+	if (!DEMO->checkDataFolder()) {
+		LOG->Error("Critical error: Cannot find data folder in: %s, exit!", DEMO->dataFolder.c_str());
+		exit(0);
+	}
+
 	LOG->Info(LOG_HIGH, "Phoenix Visuals Engine starting up: Let's make some noise!");
 
 

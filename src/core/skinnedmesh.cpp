@@ -77,6 +77,7 @@ void SkinnedMesh::Clear()
 /* loads the model */
 bool SkinnedMesh::loadMesh(const std::string& fileName)
 {
+	string fullFilePath = DEMO->dataFolder + fileName;
 	/* Deletes the previous loaded mesh(if it exists) */
 	Clear();
 
@@ -90,7 +91,7 @@ bool SkinnedMesh::loadMesh(const std::string& fileName)
 	/* Return value */
 	bool ret = false;
 
-	m_pScene = m_Importer.ReadFile(fileName.c_str(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+	m_pScene = m_Importer.ReadFile(fullFilePath.c_str(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
 
 	if (m_pScene)
 	{
@@ -98,11 +99,11 @@ bool SkinnedMesh::loadMesh(const std::string& fileName)
 		m_GlobalInverseTransform = mat4_cast(m_pScene->mRootNode->mTransformation);
 		m_GlobalInverseTransform =  glm::inverse(m_GlobalInverseTransform);
 		
-		ret = InitFromScene(m_pScene, fileName);
+		ret = InitFromScene(m_pScene, fullFilePath);
 	}
 	else
 	{
-		std::cout << "Error parsing : " << fileName << " : " << m_Importer.GetErrorString() << std::endl;
+		std::cout << "Error parsing : " << fullFilePath << " : " << m_Importer.GetErrorString() << std::endl;
 		return false;
 	}
 

@@ -56,7 +56,7 @@ bool Texture::load(const std::string & file_name, bool flip)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 	else {
-		LOG->Error("Failed loading texture form file: %s", filename.c_str());
+		LOG->Error("Failed loading texture from file: %s", filename.c_str());
 		is_loaded = false;
 	}
 

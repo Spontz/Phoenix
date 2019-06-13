@@ -29,35 +29,31 @@ void CLogger::CloseLogFile()
 		m_Logfile.close();
 }
 
-#define STR_MAX_SIZE 2048
 
 void CLogger::Info(char level, const char *message, ...) {
 	va_list argptr;
-	char text[STR_MAX_SIZE];
-	char chain[STR_MAX_SIZE];
-	// TODO use strings instead of arrays os fixed size to avoid errors!!!
+	
 	// write down the trace to the standard output
 	if (DEMO->debug && this->log_level >= level) {
 		va_start(argptr, message);
-		vsprintf_s(text, message, argptr);
+		vsnprintf(text, STR_MAX_SIZE, message, argptr);
 		va_end(argptr);
-		sprintf_s(chain, "Info  [%.4f] %s\n", Util::CurrentTime(), text);
-		m_Logfile << chain;
+		// Get the new size of the string
+		snprintf(chain, STR_MAX_SIZE, "Info  [%.4f] %s", Util::CurrentTime(), text);
+		m_Logfile << chain << "\n";
 	}
 }
 
 void CLogger::Error(const char *message, ...) {
 	va_list argptr;
-	char text[STR_MAX_SIZE];
-	char chain[STR_MAX_SIZE];
-	// TODO use strings instead of arrays os fixed size to avoid errors!!!
+
 	// write down the trace to the standard output
 	if (DEMO->debug) {
 		va_start(argptr, message);
-		vsprintf_s(text, message, argptr);
+		vsnprintf(text, STR_MAX_SIZE, message, argptr);
 		va_end(argptr);
-		sprintf_s(chain, "Error [%.4f] %s\n", Util::CurrentTime(), text);
-		m_Logfile << chain;
+		snprintf(chain, STR_MAX_SIZE, "Error [%.4f] %s", Util::CurrentTime(), text);
+		m_Logfile << chain << "\n";
 #ifdef _DEBUG
 		OutputDebugStringA(chain);
 #endif

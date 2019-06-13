@@ -21,7 +21,6 @@ sLoading::sLoading() {
 }
 
 bool sLoading::load() {
-	string s_demo = DEMO->demoDir;
 	// script validation
 	if ((this->param.size() != 3) || (this->strings.size() != 3)) {
 		LOG->Error("Loading [%s]: 3 strings and 3 params needed. Using default values.", this->identifier.c_str());
@@ -35,18 +34,18 @@ bool sLoading::load() {
 	this->vars = (void *)local;
 
 	if (!byDefault) {
-		local->tex_back = DEMO->textureManager.addTexture(s_demo + this->strings[0]);
-		local->tex_front = DEMO->textureManager.addTexture(s_demo + this->strings[1]); 
-		local->tex_bar = DEMO->textureManager.addTexture(s_demo + this->strings[2]);
+		local->tex_back = DEMO->textureManager.addTexture(this->strings[0]);
+		local->tex_front = DEMO->textureManager.addTexture(this->strings[1]); 
+		local->tex_bar = DEMO->textureManager.addTexture(this->strings[2]);
 		local->tx = this->param[0];
 		local->ty = this->param[1];
 		local->sy = this->param[2];
 	}
 	else {
 		// Deault values
-		local->tex_back = DEMO->textureManager.addTexture(s_demo + "/resources/loading/loadingback.jpg"); 
-		local->tex_front = DEMO->textureManager.addTexture(s_demo + "/resources/loading/loadingfront.jpg");
-		local->tex_bar = DEMO->textureManager.addTexture(s_demo + "/resources/loading/loadingbar.jpg");
+		local->tex_back = DEMO->textureManager.addTexture("/resources/loading/loadingback.jpg"); 
+		local->tex_front = DEMO->textureManager.addTexture("/resources/loading/loadingfront.jpg");
+		local->tex_bar = DEMO->textureManager.addTexture("/resources/loading/loadingbar.jpg");
 		local->tx = 0.0f;
 		local->ty = -0.4f;
 		local->sy = 0.1f;

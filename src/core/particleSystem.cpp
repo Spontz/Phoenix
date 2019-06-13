@@ -103,8 +103,7 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	my_shader->setValue("gColorMap", 0); // Set color map to 0
 	my_shader->setValue("gBillboardSize", 0.01f);	// Set billboard size
 	
-	string s_dir = DEMO->demoDir;
-	m_pTextureNum = DEMO->textureManager.addTexture(s_dir + "/resources/textures/part_redfireworks.jpg"); //TODO: Use any other texture, configure in the section
+	m_pTextureNum = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/textures/part_redfireworks.jpg"); //TODO: Use any other texture, configure in the section
 	m_pTexture = DEMO->textureManager.texture[m_pTextureNum];
 
 	//return GLCheckError();
@@ -201,10 +200,9 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::vec3 &Camer
 
 bool ParticleSystem::initBillboard()
 {
-	string demoDir = DEMO->demoDir;
-	billboardShader = DEMO->shaderManager.addShader(demoDir + "/resources/shaders/particleSystem/billboard.vs",
-													demoDir + "/resources/shaders/particleSystem/billboard.fs",
-													demoDir + "/resources/shaders/particleSystem/billboard.gs");
+	billboardShader = DEMO->shaderManager.addShader("/resources/shaders/particleSystem/billboard.vs",
+													"/resources/shaders/particleSystem/billboard.fs",
+													"/resources/shaders/particleSystem/billboard.gs");
 	if (billboardShader < 0)
 		return false;
 	return true;
@@ -212,10 +210,9 @@ bool ParticleSystem::initBillboard()
 
 bool ParticleSystem::initParticleSystem()
 {
-	string demoDir = DEMO->demoDir;
-	particleSystemShader = DEMO->shaderManager.addShader(	demoDir + "/resources/shaders/particleSystem/ps_update.vs",
-															demoDir + "/resources/shaders/particleSystem/ps_update.fs",
-															demoDir + "/resources/shaders/particleSystem/ps_update.gs");
+	particleSystemShader = DEMO->shaderManager.addShader(	"/resources/shaders/particleSystem/ps_update.vs",
+															"/resources/shaders/particleSystem/ps_update.fs",
+															"/resources/shaders/particleSystem/ps_update.gs");
 	if (particleSystemShader < 0)
 		return false;
 

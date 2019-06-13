@@ -32,8 +32,7 @@ bool sRenderQuad::load() {
 	local->clearDepth = (int)this->param[1];
 	
 	// Load shader
-	string s_demo = DEMO->demoDir;
-	local->shader = DEMO->shaderManager.addShader(s_demo + this->strings[0], s_demo + this->strings[1]);
+	local->shader = DEMO->shaderManager.addShader(this->strings[0], this->strings[1]);
 	if (local->shader < 0)
 		return false;
 

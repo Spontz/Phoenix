@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <io.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "main.h"
 
 
@@ -209,27 +211,19 @@ demokernel::demokernel() {
 	this->beat = 0.0f;
 	this->beat_ratio = 1.4f;
 	this->beat_fadeout = 4.0f;
+
+	// Demo states
+	this->drawFbo = 0;
+
 }
 
 void demokernel::getArguments(int argc, char *argv[]) {
 
 	if (argc > 1) {
-		demoDir = argv[1];
+		dataFolder = argv[1];
 	}
 	else {
-		demoDir = "./data"; // Set the demo folder to the current project file
-		/*char *lastSlash;
-		int chars;
-		lastSlash = strrchr(argv[0], '\\');
-		if (lastSlash == NULL) {
-			demoDir = ".";
-		}
-		else {
-			chars = (int)strlen(argv[0]) - (int)strlen(lastSlash);
-			demoDir = (char *)malloc(chars + 1);
-			strncpy(demoDir, argv[0], chars);
-			demoDir[chars] = 0;
-		}*/
+		dataFolder = "./data"; // Set the demo folder to the current project file (the "./" is not really required)
 	}
 }
 
@@ -378,9 +372,6 @@ void demokernel::playDemo()
 
 		// reinit section queues
 		this->reInitSectionQueues();
-
-		// unpause the sound - FIX: its not needed, because each sound section takes care of it... under investigation, but it can be removed.
-		//if (this->sound) BASSDRV->play();
 	}
 }
 
@@ -448,17 +439,24 @@ void demokernel::closeDemo() {
 	GLDRV->close();
 }
 
+bool demokernel::checkDataFolder()
+{
+	struct stat info;
+	if (stat(this->dataFolder.c_str(), &info) != 0)
+		return false;
+	return true;
+}
+
 void demokernel::load_spos() {
 	struct _finddata_t FindData;
 	intptr_t hFile;
-	string demoFolder = this->demoDir;
 	string fullpath;
 	string ScriptRelativePath;
-	fullpath = demoFolder + "/*.spo";
+	fullpath = dataFolder + "/*.spo";
 	LOG->Info(LOG_MED, "Scanning folder: %s", fullpath.c_str());
 	if ((hFile = _findfirst(fullpath.c_str(), &FindData)) != -1L) {
 		do {
-			ScriptRelativePath = demoFolder + "/" + FindData.name;
+			ScriptRelativePath = dataFolder + "/" + FindData.name;
 			LOG->Info(LOG_LOW, "Reading file: %s", ScriptRelativePath.c_str());
 			load_spo(ScriptRelativePath);
 			LOG->Info(LOG_LOW, "Finished loading file!");
@@ -591,7 +589,6 @@ void demokernel::initSectionQueues() {
 	this->drawFps = 1;
 	this->drawTiming = 1;
 	this->drawSound = 0;
-
 	this->drawFbo = 0;
 
 	
@@ -961,12 +958,12 @@ int demokernel::load_scriptData(string sScript, string sFile) {
 				break;
 
 			case SECTION_STRING:
-				new_sec->strings.push_back(_strdup(value));
+				new_sec->strings.push_back(value);
 				LOG->Info(LOG_LOW, "  Loaded string: \"%s\"", value);
 				break;
 
 			case SECTION_UNIFORM:
-				new_sec->uniform.push_back(_strdup(value));
+				new_sec->uniform.push_back(value);
 				LOG->Info(LOG_LOW, "  Loaded uniform: \"%s\"", value);
 				break;
 
@@ -984,7 +981,7 @@ int demokernel::load_scriptData(string sScript, string sFile) {
 					break;
 				}
 				new_spl = new Spline();
-				new_spl->filename = _strdup(tmp); //TODO: És necessari el _strdup?? pq no "=" i ja esta?
+				new_spl->filename = DEMO->dataFolder + tmp;
 				new_spl->duration = fvalue;
 				new_sec->spline.push_back(new_spl);
 				LOG->Info(LOG_LOW, "  Loaded Spline: %s", new_spl->filename.c_str());

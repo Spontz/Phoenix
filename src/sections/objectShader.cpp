@@ -26,7 +26,6 @@ sObjectShader::sObjectShader() {
 }
 
 bool sObjectShader::load() {
-	string s_demo = DEMO->demoDir;
 	if ((this->param.size() != 2) || (this->strings.size() != 6)) {
 		LOG->Error("ObjectShader [%s]: 2 param and 6 strings needed", this->identifier.c_str());
 		return false;
@@ -42,8 +41,8 @@ bool sObjectShader::load() {
 	
 
 	// Load model and shader
-	local->model = DEMO->modelManager.addModel(s_demo + this->strings[0]);
-	local->shader = DEMO->shaderManager.addShader(s_demo + this->strings[1], s_demo + this->strings[2]);
+	local->model = DEMO->modelManager.addModel(this->strings[0]);
+	local->shader = DEMO->shaderManager.addShader(this->strings[1], this->strings[2]);
 	if (local->model < 0 || local->shader < 0)
 		return false;
 

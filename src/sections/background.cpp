@@ -39,12 +39,10 @@ bool sBackground::load() {
 		LOG->Error("Background [%s]: Invalid value for param[0]", this->identifier.c_str());
 	}
 
-	string s_dir = DEMO->demoDir;
-
 	// Load the shader for drawing the quad
-	local->shader = DEMO->shaderManager.addShader(s_dir + "/resources/shaders/sections/background_texquad.vert", s_dir + "/resources/shaders/sections/background_texquad.frag");
+	local->shader = DEMO->shaderManager.addShader("/resources/shaders/sections/background_texquad.vert", "/resources/shaders/sections/background_texquad.frag");
 	// Background texture load
-	local->texture = DEMO->textureManager.addTexture(s_dir + this->strings[0], true);
+	local->texture = DEMO->textureManager.addTexture(this->strings[0], true);
 	if (local->texture == -1)
 		return false;
 	return true;

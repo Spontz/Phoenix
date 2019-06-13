@@ -13,6 +13,7 @@ TextureManager::TextureManager() {
 
 // Adds a Texture into the queue, returns the Number of the texture added
 int TextureManager::addTexture(string path, bool flip, string type) {
+	path = DEMO->dataFolder + path;
 	unsigned int i;
 	int tex_num = -1;
 
@@ -42,6 +43,11 @@ int TextureManager::addCubemap(vector<std::string> path, bool flip)
 {
 	unsigned int i;
 	int cubemap_num = -1;
+
+	// Add the demo path
+	for (i = 0; i < path.size(); i++) {
+		path[i] = DEMO->dataFolder + path[i];
+	}
 
 	// check if cubemap is already loaded, then we just return the ID of our texture
 	bool already_loaded = true;

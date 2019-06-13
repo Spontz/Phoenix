@@ -49,7 +49,7 @@ void sParticleMatrix::exec() {
 	glm::mat4 vp = projection * view;	//TODO: This mutliplication should be done in the shader, by passing the 2 matrix
 	
 	// Render particles: Using Geometry shader 1
-	local->pSystem->Render(this->runTime * 1000, vp, DEMO->camera->Position);
+	local->pSystem->Render((int)(this->runTime * 1000.0f), vp, DEMO->camera->Position);
 
 /*	// Generate new particles - Not using geometry shaders
 	local->pSystem->genNewParticles(this->runTime, 1);

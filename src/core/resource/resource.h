@@ -42,7 +42,6 @@ private:
 
 	unsigned int obj_quadFullscreen;
 	unsigned int obj_quad_FBO_Debug[NUM_FBO_DEBUG];
-	string demoDir;
 	Resource();
 
 	void Load_Obj_QuadFullscreen();

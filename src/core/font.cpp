@@ -7,6 +7,7 @@
 
 Font::Font(int size, string font_path, string vshader_path, string fshader_path)
 {
+	font_path = DEMO->dataFolder + font_path;
 	// Load the shader
 	Shader *myShad;
 	glm::mat4 projection;
@@ -17,8 +18,11 @@ Font::Font(int size, string font_path, string vshader_path, string fshader_path)
 		projection = DEMO->camera->getOrthoMatrix_Projection();
 		myShad->use();
 	}
-	else
+	else {
 		LOG->Error("Could not load Font shader!");
+		return;
+	}
+		
 
 	myShad->setValue("projection", projection);
 	LOG->Info(LOG_LOW, "Font shader loaded OK");
@@ -136,16 +140,17 @@ void Font::glPrintf(float x, float y, const char *message, ...) {
 
 void Font::RenderText(string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
 {
+	// Prevent rendering text if shader has not been properly loaded
+	if (shdr_font == -1)
+		return;
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	scale /= 100.0f; // Divide per 100 in order to match our windows scale (from 0 to 1)
 	// Activate corresponding render state	
 	Shader *myShad;
-	
-	if (shdr_font != -1) {
-		myShad = DEMO->shaderManager.shader[shdr_font];
-	}
+	myShad = DEMO->shaderManager.shader[shdr_font];
 	myShad->use();
 
 	myShad->setValue("textColor", color);

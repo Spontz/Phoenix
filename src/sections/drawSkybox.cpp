@@ -25,7 +25,6 @@ sDrawSkybox::sDrawSkybox() {
 }
 
 bool sDrawSkybox::load() {
-	string s_demo = DEMO->demoDir;
 	if ((this->param.size() != 2) || (this->strings.size() != 8)) {
 		LOG->Error("DrawSkybox [%s]: 2 param and 8 strings needed: enable depthBuffer, drawWireframe + 6 strings with skybox faces, 2 strings with rot and scale", this->identifier.c_str());
 		return false;
@@ -45,8 +44,8 @@ bool sDrawSkybox::load() {
 	local->drawWireframe = (int)this->param[1];
 	
 	// Load the 6 textures of our cubemap
-	vector<std::string> faces {	s_demo + this->strings[0],s_demo + this->strings[1],s_demo + this->strings[2],
-								s_demo + this->strings[3],s_demo + this->strings[4],s_demo + this->strings[5]};
+	vector<std::string> faces {	this->strings[0], this->strings[1], this->strings[2],
+								this->strings[3], this->strings[4], this->strings[5]};
 
 	local->cubemap = DEMO->textureManager.addCubemap(faces, false);
 	if (local->cubemap < 0)

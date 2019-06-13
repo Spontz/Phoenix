@@ -28,7 +28,6 @@ bool ShaderVars::ReadString(const char * string_var)
 	char	var_type[MAXSIZE_VAR_TYPE];
 	char	var_value[MAXSIZE_VAR_EVAL];
 	int		var_UnitId;	// Useful for sampler2D
-	string s_demo = DEMO->demoDir;
 
 	std::vector<string>	vars;
 	
@@ -177,7 +176,7 @@ bool ShaderVars::ReadString(const char * string_var)
 		}
 		// Is it s a normal texture...
 		else {
-			var->texture = DEMO->textureManager.addTexture(s_demo + var_value);
+			var->texture = DEMO->textureManager.addTexture(var_value);
 			var->texGLid = DEMO->textureManager.getOpenGLTextureID(var->texture);
 		}
 		sampler2D.push_back(var);

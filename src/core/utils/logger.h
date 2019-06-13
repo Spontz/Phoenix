@@ -14,6 +14,8 @@
 #define LOG_MED 3
 #define LOG_LOW 4
 
+#define STR_MAX_SIZE 2048
+
 using namespace std;
 #define LOG CLogger::GetLogger()
 
@@ -26,6 +28,9 @@ public:
 	static CLogger* GetLogger();
 	void CloseLogFile();
 private:
+	char text[STR_MAX_SIZE];	// Formatted text
+	char chain[STR_MAX_SIZE];	// Text chain to be written to file
+
 	CLogger();
 	// Copy constructor for the Logger class.
 	CLogger(const CLogger&) {};

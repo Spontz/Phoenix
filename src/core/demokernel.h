@@ -58,7 +58,7 @@ class demokernel {
 public:
 	// ******************************************************************
 	// VARIABLES
-	char* demoDir;
+	string dataFolder;	// Path to "data" folder
 	char* demoName;
 	int debug;
 	// misc
@@ -141,6 +141,9 @@ public:
 	void initDemo();
 	void mainLoop();
 	void closeDemo();
+
+	// Check data folder
+	bool checkDataFolder();
 
 	// Scripts (SPO files) management
 	void load_spos();
