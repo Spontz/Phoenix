@@ -447,6 +447,11 @@ bool demokernel::checkDataFolder()
 	return true;
 }
 
+string demokernel::getFolder(string path)
+{
+	return (this->dataFolder+path);
+}
+
 void demokernel::load_spos() {
 	struct _finddata_t FindData;
 	intptr_t hFile;

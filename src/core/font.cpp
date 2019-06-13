@@ -7,7 +7,6 @@
 
 Font::Font(int size, string font_path, string vshader_path, string fshader_path)
 {
-	font_path = DEMO->dataFolder + font_path;
 	// Load the shader
 	Shader *myShad;
 	glm::mat4 projection;

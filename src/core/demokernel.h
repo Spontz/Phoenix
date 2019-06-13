@@ -142,8 +142,9 @@ public:
 	void mainLoop();
 	void closeDemo();
 
-	// Check data folder
+	// Data folder operations
 	bool checkDataFolder();
+	string getFolder(string path);
 
 	// Scripts (SPO files) management
 	void load_spos();

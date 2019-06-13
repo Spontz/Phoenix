@@ -41,8 +41,8 @@ bool sObjectShader::load() {
 	
 
 	// Load model and shader
-	local->model = DEMO->modelManager.addModel(this->strings[0]);
-	local->shader = DEMO->shaderManager.addShader(this->strings[1], this->strings[2]);
+	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2]);
 	if (local->model < 0 || local->shader < 0)
 		return false;
 

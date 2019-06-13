@@ -176,7 +176,7 @@ bool ShaderVars::ReadString(const char * string_var)
 		}
 		// Is it s a normal texture...
 		else {
-			var->texture = DEMO->textureManager.addTexture(var_value);
+			var->texture = DEMO->textureManager.addTexture(DEMO->dataFolder + var_value);
 			var->texGLid = DEMO->textureManager.getOpenGLTextureID(var->texture);
 		}
 		sampler2D.push_back(var);

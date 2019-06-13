@@ -15,10 +15,6 @@ int ShaderManager::addShader(string path_vert, string path_frag, string path_geo
 	unsigned int i;
 	int shad_id = -1;
 	Shader *shad;
-	path_vert = DEMO->dataFolder + path_vert;
-	path_frag = DEMO->dataFolder + path_frag;
-	if (path_geom!="")
-		path_geom = DEMO->dataFolder + path_geom;
 
 	// check if shader is already loaded, then we just return the ID of our shader
 	for (i = 0; i < shader.size(); i++) {

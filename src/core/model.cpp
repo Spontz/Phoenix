@@ -32,7 +32,7 @@ void Model::Draw(Shader shader)
 
 void Model::loadModel(string const &path)
 {
-	filepath = DEMO->dataFolder + path;
+	filepath = path;
 	// read file via ASSIMP
 	Assimp::Importer importer;
 	scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals);
@@ -43,7 +43,7 @@ void Model::loadModel(string const &path)
 		return;
 	}
 	// retrieve the directory path of the filepath and the filename (without the data folder, because each loader adds the data folder)
-	directory = path.substr(0, path.find_last_of('/'));
+	directory = filepath.substr(0, filepath.find_last_of('/'));
 	filename = filepath.substr(filepath.find_last_of('/')+1, filepath.length());
 	LOG->Info(LOG_LOW, "Loading Model: %s", filename.c_str());
 	// process ASSIMP's root node recursively

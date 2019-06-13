@@ -200,9 +200,9 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::vec3 &Camer
 
 bool ParticleSystem::initBillboard()
 {
-	billboardShader = DEMO->shaderManager.addShader("/resources/shaders/particleSystem/billboard.vs",
-													"/resources/shaders/particleSystem/billboard.fs",
-													"/resources/shaders/particleSystem/billboard.gs");
+	billboardShader = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/particleSystem/billboard.vs",
+													DEMO->dataFolder + "/resources/shaders/particleSystem/billboard.fs",
+													DEMO->dataFolder + "/resources/shaders/particleSystem/billboard.gs");
 	if (billboardShader < 0)
 		return false;
 	return true;
@@ -210,9 +210,9 @@ bool ParticleSystem::initBillboard()
 
 bool ParticleSystem::initParticleSystem()
 {
-	particleSystemShader = DEMO->shaderManager.addShader(	"/resources/shaders/particleSystem/ps_update.vs",
-															"/resources/shaders/particleSystem/ps_update.fs",
-															"/resources/shaders/particleSystem/ps_update.gs");
+	particleSystemShader = DEMO->shaderManager.addShader(	DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.vs",
+															DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.fs",
+															DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.gs");
 	if (particleSystemShader < 0)
 		return false;
 
