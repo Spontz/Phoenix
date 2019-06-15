@@ -28,7 +28,7 @@ bool sParticleMatrix::load() {
 	local->numParticles = (unsigned int)this->param[0];
 	
 	// Create the particle system
-	local->pSystem = new ParticleSystem();// local->numParticles);
+	local->pSystem = new ParticleSystem();
 	glm::vec3 Position(0, 0, 2.8f);
 	local->pSystem->InitParticleSystem(Position);
 
@@ -57,6 +57,8 @@ void sParticleMatrix::exec() {
 	lastTime = this->runTime;
 	if (delta < 0) {
 		delta = -delta;	// In case we rewind the demo
+		//glm::vec3 Position(0, 0, 3.8f);
+		//local->pSystem->resetParticleSystem(Position);
 	}
 	local->pSystem->Render((int)(delta*1000.0f), vp, DEMO->camera->Position);
 

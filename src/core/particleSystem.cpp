@@ -32,6 +32,8 @@ ParticleSystem::ParticleSystem()
 	m_time = 0;
 	m_pTexture = NULL;
 
+	numEmitters = 10;
+
 	ZERO_MEM(m_transformFeedback);
 	ZERO_MEM(m_particleBuffer);
 }
@@ -53,14 +55,24 @@ ParticleSystem::~ParticleSystem()
 
 bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 {
+
 	Particle Particles[MAX_PARTICLES];
 	ZERO_MEM(Particles);
 
 	// Init the particle 0, the initial emitter
-	Particles[0].Type = PARTICLE_TYPE_LAUNCHER;
-	Particles[0].Pos = Pos;
-	Particles[0].Vel = glm::vec3(0.0f, 0.01f, 0.0f);
-	Particles[0].LifetimeMillis = 0.0f;
+	for (unsigned int i = 0; i < numEmitters; i++) {
+		Particles[i].Type = PARTICLE_TYPE_LAUNCHER;
+		float sphere = 2*3.1415f* ( (float)i / ((float)numEmitters - 1));
+		Particles[i].Pos = Pos + glm::vec3(0.1f*sin(sphere), 0, 0.1f*cos(sphere));
+		Particles[i].Vel = glm::vec3(0.0f, 0.01f, 0.0f);
+		Particles[i].LifetimeMillis = 0.0f;
+	}
+
+	// Init the particle 0, the initial emitter
+	Particles[1].Type = PARTICLE_TYPE_LAUNCHER;
+	Particles[1].Pos = glm::vec3(0.01f, 0, 2.8f);
+	Particles[1].Vel = glm::vec3(0.0f, 0.01f, 0.0f);
+	Particles[1].LifetimeMillis = 0.0f;
 
 	// Gen the VAO
 	glGenVertexArrays(1, &m_VAO);
@@ -86,8 +98,8 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	Shader *particleSystem_shader = DEMO->shaderManager.shader[particleSystemShader];
 	particleSystem_shader->use();
 	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-	particleSystem_shader->setValue("gLauncherLifetime", 1.0f);
-	particleSystem_shader->setValue("gShellLifetime", 100000.0f);
+	particleSystem_shader->setValue("gLauncherLifetime", 100.0f); //Time to emit all particles
+	particleSystem_shader->setValue("gShellLifetime", 10000.0f);
 	particleSystem_shader->setValue("gSecondaryShellLifetime", 2500.0f);
 
 	if (!initRandomTexture(1000)) {
@@ -136,7 +148,8 @@ void ParticleSystem::Render(int DeltaTimeMillis, const glm::mat4 &VP, const glm:
 
 void ParticleSystem::resetParticleSystem(const glm::vec3 &Pos)
 {
-	/*
+	/*Particle Particles[MAX_PARTICLES];
+
 	ZERO_MEM(Particles);
 
 	// Init the particle 0, the initial emitter
@@ -144,6 +157,14 @@ void ParticleSystem::resetParticleSystem(const glm::vec3 &Pos)
 	Particles[0].Pos = Pos;
 	Particles[0].Vel = glm::vec3(0.0f, 0.01f, 0.0f);
 	Particles[0].LifetimeMillis = 0.0f;
+
+
+	for (unsigned int i = 0; i < 2; i++) {
+		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
+		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Particles), Particles, GL_DYNAMIC_DRAW);
+		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
+	}
 	*/
 }
 
@@ -176,8 +197,7 @@ void ParticleSystem::UpdateParticles(int DeltaTimeMillis)
 	glBeginTransformFeedback(GL_POINTS);
 
 	if (m_isFirst) {
-		glDrawArrays(GL_POINTS, 0, 1);
-
+		glDrawArrays(GL_POINTS, 0, numEmitters);
 		m_isFirst = false;
 	}
 	else {

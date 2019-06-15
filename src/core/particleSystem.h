@@ -26,6 +26,8 @@ private:
 	bool initShaderBillboard();		// For drawing the quads using geometry shaders
 	bool initShaderParticleSystem();// For drawing the particles using geometry shaders
 
+	unsigned int numEmitters;	// Number of emmiters
+
 	bool m_isFirst;
 	unsigned int m_currVB;			// Variable that indicates the current VB (The value is 0 or 1)
 	unsigned int m_currTFB;			// Variable that indicates the current TFB (The value is 0 or 1)
