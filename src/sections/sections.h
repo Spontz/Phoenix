@@ -22,5 +22,6 @@ class sRenderQuad : public Section { public:	sRenderQuad();  bool load(); void i
 class sObjectShader : public Section { public:	sObjectShader();  bool load(); void init(); void exec(); void end(); };
 class sObjectAnimShader : public Section { public:	sObjectAnimShader();  bool load(); void init(); void exec(); void end(); };
 class sParticleMatrix : public Section { public:	sParticleMatrix();  bool load(); void init(); void exec(); void end(); };
+class sTest : public Section { public:	sTest();  bool load(); void init(); void exec(); void end(); };
 
 #endif

@@ -14,7 +14,7 @@ public:
 	std::vector<Shader*> shader;	// Shader list
 
 	ShaderManager();
-	int addShader(string path_vert, string path_frag, string path_geom = "");
+	int addShader(string path_vert, string path_frag, string path_geom = "", vector<string> feedbackVaryings = {});
 	void unbindShaders();
 
 private:

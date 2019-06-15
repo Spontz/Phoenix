@@ -11,7 +11,7 @@ ShaderManager::ShaderManager() {
 }
 
 // Adds a Texture into the queue, returns the ID of the texture added
-int ShaderManager::addShader(string path_vert, string path_frag, string path_geom) {
+int ShaderManager::addShader(string path_vert, string path_frag, string path_geom, vector<string> feedbackVaryings) {
 	unsigned int i;
 	int shad_id = -1;
 	Shader *shad;
@@ -27,7 +27,7 @@ int ShaderManager::addShader(string path_vert, string path_frag, string path_geo
 	}
 	// if we must load the shader...
 	Shader *new_shad = new Shader();
-	if (new_shad->load(path_vert, path_frag, path_geom)) {
+	if (new_shad->load(path_vert, path_frag, path_geom, feedbackVaryings)) {
 		shader.push_back(new_shad);
 		shad_id = (int)shader.size() - 1;
 		LOG->Info(LOG_MED, "Shader [id: %d, gl_id: %d]: %s, %s  loaded OK", shad_id, new_shad->ID, path_vert.c_str(), path_frag.c_str());

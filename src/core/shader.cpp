@@ -19,7 +19,7 @@ Shader::Shader()
 	ID = 0;
 }
 
-int Shader::load(const std::string & vertexPath, const std::string & fragmentPath, const std::string & geometryPath)
+int Shader::load(const std::string & vertexPath, const std::string & fragmentPath, const std::string & geometryPath, vector<string> feedbackVaryings)
 {
 	vertexShader_Filename = vertexPath;
 	fragmentShader_Filename = fragmentPath;
@@ -91,6 +91,21 @@ int Shader::load(const std::string & vertexPath, const std::string & fragmentPat
 	glAttachShader(ID, fragment);
 	if (geometryPath != "")
 		glAttachShader(ID, geometry);
+
+	//Add the Transform Feedback Varyings
+	
+	if (feedbackVaryings.size() != 0) {
+		// We convert the vector of stings to vector of chars
+		std::vector<const char *> feedbackVaryings_cStr;
+		feedbackVaryings_cStr.reserve(feedbackVaryings.size());
+		for (int i = 0; i < feedbackVaryings.size(); ++i) {
+			feedbackVaryings_cStr.push_back(feedbackVaryings[i].c_str());
+		}
+		glTransformFeedbackVaryings(ID, (GLsizei)feedbackVaryings_cStr.size(), &feedbackVaryings_cStr[0], GL_INTERLEAVED_ATTRIBS);
+	}
+
+		
+
 	glLinkProgram(ID);
 	checkCompileErrors(ID, "PROGRAM");
 	// delete the shaders as they're linked into our program now and no longer necessery

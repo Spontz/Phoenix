@@ -27,7 +27,8 @@ enum SectionType {
 	FboBind,
 	FboUnbind,
 	RenderFbo,
-	RenderQuad
+	RenderQuad,
+	Test
 };
 
 

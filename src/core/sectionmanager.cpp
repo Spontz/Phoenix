@@ -28,6 +28,7 @@ tSectionID sectionID[] = {
 	{"fboUnbind",			SectionType::FboUnbind},
 	{"renderFbo",			SectionType::RenderFbo},
 	{"renderQuad",			SectionType::RenderQuad},
+	{"test",				SectionType::Test},
 };
 
 #define SECTIONS_NUMBER ((sizeof(sectionID) / sizeof(tSectionID)))
@@ -86,6 +87,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::ParticleMatrix:
 		mySection = new sParticleMatrix();
+		break;
+	case SectionType::Test:
+		mySection = new sTest();
 		break;
 	case SectionType::NOT_FOUND:
 		break;

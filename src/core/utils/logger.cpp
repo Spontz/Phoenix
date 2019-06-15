@@ -39,8 +39,8 @@ void CLogger::Info(char level, const char *message, ...) {
 		vsnprintf(text, STR_MAX_SIZE, message, argptr);
 		va_end(argptr);
 		// Get the new size of the string
-		snprintf(chain, STR_MAX_SIZE, "Info  [%.4f] %s", Util::CurrentTime(), text);
-		m_Logfile << chain << "\n";
+		snprintf(chain, STR_MAX_SIZE, "Info  [%.4f] %s\n", Util::CurrentTime(), text);
+		m_Logfile << chain;
 	}
 }
 
@@ -52,8 +52,8 @@ void CLogger::Error(const char *message, ...) {
 		va_start(argptr, message);
 		vsnprintf(text, STR_MAX_SIZE, message, argptr);
 		va_end(argptr);
-		snprintf(chain, STR_MAX_SIZE, "Error [%.4f] %s", Util::CurrentTime(), text);
-		m_Logfile << chain << "\n";
+		snprintf(chain, STR_MAX_SIZE, "Error [%.4f] %s\n", Util::CurrentTime(), text);
+		m_Logfile << chain;
 #ifdef _DEBUG
 		OutputDebugStringA(chain);
 #endif

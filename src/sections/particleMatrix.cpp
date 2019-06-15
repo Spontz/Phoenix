@@ -28,8 +28,8 @@ bool sParticleMatrix::load() {
 	local->numParticles = (unsigned int)this->param[0];
 	
 	// Create the particle system
-	local->pSystem = new ParticleSystem();// (local->numParticles);
-	glm::vec3 Position(0.0f);
+	local->pSystem = new ParticleSystem();// local->numParticles);
+	glm::vec3 Position(0, 0, 2.8f);
 	local->pSystem->InitParticleSystem(Position);
 
 	return true;
@@ -44,34 +44,25 @@ float lastTime = 0;
 void sParticleMatrix::exec() {
 	local = (particleMatrix_section *)this->vars;
 	
+	// Start evaluating blending
+	EvalBlendingStart();
+	glDepthMask(0);
+
 	glm::mat4 projection = glm::perspective(glm::radians(DEMO->camera->Zoom), (float)GLDRV->width / (float)GLDRV->height, 0.1f, 10000.0f);
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
 	glm::mat4 vp = projection * view;	//TODO: This mutliplication should be done in the shader, by passing the 2 matrix
 	
-	// Render particles: Using Geometry shader 1
-	local->pSystem->Render((int)(this->runTime * 1000.0f), vp, DEMO->camera->Position);
-
-/*	// Generate new particles - Not using geometry shaders
-	local->pSystem->genNewParticles(this->runTime, 1);
-	local->pSystem->calcParticlesProperties(this->runTime, DEMO->camera->Position);
-	
-
-	/////////////////////////
-	// DRAW start
-	// Use our shder
-	local->pSystem->shader->use();
-	local->pSystem->shader->setValue("VP", vp);	// Send the View-Projection matrix
-	local->pSystem->shader->setValue("CameraRight_worldspace", DEMO->camera->Right);	// Send the Camera Right vector
-	local->pSystem->shader->setValue("CameraUp_worldspace", DEMO->camera->Up);			// Send the Camera Up vector
-
-	// Bind our texture in Texture Unit 0
-	local->pSystem->texture->active();
-	local->pSystem->texture->bind();
-	local->pSystem->shader->setValue("myTextureSampler", 0); // Set our "myTextureSampler" sampler to use Texture Unit 0
+	// Render particles
+	float delta = this->runTime - lastTime;
+	lastTime = this->runTime;
+	if (delta < 0) {
+		delta = -delta;	// In case we rewind the demo
+	}
+	local->pSystem->Render((int)(delta*1000.0f), vp, DEMO->camera->Position);
 
 
-	local->pSystem->Draw();
-	*/
+	// End evaluating blending
+	EvalBlendingEnd();
 
 }
 
