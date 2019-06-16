@@ -53,14 +53,14 @@ void sParticleMatrix::exec() {
 	glm::mat4 vp = projection * view;	//TODO: This mutliplication should be done in the shader, by passing the 2 matrix
 	
 	// Render particles
-	float delta = this->runTime - lastTime;
+	float deltaTime = this->runTime - lastTime;
 	lastTime = this->runTime;
-	if (delta < 0) {
-		delta = -delta;	// In case we rewind the demo
+	if (deltaTime < 0) {
+		deltaTime = -deltaTime;	// In case we rewind the demo
 		//glm::vec3 Position(0, 0, 3.8f);
 		//local->pSystem->resetParticleSystem(Position);
 	}
-	local->pSystem->Render((int)(delta*1000.0f), vp, DEMO->camera->Position);
+	local->pSystem->Render(deltaTime, vp, DEMO->camera->Position);
 
 
 	// End evaluating blending

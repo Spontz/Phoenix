@@ -6,12 +6,8 @@
 
 using namespace std;
 
-#define MAX_PARTICLES 10000
-#define PARTICLE_LIFETIME 1000.0f
-
 #define PARTICLE_TYPE_LAUNCHER 0.0f
 #define PARTICLE_TYPE_SHELL 1.0f
-#define PARTICLE_TYPE_SECONDARY_SHELL 2.0f
 
 #define RANDOM_TEXTURE_UNIT 3
 
@@ -20,7 +16,7 @@ struct Particle
 	float Type;
 	glm::vec3 Pos;
 	glm::vec3 Vel;
-	float LifetimeMillis;
+	float lifeTime;
 };
 
 
@@ -32,7 +28,10 @@ ParticleSystem::ParticleSystem()
 	m_time = 0;
 	m_pTexture = NULL;
 
-	numEmitters = 10;
+	//particleSystem_shader->setValue("gLauncherLifetime", 0.001f); // Time between emissions
+	//particleSystem_shader->setValue("gShellLifetime", 20.0f);
+	numMaxParticles = 10002; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
+	numEmitters = 2;
 
 	ZERO_MEM(m_transformFeedback);
 	ZERO_MEM(m_particleBuffer);
@@ -55,24 +54,21 @@ ParticleSystem::~ParticleSystem()
 
 bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 {
-
-	Particle Particles[MAX_PARTICLES];
-	ZERO_MEM(Particles);
+	//numMaxParticles = 10000;
+	//Particle Particles[10000];
+	//Particle* Particles = (Particle*)malloc(sizeof(Particle) * numMaxParticles);
+	Particle* Particles = (Particle*)calloc(numMaxParticles, sizeof(Particle));
+	//Particle* Particles = (Particle*)malloc(sizeof(Particle) * numEmitters);
+	//ZERO_MEM(Particles);
 
 	// Init the particle 0, the initial emitter
 	for (unsigned int i = 0; i < numEmitters; i++) {
 		Particles[i].Type = PARTICLE_TYPE_LAUNCHER;
-		float sphere = 2*3.1415f* ( (float)i / ((float)numEmitters - 1));
+		float sphere = 2*3.1415f* ( (float)(i+1) / ((float)numEmitters));
 		Particles[i].Pos = Pos + glm::vec3(0.1f*sin(sphere), 0, 0.1f*cos(sphere));
 		Particles[i].Vel = glm::vec3(0.0f, 0.01f, 0.0f);
-		Particles[i].LifetimeMillis = 0.0f;
+		Particles[i].lifeTime = 0.0f;
 	}
-
-	// Init the particle 0, the initial emitter
-	Particles[1].Type = PARTICLE_TYPE_LAUNCHER;
-	Particles[1].Pos = glm::vec3(0.01f, 0, 2.8f);
-	Particles[1].Vel = glm::vec3(0.0f, 0.01f, 0.0f);
-	Particles[1].LifetimeMillis = 0.0f;
 
 	// Gen the VAO
 	glGenVertexArrays(1, &m_VAO);
@@ -86,9 +82,12 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	for (unsigned int i = 0; i < 2; i++) {
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Particles), Particles, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Particle)*numMaxParticles, Particles, GL_DYNAMIC_DRAW);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(Particles)*numMaxParticles, NULL, GL_DYNAMIC_DRAW);
+		//glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particles)*numEmitters, Particles); // Upload only the emitters
 		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 	}
+	free(Particles);
 
 	if (!initShaderParticleSystem()) {
 		return false;
@@ -98,9 +97,8 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	Shader *particleSystem_shader = DEMO->shaderManager.shader[particleSystemShader];
 	particleSystem_shader->use();
 	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-	particleSystem_shader->setValue("gLauncherLifetime", 100.0f); //Time to emit all particles
-	particleSystem_shader->setValue("gShellLifetime", 10000.0f);
-	particleSystem_shader->setValue("gSecondaryShellLifetime", 2500.0f);
+	particleSystem_shader->setValue("gLauncherLifetime", 0.001f); // Time between emissions
+	particleSystem_shader->setValue("gShellLifetime", 20.0f);
 
 	if (!initRandomTexture(1000)) {
 		return false;
@@ -130,13 +128,13 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 }
 
 
-void ParticleSystem::Render(int DeltaTimeMillis, const glm::mat4 &VP, const glm::vec3 &CameraPos)
+void ParticleSystem::Render(float deltaTime, const glm::mat4 &VP, const glm::vec3 &CameraPos)
 {
-	m_time += DeltaTimeMillis;
+	m_time += deltaTime;
 
 	glBindVertexArray(m_VAO);
 
-	UpdateParticles(DeltaTimeMillis);
+	UpdateParticles(deltaTime);
 
 	RenderParticles(VP, CameraPos);
 
@@ -156,7 +154,7 @@ void ParticleSystem::resetParticleSystem(const glm::vec3 &Pos)
 	Particles[0].Type = PARTICLE_TYPE_LAUNCHER;
 	Particles[0].Pos = Pos;
 	Particles[0].Vel = glm::vec3(0.0f, 0.01f, 0.0f);
-	Particles[0].LifetimeMillis = 0.0f;
+	Particles[0].lifeTime = 0.0f;
 
 
 	for (unsigned int i = 0; i < 2; i++) {
@@ -168,14 +166,41 @@ void ParticleSystem::resetParticleSystem(const glm::vec3 &Pos)
 	*/
 }
 
-
-void ParticleSystem::UpdateParticles(int DeltaTimeMillis)
+float each_half = 0.0f;
+void ParticleSystem::UpdateEmitters(float deltaTime)
 {
+	// Test: move the emitter
+	each_half += deltaTime;
+	if (each_half > 1.0f) {
+		each_half = 0.0f;
+		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
+		// TODO: Investigate this flags:  | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT
+		Particle *data = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle)*numEmitters, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);// | GL_MAP_UNSYNCHRONIZED_BIT);
+		// Change data and move some random positions
+		glm::vec3 Position(0, 0, 2.8f);
+		for (unsigned int i = 0; i < numEmitters; i++) {
+			data[i].Type = PARTICLE_TYPE_LAUNCHER;
+			glm::vec3 Position(0, 0, 2.8f);
+			float sphere = 2 * 3.1415f* ((float)(i + 1) / ((float)numEmitters));
+			data[i].Pos = Position + glm::vec3(0.1f*sin(sphere), -0.01*m_time, 0.1f*cos(sphere));
+			//data[i].Pos = data[i].Pos + glm::vec3(0, 0.01, 0);
+			//data[i].Pos = Position + glm::vec3(0.1f*sin(m_time * 2), 0.1*sin(m_time / 4), 0.1f*cos(m_time * 2));
+			data[i].Vel = glm::vec3(0.0f, 0.01f, 0.0f);
+			data[i].lifeTime = 10.0f; // TODO: investigate why only emmits if this is greater than 0...
+		}
+		glUnmapBuffer(GL_ARRAY_BUFFER);
+	}
+}
+
+
+void ParticleSystem::UpdateParticles(float deltaTime)
+{
+	//UpdateEmitters(deltaTime);
 
 	Shader *particleSystem_shader = DEMO->shaderManager.shader[particleSystemShader];
 	particleSystem_shader->use();
-	particleSystem_shader->setValue("gTime", (float)this->m_time); // TODO: Esto se ha de ajustar... la variable m_time ha de ser un float sin milisegundos ni mierdas
-	particleSystem_shader->setValue("gDeltaTimeMillis", (float)DeltaTimeMillis); // TODO: Esto se ha de ajustar... la variable DeltaTimeMillis ha de ser un float sin milisegundos ni mierdas
+	particleSystem_shader->setValue("gTime", this->m_time);
+	particleSystem_shader->setValue("gDeltaTime", deltaTime);
 
 	bindRandomTexture(RANDOM_TEXTURE_UNIT);
 
@@ -212,7 +237,6 @@ void ParticleSystem::UpdateParticles(int DeltaTimeMillis)
 	glDisableVertexAttribArray(3);
 }
 
-
 void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::vec3 &CameraPos)
 {
 	//Use the billboard shader and send variables
@@ -236,9 +260,9 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::vec3 &Camer
 
 bool ParticleSystem::initShaderBillboard()
 {
-	billboardShader = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/particleSystem/billboard.vs",
-													DEMO->dataFolder + "/resources/shaders/particleSystem/billboard.fs",
-													DEMO->dataFolder + "/resources/shaders/particleSystem/billboard.gs");
+	billboardShader = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/particleSystem/billboard.vert",
+													DEMO->dataFolder + "/resources/shaders/particleSystem/billboard.frag",
+													DEMO->dataFolder + "/resources/shaders/particleSystem/billboard.geom");
 	if (billboardShader < 0)
 		return false;
 	return true;
@@ -246,9 +270,9 @@ bool ParticleSystem::initShaderBillboard()
 
 bool ParticleSystem::initShaderParticleSystem()
 {
-	particleSystemShader = DEMO->shaderManager.addShader(	DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.vs",
-															DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.fs",
-															DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.gs",
+	particleSystemShader = DEMO->shaderManager.addShader(	DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.vert",
+															DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.frag",
+															DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.geom",
 															{ "Type1", "Position1", "Velocity1", "Age1" });
 	if (particleSystemShader < 0)
 		return false;

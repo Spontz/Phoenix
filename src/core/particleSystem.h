@@ -15,18 +15,20 @@ public:
 	~ParticleSystem();
 
 	bool InitParticleSystem(const glm::vec3 &Pos);
-	void Render(int DeltaTimeMillis, const glm::mat4 &VP, const glm::vec3 &CameraPos);
+	void Render(float deltaTime, const glm::mat4 &VP, const glm::vec3 &CameraPos);
 	void resetParticleSystem(const glm::vec3 &Pos);
 
 private:
 
-	void UpdateParticles(int DeltaTimeMillis);
+	void UpdateEmitters(float deltaTime);
+	void UpdateParticles(float deltaTime);
 	void RenderParticles(const glm::mat4 &VP, const glm::vec3 &CameraPos);
 
 	bool initShaderBillboard();		// For drawing the quads using geometry shaders
 	bool initShaderParticleSystem();// For drawing the particles using geometry shaders
 
 	unsigned int numEmitters;	// Number of emmiters
+	unsigned int numMaxParticles;	// Number of maximum particles
 
 	bool m_isFirst;
 	unsigned int m_currVB;			// Variable that indicates the current VB (The value is 0 or 1)
@@ -43,7 +45,7 @@ private:
 
 	int m_pTextureNum; // TODO: Fix this, use the Number of the Texture*, but not both
 	Texture* m_pTexture;
-	int m_time;	// TODO: Time should be a float with the value
+	float m_time;
 };
 
 #endif
