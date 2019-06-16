@@ -27,7 +27,8 @@ private:
 	bool initShaderBillboard();		// For drawing the quads using geometry shaders
 	bool initShaderParticleSystem();// For drawing the particles using geometry shaders
 
-	unsigned int numEmitters;	// Number of emmiters
+	glm::vec3 initPosition;			// Initial position
+	unsigned int numEmitters;		// Number of emmiters
 	unsigned int numMaxParticles;	// Number of maximum particles
 
 	bool m_isFirst;

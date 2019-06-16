@@ -15,10 +15,10 @@ sParticleMatrix::sParticleMatrix() {
 
 bool sParticleMatrix::load() {
 	// script validation
-	if (this->param.size() != 1) {
-		LOG->Error("Particle Matrix [%s]: 1 param needed (particle number)", this->identifier.c_str());
-		return false;
-	}
+	//if (this->param.size() != 1) {
+	//	LOG->Error("Particle Matrix [%s]: 1 param needed (particle number)", this->identifier.c_str());
+	//	return false;
+	//}
 
 	local = (particleMatrix_section*)malloc(sizeof(particleMatrix_section));
 
@@ -29,7 +29,7 @@ bool sParticleMatrix::load() {
 	
 	// Create the particle system
 	local->pSystem = new ParticleSystem();
-	glm::vec3 Position(0, 0, 2.8f);
+	glm::vec3 Position(0, 0, -10);
 	local->pSystem->InitParticleSystem(Position);
 
 	return true;
@@ -46,7 +46,7 @@ void sParticleMatrix::exec() {
 	
 	// Start evaluating blending
 	EvalBlendingStart();
-	glDepthMask(0);
+	glDepthMask(GL_FALSE); // Disable depth buffer writting
 
 	glm::mat4 projection = glm::perspective(glm::radians(DEMO->camera->Zoom), (float)GLDRV->width / (float)GLDRV->height, 0.1f, 10000.0f);
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
@@ -64,6 +64,7 @@ void sParticleMatrix::exec() {
 
 
 	// End evaluating blending
+	glDepthMask(GL_TRUE); // Enable depth buffer writting
 	EvalBlendingEnd();
 
 }

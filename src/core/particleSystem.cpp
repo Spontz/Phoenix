@@ -30,7 +30,7 @@ ParticleSystem::ParticleSystem()
 
 	//particleSystem_shader->setValue("gLauncherLifetime", 0.001f); // Time between emissions
 	//particleSystem_shader->setValue("gShellLifetime", 20.0f);
-	numMaxParticles = 10002; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
+	numMaxParticles = 10000; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
 	numEmitters = 2;
 
 	ZERO_MEM(m_transformFeedback);
@@ -54,6 +54,7 @@ ParticleSystem::~ParticleSystem()
 
 bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 {
+	this->initPosition = Pos;
 	//numMaxParticles = 10000;
 	//Particle Particles[10000];
 	//Particle* Particles = (Particle*)malloc(sizeof(Particle) * numMaxParticles);
@@ -65,8 +66,8 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	for (unsigned int i = 0; i < numEmitters; i++) {
 		Particles[i].Type = PARTICLE_TYPE_LAUNCHER;
 		float sphere = 2*3.1415f* ( (float)(i+1) / ((float)numEmitters));
-		Particles[i].Pos = Pos + glm::vec3(0.1f*sin(sphere), 0, 0.1f*cos(sphere));
-		Particles[i].Vel = glm::vec3(0.0f, 0.01f, 0.0f);
+		Particles[i].Pos = initPosition + glm::vec3(sin(sphere), 0, cos(sphere));
+		Particles[i].Vel = glm::vec3(0.0f, 1.0f, 0.0f);
 		Particles[i].lifeTime = 0.0f;
 	}
 
@@ -97,7 +98,7 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	Shader *particleSystem_shader = DEMO->shaderManager.shader[particleSystemShader];
 	particleSystem_shader->use();
 	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-	particleSystem_shader->setValue("gLauncherLifetime", 0.001f); // Time between emissions
+	particleSystem_shader->setValue("gLauncherLifetime", 1.0f); // Time between emissions
 	particleSystem_shader->setValue("gShellLifetime", 20.0f);
 
 	if (!initRandomTexture(1000)) {
@@ -114,8 +115,8 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	Shader *my_shader;
 	my_shader = DEMO->shaderManager.shader[billboardShader];
 	my_shader->use();
-	my_shader->setValue("gColorMap", 0); // Set color map to 0
-	my_shader->setValue("gBillboardSize", 0.01f);	// Set billboard size
+	my_shader->setValue("gColorMap", 0);			// Set color map to 0
+	my_shader->setValue("gBillboardSize", 1.0f);	// Set billboard size
 	
 	m_pTextureNum = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/textures/part_redglow.jpg"); //TODO: Use any other texture, configure in the section
 	m_pTexture = DEMO->textureManager.texture[m_pTextureNum];
@@ -144,6 +145,7 @@ void ParticleSystem::Render(float deltaTime, const glm::mat4 &VP, const glm::vec
 	m_currTFB = (m_currTFB + 1) & 0x1;
 }
 
+// TODO
 void ParticleSystem::resetParticleSystem(const glm::vec3 &Pos)
 {
 	/*Particle Particles[MAX_PARTICLES];
@@ -180,12 +182,11 @@ void ParticleSystem::UpdateEmitters(float deltaTime)
 		glm::vec3 Position(0, 0, 2.8f);
 		for (unsigned int i = 0; i < numEmitters; i++) {
 			data[i].Type = PARTICLE_TYPE_LAUNCHER;
-			glm::vec3 Position(0, 0, 2.8f);
 			float sphere = 2 * 3.1415f* ((float)(i + 1) / ((float)numEmitters));
-			data[i].Pos = Position + glm::vec3(0.1f*sin(sphere), -0.01*m_time, 0.1f*cos(sphere));
+			data[i].Pos = initPosition + glm::vec3(sin(sphere), -0.1*m_time, cos(sphere));
 			//data[i].Pos = data[i].Pos + glm::vec3(0, 0.01, 0);
 			//data[i].Pos = Position + glm::vec3(0.1f*sin(m_time * 2), 0.1*sin(m_time / 4), 0.1f*cos(m_time * 2));
-			data[i].Vel = glm::vec3(0.0f, 0.01f, 0.0f);
+			data[i].Vel = glm::vec3(1.0f, 0.01f, 0.0f);
 			data[i].lifeTime = 10.0f; // TODO: investigate why only emmits if this is greater than 0...
 		}
 		glUnmapBuffer(GL_ARRAY_BUFFER);
