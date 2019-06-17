@@ -87,7 +87,37 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle)*numEmitters, Particles);			// Upload only the emitters to the Buffer
 		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 	}
+
+
+/*	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)0);	// Position (12 bytes)
+	glEnableVertexAttribArray(0);
+	
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)12);	// Velocity (12 bytes)
+	glEnableVertexAttribArray(1);
+	
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)24);	// Color (12 bytes)
+	glEnableVertexAttribArray(2);
+	
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)36);	// Lifetime (4 bytes)
+	glEnableVertexAttribArray(3);
+	
+	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)40);	// Size (4 bytes)
+	glEnableVertexAttribArray(4);
+	
+	glVertexAttribPointer(5, 1, GL_INT, GL_FALSE, sizeof(Particle), (const GLvoid*)44);		// Type (4 bytes)
+	glEnableVertexAttribArray(5);
+
+/*		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(2);
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(4);
+		glDisableVertexAttribArray(5);
+		*/
+
 	free(Particles);
+	// Make sure the VAO is not changed from the outside
+	glBindVertexArray(0);
 
 	if (!initShaderParticleSystem()) {
 		return false;
@@ -120,8 +150,7 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	m_pTextureNum = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/textures/part_redglow.jpg"); //TODO: Use any other texture, configure in the section
 	m_pTexture = DEMO->textureManager.texture[m_pTextureNum];
 
-	// Make sure the VAO is not changed from the outside
-	glBindVertexArray(0);
+
 
 	//return GLCheckError();
 	return true; // TODO: check errors, etc etc...
@@ -133,11 +162,8 @@ void ParticleSystem::Render(float deltaTime, const glm::mat4 &VP, const glm::vec
 	m_time += deltaTime;
 
 	glBindVertexArray(m_VAO);
-
-	UpdateParticles(deltaTime);
-
-	RenderParticles(VP, CameraPos);
-
+		UpdateParticles(deltaTime);
+		RenderParticles(VP, CameraPos);
 	glBindVertexArray(0);
 
 	m_currVB = m_currTFB;
@@ -221,7 +247,7 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)36);	// Lifetime (4 bytes)
 	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)40);	// Size (4 bytes)
 	glVertexAttribPointer(5, 1, GL_INT, GL_FALSE, sizeof(Particle), (const GLvoid*)44);		// Type (4 bytes)
-
+	
 	glBeginTransformFeedback(GL_POINTS);
 
 	if (m_isFirst) {
@@ -233,13 +259,14 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	}
 
 	glEndTransformFeedback();
-
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
 	glDisableVertexAttribArray(3);
 	glDisableVertexAttribArray(4);
 	glDisableVertexAttribArray(5);
+
+	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 }
 
 void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::vec3 &CameraPos)
@@ -261,7 +288,6 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::vec3 &Camer
 		// TODO: En principio el "glVertexAttribPointer" solo es necesario en el setup del principio,
 		// aqui solo hace falta hacer un "glEnable/DisableVertexAttribArray" de los canales que queremos enviar al pintar
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)0);	// Position
-		//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)4);  // position
 		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
 	glDisableVertexAttribArray(0);
 }
@@ -284,7 +310,6 @@ bool ParticleSystem::initShaderParticleSystem()
 															{"Position1", "Velocity1", "Color1", "Age1", "Size1", "Type1"});
 	if (particleSystemShader < 0)
 		return false;
-
 	return true;
 }
 
