@@ -4,15 +4,21 @@ layout(points) in;
 layout(points) out;
 layout(max_vertices = 30) out;
 
-in float Type0[];
+// Info from the VS
 in vec3 Position0[];
 in vec3 Velocity0[];
+in vec3 Color0[];
 in float Age0[];
+in float Size0[];
+in int Type0[];
 
-out float Type1;
+// Info sent to FS
 out vec3 Position1;
 out vec3 Velocity1;
+out vec3 Color1;
 out float Age1;
+out float Size1;
+out int Type1;
 
 //uniform float gDeltaTimeMillis;
 uniform float gDeltaTime;
@@ -21,8 +27,8 @@ uniform sampler1D gRandomTexture;
 uniform float gLauncherLifetime;
 uniform float gShellLifetime;
 
-#define PARTICLE_TYPE_LAUNCHER 0.0f
-#define PARTICLE_TYPE_SHELL 1.0f
+#define PARTICLE_TYPE_LAUNCHER 0
+#define PARTICLE_TYPE_SHELL 1
 
 // Get a random number, used for calculate the new direction
 vec3 GetRandomDir(float TexCoord)
@@ -35,6 +41,9 @@ vec3 GetRandomDir(float TexCoord)
 void main()
 {
     float Age = Age0[0] + gDeltaTime; // Increment the age of the particle
+	
+	Color1 = Color0[0];
+	Size1 = Size0[0];
 
 	if (Type0[0] == PARTICLE_TYPE_LAUNCHER) {
 		if (Age >= gLauncherLifetime) {

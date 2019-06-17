@@ -6,17 +6,19 @@
 
 using namespace std;
 
-#define PARTICLE_TYPE_LAUNCHER 0.0f
-#define PARTICLE_TYPE_SHELL 1.0f
+#define PARTICLE_TYPE_LAUNCHER 0
+#define PARTICLE_TYPE_SHELL 1
 
 #define RANDOM_TEXTURE_UNIT 3
 
 struct Particle
 {
-	float Type;
-	glm::vec3 Pos;
-	glm::vec3 Vel;
-	float lifeTime;
+	glm::vec3 Pos;	// Position: loc 0 (vec3)
+	glm::vec3 Vel;	// Velocity: loc 1 (vec3)
+	glm::vec3 Col;	// Color: loc 2 (vec3)
+	float lifeTime;	// lifeTime: loc 3 (float)
+	float Size;		// size: loc 4 (float)
+	int Type;		// type: loc 5 (int)
 };
 
 
@@ -28,10 +30,8 @@ ParticleSystem::ParticleSystem()
 	m_time = 0;
 	m_pTexture = NULL;
 
-	//particleSystem_shader->setValue("gLauncherLifetime", 0.001f); // Time between emissions
-	//particleSystem_shader->setValue("gShellLifetime", 20.0f);
 	numMaxParticles = 10000; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
-	numEmitters = 2;
+	numEmitters = 5;
 
 	ZERO_MEM(m_transformFeedback);
 	ZERO_MEM(m_particleBuffer);
@@ -66,8 +66,12 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	for (unsigned int i = 0; i < numEmitters; i++) {
 		Particles[i].Type = PARTICLE_TYPE_LAUNCHER;
 		float sphere = 2*3.1415f* ( (float)(i+1) / ((float)numEmitters));
-		Particles[i].Pos = initPosition + glm::vec3(sin(sphere), 0, cos(sphere));
+		//Particles[i].Pos = initPosition + glm::vec3(sin(sphere), 0, cos(sphere));
+		//Particles[i].Pos = initPosition + glm::vec3(i, 0, 0);
+		Particles[i].Pos = glm::vec3(0, 0, 0);
 		Particles[i].Vel = glm::vec3(0.0f, 1.0f, 0.0f);
+		Particles[i].Col = glm::vec3(1.0f, 1.0f, 1.0f);
+		Particles[i].Size = 1.0;
 		Particles[i].lifeTime = 0.0f;
 	}
 
@@ -83,9 +87,8 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	for (unsigned int i = 0; i < 2; i++) {
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Particle)*numMaxParticles, Particles, GL_DYNAMIC_DRAW);
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(Particles)*numMaxParticles, NULL, GL_DYNAMIC_DRAW);
-		//glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particles)*numEmitters, Particles); // Upload only the emitters
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Particle)*numMaxParticles, Particles, GL_DYNAMIC_DRAW); // Uplaod the buffer
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(Particle)*numMaxParticles, NULL, GL_DYNAMIC_DRAW); // Allocate mem, uploading an empty buffer
 		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 	}
 	free(Particles);
@@ -188,6 +191,8 @@ void ParticleSystem::UpdateEmitters(float deltaTime)
 			//data[i].Pos = Position + glm::vec3(0.1f*sin(m_time * 2), 0.1*sin(m_time / 4), 0.1f*cos(m_time * 2));
 			data[i].Vel = glm::vec3(1.0f, 0.01f, 0.0f);
 			data[i].lifeTime = 10.0f; // TODO: investigate why only emmits if this is greater than 0...
+			data[i].Size = 1.0f;
+			data[i].Col = glm::vec3(1, 1, 1);
 		}
 		glUnmapBuffer(GL_ARRAY_BUFFER);
 	}
@@ -214,11 +219,15 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
+	glEnableVertexAttribArray(4);
+	glEnableVertexAttribArray(5);
 
-	glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), 0);						// type
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)4);		// position
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)16);		// velocity
-	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)28);		// lifetime
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)0);	// Position (12 bytes)
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)12);	// Velocity (12 bytes)
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)24);	// Color (12 bytes)
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)36);	// Lifetime (4 bytes)
+	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)40);	// Size (4 bytes)
+	glVertexAttribPointer(5, 1, GL_INT, GL_FALSE, sizeof(Particle), (const GLvoid*)44);		// Type (4 bytes)
 
 	glBeginTransformFeedback(GL_POINTS);
 
@@ -236,6 +245,8 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
 	glDisableVertexAttribArray(3);
+	glDisableVertexAttribArray(4);
+	glDisableVertexAttribArray(5);
 }
 
 void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::vec3 &CameraPos)
@@ -254,7 +265,10 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::vec3 &Camer
 	glDisable(GL_RASTERIZER_DISCARD);	// Start drawing on the screen
 	glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currTFB]);
 	glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)4);  // position
+		// TODO: En principio el "glVertexAttribPointer" solo es necesario en el setup del principio,
+		// aqui solo hace falta hacer un "glEnable/DisableVertexAttribArray" de los canales que queremos enviar al pintar
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)0);	// Position
+		//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)4);  // position
 		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
 	glDisableVertexAttribArray(0);
 }
