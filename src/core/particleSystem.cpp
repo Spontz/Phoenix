@@ -75,8 +75,8 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	glBindVertexArray(m_VAO);
 
 	// Gen buffers
-	glGenTransformFeedbacks(2, m_transformFeedback);
-	glGenBuffers(2, m_particleBuffer);
+	glGenTransformFeedbacks(2, m_transformFeedback);	// Transform Feedback object
+	glGenBuffers(2, m_particleBuffer);					// Transform Feedback buffer
 
 
 	for (unsigned int i = 0; i < 2; i++) {
@@ -106,7 +106,7 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	
 	glVertexAttribPointer(5, 1, GL_INT, GL_FALSE, sizeof(Particle), (const GLvoid*)44);		// Type (4 bytes)
 	glEnableVertexAttribArray(5);
-
+*/
 /*		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(2);
