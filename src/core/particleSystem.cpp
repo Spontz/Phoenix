@@ -55,20 +55,15 @@ ParticleSystem::~ParticleSystem()
 bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 {
 	this->initPosition = Pos;
-	//numMaxParticles = 10000;
-	//Particle Particles[10000];
-	//Particle* Particles = (Particle*)malloc(sizeof(Particle) * numMaxParticles);
-	Particle* Particles = (Particle*)calloc(numMaxParticles, sizeof(Particle));
-	//Particle* Particles = (Particle*)malloc(sizeof(Particle) * numEmitters);
-	//ZERO_MEM(Particles);
+	//Particle* Particles = (Particle*)malloc(sizeof(Particle) * numMaxParticles);	 // This is only need if we want to upload all the particles to the GPU, which is a waste of resources
+	Particle* Particles = (Particle*)malloc(sizeof(Particle) * numEmitters);
+	ZERO_MEM(Particles);
 
 	// Init the particle 0, the initial emitter
 	for (unsigned int i = 0; i < numEmitters; i++) {
 		Particles[i].Type = PARTICLE_TYPE_LAUNCHER;
 		float sphere = 2*3.1415f* ( (float)(i+1) / ((float)numEmitters));
-		//Particles[i].Pos = initPosition + glm::vec3(sin(sphere), 0, cos(sphere));
-		//Particles[i].Pos = initPosition + glm::vec3(i, 0, 0);
-		Particles[i].Pos = glm::vec3(0, 0, 0);
+		Particles[i].Pos = initPosition + glm::vec3(sin(sphere), 0, cos(sphere));
 		Particles[i].Vel = glm::vec3(0.0f, 1.0f, 0.0f);
 		Particles[i].Col = glm::vec3(1.0f, 1.0f, 1.0f);
 		Particles[i].Size = 1.0;
@@ -87,8 +82,9 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	for (unsigned int i = 0; i < 2; i++) {
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Particle)*numMaxParticles, Particles, GL_DYNAMIC_DRAW); // Uplaod the buffer
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(Particle)*numMaxParticles, NULL, GL_DYNAMIC_DRAW); // Allocate mem, uploading an empty buffer
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(Particle)*numMaxParticles, Particles, GL_DYNAMIC_DRAW); // Upload the entire buffer (requires that "Particles" should have the size of all the particles [numMaxParticles])
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Particle)*numMaxParticles, NULL, GL_DYNAMIC_DRAW);	// Allocate mem, uploading an empty buffer for all the particles
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle)*numEmitters, Particles);			// Upload only the emitters to the Buffer
 		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 	}
 	free(Particles);
@@ -182,13 +178,10 @@ void ParticleSystem::UpdateEmitters(float deltaTime)
 		// TODO: Investigate this flags:  | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT
 		Particle *data = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle)*numEmitters, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);// | GL_MAP_UNSYNCHRONIZED_BIT);
 		// Change data and move some random positions
-		glm::vec3 Position(0, 0, 2.8f);
 		for (unsigned int i = 0; i < numEmitters; i++) {
 			data[i].Type = PARTICLE_TYPE_LAUNCHER;
 			float sphere = 2 * 3.1415f* ((float)(i + 1) / ((float)numEmitters));
 			data[i].Pos = initPosition + glm::vec3(sin(sphere), -0.1*m_time, cos(sphere));
-			//data[i].Pos = data[i].Pos + glm::vec3(0, 0.01, 0);
-			//data[i].Pos = Position + glm::vec3(0.1f*sin(m_time * 2), 0.1*sin(m_time / 4), 0.1f*cos(m_time * 2));
 			data[i].Vel = glm::vec3(1.0f, 0.01f, 0.0f);
 			data[i].lifeTime = 10.0f; // TODO: investigate why only emmits if this is greater than 0...
 			data[i].Size = 1.0f;
@@ -288,7 +281,7 @@ bool ParticleSystem::initShaderParticleSystem()
 	particleSystemShader = DEMO->shaderManager.addShader(	DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.vert",
 															DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.frag",
 															DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.geom",
-															{ "Type1", "Position1", "Velocity1", "Age1" });
+															{"Position1", "Velocity1", "Color1", "Age1", "Size1", "Type1"});
 	if (particleSystemShader < 0)
 		return false;
 
