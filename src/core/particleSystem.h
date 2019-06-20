@@ -35,8 +35,8 @@ private:
 	unsigned int m_currVB;			// Variable that indicates the current VB (The value is 0 or 1)
 	unsigned int m_currTFB;			// Variable that indicates the current TFB (The value is 0 or 1)
 	GLuint m_VAO;					// Vertex Array Object buffer
-	GLuint m_particleBuffer[2];		// Vertex Buffer
-	GLuint m_transformFeedback[2];	// Transform feedback buffers
+	GLuint m_particleBuffer[2];		// Vertex Buffer: input
+	GLuint m_transformFeedback[2];	// Transform feedback buffers: output
 	int particleSystemShader;
 	int billboardShader;
 

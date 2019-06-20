@@ -11,6 +11,18 @@ using namespace std;
 
 #define RANDOM_TEXTURE_UNIT 3
 
+#define LOC_POSITION 0
+#define LOC_VELOCITY 1
+#define LOC_COLOR 2
+#define LOC_LIFETIME 3
+#define LOC_SIZE 4
+#define LOC_TYPE 5
+
+//accessible constant declarations
+constexpr int particleBindingPoint = 0;
+constexpr int billboardBindingPoint = 1;// free to choose, must be less than the GL_MAX_VERTEX_ATTRIB_BINDINGS limit
+
+
 struct Particle
 {
 	glm::vec3 Pos;	// Position: loc 0 (vec3)
@@ -52,9 +64,9 @@ ParticleSystem::~ParticleSystem()
 }
 
 
-bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
+bool ParticleSystem::InitParticleSystem(const glm::vec3 &Position)
 {
-	this->initPosition = Pos;
+	this->initPosition = Position;
 	//Particle* Particles = (Particle*)malloc(sizeof(Particle) * numMaxParticles);	 // This is only need if we want to upload all the particles to the GPU, which is a waste of resources
 	Particle* Particles = (Particle*)malloc(sizeof(Particle) * numEmitters);
 	ZERO_MEM(Particles);
@@ -62,8 +74,8 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 	// Init the particle 0, the initial emitter
 	for (unsigned int i = 0; i < numEmitters; i++) {
 		Particles[i].Type = PARTICLE_TYPE_LAUNCHER;
-		float sphere = 2*3.1415f* ( (float)(i+1) / ((float)numEmitters));
-		Particles[i].Pos = initPosition + glm::vec3(sin(sphere), 0, cos(sphere));
+		float circle = 2*3.1415f* ( (float)(i+1) / ((float)numEmitters));
+		Particles[i].Pos = initPosition + glm::vec3(sin(circle), 0, cos(circle));
 		Particles[i].Vel = glm::vec3(0.0f, 1.0f, 0.0f);
 		Particles[i].Col = glm::vec3(1.0f, 1.0f, 1.0f);
 		Particles[i].Size = 1.0;
@@ -88,33 +100,38 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Pos)
 		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 	}
 
+/*	// OGL 4.3
+	// Setup Vertex Attribute formats
+	// Definitions for Binding 0 (Update particles positions)
+	glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
+	glVertexAttribBinding(LOC_POSITION, particleBindingPoint);
+	glEnableVertexAttribArray(LOC_POSITION);
 
-/*	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)0);	// Position (12 bytes)
-	glEnableVertexAttribArray(0);
-	
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)12);	// Velocity (12 bytes)
-	glEnableVertexAttribArray(1);
-	
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)24);	// Color (12 bytes)
-	glEnableVertexAttribArray(2);
-	
-	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)36);	// Lifetime (4 bytes)
-	glEnableVertexAttribArray(3);
-	
-	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)40);	// Size (4 bytes)
-	glEnableVertexAttribArray(4);
-	
-	glVertexAttribPointer(5, 1, GL_INT, GL_FALSE, sizeof(Particle), (const GLvoid*)44);		// Type (4 bytes)
-	glEnableVertexAttribArray(5);
+	glVertexAttribFormat(LOC_VELOCITY, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Vel));	// Velocity (12 bytes)
+	glVertexAttribBinding(LOC_VELOCITY, particleBindingPoint);
+	glEnableVertexAttribArray(LOC_VELOCITY);
+
+	glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
+	glVertexAttribBinding(LOC_COLOR, particleBindingPoint);
+	glEnableVertexAttribArray(LOC_COLOR);
+
+	glVertexAttribFormat(LOC_LIFETIME, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, lifeTime));	// Lifetime (4 bytes)
+	glVertexAttribBinding(LOC_LIFETIME, particleBindingPoint);
+	glEnableVertexAttribArray(LOC_LIFETIME);
+
+	glVertexAttribFormat(LOC_SIZE, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, Size));	// Size (4 bytes)
+	glVertexAttribBinding(LOC_SIZE, particleBindingPoint);
+	glEnableVertexAttribArray(LOC_SIZE);
+
+	glVertexAttribFormat(LOC_TYPE, 1, GL_INT, GL_FALSE, offsetof(Particle, Type));	// Type (4 bytes)
+	glVertexAttribBinding(LOC_TYPE, particleBindingPoint);
+	glEnableVertexAttribArray(LOC_TYPE);
+
+	//Definitions for Binding 1 (Render billboard)
+	glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
+	glVertexAttribBinding(LOC_POSITION, billboardBindingPoint);							// Define binding 1
+	glEnableVertexAttribArray(LOC_POSITION);
 */
-/*		glDisableVertexAttribArray(0);
-		glDisableVertexAttribArray(1);
-		glDisableVertexAttribArray(2);
-		glDisableVertexAttribArray(3);
-		glDisableVertexAttribArray(4);
-		glDisableVertexAttribArray(5);
-		*/
-
 	free(Particles);
 	// Make sure the VAO is not changed from the outside
 	glBindVertexArray(0);
@@ -248,6 +265,12 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)40);	// Size (4 bytes)
 	glVertexAttribPointer(5, 1, GL_INT, GL_FALSE, sizeof(Particle), (const GLvoid*)44);		// Type (4 bytes)
 	
+	/*
+	//OGL4.3
+	// Use Binding 0 (all attributes)
+	glBindVertexBuffer(particleBindingPoint, m_particleBuffer[m_currVB], 0, sizeof(Particle));
+	//glBindVertexBuffer(particleBindingPoint, m_transformFeedback[m_currTFB], 0, sizeof(Particle));
+	*/
 	glBeginTransformFeedback(GL_POINTS);
 
 	if (m_isFirst) {
@@ -259,13 +282,13 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	}
 
 	glEndTransformFeedback();
+
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
 	glDisableVertexAttribArray(3);
 	glDisableVertexAttribArray(4);
 	glDisableVertexAttribArray(5);
-
 	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 }
 
@@ -284,10 +307,13 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::vec3 &Camer
 
 	glDisable(GL_RASTERIZER_DISCARD);	// Start drawing on the screen
 	glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currTFB]);
+	/*
+	//OGL 4.3
+	// Use billboard Binding (only Position attribute)
+	glBindVertexBuffer(billboardBindingPoint, m_particleBuffer[m_currTFB], 0, sizeof(Particle));
+	*/
 	glEnableVertexAttribArray(0);
-		// TODO: En principio el "glVertexAttribPointer" solo es necesario en el setup del principio,
-		// aqui solo hace falta hacer un "glEnable/DisableVertexAttribArray" de los canales que queremos enviar al pintar
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)0);	// Position
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)0);	// Position
 		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
 	glDisableVertexAttribArray(0);
 }
