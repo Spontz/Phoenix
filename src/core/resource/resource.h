@@ -38,9 +38,10 @@ public:
 
 	// Objects
 	unsigned int obj_skybox;
+	unsigned int obj_quadFullscreen; // TODO: Temporal, move to private
+
 private:
 
-	unsigned int obj_quadFullscreen;
 	unsigned int obj_quad_FBO_Debug[NUM_FBO_DEBUG];
 	Resource();
 

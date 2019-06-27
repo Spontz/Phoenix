@@ -67,6 +67,11 @@ message(STATUS "Found GLFW3 in ${GLFW3_INCLUDE_DIR}")
 find_package(ASSIMP REQUIRED)
 message(STATUS "Found ASSIMP in ${ASSIMP_INCLUDE_DIR}")
 
+# FFMPEG
+find_package(FFMPEG REQUIRED)
+message(STATUS "Loaded FFMPEG libraries: ${FFMPEG_INCLUDE_DIRS}")
+
+
 # STB_IMAGE
 add_library(STB_IMAGE "thirdparty/stb_image.cpp")
 
@@ -81,7 +86,7 @@ else()
 endif()
 
 # Put all libraries into a variable
-set(LIBS glfw3 opengl32 ws2_32 assimp bass freetype STB_IMAGE GLAD)
+set(LIBS glfw3 opengl32 ws2_32 assimp bass freetype ${FFMPEG_LIBRARIES} STB_IMAGE GLAD)
 
 # Define the include DIRs
 include_directories(
