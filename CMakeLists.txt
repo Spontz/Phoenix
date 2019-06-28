@@ -69,8 +69,8 @@ message(STATUS "Found ASSIMP in ${ASSIMP_INCLUDE_DIR}")
 
 # FFMPEG
 find_package(FFMPEG REQUIRED)
-message(STATUS "Loaded FFMPEG libraries: ${FFMPEG_INCLUDE_DIRS}")
-
+message(STATUS "Found FFMPEG in ${FFMPEG_INCLUDE_DIRS}")
+message(STATUS "FFMPEG libraries loaded: ${FFMPEG_LIBRARIES}")
 
 # STB_IMAGE
 add_library(STB_IMAGE "thirdparty/stb_image.cpp")
