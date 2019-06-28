@@ -4,6 +4,8 @@
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
 }
 
 typedef struct {
@@ -14,7 +16,9 @@ typedef struct {
 	AVCodecParameters *pCodecParameters;	// This component describes the properties of a codec used by the stream i
 	int video_stream_index;
 	AVCodecContext *pCodecContext;			// Codec context
-	AVFrame *pFrame;						// Frame
+	AVFrame *pFrame;						// AV Frame
+	AVFrame *glFrame;						// OpenGL Frame
+	SwsContext *conv_ctx;					// Convert Context (for OpenGL)
 	AVPacket *pPacket;						// Packet
 } test_section;
 
@@ -22,22 +26,7 @@ static test_section *local;
 
 ////////////////////////////////////////////
 
-static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, char *filename)
-{
-	FILE *f;
-	int i;
-	f = fopen(filename, "w");
-	// writing the minimal required header for a pgm file format
-	// portable graymap format -> https://en.wikipedia.org/wiki/Netpbm_format#PGM_example
-	fprintf(f, "P5\n%d %d\n%d\n", xsize, ysize, 255);
-
-	// writing line by line
-	for (i = 0; i < ysize; i++)
-		fwrite(buf + i * wrap, 1, xsize, f);
-	fclose(f);
-}
-
-static int decode_packet(AVPacket *pPacket, AVCodecContext *pCodecContext, AVFrame *pFrame)
+static int decode_packet(AVPacket *pPacket, AVCodecContext *pCodecContext, AVFrame *pFrame, SwsContext *conv_ctx, AVFrame *glFrame, GLuint gl_textureID)
 {
 	// Supply raw packet data as input to a decoder
 	// https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga58bc4bf1e0ac59e27362597e467efff3
@@ -71,17 +60,40 @@ static int decode_packet(AVPacket *pPacket, AVCodecContext *pCodecContext, AVFra
 				pFrame->key_frame,
 				pFrame->coded_picture_number
 			);
-			/*
-			char frame_filename[1024];
-			snprintf(frame_filename, sizeof(frame_filename), "%s-%d.pgm", "frame", pCodecContext->frame_number);
-			// save a grayscale frame into a .pgm file
-			save_gray_frame(pFrame->data[0], pFrame->linesize[0], pFrame->width, pFrame->height, frame_filename);
-			*/
+			
+			// Scale the image (pFrame) to the OpenGL image (glFrame), using the Convertex cotext
+			sws_scale(conv_ctx, pFrame->data, pFrame->linesize, 0, pCodecContext->height, glFrame->data, glFrame->linesize);
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, gl_textureID);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pCodecContext->width, pCodecContext->height, GL_RGB, GL_UNSIGNED_BYTE, glFrame->data[0]);
+
+			//av_frame_unref(pFrame);
+			//av_frame_unref(glFrame);
 		}
 	}
 	return 0;
 }
 
+bool seekMs(int tsms, AVFormatContext *pFormatContext, int streamID)
+{
+	//printf("**** SEEK TO ms %d. LLT: %d. LT: %d. LLF: %d. LF: %d. LastFrameOk: %d\n",tsms,LastLastFrameTime,LastFrameTime,LastLastFrameNumber,LastFrameNumber,(int)LastFrameOk);
+
+	// Convert time into frame number
+	int64_t DesiredFrameNumber;
+	DesiredFrameNumber = av_rescale(tsms, pFormatContext->streams[streamID]->time_base.den, pFormatContext->streams[streamID]->time_base.num);
+	DesiredFrameNumber /= 1000;
+	
+	float second = (float)tsms / 1000.0f;
+
+	if (av_seek_frame(pFormatContext, streamID, DesiredFrameNumber, 0) < 0) {
+		LOG->Error("Video: Could not reach position: %f, frame: %d", second, DesiredFrameNumber);
+		return false;
+	}
+	
+	return true;
+	
+}
 
 /////////////////////////////////////////////////
 
@@ -105,11 +117,11 @@ bool sTest::load() {
 	//if (local->shader < 0)
 	//	return false;
 	string file = DEMO->dataFolder + this->strings[0];
-	FILE *f;
 
 	local->pCodec = NULL;
 	local->pCodecParameters = NULL;
 	local->video_stream_index = -1;
+	local->conv_ctx = NULL;
 
 
 	// Allocate memory for the Context: http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html
@@ -201,10 +213,26 @@ bool sTest::load() {
 
 	// https://ffmpeg.org/doxygen/trunk/structAVFrame.html
 	local->pFrame = av_frame_alloc();
-	if (!local->pFrame) {
+	local->glFrame = av_frame_alloc();
+	// Allocate te data buffer for the glFrame
+	int size = av_image_get_buffer_size(AV_PIX_FMT_RGB24, local->pCodecContext->width, local->pCodecContext->height, 1);
+	uint8_t *internal_buffer = (uint8_t *)av_malloc(size * sizeof(uint8_t));
+	av_image_fill_arrays((uint8_t**)((AVPicture *)local->glFrame->data), (int*)((AVPicture *)local->glFrame->linesize), internal_buffer, AV_PIX_FMT_RGB24, local->pCodecContext->width, local->pCodecContext->height, 1);
+	if ((!local->pFrame) || (!local->glFrame)) {
 		LOG->Error("Video: failed to allocated memory for AVFrame");
 		return false;
 	}
+
+
+	// Create the convert Context, used by the OpenGLFrame
+	local->conv_ctx = sws_getContext(	local->pCodecContext->width, local->pCodecContext->height, local->pCodecContext->pix_fmt,	// Source
+										local->pCodecContext->width, local->pCodecContext->height, AV_PIX_FMT_RGB24,				// Destiny (we change the format only)
+										SWS_BICUBIC, NULL, NULL, NULL);
+	if (!local->conv_ctx) {
+		LOG->Error("Could not create the convert context for OpenGL");
+		return false;
+	}
+
 	// https://ffmpeg.org/doxygen/trunk/structAVPacket.html
 	local->pPacket = av_packet_alloc();
 	if (!local->pPacket) {
@@ -222,9 +250,8 @@ bool sTest::load() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, local->pCodecParameters->width, local->pCodecParameters->height,
-		0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glUniform1i(data.uniforms[FRAME_TEX], 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, local->pCodecParameters->width, local->pCodecParameters->height,	0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	
 
 /*	int response = 0;
 	int how_many_packets_to_process = 8;
@@ -269,23 +296,24 @@ void sTest::exec() {
 
 	// fill the Packet with data from the Stream
 	// https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61
-	while (av_read_frame(local->pFormatContext, local->pPacket) >= 0) {
+	if (av_read_frame(local->pFormatContext, local->pPacket) >= 0) {
 		// if it's the video stream
 		if (local->pPacket->stream_index == local->video_stream_index) {
 			LOG->Info(LOG_LOW, "Video: AVPacket->pts %" PRId64, local->pPacket->pts);
-			response = decode_packet(local->pPacket, local->pCodecContext, local->pFrame);
+			response = decode_packet(local->pPacket, local->pCodecContext, local->pFrame, local->conv_ctx, local->glFrame, local->texID);
 			if (response < 0)
-				break;
-			// stop it, otherwise we'll be saving hundreds of frames
-			if (--how_many_packets_to_process <= 0) break;
+				LOG->Error("Video: Packet cannot be decoded");
 		}
-		// https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
-		av_packet_unref(local->pPacket);
 	}
-
+	else {
+		// Loop: Start the video again
+		av_seek_frame(local->pFormatContext, local->video_stream_index, 0, 0);
+	}
+	// https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
+	av_packet_unref(local->pPacket);
 	
 	EvalBlendingStart();
-/*	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_DEPTH_TEST);
 	{
 		// Load the background texture
 		//Texture *my_tex = DEMO->textureManager.texture[local->texture];
@@ -294,7 +322,7 @@ void sTest::exec() {
 		//int readed = readFrame(&(local->data));
 
 		// Texture and View aspect ratio, stored for Keeping image proportions
-		float tex_aspect = (float)local->data.codec_ctx->width / (float)local->data.codec_ctx->height;
+		float tex_aspect = (float)local->pCodecParameters->width / (float)local->pCodecParameters->height;
 		float view_aspect = (float)GLDRV->width / (float)GLDRV->height;
 
 		// Put orthogonal mode
@@ -320,12 +348,12 @@ void sTest::exec() {
 		my_shad->setValue("model", model);
 		my_shad->setValue("screenTexture", 0);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, local->data.gl_frame_texID);
+		glBindTexture(GL_TEXTURE_2D, local->texID);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 	}
 	glEnable(GL_DEPTH_TEST);
-	*/
+
 	EvalBlendingEnd();
 	
 }
