@@ -154,6 +154,7 @@ void Resource::Load_Shaders()
 	shdr_QuadDepth = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadDepth.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadDepth.frag");
 	shdr_QuadTexAlpha = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexAlpha.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTexAlpha.frag");
 	shdr_QuadTexModel = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexModel.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTexModel.frag");
+	shdr_QuadTexVFlipModel = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.frag");
 	shdr_Skybox = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/skybox/skybox.vert", DEMO->dataFolder + "/resources/shaders/skybox/skybox.frag");
 }
 

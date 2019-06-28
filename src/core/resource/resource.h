@@ -34,6 +34,7 @@ public:
 	int shdr_QuadDepth;		// Draws a depth texture quad
 	int shdr_QuadTexAlpha;	// Draws a textured quad with alpha
 	int shdr_QuadTexModel;	// Draws a textured quad with model matrix
+	int shdr_QuadTexVFlipModel;	// Draws a textured quad with model matrix, and with the texture flipped vertically
 	int shdr_Skybox;		// Draws a skybox
 
 	// Objects

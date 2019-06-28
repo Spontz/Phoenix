@@ -20,6 +20,7 @@ typedef struct {
 	AVFrame *glFrame;						// OpenGL Frame
 	SwsContext *conv_ctx;					// Convert Context (for OpenGL)
 	AVPacket *pPacket;						// Packet
+	float framerate;
 } test_section;
 
 static test_section *local;
@@ -51,6 +52,7 @@ static int decode_packet(AVPacket *pPacket, AVCodecContext *pCodecContext, AVFra
 		}
 
 		if (response >= 0) {
+			/*
 			LOG->Info(LOG_LOW,
 				"Frame %d (type=%c, size=%d bytes) pts %d key_frame %d [DTS %d]",
 				pCodecContext->frame_number,
@@ -60,7 +62,7 @@ static int decode_packet(AVPacket *pPacket, AVCodecContext *pCodecContext, AVFra
 				pFrame->key_frame,
 				pFrame->coded_picture_number
 			);
-			
+			*/
 			// Scale the image (pFrame) to the OpenGL image (glFrame), using the Convertex cotext
 			sws_scale(conv_ctx, pFrame->data, pFrame->linesize, 0, pCodecContext->height, glFrame->data, glFrame->linesize);
 
@@ -177,6 +179,7 @@ bool sTest::load() {
 		if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
 			if (local->video_stream_index == -1) {
 				local->video_stream_index = i;
+				local->framerate = (float)av_q2d(local->pFormatContext->streams[i]->avg_frame_rate);
 				local->pCodec = pLocalCodec;
 				local->pCodecParameters = pLocalCodecParameters;
 			}
@@ -274,10 +277,13 @@ bool sTest::load() {
 	
 	LOG->Info(LOG_LOW, "Video: releasing all the resources");
 
+	*/
+	/* //TODO: Add this in the Video Class!!!
 	avformat_close_input(&local->pFormatContext);
 	avformat_free_context(local->pFormatContext);
 	av_packet_free(&local->pPacket);
 	av_frame_free(&local->pFrame);
+	av_frame_free(&local->glFrame);
 	avcodec_free_context(&local->pCodecContext);
 	*/
 	return true;
@@ -286,31 +292,53 @@ bool sTest::load() {
 void sTest::init() {
 }
 
+int played_frames = 0;
+float last_RenderedTime = 0.0;
 
 void sTest::exec() {
 	local = (test_section *)this->vars;
 
 
-	int response = 0;
-	int how_many_packets_to_process = 8;
+	// Time we should draw a new frame
+	float interval_frame = 1/local->framerate;
 
-	// fill the Packet with data from the Stream
-	// https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61
-	if (av_read_frame(local->pFormatContext, local->pPacket) >= 0) {
-		// if it's the video stream
-		if (local->pPacket->stream_index == local->video_stream_index) {
-			LOG->Info(LOG_LOW, "Video: AVPacket->pts %" PRId64, local->pPacket->pts);
-			response = decode_packet(local->pPacket, local->pCodecContext, local->pFrame, local->conv_ctx, local->glFrame, local->texID);
-			if (response < 0)
-				LOG->Error("Video: Packet cannot be decoded");
+	float time = last_RenderedTime;
+	// If a new frame needs to be rendered... we capture de frame
+	if (this->runTime >= (last_RenderedTime + interval_frame)) {
+		LOG->Info(LOG_LOW, "Render time: %.4f, Last Render: %.4f, next Render will be: %.4f", this->runTime, last_RenderedTime, this->runTime+interval_frame);
+		// Check if frameskip is detected... in that case, we seek for the right frame
+		if (this->runTime >= (last_RenderedTime + (interval_frame * 2.0f))) {
+			seekMs((int)(this->runTime*1000.0f), local->pFormatContext, local->video_stream_index);
 		}
+		last_RenderedTime = this->runTime;
+		int response = 0;
+		int how_many_packets_to_process = 8;
+
+		// fill the Packet with data from the Stream
+		// https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61
+		if (av_read_frame(local->pFormatContext, local->pPacket) >= 0) {
+			// if it's the video stream
+			if (local->pPacket->stream_index == local->video_stream_index) {
+				//LOG->Info(LOG_LOW, "Video: AVPacket->pts %" PRId64, local->pPacket->pts);
+				response = decode_packet(local->pPacket, local->pCodecContext, local->pFrame, local->conv_ctx, local->glFrame, local->texID);
+				if (response < 0)
+					LOG->Error("Video: Packet cannot be decoded");
+			}
+		}
+		else {
+			// Loop: Start the video again
+			av_seek_frame(local->pFormatContext, local->video_stream_index, 0, 0);
+		}
+		// https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
+		av_packet_unref(local->pPacket);
 	}
-	else {
-		// Loop: Start the video again
-		av_seek_frame(local->pFormatContext, local->video_stream_index, 0, 0);
+	if (this->runTime < last_RenderedTime) {
+		last_RenderedTime = this->runTime;
+		seekMs((int)(this->runTime*1000.0f), local->pFormatContext, local->video_stream_index);
 	}
-	// https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
-	av_packet_unref(local->pPacket);
+		
+
+	
 	
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
@@ -343,7 +371,7 @@ void sTest::exec() {
 
 		//RES->Draw_Obj_QuadTex(local->texture, &model);
 		glBindVertexArray(RES->obj_quadFullscreen);
-		Shader *my_shad = DEMO->shaderManager.shader[RES->shdr_QuadTexModel];
+		Shader *my_shad = DEMO->shaderManager.shader[RES->shdr_QuadTexVFlipModel];
 		my_shad->use();
 		my_shad->setValue("model", model);
 		my_shad->setValue("screenTexture", 0);
