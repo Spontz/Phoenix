@@ -8,6 +8,7 @@
 // Init vars
 TextureManager::TextureManager() {
 	texture.clear();
+	cubemap.clear();
 	mem = 0;
 }
 

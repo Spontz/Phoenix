@@ -10,6 +10,7 @@
 #include "core/sectionmanager.h"
 #include "sections/sections.h"
 
+#include "core/videomanager.h"
 #include "core/texturemanager.h"
 #include "core/fbomanager.h"
 #include "core/modelmanager.h"
@@ -76,6 +77,7 @@ public:
 	// Managers
 	SectionManager	sectionManager;
 	TextureManager	textureManager;
+	VideoManager	videoManager;
 	FboManager		fboManager;
 	ModelManager	modelManager;
 	ShaderManager	shaderManager;
@@ -84,8 +86,6 @@ public:
 	Font			*text;
 
 	// loading information
-	//int numSections;
-	//int numReadySections;
 	int loadedSections;
 
 	// realtime information
@@ -127,10 +127,6 @@ public:
 
 	// Drawing
 	char drawFbo;								// Draw FBO's
-
-	// engine state variables
-	//matrix_t	m_VariableMatrix[MAX_SVE_VARIABLE_ID + 1];
-
 
 	// ******************************************************************
 	// MEMBERS

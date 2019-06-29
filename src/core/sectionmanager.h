@@ -22,6 +22,7 @@ enum SectionType {
 	ObjectShader,
 	ObjectAnimShader,
 	DrawSkybox,
+	DrawVideo,
 	ParticleMatrix,
 	Sound,
 	FboBind,
