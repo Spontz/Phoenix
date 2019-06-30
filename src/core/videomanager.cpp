@@ -10,6 +10,11 @@ VideoManager::VideoManager() {
 	video.clear();
 }
 
+VideoManager::~VideoManager()
+{
+	video.clear();
+}
+
 // Adds a Texture into the queue, returns the Number of the texture added
 int VideoManager::addVideo(string path) {
 	

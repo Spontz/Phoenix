@@ -17,6 +17,7 @@ public:
 	float mem;						// Texture memory in MegaBytes
 
 	TextureManager();
+	virtual ~TextureManager();
 	int addTexture(string path, bool flip = true, string type = "texture_diffuse");
 	int addCubemap(vector<std::string> path, bool flip);
 	int	getOpenGLTextureID(int index);

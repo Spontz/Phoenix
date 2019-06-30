@@ -44,12 +44,12 @@ public:
 	vector<string>		strings;							// string parameters
 	vector<string>		uniform;							// string of uniform parameters
 	vector<Spline*>		spline;								// Splines
-	void*		vars;										// pointer to section local variables
+	void*				vars;								// pointer to section local variables
 
 
 	// Members
 	Section();
-	virtual ~Section() {};
+	virtual ~Section();
 
 	// Blending management
 	void EvalBlendingStart();

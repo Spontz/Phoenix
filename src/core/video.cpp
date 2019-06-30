@@ -23,10 +23,15 @@ Video::Video()
 	intervalFrame = 0;
 	lastRenderTime = 0;
 	loaded = false;
+	texID = 0;
 }
 
 Video::~Video()
 {
+	if (texID != 0) {
+		glDeleteTextures(1, &texID);
+		texID = 0;
+	}
 	avformat_close_input(&pFormatContext);
 	avformat_free_context(pFormatContext);
 	

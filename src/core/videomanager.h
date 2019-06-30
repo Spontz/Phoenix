@@ -14,6 +14,8 @@ public:
 	std::vector<Video*> video;	// Video list
 
 	VideoManager();
+	virtual ~VideoManager();
+
 	int addVideo(string path);
 	int	getOpenGLTextureID(int index);
 

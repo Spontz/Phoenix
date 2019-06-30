@@ -6,12 +6,22 @@
 
 Spline::Spline()
 {
+	key.clear();
+	keys = 0;
+	steps = 0;
+	channels = 0;
 	filename = "";
 	duration = 0;
 }
 
 Spline::~Spline()
 {
+	key.clear();
+	keys = 0;
+	steps = 0;
+	channels = 0;
+	filename = "";
+	duration = 0;
 }
 
 // Compute Hermite spline coeficients for t, where 0 <= t <= 1.

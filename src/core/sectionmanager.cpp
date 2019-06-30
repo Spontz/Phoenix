@@ -37,6 +37,14 @@ tSectionID sectionID[] = {
 
 // Init vars
 SectionManager::SectionManager() {
+	this->section.clear();
+	this->loadSection.clear();
+	this->execSection.clear();
+}
+
+SectionManager::~SectionManager()
+{
+	this->section.clear();
 	this->loadSection.clear();
 	this->execSection.clear();
 }

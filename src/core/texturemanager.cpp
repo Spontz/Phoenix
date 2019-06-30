@@ -12,6 +12,13 @@ TextureManager::TextureManager() {
 	mem = 0;
 }
 
+TextureManager::~TextureManager()
+{
+	texture.clear();
+	cubemap.clear();
+	mem = 0;
+}
+
 // Adds a Texture into the queue, returns the Number of the texture added
 int TextureManager::addTexture(string path, bool flip, string type) {
 	

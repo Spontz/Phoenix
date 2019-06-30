@@ -10,6 +10,11 @@ ModelManager::ModelManager() {
 	model.clear();
 }
 
+ModelManager::~ModelManager()
+{
+	model.clear();
+}
+
 // Adds a Model into the queue, returns the ID of the model added
 int ModelManager::addModel(string path) {
 	int i;

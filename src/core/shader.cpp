@@ -19,6 +19,14 @@ Shader::Shader()
 	ID = 0;
 }
 
+Shader::~Shader()
+{
+	if (ID != 0) {
+		glDeleteProgram(ID);
+		ID = 0;
+	}
+}
+
 int Shader::load(const std::string & vertexPath, const std::string & fragmentPath, const std::string & geometryPath, vector<string> feedbackVaryings)
 {
 	vertexShader_Filename = vertexPath;

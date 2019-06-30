@@ -24,6 +24,21 @@
 #include <vector>
 using namespace std;
 
+
+Model::Model(string const &path, bool gamma)
+{
+	gammaCorrection = gamma;
+	loadModel(path);
+}
+
+Model::~Model()
+{
+	meshes.clear();
+	directory = "";
+	filename = "";
+	filepath = "";
+}
+
 void Model::Draw(Shader shader)
 {
 	for (unsigned int i = 0; i < meshes.size(); i++)

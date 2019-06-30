@@ -5,9 +5,11 @@
 #include <main.h>
 #include "texture.h"
 
-Texture::Texture(): use_linear(true), textureID(0)
+Texture::Texture()
 {
 	type = "texture_diffuse"; // default is set to diffuse texture
+	use_linear = true;
+	textureID = 0;
 }
 
 Texture::~Texture()

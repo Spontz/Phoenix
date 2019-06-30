@@ -10,6 +10,11 @@ ShaderManager::ShaderManager() {
 	shader.clear();
 }
 
+ShaderManager::~ShaderManager()
+{
+	shader.clear();
+}
+
 // Adds a Texture into the queue, returns the ID of the texture added
 int ShaderManager::addShader(string path_vert, string path_frag, string path_geom, vector<string> feedbackVaryings) {
 	unsigned int i;
