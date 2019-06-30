@@ -127,7 +127,6 @@ void sObjectAnimShader::exec() {
 
 	// Guarrada para pasar una textura
 	glUniform1i(glGetUniformLocation(my_shader->ID, "texture_diffuse1"), 0); // Pick some random texture
-	DEMO->textureManager.texture[8]->active();
 	DEMO->textureManager.texture[8]->bind();
 	//////// End guarrada
 

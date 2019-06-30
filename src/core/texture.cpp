@@ -68,12 +68,13 @@ bool Texture::load(const std::string & file_name, bool flip)
 	return is_loaded;
 }
 
-void Texture::active(int index) const
+void Texture::active(int TexUnit) const
 {
-	glActiveTexture(GL_TEXTURE0 + index);
+	glActiveTexture(GL_TEXTURE0 + TexUnit);
 }
 
-void Texture::bind() const // TODO: It does not have any sense to have "active" and "bind" splitted, it should be in the same method
+void Texture::bind(int TexUnit) const
 {
+	glActiveTexture(GL_TEXTURE0 + TexUnit);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 }

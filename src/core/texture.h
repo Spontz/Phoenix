@@ -26,8 +26,8 @@ public:
 	virtual ~Texture();
 
 	bool load(const std::string & file_name, bool flip);
-	void bind() const;
-	void active(int index = 0) const;
+	void bind(int TexUnit = 0) const;
+	void active(int TexUnit = 0) const;
 			
 private:
 

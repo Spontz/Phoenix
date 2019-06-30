@@ -23,7 +23,7 @@ public:
 	string geometryShader_Filename;
 	// constructor generates the shader on the fly
 	Shader();
-	virtual ~Shader();
+
 	int load(const std::string &vertexPath, const std::string &fragmentPath, const std::string & geometryPath = "", vector<string> feedbackVaryings = { });
 	// activate the shader
 	void use();

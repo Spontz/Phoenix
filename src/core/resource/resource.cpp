@@ -182,7 +182,6 @@ void Resource::Draw_QuadFS(int textureNum)
 	glBindVertexArray(obj_quadFullscreen);
 	my_shad->use();
 	my_shad->setValue("screenTexture", 0);
-	DEMO->textureManager.texture[textureNum]->active();
 	DEMO->textureManager.texture[textureNum]->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
@@ -197,7 +196,6 @@ void Resource::Draw_QuadFS(int textureNum, float alpha)
 	my_shad->use();
 	my_shad->setValue("alpha", alpha);
 	my_shad->setValue("screenTexture", 0);
-	DEMO->textureManager.texture[textureNum]->active();
 	DEMO->textureManager.texture[textureNum]->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
@@ -234,7 +232,6 @@ void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *model)
 	my_shad->use();
 	my_shad->setValue("model", *model);
 	my_shad->setValue("screenTexture", 0);
-	DEMO->textureManager.texture[textureNum]->active();
 	DEMO->textureManager.texture[textureNum]->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
@@ -244,7 +241,6 @@ void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *model)
 void Resource::Draw_Skybox(int cubemap)
 {
 	glBindVertexArray(obj_skybox);
-	DEMO->textureManager.cubemap[cubemap]->active();
 	DEMO->textureManager.cubemap[cubemap]->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);

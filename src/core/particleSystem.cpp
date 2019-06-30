@@ -302,8 +302,7 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::vec3 &Camer
 	my_shader->setValue("gVP", VP);	// Set billboard size
 
 	// Activate texture
-	m_pTexture->active(0);
-	m_pTexture->bind();
+	m_pTexture->bind(0);
 
 	glDisable(GL_RASTERIZER_DISCARD);	// Start drawing on the screen
 	glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currTFB]);
