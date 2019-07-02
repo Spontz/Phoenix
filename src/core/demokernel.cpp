@@ -582,8 +582,8 @@ void demokernel::initSectionQueues() {
 	
 	if (ds_loading == NULL) {
 		LOG->Info(LOG_MED,"Loading section not found: using default loader");
-		sec_id = this->sectionManager.addSection("loading", "Automatically created", TRUE);
-		if (sec_id == SectionType::NOT_FOUND) {
+		sec_id = this->sectionManager.addSection("Loading", "Automatically created", TRUE);
+		if (sec_id < 0) {
 			LOG->Error("Critical Error, Loading section not found and could not be created!");
 			return;
 		}
