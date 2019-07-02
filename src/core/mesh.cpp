@@ -103,7 +103,7 @@ void Mesh::Draw(Shader shader)
 		// now set the sampler to the correct texture unit
 		glUniform1i(glGetUniformLocation(shader.ID, (tex->type + number).c_str()), i);
 		// and finally bind the texture
-		tex->bind();
+		tex->bind(i);
 	}
 
 	// draw mesh
