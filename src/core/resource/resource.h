@@ -25,6 +25,7 @@ public:
 	//void Draw_QuadFBOFS_noShader(int fboNum);		// Draws a quad with fullscreen (the fbo number from the fbo manager should be specified), but with no shader (a glslshader needs to be called previously)
 	void Draw_Obj_QuadTex(int textureNum, glm::mat4 *model);
 	void Draw_Skybox(int cubemap);					// Draws a skybox for a given cubemap texture
+	void Draw_Cube();								// Draws a cube
 
 	void Draw_Obj_QuadFBO_Debug(int quad, int fbo_num);
 	int tex_tv, tex_isaac2, tex_shotgan, tex_shotgan2, tex_merlucin, tex_xphere;
@@ -36,10 +37,12 @@ public:
 	int shdr_QuadTexModel;	// Draws a textured quad with model matrix
 	int shdr_QuadTexVFlipModel;	// Draws a textured quad with model matrix, and with the texture flipped vertically
 	int shdr_Skybox;		// Draws a skybox
+	int shdr_ObjColor;		// Draws an object with a color
 
 	// Objects
 	unsigned int obj_skybox;
 	unsigned int obj_quadFullscreen; // TODO: Temporal, move to private
+	unsigned int obj_qube;
 
 private:
 
@@ -49,6 +52,7 @@ private:
 	void Load_Obj_QuadFullscreen();
 	void Load_Obj_Quad_FBO_Debug();// Load debugging Quads for FBO
 	void Load_Obj_Skybox();
+	void Load_Obj_Qube();
 	void Load_Shaders();
 	void Load_Tex_Spontz();
 	void Load_Text_Fonts();

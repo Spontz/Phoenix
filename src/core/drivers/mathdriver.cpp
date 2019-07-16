@@ -58,32 +58,12 @@ mathDriver::mathDriver(Section *sec) {
 		SymbolTable.add_variable("light_look_y", DEMO->light->lookAt.y);
 		SymbolTable.add_variable("light_look_z", DEMO->light->lookAt.z);
 
-		SymbolTable.add_variable("light_col_r", DEMO->light->color.x);
-		SymbolTable.add_variable("light_col_g", DEMO->light->color.y);
-		SymbolTable.add_variable("light_col_b", DEMO->light->color.z);
+		SymbolTable.add_variable("light_col_r", DEMO->light->colAmbient.x);
+		SymbolTable.add_variable("light_col_g", DEMO->light->colAmbient.y);
+		SymbolTable.add_variable("light_col_b", DEMO->light->colAmbient.z);
 
 		SymbolTable.add_variable("light_ambient", DEMO->light->ambientStrength);
 		SymbolTable.add_variable("light_specular", DEMO->light->specularStrength);
-
-		SymbolTable.add_variable("light_SM_00", DEMO->light->SpaceMatrix[0][0]);
-		SymbolTable.add_variable("light_SM_01", DEMO->light->SpaceMatrix[0][1]);
-		SymbolTable.add_variable("light_SM_02", DEMO->light->SpaceMatrix[0][2]);
-		SymbolTable.add_variable("light_SM_03", DEMO->light->SpaceMatrix[0][3]);
-		SymbolTable.add_variable("light_SM_10", DEMO->light->SpaceMatrix[1][0]);
-		SymbolTable.add_variable("light_SM_11", DEMO->light->SpaceMatrix[1][1]);
-		SymbolTable.add_variable("light_SM_12", DEMO->light->SpaceMatrix[1][2]);
-		SymbolTable.add_variable("light_SM_13", DEMO->light->SpaceMatrix[1][3]);
-		SymbolTable.add_variable("light_SM_20", DEMO->light->SpaceMatrix[2][0]);
-		SymbolTable.add_variable("light_SM_21", DEMO->light->SpaceMatrix[2][1]);
-		SymbolTable.add_variable("light_SM_22", DEMO->light->SpaceMatrix[2][2]);
-		SymbolTable.add_variable("light_SM_23", DEMO->light->SpaceMatrix[2][3]);
-		SymbolTable.add_variable("light_SM_30", DEMO->light->SpaceMatrix[3][0]);
-		SymbolTable.add_variable("light_SM_31", DEMO->light->SpaceMatrix[3][1]);
-		SymbolTable.add_variable("light_SM_32", DEMO->light->SpaceMatrix[3][2]);
-		SymbolTable.add_variable("light_SM_33", DEMO->light->SpaceMatrix[3][3]);
-
-
-
 	}
 	else {
 		SymbolTable.add_constant("light_pos_x", 10);

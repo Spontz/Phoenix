@@ -10,21 +10,34 @@
 
 #include <vector>
 
+
+enum LightType {
+	SpotLight,	// A spotlight is a light source that is located somewhere in the environment that, instead of shooting light rays in all directions, only shoots them in a specific direction
+	PointLight	// A point light is a light source with a given position somewhere in a world that illuminates in all directions where the light rays fade out over distance
+};
+
+
 class Light
 {
 public:
-	// Camera Attributes
-	glm::vec3 Position;		// Position of the light
-	glm::vec3 lookAt;		// In case it's a directional light, where is looking at
-	glm::vec3 color;		// Color of our light
-	glm::mat4 SpaceMatrix;	// READ ONLY: Ligth space matrix, useful for shaders
-	float ambientStrength;	// Strength of the ambient color (from 0.0 to 1.0)
-	float specularStrength;	// Strength of the specular color (from 0.0 to 1.0)
+	LightType	lightType;			// Light type
+	glm::vec3	Position;			// Position of the light
+	glm::vec3	lookAt;				// In case it's a Spot light, where is looking at
+	
+	// Light colors
+	glm::vec3	colAmbient;			// Ambient color of our light
+	
+	glm::mat4	SpaceMatrix;		// READ ONLY: Ligth space matrix, useful for shaders
+	float		ambientStrength;	// Strength of the ambient color (from 0.0 to 1.0)
+	float		specularStrength;	// Strength of the specular color (from 0.0 to 1.0)
 
 	// Constructor with vectors
-	Light(glm::vec3 position = glm::vec3(10.0f, 10.0f, 0.0f));
+	Light(LightType lightType, glm::vec3 position = glm::vec3(10.0f, 10.0f, 0.0f));
 	// Calculate the Space Matrix (useful for ShadowMapping): it retrieves the ortogonal view form the light point of view
 	void CalcSpaceMatrix(float left, float right, float bottom, float top, float near_plane, float far_plane);
+
+	// For debugging: Draws a qube with the light position
+	void draw(float size);
 
 private:
 };

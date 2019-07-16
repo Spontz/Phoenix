@@ -11,10 +11,14 @@
 
 using namespace std;
 
-Light::Light(glm::vec3 position)
+Light::Light(LightType lightType, glm::vec3 position)
 {
+	this->lightType = lightType;
 	this->Position = position;
-	this->color = glm::vec3(1, 0, 0);	// Red by default
+
+	// Colors
+	this->colAmbient = glm::vec3(1, 0, 0);	// Red by default
+
 	this->lookAt = glm::vec3(0, 0, 0);	// Looking at center by default
 	this->ambientStrength = 0.2f;
 	this->specularStrength = 0.8f;
@@ -25,4 +29,25 @@ void Light::CalcSpaceMatrix(float left, float right, float bottom, float top, fl
 	glm::mat4 lightProjection = glm::ortho(left, right, bottom, top, near_plane, far_plane);				// Switch to ortogonal view
 	glm::mat4 lightView = glm::lookAt(DEMO->light->Position, DEMO->light->lookAt, glm::vec3(0.0, 1.0, 0.0));// View from the light perspective
 	this->SpaceMatrix = lightProjection * lightView;
+}
+
+void Light::draw(float size)
+{
+	Shader *my_shad = DEMO->shaderManager.shader[RES->shdr_ObjColor];
+	my_shad->use();
+
+	my_shad->setValue("color", this->colAmbient);
+
+	glm::mat4 projection = glm::perspective(glm::radians(DEMO->camera->Zoom), (float)GLDRV->width / (float)GLDRV->height, 0.1f, 10000.0f);
+	glm::mat4 view = DEMO->camera->GetViewMatrix();
+	my_shad->setValue("projection", projection);
+	my_shad->setValue("view", view);
+
+	// Place the quad onto desired place
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, this->Position);
+	model = glm::scale(model, glm::vec3(size, size, size));
+	my_shad->setValue("model", model);
+
+	RES->Draw_Cube();
 }
