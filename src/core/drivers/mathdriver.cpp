@@ -21,13 +21,13 @@ mathDriver::mathDriver(Section *sec) {
 
 	// Camera values
 	if (DEMO->camera != NULL) {
-		SymbolTable.add_variable("cam_pos_x", DEMO->camera->Position.x);
-		SymbolTable.add_variable("cam_pos_y", DEMO->camera->Position.y);
-		SymbolTable.add_variable("cam_pos_z", DEMO->camera->Position.z);
+		SymbolTable.add_variable("cam_posX", DEMO->camera->Position.x);
+		SymbolTable.add_variable("cam_posY", DEMO->camera->Position.y);
+		SymbolTable.add_variable("cam_posZ", DEMO->camera->Position.z);
 
-		SymbolTable.add_variable("cam_up_x", DEMO->camera->Up.x);
-		SymbolTable.add_variable("cam_up_y", DEMO->camera->Up.y);
-		SymbolTable.add_variable("cam_up_z", DEMO->camera->Up.z);
+		SymbolTable.add_variable("cam_upX", DEMO->camera->Up.x);
+		SymbolTable.add_variable("cam_upY", DEMO->camera->Up.y);
+		SymbolTable.add_variable("cam_upZ", DEMO->camera->Up.z);
 
 		SymbolTable.add_variable("cam_yaw", DEMO->camera->Yaw);
 		SymbolTable.add_variable("cam_pitch", DEMO->camera->Pitch);
