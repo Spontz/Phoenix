@@ -12,25 +12,31 @@
 
 
 enum LightType {
-	SpotLight,	// A spotlight is a light source that is located somewhere in the environment that, instead of shooting light rays in all directions, only shoots them in a specific direction
-	PointLight	// A point light is a light source with a given position somewhere in a world that illuminates in all directions where the light rays fade out over distance
+	SpotLight,			// A spotlight is a light source that is located somewhere in the environment that, instead of shooting light rays in all directions, only shoots them in a specific direction
+	PointLight			// A point light is a light source with a given position somewhere in a world that illuminates in all directions where the light rays fade out over distance
 };
-
 
 class Light
 {
 public:
 	string		name;				// Light name, used for shaders
 	LightType	lightType;			// Light type
-	glm::vec3	Position;			// Position of the light
-	glm::vec3	lookAt;				// In case it's a Spot light, where is looking at
+	
+	glm::vec3	position;			// Spot and Point Lights: Position of the light
+	glm::vec3	direction;			// Spot Light: The direction where is looking at
 	
 	// Light colors
 	glm::vec3	colAmbient;			// Ambient color of our light
+	glm::vec3	colDiffuse;			// Diffuse color of our light
+	glm::vec3	colSpecular;		// Specular color of our light
 	
-	glm::mat4	SpaceMatrix;		// READ ONLY: Ligth space matrix, useful for shaders
+	glm::mat4	spaceMatrix;		// READ ONLY: Ligth space matrix, useful for shaders
 	float		ambientStrength;	// Strength of the ambient color (from 0.0 to 1.0)
 	float		specularStrength;	// Strength of the specular color (from 0.0 to 1.0)
+
+	float		constant;			// Spot and Point Lights: For implementing the attenuation of the light, we need this 3 components
+	float		linear;
+	float		quadratic;
 
 	// Constructor with vectors
 	Light(string name, LightType lightType, glm::vec3 position);

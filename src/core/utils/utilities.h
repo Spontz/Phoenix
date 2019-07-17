@@ -21,6 +21,7 @@ namespace Util {
 	void getKeyValue(char *line, char *key, char *value);
 	int getFloatVector(char *line, float *vector, int max);
 	float getFloat(char *line);
+	std::string& replaceString(std::string & subj, std::string old_str, std::string new_str);
 }
 
 

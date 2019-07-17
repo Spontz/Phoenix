@@ -18,10 +18,12 @@ sLight::sLight() {
 	type = SectionType::LightSec;
 }
 
+
+
 bool sLight::load() {
 	// script validation
-	if ((this->param.size() != 7) || this->strings.size() != 5) {
-		LOG->Error("Light [%s]: 7 params needed (light Number, link to camera position, shadowMapping, near&far planes, size and DebugDraw) and 5 strings needed (ambient strenght, specular strenght, pos, look and color)", this->identifier.c_str());
+	if ((this->param.size() != 7)) {
+		LOG->Error("Light [%s]: 7 params needed (light Number, link to camera position, shadowMapping, near&far planes, size and DebugDraw)", this->identifier.c_str());
 		return false;
 	}
 
@@ -30,6 +32,11 @@ bool sLight::load() {
 
 	// Load the parameters
 	local->lightNum = (int)this->param[0];
+	if (local->lightNum<0 || local->lightNum >= DEMO->lightManager.light.size()) {
+		LOG->Error("Light: The light number is not supported by the engine. Max Lights: %d", (DEMO->lightManager.light.size()-1));
+		return false;
+	}
+
 	local->linkPostoCamera = (int)this->param[1];
 	
 	// Load the parameters for shadow mapping
@@ -43,18 +50,11 @@ bool sLight::load() {
 
 	// Register the variables
 	local->exprLight = new mathDriver(this);
-	local->exprLight->expression = this->strings[0] + this->strings[1] + this->strings[2] + this->strings[3] + this->strings[4];
-	local->exprLight->SymbolTable.add_variable("ambientStrength", my_light->ambientStrength);
-	local->exprLight->SymbolTable.add_variable("specularStrength", my_light->specularStrength);
-	local->exprLight->SymbolTable.add_variable("posX", my_light->Position[0]);
-	local->exprLight->SymbolTable.add_variable("posY", my_light->Position[1]);
-	local->exprLight->SymbolTable.add_variable("posZ", my_light->Position[2]);
-	local->exprLight->SymbolTable.add_variable("lookAtX", my_light->lookAt[0]);
-	local->exprLight->SymbolTable.add_variable("lookAtY", my_light->lookAt[1]);
-	local->exprLight->SymbolTable.add_variable("lookAtZ", my_light->lookAt[2]);
-	local->exprLight->SymbolTable.add_variable("colR", my_light->colAmbient[0]);
-	local->exprLight->SymbolTable.add_variable("colG", my_light->colAmbient[1]);
-	local->exprLight->SymbolTable.add_variable("colB", my_light->colAmbient[2]);
+	string expr;
+	for (int i = 0; i < this->strings.size(); i++)
+		expr += this->strings[i];
+	expr = Util::replaceString(expr, "light_", "light" + std::to_string(local->lightNum) + "_");	// Adds the name of the light that we want to modify
+	local->exprLight->expression = expr;															// Loads the expression, properly composed
 	local->exprLight->Expression.register_symbol_table(local->exprLight->SymbolTable);
 	local->exprLight->compileFormula();
 	return true;
@@ -72,8 +72,8 @@ void sLight::exec() {
 	Light* my_light = DEMO->lightManager.light[local->lightNum];
 
 	if (local->linkPostoCamera) {
-		my_light->Position = DEMO->camera->Position;
-		my_light->lookAt = DEMO->camera->Position + (DEMO->camera->Front*10.0f); // TODO: Remove this hardcode! XD
+		my_light->position = DEMO->camera->Position;
+		my_light->direction = DEMO->camera->Position + (DEMO->camera->Front*10.0f); // TODO: Remove this hardcode! XD
 	}
 		
 

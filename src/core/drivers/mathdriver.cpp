@@ -48,21 +48,38 @@ mathDriver::mathDriver(Section *sec) {
 	}
 
 	// Light values
-	// TODO: Need to add more values for all the lights available
-	SymbolTable.add_variable("light_pos_x", DEMO->lightManager.light[0]->Position.x);
-	SymbolTable.add_variable("light_pos_y", DEMO->lightManager.light[0]->Position.y);
-	SymbolTable.add_variable("light_pos_z", DEMO->lightManager.light[0]->Position.z);
+	for (int i=0; i<DEMO->lightManager.light.size(); i++) {
+		string lightNum = "light" + std::to_string(i);
+		SymbolTable.add_variable(lightNum + "_posX", DEMO->lightManager.light[i]->position.x);
+		SymbolTable.add_variable(lightNum + "_posY", DEMO->lightManager.light[i]->position.y);
+		SymbolTable.add_variable(lightNum + "_posZ", DEMO->lightManager.light[i]->position.z);
 
-	SymbolTable.add_variable("light_look_x", DEMO->lightManager.light[0]->lookAt.x);
-	SymbolTable.add_variable("light_look_y", DEMO->lightManager.light[0]->lookAt.y);
-	SymbolTable.add_variable("light_look_z", DEMO->lightManager.light[0]->lookAt.z);
+		SymbolTable.add_variable(lightNum + "_dirX", DEMO->lightManager.light[i]->direction.x);
+		SymbolTable.add_variable(lightNum + "_dirY", DEMO->lightManager.light[i]->direction.y);
+		SymbolTable.add_variable(lightNum + "_dirZ", DEMO->lightManager.light[i]->direction.z);
 
-	SymbolTable.add_variable("light_col_r", DEMO->lightManager.light[0]->colAmbient.x);
-	SymbolTable.add_variable("light_col_g", DEMO->lightManager.light[0]->colAmbient.y);
-	SymbolTable.add_variable("light_col_b", DEMO->lightManager.light[0]->colAmbient.z);
+		SymbolTable.add_variable(lightNum + "_colAmbR", DEMO->lightManager.light[i]->colAmbient.x);
+		SymbolTable.add_variable(lightNum + "_colAmbG", DEMO->lightManager.light[i]->colAmbient.y);
+		SymbolTable.add_variable(lightNum + "_colAmbB", DEMO->lightManager.light[i]->colAmbient.z);
 
-	SymbolTable.add_variable("light_ambient", DEMO->lightManager.light[0]->ambientStrength);
-	SymbolTable.add_variable("light_specular", DEMO->lightManager.light[0]->specularStrength);
+		
+		// TODO: Are this vars really needed? Normally we change it directly in the shader...
+		SymbolTable.add_variable(lightNum + "_colDifR", DEMO->lightManager.light[i]->colDiffuse.x);
+		SymbolTable.add_variable(lightNum + "_colDifG", DEMO->lightManager.light[i]->colDiffuse.y);
+		SymbolTable.add_variable(lightNum + "_colDifB", DEMO->lightManager.light[i]->colDiffuse.z);
+
+		SymbolTable.add_variable(lightNum + "_colSpcR", DEMO->lightManager.light[i]->colSpecular.x);
+		SymbolTable.add_variable(lightNum + "_colSpcG", DEMO->lightManager.light[i]->colSpecular.y);
+		SymbolTable.add_variable(lightNum + "_colSpcB", DEMO->lightManager.light[i]->colSpecular.z);
+
+		SymbolTable.add_variable(lightNum + "_ambientStrength", DEMO->lightManager.light[i]->ambientStrength);
+		SymbolTable.add_variable(lightNum + "_specularStrength", DEMO->lightManager.light[i]->specularStrength);
+
+		SymbolTable.add_variable(lightNum + "_constant", DEMO->lightManager.light[i]->constant);
+		SymbolTable.add_variable(lightNum + "_linear", DEMO->lightManager.light[i]->linear);
+		SymbolTable.add_variable(lightNum + "_quadratic", DEMO->lightManager.light[i]->quadratic);
+		
+	}
 
 
 	// Graphic constants

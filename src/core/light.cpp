@@ -15,12 +15,12 @@ Light::Light(string name, LightType lightType, glm::vec3 position)
 {
 	this->name = name;
 	this->lightType = lightType;
-	this->Position = position;
+	this->position = position;
 
 	// Colors
 	this->colAmbient = glm::vec3(1, 0, 0);	// Red by default
 
-	this->lookAt = glm::vec3(0, 0, 0);	// Looking at center by default
+	this->direction = glm::vec3(0, 0, 0);	// Looking at center by default
 	this->ambientStrength = 0.2f;
 	this->specularStrength = 0.8f;
 }
@@ -28,8 +28,8 @@ Light::Light(string name, LightType lightType, glm::vec3 position)
 void Light::CalcSpaceMatrix(float left, float right, float bottom, float top, float near_plane, float far_plane)
 {
 	glm::mat4 lightProjection = glm::ortho(left, right, bottom, top, near_plane, far_plane);				// Switch to ortogonal view
-	glm::mat4 lightView = glm::lookAt(this->Position, this->lookAt, glm::vec3(0.0, 1.0, 0.0));// View from the light perspective
-	this->SpaceMatrix = lightProjection * lightView;
+	glm::mat4 lightView = glm::lookAt(this->position, this->direction, glm::vec3(0.0, 1.0, 0.0));// View from the light perspective
+	this->spaceMatrix = lightProjection * lightView;
 }
 
 void Light::draw(float size)
@@ -46,7 +46,7 @@ void Light::draw(float size)
 
 	// Place the quad onto desired place
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, this->Position);
+	model = glm::translate(model, this->position);
 	model = glm::scale(model, glm::vec3(size, size, size));
 	my_shad->setValue("model", model);
 

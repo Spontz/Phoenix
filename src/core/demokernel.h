@@ -82,9 +82,8 @@ public:
 	FboManager		fboManager;
 	ModelManager	modelManager;
 	ShaderManager	shaderManager;
-	Camera			*camera;
 	LightManager	lightManager;
-	//Light			*light;
+	Camera			*camera;
 	Font			*text;
 
 	// loading information

@@ -138,3 +138,18 @@ float Util::getFloat(char *line) {
 }
 
 
+
+std::string& Util::replaceString(std::string & subj, std::string old_str, std::string new_str)
+{
+	size_t pos;
+	do {
+		pos = subj.find(old_str);
+		if (pos != std::string::npos)
+		{
+			subj.erase(pos, old_str.size());
+			subj.insert(pos, new_str);
+		}
+	} while (std::string::npos != pos);
+
+	return subj;
+}
