@@ -57,6 +57,8 @@ private:
 	void Load_Tex_Spontz();
 	void Load_Text_Fonts();
 
+	void Load_Lights();
+
 	static Resource* m_pThis;
 };
 #endif

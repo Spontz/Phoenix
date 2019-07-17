@@ -11,8 +11,9 @@
 
 using namespace std;
 
-Light::Light(LightType lightType, glm::vec3 position)
+Light::Light(string name, LightType lightType, glm::vec3 position)
 {
+	this->name = name;
 	this->lightType = lightType;
 	this->Position = position;
 
@@ -27,7 +28,7 @@ Light::Light(LightType lightType, glm::vec3 position)
 void Light::CalcSpaceMatrix(float left, float right, float bottom, float top, float near_plane, float far_plane)
 {
 	glm::mat4 lightProjection = glm::ortho(left, right, bottom, top, near_plane, far_plane);				// Switch to ortogonal view
-	glm::mat4 lightView = glm::lookAt(DEMO->light->Position, DEMO->light->lookAt, glm::vec3(0.0, 1.0, 0.0));// View from the light perspective
+	glm::mat4 lightView = glm::lookAt(this->Position, this->lookAt, glm::vec3(0.0, 1.0, 0.0));// View from the light perspective
 	this->SpaceMatrix = lightProjection * lightView;
 }
 

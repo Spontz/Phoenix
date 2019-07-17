@@ -15,6 +15,7 @@
 #include "core/fbomanager.h"
 #include "core/modelmanager.h"
 #include "core/shadermanager.h"
+#include "core/lightmanager.h"
 #include "core/font.h"
 #include "core/camera.h"
 #include "core/light.h"
@@ -82,7 +83,8 @@ public:
 	ModelManager	modelManager;
 	ShaderManager	shaderManager;
 	Camera			*camera;
-	Light			*light;
+	LightManager	lightManager;
+	//Light			*light;
 	Font			*text;
 
 	// loading information

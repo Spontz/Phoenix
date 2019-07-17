@@ -28,6 +28,8 @@ void Resource::loadAllResources()
 	Load_Tex_Spontz();			// Spontz ridiculous pictures
 	// Load Fonts
 	Load_Text_Fonts();			// Text fonts
+	// Load Lights
+	Load_Lights();
 }
 
 Resource::Resource() {
@@ -241,6 +243,14 @@ void Resource::Load_Tex_Spontz()
 void Resource::Load_Text_Fonts()
 {
 	DEMO->text = new Font(48, DEMO->dataFolder + "/resources/fonts/arial.ttf", DEMO->dataFolder + "/resources/shaders/font/font.vert", DEMO->dataFolder + "/resources/shaders/font/font.frag");
+}
+
+void Resource::Load_Lights()
+{
+	DEMO->lightManager.addLight(LightType::SpotLight);
+	DEMO->lightManager.addLight(LightType::SpotLight);
+	DEMO->lightManager.addLight(LightType::PointLight);
+	DEMO->lightManager.addLight(LightType::PointLight);
 }
 
 

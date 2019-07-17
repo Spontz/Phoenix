@@ -20,6 +20,7 @@ enum LightType {
 class Light
 {
 public:
+	string		name;				// Light name, used for shaders
 	LightType	lightType;			// Light type
 	glm::vec3	Position;			// Position of the light
 	glm::vec3	lookAt;				// In case it's a Spot light, where is looking at
@@ -32,7 +33,7 @@ public:
 	float		specularStrength;	// Strength of the specular color (from 0.0 to 1.0)
 
 	// Constructor with vectors
-	Light(LightType lightType, glm::vec3 position = glm::vec3(10.0f, 10.0f, 0.0f));
+	Light(string name, LightType lightType, glm::vec3 position);
 	// Calculate the Space Matrix (useful for ShadowMapping): it retrieves the ortogonal view form the light point of view
 	void CalcSpaceMatrix(float left, float right, float bottom, float top, float near_plane, float far_plane);
 

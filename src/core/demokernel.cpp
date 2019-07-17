@@ -240,9 +240,7 @@ void demokernel::initDemo() {
 
 	// Create the camera
 	this->camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
-	// Create a basic light
-	this->light = new Light(SpotLight);
-
+	
 	// Start loading Basic resources
 	RES->loadAllResources();
 

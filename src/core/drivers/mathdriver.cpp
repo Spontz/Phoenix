@@ -48,39 +48,21 @@ mathDriver::mathDriver(Section *sec) {
 	}
 
 	// Light values
-	// Camera values
-	if (DEMO->light != NULL) {
-		SymbolTable.add_variable("light_pos_x", DEMO->light->Position.x);
-		SymbolTable.add_variable("light_pos_y", DEMO->light->Position.y);
-		SymbolTable.add_variable("light_pos_z", DEMO->light->Position.z);
+	// TODO: Need to add more values for all the lights available
+	SymbolTable.add_variable("light_pos_x", DEMO->lightManager.light[0]->Position.x);
+	SymbolTable.add_variable("light_pos_y", DEMO->lightManager.light[0]->Position.y);
+	SymbolTable.add_variable("light_pos_z", DEMO->lightManager.light[0]->Position.z);
 
-		SymbolTable.add_variable("light_look_x", DEMO->light->lookAt.x);
-		SymbolTable.add_variable("light_look_y", DEMO->light->lookAt.y);
-		SymbolTable.add_variable("light_look_z", DEMO->light->lookAt.z);
+	SymbolTable.add_variable("light_look_x", DEMO->lightManager.light[0]->lookAt.x);
+	SymbolTable.add_variable("light_look_y", DEMO->lightManager.light[0]->lookAt.y);
+	SymbolTable.add_variable("light_look_z", DEMO->lightManager.light[0]->lookAt.z);
 
-		SymbolTable.add_variable("light_col_r", DEMO->light->colAmbient.x);
-		SymbolTable.add_variable("light_col_g", DEMO->light->colAmbient.y);
-		SymbolTable.add_variable("light_col_b", DEMO->light->colAmbient.z);
+	SymbolTable.add_variable("light_col_r", DEMO->lightManager.light[0]->colAmbient.x);
+	SymbolTable.add_variable("light_col_g", DEMO->lightManager.light[0]->colAmbient.y);
+	SymbolTable.add_variable("light_col_b", DEMO->lightManager.light[0]->colAmbient.z);
 
-		SymbolTable.add_variable("light_ambient", DEMO->light->ambientStrength);
-		SymbolTable.add_variable("light_specular", DEMO->light->specularStrength);
-	}
-	else {
-		SymbolTable.add_constant("light_pos_x", 10);
-		SymbolTable.add_constant("light_pos_y", 10);
-		SymbolTable.add_constant("light_pos_z", 0);
-
-		SymbolTable.add_constant("light_look_x", 0);
-		SymbolTable.add_constant("light_look_y", 0);
-		SymbolTable.add_constant("light_look_z", 0);
-
-		SymbolTable.add_constant("light_col_r", 1);
-		SymbolTable.add_constant("light_col_g", 0);
-		SymbolTable.add_constant("light_col_b", 0);
-
-		SymbolTable.add_constant("light_ambient", 0.2f);
-		SymbolTable.add_constant("light_specular", 0.5f);
-	}
+	SymbolTable.add_variable("light_ambient", DEMO->lightManager.light[0]->ambientStrength);
+	SymbolTable.add_variable("light_specular", DEMO->lightManager.light[0]->specularStrength);
 
 
 	// Graphic constants

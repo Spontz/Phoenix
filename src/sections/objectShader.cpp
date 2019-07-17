@@ -101,7 +101,7 @@ void sObjectShader::exec() {
 	my_shader->use();
 
 	// For ShadowMapping
-	my_shader->setValue("lightSpaceMatrix", DEMO->light->SpaceMatrix);
+	my_shader->setValue("lightSpaceMatrix", DEMO->lightManager.light[0]->SpaceMatrix);
 	
 	// End ShadowMapping
 
