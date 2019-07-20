@@ -30,6 +30,7 @@ typedef struct {
 	int tex_components;
 	int ratio;
 	char *format;
+	int numColorAttachments;
 } tGLFboFormat;
 
 // ******************************************************************

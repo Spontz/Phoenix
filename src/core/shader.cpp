@@ -198,7 +198,7 @@ void Shader::checkCompileErrors(GLuint shader, std::string type)
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
 			infoLog = (GLchar*)malloc(size);
 			glGetShaderInfoLog(shader, size, &p_size, infoLog);
-			LOG->Error("Shader Compilation Error: file %s, %s, log: %s", this->vertexShader_Filename.c_str(), this->fragmentShader_Filename.c_str(), infoLog);
+			LOG->Error("Shader Compile (in %s): files %s, %s, log: %s", type.c_str(), this->vertexShader_Filename.c_str(), this->fragmentShader_Filename.c_str(), infoLog);
 			free(infoLog);
 		}
 	}
@@ -208,7 +208,7 @@ void Shader::checkCompileErrors(GLuint shader, std::string type)
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
 			infoLog = (GLchar*)malloc(size);
 			glGetProgramInfoLog(shader, size, &p_size, infoLog);
-			LOG->Error("Shader Linking Error: file %s, %s, log: %s", this->vertexShader_Filename.c_str(), this->fragmentShader_Filename.c_str(), infoLog);
+			LOG->Error("Shader Linking: file %s, %s, log: %s", this->vertexShader_Filename.c_str(), this->fragmentShader_Filename.c_str(), infoLog);
 			free(infoLog);
 		}
 	}

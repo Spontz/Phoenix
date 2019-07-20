@@ -42,10 +42,10 @@ void FboManager::unbind()
 }
 
 // Adds a Fbo into the queue, returns the ID of the texture added
-int FboManager::addFbo(string engine_format, int width, int height, int iformat, int format, int type, int components) {
+int FboManager::addFbo(string engine_format, int width, int height, int iformat, int format, int type, int components, unsigned int numColorAttachments) {
 	int fbo_id = -1;
 	Fbo *new_fbo = new Fbo();
-	if (new_fbo->upload(engine_format, (int)fbo.size(), width, height, iformat, format, type)) {
+	if (new_fbo->upload(engine_format, (int)fbo.size(), width, height, iformat, format, type, numColorAttachments)) {
 		fbo.push_back(new_fbo);
 		mem += (float)(new_fbo->width * new_fbo->height * components) / 1048576.0f;		// increase the texture mem
 		fbo_id = (int)fbo.size() - 1;
@@ -58,10 +58,15 @@ int FboManager::addFbo(string engine_format, int width, int height, int iformat,
 	return fbo_id;
 }
 
-int FboManager::getOpenGLTextureID(int index)
+int FboManager::getOpenGLTextureID(unsigned int index, unsigned int attachment)
 {
-	if (index < fbo.size())
-		return fbo[index]->textureBufferID;
+	if (index < fbo.size()) {
+		if (attachment < fbo[index]->numAttachments) {
+			return fbo[index]->colorBufferID[attachment];
+		}
+		else
+			return -1;
+	}
 	else
 		return -1;
 }

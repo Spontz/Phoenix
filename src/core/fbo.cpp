@@ -4,7 +4,9 @@
 #include <main.h>
 #include "fbo.h"
 
-Fbo::Fbo(): use_linear(true), textureBufferID(0)
+#define MAX_COLOR_ATTACHMENTS 4 // Max number of color attachments to support
+
+Fbo::Fbo(): use_linear(true), colorBufferID(0)
 {
 	engineFormat = "FBO not inited";
 	width = 0;
@@ -12,19 +14,20 @@ Fbo::Fbo(): use_linear(true), textureBufferID(0)
 	iformat = 0;
 	format = 0;
 	ttype = 0;
+	numAttachments = 1; // By default, 1 attachment
 }
 
 Fbo::~Fbo()
 {
-	if (textureBufferID != 0) {
+	if (colorBufferID != 0) {
 		glDeleteFramebuffers(1, &frameBufferID);
 		glDeleteRenderbuffers(1, &renderBufferID);
-		glDeleteTextures(1, &textureBufferID);
-		textureBufferID = 0;
+		glDeleteTextures(this->numAttachments, colorBufferID);
+		colorBufferID = 0;
 	}
 }
 
-bool Fbo::upload(string EngineFormat, int index, int Width, int Height, int iFormat, int Format, int Type)
+bool Fbo::upload(string EngineFormat, int index, int Width, int Height, int iFormat, int Format, int Type, unsigned int numColorAttachments)
 {
 	if ((Width == 0) || (Height == 0)) {
 		LOG->Error("Fbo error: Size is zero!");
@@ -36,19 +39,24 @@ bool Fbo::upload(string EngineFormat, int index, int Width, int Height, int iFor
 	this->iformat = iFormat;
 	this->format = Format;
 	this->ttype = Type;
+	this->numAttachments = numColorAttachments;
 
 	// Setup our Framebuffer
 	glGenFramebuffers(1, &(this->frameBufferID));
 	if (EngineFormat != "DEPTH") { // If its not a depth texture, means it's a color texture! :)
 		glBindFramebuffer(GL_FRAMEBUFFER, this->frameBufferID);
-		// Create a color attachment texture
-		glGenTextures(1, &(this->textureBufferID));
-		glBindTexture(GL_TEXTURE_2D, this->textureBufferID);
-		glTexImage2D(GL_TEXTURE_2D, 0, this->iformat, this->width, this->height, 0, this->format, this->ttype, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->textureBufferID, 0);
-
+		// Create the color attachment(s) texture(s)
+		//glGenTextures(1, &(this->colorBufferID));
+		// create 2 floating point color buffers (1 for normal rendering, other for brightness treshold values)
+		this->colorBufferID = (GLuint*)malloc(sizeof(GLuint) * this->numAttachments);
+		glGenTextures(this->numAttachments, colorBufferID);
+		for (unsigned int i = 0; i < this->numAttachments; i++) {
+			glBindTexture(GL_TEXTURE_2D, this->colorBufferID[i]);
+			glTexImage2D(GL_TEXTURE_2D, 0, this->iformat, this->width, this->height, 0, this->format, this->ttype, NULL);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this->colorBufferID[i], 0);
+		}
 		// create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
 		glGenRenderbuffers(1, &(this->renderBufferID));
 		glBindRenderbuffer(GL_RENDERBUFFER, this->renderBufferID);
@@ -56,23 +64,30 @@ bool Fbo::upload(string EngineFormat, int index, int Width, int Height, int iFor
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->renderBufferID);
 		//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, this->width, this->height);
 		//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->renderBufferID);
+		
+		// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+		unsigned int attachments[MAX_COLOR_ATTACHMENTS] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+		glDrawBuffers(this->numAttachments, attachments);
 	}
 	else {	// If it's a Depth texture...
 		// create depth texture
-		glGenTextures(1, &(this->textureBufferID));
-		glBindTexture(GL_TEXTURE_2D, (this->textureBufferID));
-		glTexImage2D(GL_TEXTURE_2D, 0, this->iformat, this->width, this->height, 0, this->format, this->ttype, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
-		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-		// attach depth texture as FBO's depth buffer
-		glBindFramebuffer(GL_FRAMEBUFFER, (this->frameBufferID));
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, (this->textureBufferID), 0);
-		glDrawBuffer(GL_NONE);
-		glReadBuffer(GL_NONE);
+		this->colorBufferID = (unsigned int*)malloc(sizeof(unsigned int) * this->numAttachments);
+		glGenTextures(1, this->colorBufferID);
+		for (unsigned int i = 0; i < this->numAttachments; i++) {
+			glBindTexture(GL_TEXTURE_2D, this->colorBufferID[i]);
+			glTexImage2D(GL_TEXTURE_2D, 0, this->iformat, this->width, this->height, 0, this->format, this->ttype, NULL);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+			float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+			glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+			// attach depth texture as FBO's depth buffer
+			glBindFramebuffer(GL_FRAMEBUFFER, (this->frameBufferID));
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->colorBufferID[i], 0);
+			glDrawBuffer(GL_NONE);
+			glReadBuffer(GL_NONE);
+		}
 	}
 
 	// Check if any error during the framebuffer upload
@@ -102,9 +117,10 @@ void Fbo::bind() const
 	glBindFramebuffer(GL_FRAMEBUFFER, this->frameBufferID);
 }
 
-void Fbo::bind_tex() const
+void Fbo::bind_tex(GLuint attachment) const
 {
-	glBindTexture(GL_TEXTURE_2D, this->textureBufferID);
+	if (attachment < this->numAttachments)
+		glBindTexture(GL_TEXTURE_2D, this->colorBufferID[attachment]);
 }
 
 void Fbo::active(int index) const

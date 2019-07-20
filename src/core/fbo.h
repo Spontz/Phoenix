@@ -19,18 +19,19 @@ public:
 	
 	int width, height;
 	int iformat, format, ttype, components;
+	unsigned int numAttachments;
 	bool use_linear;
 	string engineFormat;		// format of the FBO, by a name given by the engine
 	GLuint frameBufferID;		// Our handle to the Frame Buffer
 	GLuint renderBufferID;		// Our handle to the Render Buffer
-	GLuint textureBufferID;		// Our handle to the Texture Color buffer attachment
+	GLuint *colorBufferID;		// Our handle to the Color buffer(s) attachment(s)
 
 	Fbo();
 	virtual ~Fbo();
 
-	bool upload(string EngineFormat, int index, int Width, int Height, int iFormat, int Format, int Type);
+	bool upload(string EngineFormat, int index, int Width, int Height, int iFormat, int Format, int Type, unsigned int numColorAttachments);
 	void bind() const;
-	void bind_tex() const;
+	void bind_tex(GLuint attachment = 0) const;
 	void active(int index = 0) const;
 				
 private:

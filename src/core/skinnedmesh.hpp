@@ -4,19 +4,15 @@
 #include <vector>
 #include <map>
 
-/* glm headers */
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-/* ASSIMP headers */
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-/* I use glad to load OpenGL functions */
 #include "main.h"
-//#include "glad.h"
 #include <glad/glad.h>
 
 

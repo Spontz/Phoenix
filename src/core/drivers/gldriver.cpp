@@ -277,6 +277,9 @@ void glDriver::initGraphics() {
 				this->fbo[i].width = (this->width / this->fbo[i].ratio);
 				this->fbo[i].height = (this->height / this->fbo[i].ratio);
 			}
+			// check that at least we should have 1 color attachment
+			if (this->fbo[i].numColorAttachments <= 0)
+				this->fbo[i].numColorAttachments = 1;
 
 			this->fbo[i].tex_iformat = getTextureInternalFormatByName(this->fbo[i].format);
 			this->fbo[i].tex_format = getTextureFormatByName(this->fbo[i].format);
@@ -284,7 +287,7 @@ void glDriver::initGraphics() {
 			this->fbo[i].tex_components = getTextureComponentsByName(this->fbo[i].format);
 			// Check if the format is valid
 			if (this->fbo[i].tex_format > 0) {
-				DEMO->fboManager.addFbo(this->fbo[i].format, this->fbo[i].width, this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type, this->fbo[i].tex_components);
+				DEMO->fboManager.addFbo(this->fbo[i].format, this->fbo[i].width, this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type, this->fbo[i].tex_components, this->fbo[i].numColorAttachments);
 				LOG->Info(LOG_LOW, "Fbo %i uploaded: width: %i, height: %i, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_components, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
 			}
 			else {

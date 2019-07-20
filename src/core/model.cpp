@@ -173,6 +173,11 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	std::vector<int> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 	LOG->Info(LOG_LOW, "  The mesh has %d heightMaps", heightMaps.size());
+	// Unknown
+	std::vector<int> unknownMaps = loadMaterialTextures(material, aiTextureType_NONE, "texture_unknown");
+	textures.insert(textures.end(), unknownMaps.begin(), unknownMaps.end());
+	LOG->Info(LOG_LOW, "  The mesh has %d unknownMaps", unknownMaps.size());
+
 
 	// return a mesh object created from the extracted mesh data
 	return Mesh(vertices, indices, textures);
