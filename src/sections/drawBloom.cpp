@@ -55,10 +55,10 @@ bool sDrawBloom::load() {
 		return false;
 
 	// Create Shader variables
-	Shader *my_shader;
-	my_shader = DEMO->shaderManager.shader[local->shaderBlur];
-	my_shader->use();
-	local->shaderVars = new ShaderVars(this, my_shader);
+	Shader *my_shaderBlur;
+	my_shaderBlur = DEMO->shaderManager.shader[local->shaderBlur];
+	my_shaderBlur->use();
+	local->shaderVars = new ShaderVars(this, my_shaderBlur);
 
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
@@ -118,9 +118,8 @@ void sDrawBloom::exec() {
 
 		// First step: Blur the image (fbo attachment 1)
 		{
-			// Set new shader variables values
-			local->shaderVars->setValues(false);
-			bool horizontal = true, first_iteration = true;
+			int horizontal = 1;
+			bool first_iteration = true;
 			unsigned int amount = 10;
 			my_shaderBlur->use();
 			// Set new shader variables values
@@ -133,10 +132,15 @@ void sDrawBloom::exec() {
 			{
 				glBindFramebuffer(GL_FRAMEBUFFER, local->pingpongFBO[horizontal]);
 				my_shaderBlur->setValue("horizontal", horizontal);
+				//int kk = my_shaderBlur->getUniformLocation("image");
 				glBindTexture(GL_TEXTURE_2D, first_iteration ? bufferID : local->pingpongColorbuffers[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
 				// Render scene
 				RES->Draw_QuadFS();
-				horizontal = !horizontal;
+				if (horizontal == 1)
+					horizontal = 0;
+				else
+					horizontal = 1;
+				//horizontal = !horizontal;
 				if (first_iteration)
 					first_iteration = false;
 			}
