@@ -171,7 +171,8 @@ bool ShaderVars::ReadString(const char * string_var)
 			}
 			else {
 				var->texture = fbonum;
-				var->texGLid = DEMO->fboManager.getOpenGLTextureID(fbonum); // TODO: Here we should be able to change the color attachment with the corresponding texture ID... but it does not work :S
+				// TODO: By default we are drawing always the attachment 0, but we could change this by adding another parameter in the script file with the attachment to draw
+				var->texGLid = DEMO->fboManager.getOpenGLTextureID(fbonum);
 			}
 		}
 		// Is it s a normal texture...
