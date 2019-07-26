@@ -54,10 +54,8 @@ bool Fbo::upload(string EngineFormat, int index, int Width, int Height, int iFor
 	if (EngineFormat != "DEPTH") { // If its not a depth texture, means it's a color texture! :)
 		glBindFramebuffer(GL_FRAMEBUFFER, this->frameBufferID);
 		// Create the color attachment(s) texture(s)
-		//glGenTextures(1, &(this->colorBufferID));
-		// create 2 floating point color buffers (1 for normal rendering, other for brightness treshold values)
 		this->colorBufferID = (GLuint*)malloc(sizeof(GLuint) * this->numAttachments);
-		glGenTextures(this->numAttachments, colorBufferID);
+		glGenTextures(this->numAttachments, this->colorBufferID);
 		for (unsigned int i = 0; i < this->numAttachments; i++) {
 			glBindTexture(GL_TEXTURE_2D, this->colorBufferID[i]);
 			glTexImage2D(GL_TEXTURE_2D, 0, this->iformat, this->width, this->height, 0, this->format, this->ttype, NULL);
@@ -76,7 +74,7 @@ bool Fbo::upload(string EngineFormat, int index, int Width, int Height, int iFor
 		//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->renderBufferID);
 		
 		// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-		unsigned int attachments[GLDRV_MAX_COLOR_ATTACHMENTS] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
+		unsigned int attachments[GLDRV_MAX_COLOR_ATTACHMENTS] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 		glDrawBuffers(this->numAttachments, attachments);
 	}
 	else {	// If it's a Depth texture...
