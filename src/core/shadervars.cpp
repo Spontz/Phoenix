@@ -41,7 +41,10 @@ bool ShaderVars::ReadString(const char * string_var)
 	if (vars[0] != "sampler2D") {
 		strcpy(var_type, vars[0].c_str());
 		strcpy(var_name, vars[1].c_str());
+		for (int i = 3; i < vars.size(); i++) // Concatenate the rest of strings (if any)
+			vars[2] += " " + vars[i];
 		strcpy(var_value, vars[2].c_str());
+
 		LOG->Info(LOG_MED, "Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_value);
 	}
 	else {	// If its a sampler, we need also the ID
@@ -132,9 +135,6 @@ bool ShaderVars::ReadString(const char * string_var)
 		var->loc = my_shader->getUniformLocation(var->name);
 		var->eva = new mathDriver(this->my_section);
 		var->eva->expression = var_value;
-		//var->eva->SymbolMatTable.add_variable("v1", var->value);
-		//var->eva->compileFormulaMat();
-		
 		var->eva->SymbolTable.add_variable( "v1", var->value[0][0]);
 		var->eva->SymbolTable.add_variable( "v2", var->value[0][1]);
 		var->eva->SymbolTable.add_variable( "v3", var->value[0][2]);
