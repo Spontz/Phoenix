@@ -62,6 +62,9 @@ void window_size_callback(GLFWwindow * window, int width, int height) {
 	GLDRV->mouse_lastypos = (float)height / 2.0f;
 
 	GLDRV->initRender(true);
+
+	// Bloom efect has some FBO's and color bbuffers that need to be regenerated if the window is resized
+	RES->Load_Bloom();
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)

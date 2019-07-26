@@ -5,6 +5,7 @@
 #define RESOURCE_H
 #include <string>
 #include <glm/glm.hpp>
+#include <glad/glad.h>
 //#include <glm/gtc/matrix_transform.hpp>
 //#include "main.h"
 
@@ -40,9 +41,16 @@ public:
 	int shdr_ObjColor;		// Draws an object with a color
 
 	// Objects
-	unsigned int obj_skybox;
-	unsigned int obj_quadFullscreen; // TODO: Temporal, move to private
-	unsigned int obj_qube;
+	GLuint obj_skybox;
+	GLuint obj_quadFullscreen; // TODO: Temporal, move to private
+	GLuint obj_qube;
+
+	
+	//Bloom effect special resources
+	GLuint	bloomPingpongFBO[2];			// 2FBO's for Bloom effect
+	GLuint	bloomPingpongColorbuffer[2];	// 2 Color buffers for Bloom effect
+	bool	bloomLoaded;
+	void	Load_Bloom();	// Load resources for Bloom effect
 
 private:
 
@@ -58,6 +66,7 @@ private:
 	void Load_Text_Fonts();
 
 	void Load_Lights();
+
 
 	static Resource* m_pThis;
 };
