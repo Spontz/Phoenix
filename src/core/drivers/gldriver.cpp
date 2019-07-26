@@ -280,9 +280,6 @@ void glDriver::initGraphics() {
 				this->fbo[i].width = (this->width / this->fbo[i].ratio);
 				this->fbo[i].height = (this->height / this->fbo[i].ratio);
 			}
-			// check that at least we should have 1 color attachment
-			if (this->fbo[i].numColorAttachments <= 0)
-				this->fbo[i].numColorAttachments = 1;
 
 			this->fbo[i].tex_iformat = getTextureInternalFormatByName(this->fbo[i].format);
 			this->fbo[i].tex_format = getTextureFormatByName(this->fbo[i].format);

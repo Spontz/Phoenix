@@ -4,8 +4,6 @@
 #include <main.h>
 #include "fbo.h"
 
-#define MAX_COLOR_ATTACHMENTS 4 // Max number of color attachments to support
-
 Fbo::Fbo(): use_linear(true), colorBufferID(0)
 {
 	engineFormat = "FBO not inited";
@@ -41,6 +39,16 @@ bool Fbo::upload(string EngineFormat, int index, int Width, int Height, int iFor
 	this->ttype = Type;
 	this->numAttachments = numColorAttachments;
 
+	// Check Color attachments
+	if (this->numAttachments <= 0 ) {
+		LOG->Error("Fbo::upload: Requested %d attachments for fbo_%d, but should be at least 1", this->numAttachments, index);
+		this->numAttachments = 1;
+	}
+	if (this->numAttachments > GLDRV_MAX_COLOR_ATTACHMENTS) {
+		LOG->Error("Fbo::upload: MAX number of attachments reached. Requested %d attachments for fbo_%d, but max attachments are: %d", this->numAttachments, index, GLDRV_MAX_COLOR_ATTACHMENTS);
+		this->numAttachments = GLDRV_MAX_COLOR_ATTACHMENTS;
+	}
+
 	// Setup our Framebuffer
 	glGenFramebuffers(1, &(this->frameBufferID));
 	if (EngineFormat != "DEPTH") { // If its not a depth texture, means it's a color texture! :)
@@ -68,7 +76,7 @@ bool Fbo::upload(string EngineFormat, int index, int Width, int Height, int iFor
 		//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->renderBufferID);
 		
 		// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-		unsigned int attachments[MAX_COLOR_ATTACHMENTS] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+		unsigned int attachments[GLDRV_MAX_COLOR_ATTACHMENTS] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
 		glDrawBuffers(this->numAttachments, attachments);
 	}
 	else {	// If it's a Depth texture...

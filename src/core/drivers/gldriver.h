@@ -18,6 +18,9 @@
 
 #define GLDRV glDriver::getInstance()
 
+
+#define GLDRV_MAX_COLOR_ATTACHMENTS 4
+
 using namespace std;
 
 // ******************************************************************
