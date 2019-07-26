@@ -34,13 +34,13 @@ mathDriver::mathDriver(Section *sec) {
 		SymbolTable.add_variable("cam_zoom", DEMO->camera->Zoom);
 	}
 	else {
-		SymbolTable.add_constant("cam_pos_x", 0);
-		SymbolTable.add_constant("cam_pos_y", 0);
-		SymbolTable.add_constant("cam_pos_z", 0);
+		SymbolTable.add_constant("cam_posX", 0);
+		SymbolTable.add_constant("cam_posY", 0);
+		SymbolTable.add_constant("cam_posZ", 0);
 
-		SymbolTable.add_constant("cam_up_x", 0);
-		SymbolTable.add_constant("cam_up_y", 0);
-		SymbolTable.add_constant("cam_up_z", 100);
+		SymbolTable.add_constant("cam_upX", 0);
+		SymbolTable.add_constant("cam_upY", 0);
+		SymbolTable.add_constant("cam_upZ", 100);
 
 		SymbolTable.add_constant("cam_yaw", 0);
 		SymbolTable.add_constant("cam_pitch", 0);
