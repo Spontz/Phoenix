@@ -275,12 +275,15 @@ void Resource::Load_Bloom()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->bloomPingpongColorbuffer[i], 0);
-		// also check if framebuffers are complete (no need for depth buffer)
+		// also check if framebuffers are complete
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 			LOG->Error("Resource::Load_Bloom: The internal framebuffers could not be created! The Bloom effects will not work properly!!");
 			this->bloomLoaded = false;
 		}
 	}
+	// Unbind texture and buffers
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	this->bloomLoaded = true;
 }
 
