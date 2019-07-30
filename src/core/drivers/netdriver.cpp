@@ -76,7 +76,8 @@ netDriver * netDriver::getInstance() {
 
 netDriver::netDriver()
 {
-	port = 28000;
+	port		= 28000;	// Port for receiving data from the Editor
+	port_send	= 28001;	// Port for sending data to the Editor
 	inited = false;
 }
 
@@ -94,6 +95,7 @@ void netDriver::init(int port)
 	dyad_addListener(serv, DYAD_EVENT_ACCEPT, onAccept, NULL);
 	dyad_addListener(serv, DYAD_EVENT_LISTEN, onListen, NULL);
 	dyad_listenEx(serv, "0.0.0.0", port, 511);
+	LOG->Info(LOG_MED, "Network: outgoing messages will be done through port: %d", this->port_send);
 
 	inited = true;
 }
@@ -196,22 +198,15 @@ char * netDriver::processMessage(char * message)
 
 ///////////// Send message
 
-void onData_SendMessage(dyad_Event *e) {
-	// Send the response and close the connection
-	dyad_write(e->stream, NETDRV->messageToSend.c_str(), (int)NETDRV->messageToSend.length());
-	LOG->Info(LOG_LOW, "Sending message: [%s]", NETDRV->messageToSend.c_str());
-	dyad_end(e->stream);
-}
-
 void onConnect(dyad_Event *e) {
-	LOG->Info(LOG_LOW, "Connected to demo editor, sending message...");
+	dyad_write(e->stream, NETDRV->messageToSend.c_str(), (int)NETDRV->messageToSend.length());
+	dyad_end(e->stream);
 }
 
 void netDriver::sendMessage(string message)
 {
 	this->messageToSend = message;
 	dyad_Stream *serv = dyad_newStream();
-	//dyad_addListener(serv, DYAD_EVENT_CONNECT, onConnect, NULL);
-	dyad_addListener(serv, DYAD_EVENT_DATA, onData_SendMessage, NULL);
-	dyad_connect(serv, "0.0.0.0", port);	
+	dyad_addListener(serv, DYAD_EVENT_CONNECT, onConnect, NULL);
+	dyad_connect(serv, "127.0.0.1", port_send);
 }

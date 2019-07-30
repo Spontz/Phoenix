@@ -12,6 +12,7 @@ class netDriver {
 	
 public:
 	int		port;
+	int		port_send;
 	bool	inited;
 	string	messageToSend;
 
