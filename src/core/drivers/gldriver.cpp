@@ -228,8 +228,6 @@ void glDriver::initFramework() {
 }
 
 void glDriver::initGraphics() {
-	int i;
-
 	// Create a windowed mode window and its OpenGL context
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -246,6 +244,12 @@ void glDriver::initGraphics() {
 		glfwTerminate();
 	}
 
+	// Enable multisampling (aka anti-aliasing)
+	if (this->multisampling) {
+		glfwWindowHint(GLFW_SAMPLES, 4);		// This does mean that the size of all the buffers is increased by 4
+	}
+
+
 	// Make the window's context current
 	glfwMakeContextCurrent(window);
 
@@ -258,6 +262,12 @@ void glDriver::initGraphics() {
 	// Initialize glad
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		LOG->Error("Failed to initialize GLAD");
+	}
+
+
+	// Enable multisampling state (aka anti-aliasing)
+	if (this->multisampling) {
+		glEnable(GL_MULTISAMPLE);
 	}
 
 	// Init render
@@ -274,7 +284,7 @@ void glDriver::initGraphics() {
 	}
 
 	// init fbo's
-	for (i = 0; i < FBO_BUFFERS; i++) {
+	for (int i = 0; i < FBO_BUFFERS; i++) {
 		if (((this->fbo[i].width != 0) && (this->fbo[i].height != 0)) || (this->fbo[i].ratio != 0)) {
 			if (this->fbo[i].ratio != 0) {
 				this->fbo[i].width = (this->width / this->fbo[i].ratio);
@@ -311,9 +321,6 @@ void glDriver::initStates()
 
 	glEnable(GL_DEPTH_TEST);					// depth test enabled
 	glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL - TODO: Should be LESS according learnopengl.com
-	// Enable multisampling
-	if (this->multisampling)
-		glEnable(GL_MULTISAMPLE);
 }
 
 void glDriver::initRender(int clear)
