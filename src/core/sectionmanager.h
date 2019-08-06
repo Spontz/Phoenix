@@ -29,7 +29,8 @@ enum SectionType {
 	FboUnbind,
 	RenderFbo,
 	RenderQuad,
-	DrawBloom,
+	EfxBloom,
+	EfxFader,
 	Test
 };
 

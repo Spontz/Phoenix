@@ -23,7 +23,8 @@ class sRenderQuad : public Section { public:	sRenderQuad();  bool load(); void i
 class sObjectShader : public Section { public:	sObjectShader();  bool load(); void init(); void exec(); void end(); };
 class sObjectAnimShader : public Section { public:	sObjectAnimShader();  bool load(); void init(); void exec(); void end(); };
 class sParticleMatrix : public Section { public:	sParticleMatrix();  bool load(); void init(); void exec(); void end(); };
-class sDrawBloom : public Section { public:	sDrawBloom();  bool load(); void init(); void exec(); void end(); };
+class sEfxBloom : public Section { public:	sEfxBloom();  bool load(); void init(); void exec(); void end(); };
+class sEfxFader : public Section { public:	sEfxFader();  bool load(); void init(); void exec(); void end(); };
 class sTest : public Section { public:	sTest();  bool load(); void init(); void exec(); void end(); };
 
 #endif

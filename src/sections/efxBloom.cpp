@@ -2,7 +2,7 @@
 #include "core/shadervars.h"
 
 typedef struct {
-	unsigned int	FboNum;		// Fbo to use (must have 2 color attachments!)
+	unsigned int	FboNum;			// Fbo to use (must have 2 color attachments!)
 	GLuint			bufferColor;	// Attcahment 0 of our FBO
 	GLuint			bufferBrights;	// Attachment 1 of our fbo
 	unsigned int	blurAmount;		// Blur layers to apply
@@ -15,31 +15,31 @@ typedef struct {
 	// Pointer to the buffers form the Resource manager
 	GLuint	*pingpongFBO[2];
 	GLuint	*pingpongColorbuffer[2];
-} drawBloom_section;
+} efxBloom_section;
 
-static drawBloom_section *local;
+static efxBloom_section *local;
 
 // ******************************************************************
 
-sDrawBloom::sDrawBloom() {
-	type = SectionType::DrawBloom;
+sEfxBloom::sEfxBloom() {
+	type = SectionType::EfxBloom;
 }
 
 
-bool sDrawBloom::load() {
+bool sEfxBloom::load() {
 	// script validation
 	if (RES->bloomLoaded == false) {
-		LOG->Error("DrawBloom [%s]: The internal resources could not be created, so Bloom effect will not work... disabling it!", this->identifier.c_str());
+		LOG->Error("EfxBloom [%s]: The internal resources could not be created, so Bloom effect will not work... disabling it!", this->identifier.c_str());
 		return false;
 	}
 
 	if ((this->param.size()) != 4 || (this->strings.size() != 4)) {
-		LOG->Error("DrawBloom [%s]: 4 params are needed (Clear the screen & depth buffers, Fbo to use and Blur Amount), and 2 shader files (2 for Blur and 2 for Bloom)", this->identifier.c_str());
+		LOG->Error("EfxBloom [%s]: 4 params are needed (Clear the screen & depth buffers, Fbo to use and Blur Amount), and 2 shader files (2 for Blur and 2 for Bloom)", this->identifier.c_str());
 		return false;
 	}
 	
 
-	local = (drawBloom_section*) malloc(sizeof(drawBloom_section));
+	local = (efxBloom_section*) malloc(sizeof(efxBloom_section));
 	this->vars = (void *)local;
 
 	// Load parameters
@@ -50,11 +50,11 @@ bool sDrawBloom::load() {
 
 	// Check if the fbo can be used for the effect
 	if (local->FboNum < 0 || local->FboNum >= DEMO->fboManager.fbo.size()) {
-		LOG->Error("DrawBloom [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", this->identifier.c_str(), local->FboNum, DEMO->fboManager.fbo.size()-1);
+		LOG->Error("EfxBloom [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", this->identifier.c_str(), local->FboNum, DEMO->fboManager.fbo.size()-1);
 		return false;
 	}
 	if (DEMO->fboManager.fbo[local->FboNum]->numAttachments < 2) {
-		LOG->Error("DrawBloom [%s]: The fbo specified [%d] has less than 2 attachments, so it cannot be used for bloom effect: Attahment 0 is the color image and Attachment 1 is the brights image", this->identifier.c_str(), local->FboNum);
+		LOG->Error("EfxBloom [%s]: The fbo specified [%d] has less than 2 attachments, so it cannot be used for bloom effect: Attahment 0 is the color image and Attachment 1 is the brights image", this->identifier.c_str(), local->FboNum);
 		return false;
 	}
 	
@@ -76,11 +76,11 @@ bool sDrawBloom::load() {
 	my_shaderBlur = DEMO->shaderManager.shader[local->shaderBlur];
 	my_shaderBloom = DEMO->shaderManager.shader[local->shaderBloom];
 
-	// Configure Shader Blur
+	// Configure Blur shader
 	my_shaderBlur->use();
 	my_shaderBlur->setValue("image", 0);	// The image is in the texture unit 0
 
-	// Configure Shader Bloom (variables are for this shader)
+	// Configure Bloom shader (variables are for this shader)
 	my_shaderBloom->use();
 	local->shaderVars = new ShaderVars(this, my_shaderBloom);
 	// Read the shader variables
@@ -101,12 +101,12 @@ bool sDrawBloom::load() {
 	return true;
 }
 
-void sDrawBloom::init() {
+void sEfxBloom::init() {
 	
 }
 
-void sDrawBloom::exec() {
-	local = (drawBloom_section*)this->vars;
+void sEfxBloom::exec() {
+	local = (efxBloom_section*)this->vars;
 
 	// Clear the screen and depth buffers depending of the parameters passed by the user
 	if (local->clearScreen) glClear(GL_COLOR_BUFFER_BIT);
@@ -156,6 +156,6 @@ void sDrawBloom::exec() {
 	
 }
 
-void sDrawBloom::end() {
+void sEfxBloom::end() {
 	
 }
