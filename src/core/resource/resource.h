@@ -32,13 +32,13 @@ public:
 	int tex_tv, tex_isaac2, tex_shotgan, tex_shotgan2, tex_merlucin, tex_xphere;
 
 	// Shaders
-	int shdr_QuadTex;		// Draws a textured quad
-	int shdr_QuadDepth;		// Draws a depth texture quad
-	int shdr_QuadTexAlpha;	// Draws a textured quad with alpha
-	int shdr_QuadTexModel;	// Draws a textured quad with model matrix
+	int shdr_QuadTex;			// Draws a textured quad
+	int shdr_QuadDepth;			// Draws a depth texture quad
+	int shdr_QuadTexAlpha;		// Draws a textured quad with alpha
+	int shdr_QuadTexModel;		// Draws a textured quad with model matrix
 	int shdr_QuadTexVFlipModel;	// Draws a textured quad with model matrix, and with the texture flipped vertically
-	int shdr_Skybox;		// Draws a skybox
-	int shdr_ObjColor;		// Draws an object with a color
+	int shdr_Skybox;			// Draws a skybox
+	int shdr_ObjColor;			// Draws an object with a color
 
 	// Objects
 	GLuint obj_skybox;
@@ -46,7 +46,7 @@ public:
 	GLuint obj_qube;
 
 	
-	//Bloom effect special resources
+	// Bloom effect special resources
 	GLuint	bloomPingpongFBO[2];			// 2FBO's for Bloom effect
 	GLuint	bloomPingpongColorbuffer[2];	// 2 Color buffers for Bloom effect
 	bool	bloomLoaded;

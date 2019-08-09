@@ -35,6 +35,7 @@ glTexTable_t textureModes[] = {
 	{ "RGBA_16F",		GL_RGBA16F,				GL_RGBA,			GL_FLOAT,			4},
 	{ "RGB_32F",		GL_RGB32F,				GL_RGB,				GL_FLOAT,			3},
 	{ "RGBA_32F",		GL_RGBA32F,				GL_RGBA,			GL_FLOAT,			4},
+	{ "RG_16F",			GL_RG16F,				GL_RG,				GL_FLOAT,			2},
 	{ "DEPTH",			GL_DEPTH_COMPONENT,		GL_DEPTH_COMPONENT,	GL_FLOAT,			1}
 };
 #define TEXTURE_MODE (sizeof(textureModes) / sizeof(glTexTable_t))
@@ -63,7 +64,7 @@ void window_size_callback(GLFWwindow * window, int width, int height) {
 
 	GLDRV->initRender(true);
 
-	// Bloom efect has some FBO's and color bbuffers that need to be regenerated if the window is resized
+	// If window if resized, some FBO's effects need to be re-generated
 	RES->Load_Bloom();
 }
 

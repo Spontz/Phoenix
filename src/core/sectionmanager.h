@@ -31,6 +31,7 @@ enum SectionType {
 	RenderQuad,
 	EfxBloom,
 	EfxFader,
+	EfxMotionBlur,
 	Test
 };
 

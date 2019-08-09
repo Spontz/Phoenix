@@ -31,6 +31,7 @@ tSectionID sectionID[] = {
 	{"renderQuad",			SectionType::RenderQuad},
 	{"efxBloom",			SectionType::EfxBloom},
 	{"efxFader",			SectionType::EfxFader},
+	{"efxMotionblur",		SectionType::EfxMotionBlur},
 	{"test",				SectionType::Test},
 };
 
@@ -107,6 +108,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::EfxFader:
 		mySection = new sEfxFader();
+		break;
+	case SectionType::EfxMotionBlur:
+		mySection = new sEfxMotionBlur();
 		break;
 	case SectionType::Test:
 		mySection = new sTest();

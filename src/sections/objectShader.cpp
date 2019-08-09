@@ -13,6 +13,11 @@ typedef struct {
 	float	rx,ry,rz;// Rotation
 	float	sx,sy,sz;// Scale
 	
+	// Previous model, projection and view matrix, for being used in effects like motion blur
+	glm::mat4	prev_model;
+	glm::mat4	prev_projection;
+	glm::mat4	prev_view;
+
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
 	ShaderVars	*vars;			// For storing any other shader variables
 } objectShader_section;
@@ -121,6 +126,17 @@ void sObjectShader::exec() {
 	model = glm::rotate(model, glm::radians(local->rz), glm::vec3(0, 0, 1));
 	model = glm::scale(model, glm::vec3(local->sx, local->sy, local->sz));
 	my_shader->setValue("model", model);
+
+	// MotionBlur
+	my_shader->setValue("prev_projection", local->prev_projection);
+	my_shader->setValue("prev_view", local->prev_view);
+	my_shader->setValue("prev_model", local->prev_model);
+
+	local->prev_projection = projection;
+	local->prev_view = view;
+	local->prev_model = model;
+	// End MotionBlur
+
 
 	// Set the values
 	local->vars->setValues(false);

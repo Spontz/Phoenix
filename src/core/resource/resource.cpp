@@ -30,7 +30,7 @@ void Resource::loadAllResources()
 	Load_Text_Fonts();			// Text fonts
 	// Load Lights
 	Load_Lights();
-	// Load Bloom effect resources
+	// Load effect resources
 	Load_Bloom();
 }
 
@@ -279,6 +279,7 @@ void Resource::Load_Bloom()
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 			LOG->Error("Resource::Load_Bloom: The internal framebuffers could not be created! The Bloom effects will not work properly!!");
 			this->bloomLoaded = false;
+			return;
 		}
 	}
 	// Unbind texture and buffers
@@ -286,7 +287,6 @@ void Resource::Load_Bloom()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	this->bloomLoaded = true;
 }
-
 
 // Draw a Quad with texture in full screen
 void Resource::Draw_QuadFS(int textureNum)
