@@ -26,11 +26,11 @@ void FboManager::bind(int fbo_num)
 	}
 }
 
-void FboManager::bind_tex(int fbo_num)
+void FboManager::bind_tex(int fbo_num, GLuint attachment)
 {
 	if (fbo_num < fbo.size()) {
 		Fbo *my_fbo = fbo[fbo_num];
-		my_fbo->bind_tex();
+		my_fbo->bind_tex(attachment);
 	}
 }
 

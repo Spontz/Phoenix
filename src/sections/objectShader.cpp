@@ -9,9 +9,9 @@ typedef struct {
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
 
-	float	tx,ty,tz;// Translation
-	float	rx,ry,rz;// Rotation
-	float	sx,sy,sz;// Scale
+	float		tx,ty,tz;	// Translation
+	float		rx,ry,rz;	// Rotation
+	float		sx,sy,sz;	// Scale
 	
 	// Previous model, projection and view matrix, for being used in effects like motion blur
 	glm::mat4	prev_model;

@@ -6,25 +6,25 @@ typedef struct {
 	char		clearDepth;		// Clear Depth buffer
 	int			shader;			// Shader to apply
 	ShaderVars	*shaderVars;	// Shader variables
-} renderQuad_section;
+} drawQuad_section;
 
-static renderQuad_section *local;
+static drawQuad_section *local;
 
 // ******************************************************************
 
-sRenderQuad::sRenderQuad() {
-	type = SectionType::RenderQuad;
+sDrawQuad::sDrawQuad() {
+	type = SectionType::DrawQuad;
 }
 
 
-bool sRenderQuad::load() {
+bool sDrawQuad::load() {
 	// script validation
 	if ((this->param.size()) != 2 || (this->strings.size() != 2)) {
-		LOG->Error("RenderQuad [%s]: 2 params are needed (Clear the screen buffer & clear depth buffer), and 2 shader files (vertex and fragment)", this->identifier.c_str());
+		LOG->Error("DrawQuad [%s]: 2 params are needed (Clear the screen buffer & clear depth buffer), and 2 shader files (vertex and fragment)", this->identifier.c_str());
 		return false;
 	}
 	
-	local = (renderQuad_section*) malloc(sizeof(renderQuad_section));
+	local = (drawQuad_section*) malloc(sizeof(drawQuad_section));
 	this->vars = (void *)local;
 
 	// Load parameters
@@ -53,12 +53,12 @@ bool sRenderQuad::load() {
 	return true;
 }
 
-void sRenderQuad::init() {
+void sDrawQuad::init() {
 	
 }
 
-void sRenderQuad::exec() {
-	local = (renderQuad_section*)this->vars;
+void sDrawQuad::exec() {
+	local = (drawQuad_section*)this->vars;
 
 	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
 	my_shader->use();
@@ -81,6 +81,6 @@ void sRenderQuad::exec() {
 	EvalBlendingEnd();
 }
 
-void sRenderQuad::end() {
+void sDrawQuad::end() {
 	
 }

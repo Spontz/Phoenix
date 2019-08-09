@@ -17,7 +17,7 @@ public:
 	FboManager();
 	void active(int index = 0) const;
 	void bind(int fbo_num);
-	void bind_tex(int fbo_num);
+	void bind_tex(int fbo_num, GLuint attachment = 0);
 	void unbind();
 	int addFbo(string engine_format, int width, int height, int iformat, int format, int type, int components, unsigned int numColorAttachments);
 	int	getOpenGLTextureID(unsigned int index, unsigned int attachment = 0);

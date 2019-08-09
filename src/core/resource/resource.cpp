@@ -293,12 +293,11 @@ void Resource::Draw_QuadFS(int textureNum)
 {
 	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTex];
 
-	glBindVertexArray(obj_quadFullscreen);
 	my_shad->use();
 	my_shad->setValue("screenTexture", 0);
 	DEMO->textureManager.texture[textureNum]->bind();
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
+
+	Draw_QuadFS();
 }
 
 // Draw a Quad with texture in full screen with alpha
@@ -306,47 +305,43 @@ void Resource::Draw_QuadFS(int textureNum, float alpha)
 {
 	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTexAlpha];
 
-	glBindVertexArray(obj_quadFullscreen);
 	my_shad->use();
 	my_shad->setValue("alpha", alpha);
 	my_shad->setValue("screenTexture", 0);
 	DEMO->textureManager.texture[textureNum]->bind();
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
+	
+	Draw_QuadFS();
 }
 
 // Draw a Quad with a FBO in full screen
-void Resource::Draw_QuadFBOFS(int fboNum)
+void Resource::Draw_QuadFBOFS(int fboNum, GLuint attachment)
 {
 	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTex];
 
-	glBindVertexArray(obj_quadFullscreen);
 	my_shad->use();
 	my_shad->setValue("screenTexture", 0);
 	DEMO->fboManager.active();
-	DEMO->fboManager.bind_tex(fboNum);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
+	DEMO->fboManager.bind_tex(fboNum, attachment);
+	
+	Draw_QuadFS();
+}
+
+// Draw a Quad in full screen. A texture can be specified and a model matrix
+void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *model)
+{
+	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTexModel];
+	my_shad->use();
+	my_shad->setValue("model", *model);
+	my_shad->setValue("screenTexture", 0);
+	DEMO->textureManager.texture[textureNum]->bind();
+
+	Draw_QuadFS();
 }
 
 // Draw a Quad with a FBO in full screen but no shader is called (needs a shader->use() call before)
 void Resource::Draw_QuadFS()
 {
 	glBindVertexArray(obj_quadFullscreen);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
-}
-
-
-// Draw a Quad in full screen. A texture can be specified and a model matrix
-void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *model)
-{
-	glBindVertexArray(obj_quadFullscreen);
-	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTexModel];
-	my_shad->use();
-	my_shad->setValue("model", *model);
-	my_shad->setValue("screenTexture", 0);
-	DEMO->textureManager.texture[textureNum]->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
@@ -376,11 +371,11 @@ void Resource::Draw_Obj_QuadFBO_Debug(int quad, int fbo_num)
 	else
 		shader = RES->shdr_QuadTex;
 
-	glBindVertexArray(obj_quad_FBO_Debug[quad]);
 	DEMO->shaderManager.shader[shader]->use();
 	DEMO->shaderManager.shader[shader]->setValue("screenTexture", 0);
 	DEMO->fboManager.active();
 	DEMO->fboManager.bind_tex(fbo_num);
+	glBindVertexArray(obj_quad_FBO_Debug[quad]);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }

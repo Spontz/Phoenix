@@ -23,16 +23,16 @@ tSectionID sectionID[] = {
 	{"objectAnimShader",	SectionType::ObjectAnimShader},
 	{"drawSkybox",			SectionType::DrawSkybox},
 	{"drawVideo",			SectionType::DrawVideo},
+	{"drawQuad",			SectionType::DrawQuad},
+	{"drawFbo",				SectionType::DrawFbo},
 	{"particleMatrix",		SectionType::ParticleMatrix},
 	{"sound",				SectionType::Sound},
 	{"fboBind",				SectionType::FboBind},
 	{"fboUnbind",			SectionType::FboUnbind},
-	{"renderFbo",			SectionType::RenderFbo},
-	{"renderQuad",			SectionType::RenderQuad},
 	{"efxBloom",			SectionType::EfxBloom},
 	{"efxFader",			SectionType::EfxFader},
 	{"efxMotionblur",		SectionType::EfxMotionBlur},
-	{"test",				SectionType::Test},
+	{"test",				SectionType::Test}
 };
 
 #define SECTIONS_NUMBER ((sizeof(sectionID) / sizeof(tSectionID)))
@@ -82,12 +82,6 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 	case SectionType::FboUnbind:
 		mySection = new sFboUnbind();
 		break;
-	case SectionType::RenderFbo:
-		mySection = new sRenderFbo();
-		break;
-	case SectionType::RenderQuad:
-		mySection = new sRenderQuad();
-		break;
 	case SectionType::ObjectShader:
 		mySection = new sObjectShader();
 		break;
@@ -99,6 +93,12 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::DrawVideo:
 		mySection = new sDrawVideo();
+		break;
+	case SectionType::DrawFbo:
+		mySection = new sDrawFbo();
+		break;
+	case SectionType::DrawQuad:
+		mySection = new sDrawQuad();
 		break;
 	case SectionType::ParticleMatrix:
 		mySection = new sParticleMatrix();
