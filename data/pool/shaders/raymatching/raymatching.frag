@@ -1,11 +1,13 @@
-#version 120
+#version 330 core
+out vec4 FragColor;
+
+in vec2 TexCoords;
 
 #define STEPS 128
 #define EPS 0.001
 #define FAR 50.0
 
-uniform vec2 iResolution;
-uniform sampler2D iChannel0;
+uniform sampler2D texture_diffuse1;
 uniform float iTime;
 uniform float beat;
 
@@ -186,8 +188,8 @@ vec3 shade(vec3 ro, vec3 rd, float t, float m) {
 
     col += 0.5*pow(clamp(0.9+dot(nor, rd), 0.0, 1.0), 3.0);
 
-    //col*= (texture2D(iChannel0, (ro +t*rd).xy+vec2(0.1,0.1)).r)*1.6;
-    col*= (texture2D(iChannel0, (ro +t*rd).xz).rgb)*1.5;
+    //col*= (texture(texture_diffuse1, (ro +t*rd).xy+vec2(0.1,0.1)).r)*1.6;
+    col*= (texture(texture_diffuse1, (ro +t*rd).xz).rgb)*1.5;
     
     // See normals
     //col = nor;
@@ -207,14 +209,14 @@ mat3 setCamera( in vec3 ro, in vec3 ta, float cr )
 
 void main( void )
 {
-    vec2 uv = (-iResolution.xy+2.0*gl_FragCoord.xy)/iResolution.y;
-    
-    mat3 m = rotX(2.0*sin(1.0));
+	vec2 uv = TexCoords.xy-0.5;
+
+	mat3 m = rotX(2.0*sin(1.0));
     m*=rotZ(4.0*sin(1.0));
     m*=rotY(3.0*sin(1.0));
 
     vec3 ro =  m*vec3(0.0, 0.0,10.0);
-    vec3 rd =  m*normalize(vec3( uv, -3.5)); 
+    vec3 rd =  m*normalize(vec3( uv, -1.0)); 
 
     float t=0.0;
     vec2 d= vec2(0.01,0);
@@ -228,6 +230,6 @@ void main( void )
     }
 
     vec3 col = d.x< EPS ? shade( ro, rd, t, d.y) :  vec3(0.0);
-    gl_FragColor = vec4(col ,1.0);
-    //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    FragColor = vec4(col ,1.0);
+    //FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

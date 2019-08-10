@@ -3,13 +3,13 @@ out vec4 FragColor;
 
 in vec2 TexCoords;
 
-uniform vec2 size;
 uniform float intensity;
-uniform sampler2D iChannel0;
+uniform sampler2D screenTexture;
 
 void main()
 {
 	float kernel[9];
+	vec2 size = textureSize(screenTexture,0);
 	float step_w = 1.0/size.x;
 	float step_h = 1.0/size.y;
 	vec2 offset[9];
@@ -35,7 +35,7 @@ void main()
 
 	for( i=0; i<9; i++ )
 	{
-		vec4 tmp = texture(iChannel0, TexCoords.xy + offset[i]);
+		vec4 tmp = texture(screenTexture, TexCoords.xy + offset[i]);
 		sum += tmp *kernel[i];
 	}
 	FragColor = sum;
