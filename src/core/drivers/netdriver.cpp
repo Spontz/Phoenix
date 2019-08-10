@@ -81,10 +81,9 @@ netDriver::netDriver()
 	inited = false;
 }
 
-void netDriver::init(int port)
+void netDriver::init()
 {
 	this->messageToSend = "";
-	this->port = port;
 	dyad_init();
 
 	dyad_Stream *serv = dyad_newStream();

@@ -128,6 +128,7 @@ public:
 
 	// Drawing
 	char drawFbo;								// Draw FBO's
+	char drawFboAttachment;						// FBO Attachment to draw
 
 	// ******************************************************************
 	// MEMBERS

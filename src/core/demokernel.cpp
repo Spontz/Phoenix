@@ -239,6 +239,7 @@ demokernel::demokernel() {
 
 	// Demo states
 	this->drawFbo = 0;
+	this->drawFboAttachment = 0;
 
 }
 
@@ -248,7 +249,7 @@ void demokernel::getArguments(int argc, char *argv[]) {
 		dataFolder = argv[1];
 	}
 	else {
-		dataFolder = "./data"; // Set the demo folder to the current project file (the "./" is not really required)
+		dataFolder = "./data/"; // Set the demo folder to the current project file (the "./" is not really required)
 	}
 }
 
@@ -271,7 +272,7 @@ void demokernel::initDemo() {
 
 	if (DEMO->slaveMode) {
 		LOG->Info(LOG_HIGH, "Running in network slave mode");
-		NETDRV->init(28000);	// Init network on port 28000
+		NETDRV->init();
 		LOG->Info(LOG_MED, "Network Dyad.c library version is: %s", NETDRV->getVersion());
 	}
 	else
@@ -618,6 +619,7 @@ void demokernel::initSectionQueues() {
 	this->drawTiming = 1;
 	this->drawSound = 0;
 	this->drawFbo = 0;
+	this->drawFboAttachment = 0;
 
 	
 	// preload, load and init loading section

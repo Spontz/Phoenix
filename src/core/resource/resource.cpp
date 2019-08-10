@@ -363,7 +363,7 @@ void Resource::Draw_Cube()
 }
 
 // Draw the Debug Quads with a FBO
-void Resource::Draw_Obj_QuadFBO_Debug(int quad, int fbo_num)
+void Resource::Draw_Obj_QuadFBO_Debug(int quad, int fbo_num, int fbo_attachment)
 {
 	int shader;
 	if (DEMO->fboManager.fbo[fbo_num]->engineFormat == "DEPTH") // If we are drawing a DEPTH fbo, then we need to use another shader
@@ -374,10 +374,11 @@ void Resource::Draw_Obj_QuadFBO_Debug(int quad, int fbo_num)
 	DEMO->shaderManager.shader[shader]->use();
 	DEMO->shaderManager.shader[shader]->setValue("screenTexture", 0);
 	DEMO->fboManager.active();
-	DEMO->fboManager.bind_tex(fbo_num);
+	DEMO->fboManager.bind_tex(fbo_num, fbo_attachment);
 	glBindVertexArray(obj_quad_FBO_Debug[quad]);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture
 }
 
 

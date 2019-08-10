@@ -27,7 +27,7 @@ public:
 	void Draw_Skybox(int cubemap);								// Draws a skybox for a given cubemap texture
 	void Draw_Cube();											// Draws a cube
 
-	void Draw_Obj_QuadFBO_Debug(int quad, int fbo_num);
+	void Draw_Obj_QuadFBO_Debug(int quad, int fbo_num, int fbo_attachment);
 	int tex_tv, tex_isaac2, tex_shotgan, tex_shotgan2, tex_merlucin, tex_xphere;
 
 	// Shaders

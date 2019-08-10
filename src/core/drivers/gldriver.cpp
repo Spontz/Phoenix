@@ -145,6 +145,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				if(DEMO->drawFbo>=7)
 					DEMO->drawFbo=0;
 			}
+			else if (key == KEY_CHANGEATTACH) {
+				DEMO->drawFboAttachment++;
+				if (DEMO->drawFboAttachment >= GLDRV_MAX_COLOR_ATTACHMENTS)
+					DEMO->drawFboAttachment = 0;
+			}
 				
 			else if (key == KEY_CAPTURE) {
 				DEMO->camera->CapturePos();
@@ -433,10 +438,11 @@ void glDriver::drawFbo() {
 
 	int fbo_num_min = ((DEMO->drawFbo - 1)*NUM_FBO_DEBUG);
 	int fbo_num_max = (NUM_FBO_DEBUG-1)+ ((DEMO->drawFbo - 1)*NUM_FBO_DEBUG);
-	DEMO->text->glPrintf(-1, -0.5f, "Showing FBO's: %d to %d", fbo_num_min, fbo_num_max);
+	int fbo_attachment = DEMO->drawFboAttachment;
+	DEMO->text->glPrintf(-1, -0.5f, "Showing FBO's: %d to %d - Attachment: %d", fbo_num_min, fbo_num_max, fbo_attachment);
 	for (int i = 0; i < NUM_FBO_DEBUG; i++) {
 		int fbo_num = (0+i)+((DEMO->drawFbo-1)*NUM_FBO_DEBUG);
-		RES->Draw_Obj_QuadFBO_Debug(i, fbo_num);
+		RES->Draw_Obj_QuadFBO_Debug(i, fbo_num, fbo_attachment);
 	}
 	glEnable(GL_DEPTH_TEST);
 }

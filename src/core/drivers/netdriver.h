@@ -19,7 +19,7 @@ public:
 	static netDriver* getInstance();
 
 	netDriver();
-	void init(int port);
+	void init();
 	void update();
 	virtual ~netDriver();
 
