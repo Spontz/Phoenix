@@ -6,6 +6,7 @@
 * Show time on screen: T (only works if the engine is in debug mode)
 * Show FPS's on screen: U (only works if the engine is in debug mode)
 * Show FBO's content on screen: F (only works if the engine is in debug mode)
+* Change FBO's Attachment content on screen: G (only works if the engine is in debug mode)
 
 ## Playback control
 * PLAY / PAUSE: F1
