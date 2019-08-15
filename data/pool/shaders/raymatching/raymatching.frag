@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 FragColor;
+out vec4 fragColor;
 
 in vec2 TexCoords;
 
@@ -8,6 +8,7 @@ in vec2 TexCoords;
 #define FAR 50.0
 
 uniform sampler2D texture_diffuse1;
+uniform vec2 iResolution;
 uniform float iTime;
 uniform float beat;
 
@@ -209,14 +210,15 @@ mat3 setCamera( in vec3 ro, in vec3 ta, float cr )
 
 void main( void )
 {
-	vec2 uv = TexCoords.xy-0.5;
-
+	vec2 fragCoord = TexCoords*iResolution;
+	vec2 uv = (2.0*fragCoord.xy-iResolution.xy) / iResolution.y;
+	
 	mat3 m = rotX(2.0*sin(1.0));
     m*=rotZ(4.0*sin(1.0));
     m*=rotY(3.0*sin(1.0));
 
     vec3 ro =  m*vec3(0.0, 0.0,10.0);
-    vec3 rd =  m*normalize(vec3( uv, -1.0)); 
+    vec3 rd =  m*normalize(vec3( uv, -3.5)); 
 
     float t=0.0;
     vec2 d= vec2(0.01,0);
@@ -230,6 +232,5 @@ void main( void )
     }
 
     vec3 col = d.x< EPS ? shade( ro, rd, t, d.y) :  vec3(0.0);
-    FragColor = vec4(col ,1.0);
-    //FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    fragColor = vec4(col ,1.0);
 }
