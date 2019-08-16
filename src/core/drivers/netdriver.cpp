@@ -6,6 +6,10 @@
 #include "core/drivers/netdriver.h"
 #include "core/drivers/net/dyad.h"
 
+
+#define DELIMITER '\x1f'
+#define DELIMITER_SEND "\x1f"
+
 using namespace std;
 
 // ***********************************
@@ -19,9 +23,7 @@ char * netDriver::getParamString(char *message, int requestedParameter) {
 
 	theParameter = SPZ_STL(strdup)(message);
 
-	for (theParameter = strtok(theParameter, "::");
-		counter < requestedParameter;
-		theParameter = strtok(NULL, "::"))
+	for (theParameter = strtok(theParameter, DELIMITER_SEND);	counter < requestedParameter; theParameter = strtok(NULL, DELIMITER_SEND))
 		counter++;
 
 	return theParameter;
@@ -89,6 +91,7 @@ void netDriver::init()
 {
 	this->messageToSend = "";
 	this->connectedToEditor = false;
+
 	dyad_init();
 
 	dyad_Stream *serv = dyad_newStream();
@@ -186,7 +189,7 @@ char * netDriver::processMessage(char * message)
 		
 		else if (strcmp(action, "toggle") == 0)			{ DEMO->sectionManager.toggleSection(getParamString(message, 4));										theResult = "OK"; }
 		else if (strcmp(action, "delete") == 0)			{ DEMO->sectionManager.deleteSection(getParamString(message, 4));										theResult = "OK"; }
-		else if (strcmp(action, "update") == 0)			{ DEMO->sectionManager.updateSection(getParamString(message, 4), getParamString(message, 5));			theResult = "OK"; }
+		else if (strcmp(action, "update") == 0)			{ DEMO->sectionManager.updateSection(getParamString(message, 4),getParamString(message, 5));			theResult = "OK"; }
 		else if (strcmp(action, "setStartTime") == 0)	{ DEMO->sectionManager.setSectionsStartTime(getParamString(message, 4), getParamString(message, 5));	theResult = "OK"; }
 		else if (strcmp(action, "setEndTime") == 0)		{ DEMO->sectionManager.setSectionsEndTime(getParamString(message, 4), getParamString(message, 5));		theResult = "OK"; }
 		else if (strcmp(action, "setLayer") == 0)		{ DEMO->sectionManager.setSectionLayer(getParamString(message, 4), getParamString(message, 5));		theResult = "OK"; }
@@ -203,7 +206,14 @@ char * netDriver::processMessage(char * message)
 	}
 
 	// Create the response
-	sprintf((char *)theResponse, "%s::%s::%f::%d::%f::%s", identifier, theResult, DEMO->fps, DEMO->state, DEMO->runTime, (char *)theInformation);
+
+	sprintf((char *)theResponse, "%s%c%s%c%f%c%d%c%f%c%s",	identifier, DELIMITER,
+															theResult, DELIMITER,
+															DEMO->fps, DELIMITER,
+															DEMO->state, DELIMITER,
+															DEMO->runTime, DELIMITER,
+															(char *)theInformation);
+	//sprintf((char *)theResponse, "%s::%s::%f::%d::%f::%s", identifier, theResult, DEMO->fps, DEMO->state, DEMO->runTime, (char *)theInformation);
 	LOG->Info(LOG_LOW, "Sending response: [%s]", theResponse);
 		
 	// Free memory
