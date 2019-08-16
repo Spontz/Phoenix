@@ -14,12 +14,14 @@ public:
 	int		port;
 	int		port_send;
 	bool	inited;
+	bool	connectedToEditor;
 	string	messageToSend;
-
+	
 	static netDriver* getInstance();
 
 	netDriver();
 	void init();
+	void connectToEditor();
 	void update();
 	virtual ~netDriver();
 
@@ -28,7 +30,6 @@ public:
 	void sendMessage(string message);
 
 private:
-
 	char * getParamString(char *message, int requestedParameter);
 	float getParamFloat(char *message, int requestedParameter);
 	static netDriver* m_pThis;

@@ -8,8 +8,6 @@
 
 using namespace std;
 
-
-
 // ***********************************
 
 #define SPZ_STL(a) _##a
@@ -64,6 +62,10 @@ void onError(dyad_Event *e) {
 	LOG->Error("Network server error: %s", e->msg);
 }
 
+void onConnectToEngine(dyad_Event *e) {
+	LOG->Info(LOG_MED, "Network: Connected to editor through port: %d", dyad_getPort(e->stream));
+	NETDRV->connectedToEditor = true;
+}
 
 // Initialize the netDriver main pointer to NULL
 netDriver* netDriver::m_pThis = NULL;
@@ -81,9 +83,12 @@ netDriver::netDriver()
 	inited = false;
 }
 
+
+
 void netDriver::init()
 {
 	this->messageToSend = "";
+	this->connectedToEditor = false;
 	dyad_init();
 
 	dyad_Stream *serv = dyad_newStream();
@@ -94,9 +99,21 @@ void netDriver::init()
 	dyad_addListener(serv, DYAD_EVENT_ACCEPT, onAccept, NULL);
 	dyad_addListener(serv, DYAD_EVENT_LISTEN, onListen, NULL);
 	dyad_listenEx(serv, "0.0.0.0", port, 511);
-	LOG->Info(LOG_MED, "Network: outgoing messages will be done through port: %d", this->port_send);
+	
+	this->connectToEditor();
 
 	inited = true;
+}
+
+// TODO: Guarrada, esto no debería ser una variable global!!
+dyad_Stream *serv_connect;
+void netDriver::connectToEditor()
+{
+	// Listener for sending messages to the editor
+	LOG->Info(LOG_MED, "Network: outgoing messages will be done through port: %d", this->port_send);
+	serv_connect = dyad_newStream();
+	dyad_addListener(serv_connect, DYAD_EVENT_CONNECT, onConnectToEngine, NULL);
+	dyad_connect(serv_connect, "127.0.0.1", port_send);
 }
 
 void netDriver::update()
@@ -144,6 +161,7 @@ char * netDriver::processMessage(char * message)
 		else if (strcmp(action, "currentTime") == 0)	{ DEMO->setCurrentTime(getParamFloat(message, 4));	theResult = "OK"; }
 		else if (strcmp(action, "endTime") == 0)		{ DEMO->setEndTime(getParamFloat(message, 4));		theResult = "OK"; }
 		else if (strcmp(action, "ping") == 0)			{ theResult = "OK"; }
+		else if (strcmp(action, "end") == 0)			{ DEMO->closeDemo();								theResult = "OK"; }
 		else {
 			theResult = "NOK";
 			sprintf((char *)theInformation, "Unknown command (%s)", message);
@@ -195,22 +213,10 @@ char * netDriver::processMessage(char * message)
 	return theResponse;
 }
 
-///////////// Send message
-
-void onConnect(dyad_Event *e) {
-	if (NETDRV->messageToSend != "") {
-		string message = NETDRV->messageToSend;
-		dyad_write(e->stream, message.c_str(), (int)message.length());
-		//LOG->Info(LOG_HIGH, "Message sent: %s", message.c_str());
-		NETDRV->messageToSend = "";
-	}
-	dyad_end(e->stream);
-}
-
 void netDriver::sendMessage(string message)
 {
-	this->messageToSend += message;
-	dyad_Stream *serv = dyad_newStream();
-	dyad_addListener(serv, DYAD_EVENT_CONNECT, onConnect, NULL);
-	dyad_connect(serv, "127.0.0.1", port_send);
+	if (this->connectedToEditor) {
+		message += "\r";
+		dyad_write(serv_connect, message.c_str(), (int)message.length());
+	}
 }
