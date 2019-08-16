@@ -198,13 +198,18 @@ char * netDriver::processMessage(char * message)
 ///////////// Send message
 
 void onConnect(dyad_Event *e) {
-	dyad_write(e->stream, NETDRV->messageToSend.c_str(), (int)NETDRV->messageToSend.length());
+	if (NETDRV->messageToSend != "") {
+		string message = NETDRV->messageToSend;
+		dyad_write(e->stream, message.c_str(), (int)message.length());
+		//LOG->Info(LOG_HIGH, "Message sent: %s", message.c_str());
+		NETDRV->messageToSend = "";
+	}
 	dyad_end(e->stream);
 }
 
 void netDriver::sendMessage(string message)
 {
-	this->messageToSend = message;
+	this->messageToSend += message;
 	dyad_Stream *serv = dyad_newStream();
 	dyad_addListener(serv, DYAD_EVENT_CONNECT, onConnect, NULL);
 	dyad_connect(serv, "127.0.0.1", port_send);
