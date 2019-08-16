@@ -51,17 +51,8 @@ bool sLoading::load() {
 		local->sy = 0.1f;
 	}
 
-	if (local->tex_back == -1) {
-		LOG->Error("Loading [%s]: Could not load the loading back texture", this->identifier.c_str());
-		local->tex_back = 0;
-	}
-	if (local->tex_front == -1) {
-		LOG->Error("Loading [%s]: Could not load the loading front texture", this->identifier.c_str());
-		local->tex_front = 0;
-	}
-	if (local->tex_bar == -1) {
-		LOG->Error("Loading [%s]: Could not load the loading bar texture", this->identifier.c_str());
-		local->tex_bar = 0;
+	if (local->tex_bar == -1 || local->tex_back == -1 || local->tex_front == -1) {
+		LOG->Error("Loading [%s]: Could not load some of the loading textures", this->identifier.c_str());
 	}
 
 	return true;
@@ -73,6 +64,11 @@ void sLoading::init() {
 
 void sLoading::exec() {
 	local = (loading_section *)this->vars;
+
+	// Prevent a crash if any texture is not found
+	if (local->tex_bar == -1 || local->tex_back == -1 || local->tex_front == -1) {
+		return;
+	}
 
 	float zero2one = 0;
 	if (DEMO->sectionManager.loadSection.size()>0)
