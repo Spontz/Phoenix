@@ -31,8 +31,8 @@ bool sDrawImage::load() {
 	local = (drawImage_section*)malloc(sizeof(drawImage_section));
 	this->vars = (void *)local;
 
-	if (this->strings.size() < 2) {
-		LOG->Error("Draw Image [%s]: 3 strings", this->identifier.c_str());
+	if (this->strings.size() < 6) {
+		LOG->Error("Draw Image [%s]: 6 strings required (image path, 2 for shader and 3 por image positioning)", this->identifier.c_str());
 		return false;
 	}
 
