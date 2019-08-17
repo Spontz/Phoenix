@@ -236,11 +236,6 @@ void Resource::Load_Shaders()
 void Resource::Load_Tex_Spontz()
 {
 	tex_tv = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/textures/tv.jpg");
-	tex_isaac2 = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/textures/isaac2.jpg");
-	tex_shotgan = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/textures/shotgan.jpg");
-	tex_shotgan2 = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/textures/shotgan2.jpg");
-	tex_merlucin = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/textures/merlucin.jpg");
-	tex_xphere = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/textures/xphere.jpg");
 }
 
 void Resource::Load_Text_Fonts()

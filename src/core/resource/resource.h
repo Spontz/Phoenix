@@ -28,7 +28,7 @@ public:
 	void Draw_Cube();											// Draws a cube
 
 	void Draw_Obj_QuadFBO_Debug(int quad, int fbo_num, int fbo_attachment);
-	int tex_tv, tex_isaac2, tex_shotgan, tex_shotgan2, tex_merlucin, tex_xphere;
+	int tex_tv; // Default texture (tv)
 
 	// Shaders
 	int shdr_QuadTex;			// Draws a textured quad
