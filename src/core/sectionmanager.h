@@ -21,6 +21,7 @@ enum SectionType {
 	LightSec, 
 	ObjectShader,
 	ObjectAnimShader,
+	DrawImage,
 	DrawSkybox,
 	DrawVideo,
 	DrawQuad,

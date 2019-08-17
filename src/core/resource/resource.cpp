@@ -333,6 +333,14 @@ void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *model)
 	Draw_QuadFS();
 }
 
+// Draw a Quad in full screen. A texture can be specified and the 3 matrix
+void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *view, glm::mat4 *projection, glm::mat4 *model)
+{
+
+
+	Draw_QuadFS();
+}
+
 // Draw a Quad with a FBO in full screen but no shader is called (needs a shader->use() call before)
 void Resource::Draw_QuadFS()
 {

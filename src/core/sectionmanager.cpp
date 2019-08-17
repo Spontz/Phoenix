@@ -21,6 +21,7 @@ tSectionID sectionID[] = {
 	{"light",				SectionType::LightSec},
 	{"objectShader",		SectionType::ObjectShader},
 	{"objectAnimShader",	SectionType::ObjectAnimShader},
+	{"drawImage",			SectionType::DrawImage},
 	{"drawSkybox",			SectionType::DrawSkybox},
 	{"drawVideo",			SectionType::DrawVideo},
 	{"drawQuad",			SectionType::DrawQuad},
@@ -87,6 +88,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::ObjectAnimShader:
 		mySection = new sObjectAnimShader();
+		break;
+	case SectionType::DrawImage:
+		mySection = new sDrawImage();
 		break;
 	case SectionType::DrawSkybox:
 		mySection = new sDrawSkybox();
