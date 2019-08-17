@@ -11,7 +11,7 @@
 class ParticleSystem
 {
 public:
-	ParticleSystem();
+	ParticleSystem(unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime, float particleSize, int particleTexture);
 	~ParticleSystem();
 
 	bool InitParticleSystem(const glm::vec3 &Pos);
@@ -28,8 +28,13 @@ private:
 	bool initShaderParticleSystem();// For drawing the particles using geometry shaders
 
 	glm::vec3 initPosition;			// Initial position
-	unsigned int numEmitters;		// Number of emmiters
-	unsigned int numMaxParticles;	// Number of maximum particles
+	unsigned int	numMaxParticles;	// Number of maximum particles
+	unsigned int	numEmitters;		// Number of emmiters
+	float			emissionTime;
+	float			particleLifeTime;
+	float			particleSize;
+	int				particleTexture;
+
 
 	bool m_isFirst;
 	unsigned int m_currVB;			// Variable that indicates the current VB (The value is 0 or 1)
@@ -44,7 +49,7 @@ private:
 	void bindRandomTexture(unsigned int TextureUnit);//TODO: this should be removed once is included in the textureManager
 	unsigned int m_textureRandID; // TODO: This will be removed once is included in the textureManager
 
-	int m_pTextureNum; // TODO: Fix this, use the Number of the Texture*, but not both
+	//int m_pTextureNum; // TODO: Fix this, use the Number of the Texture*, but not both
 	Texture* m_pTexture;
 	float m_time;
 };

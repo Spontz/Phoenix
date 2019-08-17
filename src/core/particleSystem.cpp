@@ -34,7 +34,7 @@ struct Particle
 };
 
 
-ParticleSystem::ParticleSystem()
+ParticleSystem::ParticleSystem(unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime, float particleSize, int particleTexture)
 {
 	m_currVB = 0;
 	m_currTFB = 1;
@@ -42,8 +42,12 @@ ParticleSystem::ParticleSystem()
 	m_time = 0;
 	m_pTexture = NULL;
 
-	numMaxParticles = 10000; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
-	numEmitters = 5;
+	this->numMaxParticles = numMaxParticles; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
+	this->numEmitters = numEmitters;
+	this->emissionTime = emissionTime;
+	this->particleLifeTime = particleLifeTime;
+	this->particleSize = particleSize;
+	this->particleTexture = particleTexture;
 
 	ZERO_MEM(m_transformFeedback);
 	ZERO_MEM(m_particleBuffer);
@@ -144,8 +148,8 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Position)
 	Shader *particleSystem_shader = DEMO->shaderManager.shader[particleSystemShader];
 	particleSystem_shader->use();
 	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-	particleSystem_shader->setValue("gLauncherLifetime", 1.0f); // Time between emissions
-	particleSystem_shader->setValue("gShellLifetime", 20.0f);
+	particleSystem_shader->setValue("gLauncherLifetime", this->emissionTime); // Time between emissions
+	particleSystem_shader->setValue("gShellLifetime", this->particleLifeTime);
 
 	if (!initRandomTexture(1000)) {
 		return false;
@@ -162,12 +166,10 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Position)
 	my_shader = DEMO->shaderManager.shader[billboardShader];
 	my_shader->use();
 	my_shader->setValue("gColorMap", 0);			// Set color map to 0
-	my_shader->setValue("gBillboardSize", 1.0f);	// Set billboard size
+	my_shader->setValue("gBillboardSize", this->particleSize);	// Set billboard size
 	
-	m_pTextureNum = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/textures/part_redglow.jpg"); //TODO: Use any other texture, configure in the section
-	m_pTexture = DEMO->textureManager.texture[m_pTextureNum];
-
-
+	if (this->particleTexture>=0)
+		m_pTexture = DEMO->textureManager.texture[this->particleTexture];
 
 	//return GLCheckError();
 	return true; // TODO: check errors, etc etc...

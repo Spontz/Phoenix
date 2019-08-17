@@ -2,7 +2,12 @@
 #include "core\particleSystem.h"
 
 typedef struct {
-	unsigned int numParticles;
+	unsigned int	numMaxParticles;
+	unsigned int	numEmitters;
+	float			emissionTime;
+	float			particleLifeTime;
+	float			particleSize;
+	int				particleTexture;
 	ParticleSystem *pSystem;
 
 } particleMatrix_section;
@@ -25,10 +30,23 @@ bool sParticleMatrix::load() {
 	this->vars = (void *)local;
 
 	// Load the parameters
-	local->numParticles = (unsigned int)this->param[0];
+	local->numMaxParticles = (unsigned int)this->param[0];
+	local->numEmitters = (unsigned int)this->param[1];
+	local->emissionTime = this->param[2];
+	local->particleLifeTime = this->param[3];
+	local->particleSize = this->param[4];
+	local->particleTexture = DEMO->textureManager.addTexture(DEMO->dataFolder + this->strings[0], true);
 	
+
+	if (local->emissionTime>0)
+		if (local->numMaxParticles<(local->numEmitters + local->numEmitters*local->particleLifeTime/local->emissionTime))
+			LOG->Info(LOG_HIGH, "Particle Matrix [%s]: NumMaxParticles is too low! should be greater than: numEmitters + numEmitters*ParticleLifetime/EmissionTime", this->identifier.c_str());
+
+	if (local->particleTexture == -1)
+		return false;
+
 	// Create the particle system
-	local->pSystem = new ParticleSystem();
+	local->pSystem = new ParticleSystem(local->numMaxParticles, local->numEmitters, local->emissionTime, local->particleLifeTime, local->particleSize, local->particleTexture);
 	glm::vec3 Position(0, 0, -10);
 	local->pSystem->InitParticleSystem(Position);
 

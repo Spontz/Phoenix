@@ -164,7 +164,7 @@ char * netDriver::processMessage(char * message)
 		else if (strcmp(action, "currentTime") == 0)	{ DEMO->setCurrentTime(getParamFloat(message, 4));	theResult = "OK"; }
 		else if (strcmp(action, "endTime") == 0)		{ DEMO->setEndTime(getParamFloat(message, 4));		theResult = "OK"; }
 		else if (strcmp(action, "ping") == 0)			{ theResult = "OK"; }
-		else if (strcmp(action, "end") == 0)			{ DEMO->closeDemo();								theResult = "OK"; }
+		else if (strcmp(action, "end") == 0)			{ DEMO->exitDemo = true;							theResult = "OK"; }
 		else {
 			theResult = "NOK";
 			sprintf((char *)theInformation, "Unknown command (%s)", message);
