@@ -108,7 +108,7 @@ void netDriver::init()
 	inited = true;
 }
 
-// TODO: Guarrada, esto no debería ser una variable global!!
+// TODO: We should fix this! it should not be a global variable!
 dyad_Stream *serv_connect;
 void netDriver::connectToEditor()
 {
@@ -206,15 +206,14 @@ char * netDriver::processMessage(char * message)
 	}
 
 	// Create the response
-
 	sprintf((char *)theResponse, "%s%c%s%c%f%c%d%c%f%c%s",	identifier, DELIMITER,
 															theResult, DELIMITER,
 															DEMO->fps, DELIMITER,
 															DEMO->state, DELIMITER,
 															DEMO->runTime, DELIMITER,
 															(char *)theInformation);
-	//sprintf((char *)theResponse, "%s::%s::%f::%d::%f::%s", identifier, theResult, DEMO->fps, DEMO->state, DEMO->runTime, (char *)theInformation);
-	LOG->Info(LOG_LOW, "Sending response: [%s]", theResponse);
+	
+	//LOG->Info(LOG_LOW, "Sending response: [%s]", theResponse);
 		
 	// Free memory
 	free(theInformation);
