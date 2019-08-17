@@ -9,7 +9,7 @@ typedef struct {
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
 
-	float		tx,ty,tz;	// Translation
+	float		tx,ty,tz;	// Traslation
 	float		rx,ry,rz;	// Rotation
 	float		sx,sy,sz;	// Scale
 	

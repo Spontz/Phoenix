@@ -26,7 +26,7 @@ using namespace std;
 // ******************************************************************
 
 typedef struct {
-	int width, height;
+	float width, height;
 	int tex_iformat;
 	int tex_format;
 	int tex_type;
@@ -47,7 +47,10 @@ public:
 	// Current rendertarget width and height
 	int				width, height;
 	// Current viewport (this data depends on: width, height and AspectRatio)
-	int				vpWidth, vpHeight, vpYOffset, vpXOffset;
+	//int				vpWidth, vpHeight, vpXOffset, vpYOffset;
+	float			vpWidth, vpHeight;
+	int				vpXOffset, vpYOffset;
+
 	int				bpp;
 	int				stencil;
 	int				accum;
@@ -66,7 +69,10 @@ public:
 	void initGraphics();
 	void initStates();
 	void initRender(int clear);
+	void setupViewportSizes();
+	void setViewport();
 	void setViewport(int x, int y, GLsizei width, GLsizei height);
+	void initFbos();
 	void swap_buffers();
 	void close();
 

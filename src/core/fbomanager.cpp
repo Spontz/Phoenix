@@ -38,7 +38,7 @@ void FboManager::unbind()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	// Restore the driver viewport
-	GLDRV->setViewport(0, 0, GLDRV->width, GLDRV->height);
+	GLDRV->setViewport();
 }
 
 // Adds a Fbo into the queue, returns the ID of the texture added
@@ -56,6 +56,15 @@ int FboManager::addFbo(string engine_format, int width, int height, int iformat,
 		return -1;
 	}
 	return fbo_id;
+}
+
+void FboManager::clearFbos()
+{
+	for (int i = 0; i < this->fbo.size(); i++) {
+		delete this->fbo[i];
+	}
+	this->fbo.clear();
+	this->mem = 0;
 }
 
 int FboManager::getOpenGLTextureID(unsigned int index, unsigned int attachment)

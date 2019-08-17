@@ -62,6 +62,11 @@ void window_size_callback(GLFWwindow * window, int width, int height) {
 	GLDRV->mouse_lastxpos = (float)width / 2.0f;
 	GLDRV->mouse_lastypos = (float)height / 2.0f;
 
+	// Recalculate viewport sizes
+	GLDRV->setupViewportSizes();
+	// Recalculate fbo's with the new window size
+	GLDRV->initFbos();
+
 	GLDRV->initRender(true);
 
 	// If window if resized, some FBO's effects need to be re-generated
@@ -206,7 +211,7 @@ glDriver::glDriver() {
 	height = 100;
 	fullScreen = 0;
 	saveInfo = 0;
-	AspectRatio = 0;
+	AspectRatio = 2;
 	bpp = 32;
 	stencil = 0;
 	accum = 0;
@@ -216,7 +221,8 @@ glDriver::glDriver() {
 	mouse_lastypos = height / 2.0f;
 	
 	for (i=0; i<FBO_BUFFERS; i++) {
-		this->fbo[i].width = this->fbo[i].height = this->fbo[i].ratio = 0;
+		this->fbo[i].width = this->fbo[i].height = 0;
+		this->fbo[i].ratio = 0;
 	}
 	// Register error callback first
 	glfwSetErrorCallback(error_callback);
@@ -276,6 +282,9 @@ void glDriver::initGraphics() {
 		glEnable(GL_MULTISAMPLE);
 	}
 
+	// Calculate the Viewport sizes
+	this->setupViewportSizes();
+
 	// Init render
 	this->initRender(true);
 
@@ -290,27 +299,7 @@ void glDriver::initGraphics() {
 	}
 
 	// init fbo's
-	for (int i = 0; i < FBO_BUFFERS; i++) {
-		if (((this->fbo[i].width != 0) && (this->fbo[i].height != 0)) || (this->fbo[i].ratio != 0)) {
-			if (this->fbo[i].ratio != 0) {
-				this->fbo[i].width = (this->width / this->fbo[i].ratio);
-				this->fbo[i].height = (this->height / this->fbo[i].ratio);
-			}
-
-			this->fbo[i].tex_iformat = getTextureInternalFormatByName(this->fbo[i].format);
-			this->fbo[i].tex_format = getTextureFormatByName(this->fbo[i].format);
-			this->fbo[i].tex_type = getTextureTypeByName(this->fbo[i].format);
-			this->fbo[i].tex_components = getTextureComponentsByName(this->fbo[i].format);
-			// Check if the format is valid
-			if (this->fbo[i].tex_format > 0) {
-				DEMO->fboManager.addFbo(this->fbo[i].format, this->fbo[i].width, this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type, this->fbo[i].tex_components, this->fbo[i].numColorAttachments);
-				LOG->Info(LOG_LOW, "Fbo %i uploaded: width: %i, height: %i, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_components, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
-			}
-			else {
-				LOG->Error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, this->fbo[i].format);
-			}
-		}
-	}
+	this->initFbos();
 
 	// Init internal timer
 	TimeCurrentFrame = static_cast<float>(glfwGetTime());
@@ -342,8 +331,9 @@ void glDriver::initRender(int clear)
 	TimeCurrentFrame = static_cast<float>(glfwGetTime());
 	TimeDelta = TimeCurrentFrame - TimeLastFrame;
 
-	// set the viewport to the correct size
-	setViewport(0, 0, this->width, this->height);
+	// set the viewport to the standard size
+	setViewport();
+	//setViewport(0, 0, this->width, this->height);
 	
 	// clear some buffers if needed
 	if (clear) {
@@ -358,15 +348,73 @@ void glDriver::initRender(int clear)
 	}
 }
 
+void glDriver::setupViewportSizes()
+{
+	// Calculate the viewport size according the given Width, Height and Aspect Ratio
+	this->vpWidth = (float)this->width;
+	this->vpHeight = (float)this->height;
+	this->vpXOffset = 0; // Width offset (X)
+	this->vpYOffset = 0; // Height offset (Y)
+
+	// Si la anchura que necesitamos es demasiado grande, hya q recalcular una nueva anchura y poner unos bordes a los lados 
+	if (((float)this->width / this->AspectRatio) > (float)this->height) {
+		vpWidth = (float)this->height * this->AspectRatio;
+		this->vpXOffset = (int)(((float)this->width - this->vpWidth) / 2.0);
+	}
+
+	// Si la altura que necesitamos es demasiado grande, hya q recalcular una nueva altura y poner unos bordes arriba y abajo
+	if (((float)this->height * this->AspectRatio) > (float)this->width) {
+		this->vpHeight = (float)this->width / this->AspectRatio;
+		this->vpYOffset = (int)(((float)this->height - this->vpHeight) / 2.0);
+	}
+	LOG->Info(LOG_MED, "Requested resolution (W,H): %d,%d. Aspect ratio: %.4f", this->width, this->height, this->AspectRatio);
+	LOG->Info(LOG_MED, "The viewport will be placed in pos (X,Y): %d,%d with size (W,H): %d,%d", this->vpXOffset, this->vpYOffset, this->vpWidth, this->vpHeight);
+}
+
+// Set the viewport to the original size
+void glDriver::setViewport()
+{
+	glViewport(this->vpXOffset, this->vpYOffset, (int)this->vpWidth, (int)this->vpHeight);
+}
+
+// Set the viewport to any specific position or size
 void glDriver::setViewport(int x, int y, GLsizei width, GLsizei height)
 {
-	this->vpXOffset = x;
-	this->vpYOffset = y;
-	this->vpWidth = width;
-	this->vpHeight = height;
 	glViewport(x, y, width, height);
 }
 
+void glDriver::initFbos()
+{
+	// Clear Fbo's, if there is any
+	if (DEMO->fboManager.fbo.size() > 0) {
+		LOG->Info(LOG_LOW, "Ooops! we need to regenerate the FBO's! clearing FBO's first!");
+		DEMO->fboManager.clearFbos();
+	}
+
+	// init fbo's
+	for (int i = 0; i < FBO_BUFFERS; i++) {
+		if (((this->fbo[i].width != 0) && (this->fbo[i].height != 0)) || (this->fbo[i].ratio != 0)) {
+			if (this->fbo[i].ratio != 0) {
+				this->fbo[i].width = (float)(this->width / this->fbo[i].ratio);
+				this->fbo[i].height = (float)(this->height / this->fbo[i].ratio);
+			}
+
+			this->fbo[i].tex_iformat = getTextureInternalFormatByName(this->fbo[i].format);
+			this->fbo[i].tex_format = getTextureFormatByName(this->fbo[i].format);
+			this->fbo[i].tex_type = getTextureTypeByName(this->fbo[i].format);
+			this->fbo[i].tex_components = getTextureComponentsByName(this->fbo[i].format);
+			// Check if the format is valid
+			if (this->fbo[i].tex_format > 0) {
+				DEMO->fboManager.addFbo(this->fbo[i].format, (int)this->fbo[i].width, (int)this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type, this->fbo[i].tex_components, this->fbo[i].numColorAttachments);
+				LOG->Info(LOG_LOW, "Fbo %i uploaded: width: %i, height: %i, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_components, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
+			}
+			else {
+				LOG->Error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, this->fbo[i].format);
+			}
+		}
+	}
+
+}
 
 int glDriver::window_should_close() {
 	return glfwWindowShouldClose(window);
@@ -423,7 +471,7 @@ void glDriver::drawTiming() {
 	}
 	DEMO->text->glPrintf(-1, 0.8f, "%d - %.1f/%.1f", DEMO->frameCount, DEMO->runTime, DEMO->endTime);
 	DEMO->text->glPrintf(-1, 0.7f, "sound: %0.1f", BASSDRV->sound_cpu());
-	DEMO->text->glPrintf(-1, 0.6f, "texmem: %.2fmb", DEMO->textureManager.mem);
+	DEMO->text->glPrintf(-1, 0.6f, "texmem: %.2fmb", DEMO->textureManager.mem + DEMO->fboManager.mem);
 	DEMO->text->glPrintf(-1, 0.5f, "Cam Speed: %.0f", DEMO->camera->MovementSpeed);
 	DEMO->text->glPrintf(-1, 0.4f, "Cam Pos: %.1f,%.1f,%.1f", DEMO->camera->Position.x,DEMO->camera->Position.y,DEMO->camera->Position.z);
 	DEMO->text->glPrintf(-1, 0.3f, "Cam Front: %.1f,%.1f,%.1f", DEMO->camera->Front.x, DEMO->camera->Front.y, DEMO->camera->Front.z);
