@@ -46,7 +46,6 @@ static tScriptCommand scriptCommand[] = {
 	{"gl_width",				VTYPE_INT,			&GLDRV->width			},
 	{"gl_height",				VTYPE_INT,			&GLDRV->height			},
 	{"gl_aspect",				VTYPE_FLOAT,		&GLDRV->AspectRatio		},
-	{"gl_bpp",					VTYPE_INT,			&GLDRV->bpp				},
 	{"gl_stencil",				VTYPE_INT,			&GLDRV->stencil			},
 	{"gl_accum",				VTYPE_INT,			&GLDRV->accum			},
 	{"gl_multisampling",		VTYPE_INT,			&GLDRV->multisampling	},

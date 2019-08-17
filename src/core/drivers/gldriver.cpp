@@ -212,7 +212,6 @@ glDriver::glDriver() {
 	fullScreen = 0;
 	saveInfo = 0;
 	AspectRatio = 2;
-	bpp = 32;
 	stencil = 0;
 	accum = 0;
 	multisampling = 0;
@@ -367,8 +366,8 @@ void glDriver::setupViewportSizes()
 		this->vpHeight = (float)this->width / this->AspectRatio;
 		this->vpYOffset = (int)(((float)this->height - this->vpHeight) / 2.0);
 	}
-	LOG->Info(LOG_MED, "Requested resolution (W,H): %d,%d. Aspect ratio: %.4f", this->width, this->height, this->AspectRatio);
-	LOG->Info(LOG_MED, "The viewport will be placed in pos (X,Y): %d,%d with size (W,H): %d,%d", this->vpXOffset, this->vpYOffset, this->vpWidth, this->vpHeight);
+	LOG->Info(LOG_LOW, "Requested resolution (W,H): %d,%d. Aspect ratio: %.4f", this->width, this->height, this->AspectRatio);
+	LOG->Info(LOG_LOW, "The viewport will be placed at pos (X,Y): %d,%d with size (W,H): %d,%d", this->vpXOffset, this->vpYOffset, (int)this->vpWidth, (int)this->vpHeight);
 }
 
 // Set the viewport to the original size

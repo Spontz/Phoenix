@@ -83,6 +83,7 @@ netDriver::netDriver()
 	port		= 28000;	// Port for receiving data from the Editor
 	port_send	= 28001;	// Port for sending data to the Editor
 	inited = false;
+	connectedToEditor = false;
 }
 
 

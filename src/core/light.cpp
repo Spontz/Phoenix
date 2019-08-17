@@ -39,7 +39,7 @@ void Light::draw(float size)
 
 	my_shad->setValue("color", this->colAmbient);
 
-	glm::mat4 projection = glm::perspective(glm::radians(DEMO->camera->Zoom), (float)GLDRV->width / (float)GLDRV->height, 0.1f, 10000.0f);
+	glm::mat4 projection = glm::perspective(glm::radians(DEMO->camera->Zoom), GLDRV->AspectRatio, 0.1f, 10000.0f);
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
 	my_shad->setValue("projection", projection);
 	my_shad->setValue("view", view);

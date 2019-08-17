@@ -51,7 +51,6 @@ public:
 	float			vpWidth, vpHeight;
 	int				vpXOffset, vpYOffset;
 
-	int				bpp;
 	int				stencil;
 	int				accum;
 	int				multisampling;

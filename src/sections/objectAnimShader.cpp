@@ -107,7 +107,7 @@ void sObjectAnimShader::exec() {
 
 	// view/projection transformations
 	float zoom = DEMO->camera->Zoom;
-	glm::mat4 projection = glm::perspective(glm::radians(zoom), (float)GLDRV->width / (float)GLDRV->height, 0.1f, 10000.0f);
+	glm::mat4 projection = glm::perspective(glm::radians(zoom), GLDRV->AspectRatio, 0.1f, 10000.0f);
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
 	my_shader->setValue("projection", projection);
 	my_shader->setValue("view", view);
