@@ -19,17 +19,28 @@ TextureManager::~TextureManager()
 	mem = 0;
 }
 
-// Adds a Texture into the queue, returns the Number of the texture added
 int TextureManager::addTexture(string path, bool flip, string type) {
-	
+
+	bool forceLoad = false;
 	unsigned int i;
 	int tex_num = -1;
 
 	// check if texture is already loaded, then we just return the ID of our texture
 	for (i = 0; i < texture.size(); i++) {
 		if (texture[i]->filename.compare(path) == 0) {
-			// TODO: Here we should reload the content, and return the same ID, so we make sure that we always have the latest content
-			return i;
+			if (forceLoad) {
+				mem -= (float)(texture[i]->width * texture[i]->height * texture[i]->components) / 1048576.0f; // Decrease the memory
+				if (texture[i]->load(path, flip)) {
+					texture[i]->type = type;
+					mem += (float)(texture[i]->width * texture[i]->height * texture[i]->components) / 1048576.0f; // Decrease the memory
+					LOG->Info(LOG_MED, "Texture %s [id: %d] re-loaded OK. Overall texture Memory: %.3fMb", path.c_str(), tex_num, mem);
+					return i;
+				}
+				else
+					LOG->Error("Could not load texture: %s", path.c_str());
+			}
+			else
+				return i;
 		}
 	}
 	// if we must load the texture...

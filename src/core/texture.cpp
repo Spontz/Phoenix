@@ -22,7 +22,12 @@ Texture::~Texture()
 
 bool Texture::load(const std::string & file_name, bool flip)
 {
-	
+	// If we already have loaded this texture, we unload it first
+	if (textureID > 0) {
+		glDeleteTextures(1, &textureID);
+		textureID = 0;
+	}
+
 	stbi_set_flip_vertically_on_load(flip); // required for loading textures properly
 
 	filename = file_name;
