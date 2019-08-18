@@ -153,10 +153,7 @@ char * netDriver::processMessage(char * message)
 
 	LOG->Info(LOG_LOW, "Message received: [identifier: %s] [type: %s] [action: %s]", identifier, type, action);
 
-	// ***********************
-	// * COMMANDS PROCESSING *
-	// ***********************
-
+	// Commands processing
 	if (strcmp(type, "command") == 0) {
 		if		(strcmp(action, "pause") == 0)			{ DEMO->pauseDemo();								theResult = "OK"; }
 		else if (strcmp(action, "play") == 0)			{ DEMO->playDemo();									theResult = "OK"; }
@@ -170,11 +167,8 @@ char * netDriver::processMessage(char * message)
 			theResult = "NOK";
 			sprintf((char *)theInformation, "Unknown command (%s)", message);
 		}
-
-		// ***********************
-		// * SECTIONS PROCESSING *
-		// ***********************
 	}
+	// Sections processing
 	else if (strcmp(type, "section") == 0) {
 		if (strcmp(action, "new") == 0)	{
 			char *data = getParamString(message, 4);

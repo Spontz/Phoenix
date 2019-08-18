@@ -4,11 +4,9 @@
 typedef struct {
 	char		clearScreen;	// Clear Screen buffer
 	int			texture;
-	Texture		*my_tex;
 	float		texAspectRatio;
 
 	int			shader;
-	Shader		*my_shad;
 
 	float		tx, ty, tz;	// Traslation
 	float		rx, ry, rz;	// Rotation
@@ -42,14 +40,14 @@ bool sDrawImage::load() {
 	if (local->texture == -1)
 		return false;
 	// Load the background texture
-	local->my_tex = DEMO->textureManager.texture[local->texture];
-	local->texAspectRatio = (float)local->my_tex->height / (float)local->my_tex->width;
+	Texture *my_tex;
+	my_tex = DEMO->textureManager.texture[local->texture];
+	local->texAspectRatio = (float)my_tex->height / (float)my_tex->width;
 
 	// Load the shader to apply
 	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2]);
 	if (local->shader == -1)
 		return false;
-	local->my_shad = DEMO->shaderManager.shader[local->shader];
 
 	// Load the formmula containing the Image position and scale
 	local->exprPosition = new mathDriver(this);
@@ -68,8 +66,10 @@ bool sDrawImage::load() {
 	local->exprPosition->compileFormula();
 
 	// Create shader variables
-	local->my_shad->use();
-	local->vars = new ShaderVars(this, local->my_shad);
+	Shader *my_shad;
+	my_shad = DEMO->shaderManager.shader[local->shader];
+	my_shad->use();
+	local->vars = new ShaderVars(this, my_shad);
 
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
@@ -92,6 +92,12 @@ void sDrawImage::exec() {
 	// Evaluate the expression
 	local->exprPosition->Expression.value();
 
+	Texture *my_tex;
+	my_tex = DEMO->textureManager.texture[local->texture];
+	Shader *my_shad;
+	my_shad = DEMO->shaderManager.shader[local->shader];
+
+
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
@@ -108,13 +114,13 @@ void sDrawImage::exec() {
 		model = glm::scale(model, glm::vec3(local->sx, local->sy*local->texAspectRatio, local->sz));
 
 		// Draw the image
-		local->my_shad->use();
-		local->my_shad->setValue("model", model);
-		local->my_shad->setValue("projection", projection);
-		local->my_shad->setValue("view", view);
-		local->my_shad->setValue("screenTexture", 0);
+		my_shad->use();
+		my_shad->setValue("model", model);
+		my_shad->setValue("projection", projection);
+		my_shad->setValue("view", view);
+		my_shad->setValue("screenTexture", 0);
 
-		local->my_tex->bind();
+		my_tex->bind();
 
 		// Set the values
 		local->vars->setValues(false);
