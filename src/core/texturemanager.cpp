@@ -20,41 +20,43 @@ TextureManager::~TextureManager()
 }
 
 int TextureManager::addTexture(string path, bool flip, string type) {
-
-	bool forceLoad = false;
 	unsigned int i;
 	int tex_num = -1;
 
-	// check if texture is already loaded, then we just return the ID of our texture
+	// TODO: This forceLoad should be set to false for production
+	bool forceLoad = true; // We force the texture to be reloaded, even if its already loaded
+
+	// check if texture is already loaded, then we just retrieve the ID of our texture
 	for (i = 0; i < texture.size(); i++) {
 		if (texture[i]->filename.compare(path) == 0) {
-			if (forceLoad) {
-				mem -= (float)(texture[i]->width * texture[i]->height * texture[i]->components) / 1048576.0f; // Decrease the memory
-				if (texture[i]->load(path, flip)) {
-					texture[i]->type = type;
-					mem += (float)(texture[i]->width * texture[i]->height * texture[i]->components) / 1048576.0f; // Decrease the memory
-					LOG->Info(LOG_MED, "Texture %s [id: %d] re-loaded OK. Overall texture Memory: %.3fMb", path.c_str(), tex_num, mem);
-					return i;
-				}
-				else
-					LOG->Error("Could not load texture: %s", path.c_str());
-			}
-			else
-				return i;
+			tex_num = i;
 		}
 	}
-	// if we must load the texture...
-	Texture *new_tex = new Texture();
-	if (new_tex->load(path, flip)) {
-		new_tex->type = type;
-		texture.push_back(new_tex);
-		mem += (float)(new_tex->width * new_tex->height * new_tex->components)/ 1048576.0f;		// increase the texture mem
-		tex_num = (int)texture.size() - 1;
-		LOG->Info(LOG_MED, "Texture %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path.c_str(), tex_num, mem);
+
+	if (tex_num == -1) { // If the texture has not been found, we need to load it for the first time
+		Texture *new_tex = new Texture();
+		if (new_tex->load(path, flip)) {
+			new_tex->type = type;
+			texture.push_back(new_tex);
+			mem += (float)(new_tex->width * new_tex->height * new_tex->components) / 1048576.0f;		// increase the texture mem
+			tex_num = (int)texture.size() - 1;
+			LOG->Info(LOG_MED, "Texture %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path.c_str(), tex_num, mem);
+		}
+		else
+			LOG->Error("Could not load texture: %s", path.c_str());
 	}
-	else
-		LOG->Error("Could not load texture: %s", path.c_str());
-	
+	else { // If the texture is catched we should not do anything, unless we have been told to upload it again
+		if (forceLoad) {
+			Texture *tex = texture[tex_num];
+			mem -= (float)(tex->width * tex->height * tex->components) / 1048576.0f; // Decrease the memory
+			if (tex->load(path, flip)) {
+				tex->type = type;
+				mem += (float)(tex->width * tex->height * tex->components) / 1048576.0f; // Increase the memory
+				LOG->Info(LOG_MED, "Texture %s [id: %d] force reload OK. Overall texture Memory: %.3fMb", path.c_str(), tex_num, mem);
+			}
+		}
+	}
+
 	return tex_num;
 }
 
