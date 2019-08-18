@@ -35,7 +35,7 @@ bool sParticleMatrix::load() {
 	local->emissionTime = this->param[2];
 	local->particleLifeTime = this->param[3];
 	local->particleSize = this->param[4];
-	local->particleTexture = DEMO->textureManager.addTexture(DEMO->dataFolder + this->strings[0], true);
+	local->particleTexture = DEMO->textureManager.addTexture(DEMO->dataFolder + this->strings[0]);
 	
 
 	if (local->emissionTime>0)

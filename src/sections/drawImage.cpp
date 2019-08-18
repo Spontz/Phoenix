@@ -35,7 +35,7 @@ bool sDrawImage::load() {
 	}
 
 	// Texture load
-	local->texture = DEMO->textureManager.addTexture(DEMO->dataFolder + this->strings[0], true);
+	local->texture = DEMO->textureManager.addTexture(DEMO->dataFolder + this->strings[0]);
 
 	if (local->texture == -1)
 		return false;
