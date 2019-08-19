@@ -17,8 +17,9 @@ using namespace std;
 class Texture {
 public:
 	string filename;
-	string type;	//texture_diffuse / texture_specular / texture_normal / texture_height
+	string type;					//texture_diffuse / texture_specular / texture_normal / texture_height
 	int width, height, components;
+	float mem;						// Size in Mb
 	bool use_linear;
 	GLuint textureID;
 

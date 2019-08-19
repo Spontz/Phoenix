@@ -12,9 +12,10 @@ using namespace std;
 
 class TextureManager {
 public:
-	std::vector<Texture*> texture;	// Texture list
-	std::vector<Cubemap*> cubemap;	// Cubemap list
-	float mem;						// Texture memory in MegaBytes
+	std::vector<Texture*>	texture;	// Texture list
+	std::vector<Cubemap*>	cubemap;	// Cubemap list
+	float					mem;		// Texture memory in MegaBytes
+	bool					forceLoad;	// Force exture loading each time we add a texture (should be enabled when working on slave mode)
 
 	TextureManager();
 	virtual ~TextureManager();

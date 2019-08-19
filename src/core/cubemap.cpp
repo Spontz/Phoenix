@@ -5,8 +5,10 @@
 #include <main.h>
 #include "cubemap.h"
 
-Cubemap::Cubemap(): cubemapID(0)
+Cubemap::Cubemap()
 {
+	cubemapID = 0;
+	mem = 0;
 }
 
 Cubemap::~Cubemap()
@@ -14,11 +16,19 @@ Cubemap::~Cubemap()
 	if (cubemapID != 0) {
 		glDeleteTextures(1, &cubemapID);
 		cubemapID = 0;
+		mem = 0;
 	}
 }
 
 bool Cubemap::load(vector<std::string> faces_file_name, bool flip)
 {
+	// If we already have loaded this cubemap, we unload it first
+	if (cubemapID > 0) {
+		glGenTextures(1, &cubemapID);
+		cubemapID = 0;
+		mem = 0;
+	}
+
 	bool is_loaded = true;
 	
 	stbi_set_flip_vertically_on_load(flip); // required for loading textures properly
@@ -39,6 +49,7 @@ bool Cubemap::load(vector<std::string> faces_file_name, bool flip)
 			LOG->Error("Failed loading cubemap from file: %s", faces_file_name[i].c_str());
 			is_loaded = false;
 		}
+		mem += (float)(Width * Height * 3) / 1048576.0f;		// Calculate the texture mem (in mb)
 		stbi_image_free(data);
 	}
 	// Check if the cubemap images sizes are OK

@@ -12,6 +12,7 @@ public:
 	vector<string> filename;
 	vector<int> width;
 	vector<int> height;
+	float mem;
 	GLuint cubemapID;
 
 	Cubemap();

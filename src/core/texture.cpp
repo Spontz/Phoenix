@@ -10,6 +10,7 @@ Texture::Texture()
 	type = "texture_diffuse"; // default is set to diffuse texture
 	use_linear = true;
 	textureID = 0;
+	mem = 0;
 }
 
 Texture::~Texture()
@@ -17,6 +18,7 @@ Texture::~Texture()
 	if (textureID != 0) {
 		glDeleteTextures(1, &textureID);
 		textureID = 0;
+		mem = 0;
 	}
 }
 
@@ -26,6 +28,7 @@ bool Texture::load(const std::string & file_name, bool flip)
 	if (textureID > 0) {
 		glDeleteTextures(1, &textureID);
 		textureID = 0;
+		mem = 0;
 	}
 
 	stbi_set_flip_vertically_on_load(flip); // required for loading textures properly
@@ -61,6 +64,8 @@ bool Texture::load(const std::string & file_name, bool flip)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		
+		mem = (float)(width * height * components) / 1048576.0f;		// Calculate the texture mem (in mb)
 	}
 	else {
 		LOG->Error("Failed loading texture from file: %s", filename.c_str());
