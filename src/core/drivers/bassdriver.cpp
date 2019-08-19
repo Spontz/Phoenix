@@ -1,7 +1,7 @@
 // bassdriver.cpp
 // Spontz Demogroup
 
-#include <bass/bass.h>
+#include <bass.h>
 #include "main.h"
 
 

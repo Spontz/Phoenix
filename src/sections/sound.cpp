@@ -1,6 +1,6 @@
 #pragma comment( lib, "bass" )
 #include "main.h"
-#include <bass/bass.h>
+#include <bass.h>
 
 #define BUFFER_SAMPLES	512
 #define	DEFAULT_ENERGY	1.0f

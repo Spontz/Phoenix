@@ -2,6 +2,7 @@
 // Spontz Demogroup
 
 #include <iostream>
+#define STB_IMAGE_IMPLEMENTATION
 #include "main.h"
 
 

@@ -1,10 +1,16 @@
 # 2018-2019, Spontz
 
 cmake_minimum_required(VERSION 3.8)
-
 set(CMAKE_TOOLCHAIN_FILE "../vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 project(Phoenix)
+
+set(CMAKE_CXX_STANDARD 14)
+
+if(MSVC)
+ add_compile_options(-bigobj)
+ add_definitions(/MP)
+endif()
 
 #set(VCPKG_LIBRARY_LINKAGE static)
 
@@ -29,24 +35,29 @@ file(GLOB_RECURSE RESOURCE_FILES ${CMAKE_SOURCE_DIR}/res/*.rc)
 
 # Dependencies
 
-# find_package(opengl REQUIRED)
+find_package(opengl REQUIRED)
+find_package(glad CONFIG REQUIRED)
+find_package(Freetype REQUIRED)
 find_package(glm CONFIG REQUIRED)
-find_package(glfw2 CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+
 find_package(assimp REQUIRED)
 find_package(ffmpeg REQUIRED)
-find_package(stb REQUIRED)
-find_package(glad CONFIG REQUIRED)
-find_package(freetype REQUIRED)
+# find_package(stb REQUIRED)
 
 add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} ${RESOURCE_FILES})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE opengl)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${OPENGL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE glm)
-target_link_libraries(${PROJECT_NAME} PRIVATE assimp)
-target_link_libraries(${PROJECT_NAME} PRIVATE ffmpeg)
-target_link_libraries(${PROJECT_NAME} PRIVATE stb)
-target_link_libraries(${PROJECT_NAME} PRIVATE glad)
-target_link_libraries(${PROJECT_NAME} PRIVATE freetype)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${ASSIMP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${FFMPEG_LIBRARIES})
+# target_link_libraries(${PROJECT_NAME} PRIVATE stb_image)
+target_link_libraries(${PROJECT_NAME} PRIVATE glad::glad)
+target_link_libraries(${PROJECT_NAME} PRIVATE Freetype::Freetype)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
+target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32)
+
+include_directories("${CMAKE_SOURCE_DIR}/third_party/bass24/bass24/c")
 
 include_directories("${CMAKE_SOURCE_DIR}/src" "${CMAKE_SOURCE_DIR}/include")
 

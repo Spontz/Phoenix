@@ -6,3 +6,4 @@ wget -O bass24.zip http://us.un4seen.com/files/bass24.zip
 Expand-Archive bass24.zip
 cd ..
 cd ..
+cp third_party/bass24/bass24/x64/bass.dll .
