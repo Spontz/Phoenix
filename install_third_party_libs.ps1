@@ -1,3 +1,5 @@
+rmdir third_party /s /q
+rm bass.dll
 mkdir third_party
 cd third_party
 mkdir bass24
