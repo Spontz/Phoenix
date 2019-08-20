@@ -1,4 +1,4 @@
-rmdir third_party /s /q
+rm -r third_party
 rm bass.dll
 mkdir third_party
 cd third_party
