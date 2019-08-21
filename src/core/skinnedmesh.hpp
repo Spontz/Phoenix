@@ -1,5 +1,6 @@
 #pragma once
 
+/*
 #include <string>
 #include <vector>
 #include <map>
@@ -14,7 +15,10 @@
 
 #include "main.h"
 #include <glad/glad.h>
+*/
 
+
+#include "main.h"
 
 class SkinnedMesh
 {

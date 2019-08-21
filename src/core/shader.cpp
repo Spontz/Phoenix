@@ -2,16 +2,21 @@
 // Spontz Demogroup
 
 
+/*
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+*/
+
+
+#include "main.h"
+
+#include "core/shader.h"
+#include "core/utils/logger.h"
 
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include "main.h"
-#include "core/shader.h"
-#include "core/utils/logger.h"
 
 
 Shader::Shader()

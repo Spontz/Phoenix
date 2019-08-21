@@ -1,6 +1,6 @@
 ﻿// model.cpp
 // Spontz Demogroup
-
+/*
 #include <glad/glad.h> 
 
 #include <glm/glm.hpp>
@@ -9,6 +9,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+*/
 
 #include "main.h"
 #include "core/texture.h"

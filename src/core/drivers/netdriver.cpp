@@ -2,9 +2,11 @@
 // Spontz Demogroup
 
 
-#include "main.h"
-#include "core/drivers/netdriver.h"
 #include "core/drivers/net/dyad.h"
+
+#include "main.h"
+//#include "core/drivers/netdriver.h"
+//#include "core/drivers/net/dyad.h"
 
 
 #define DELIMITER '\x1f'

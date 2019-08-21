@@ -4,9 +4,10 @@
 #ifndef PARTICLESYSTEM_H
 #define PARTICLESYSTEM_H
 
-#include <glad/glad.h>
-#include <glm/glm.hpp>
+//#include <glad/glad.h>
+//#include <glm/glm.hpp>
 
+#include "main.h"
 
 class ParticleSystem
 {

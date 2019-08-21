@@ -4,16 +4,7 @@
 #ifndef SHADERVARS_H
 #define SHADERVARS_H
 
-#include <glad/glad.h>
-#include <glm/glm.hpp>
-
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
 #include "main.h"
-#include "core/shader.h"
-
 
 #define MAXSIZE_VAR_NAME 128		// Max size of a variable name
 #define MAXSIZE_VAR_TYPE 64			// Max size of a variable type

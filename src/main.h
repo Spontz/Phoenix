@@ -5,18 +5,13 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <iostream>
-#include <string>
-#include <map>
-#include <vector>
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <exprtk.hpp>
-using namespace std;
-
+#include <glad/glad.h>
 
 #include "core/demokernel.h"
+
 #include "core/drivers/gldriver.h"
 #include "core/drivers/bassdriver.h"
 #include "core/drivers/mathdriver.h"

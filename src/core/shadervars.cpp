@@ -1,20 +1,9 @@
 // shadervars.cpp
 // Spontz Demogroup
 
-
-#include <glad/glad.h>
-#include <glm/glm.hpp>
-
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
 #include "main.h"
-#include "core/shader.h"
+//#include "core/shader.h"
 #include "core/shadervars.h"
-
-
-
 
 ShaderVars::ShaderVars(Section* sec, Shader* shad)
 {

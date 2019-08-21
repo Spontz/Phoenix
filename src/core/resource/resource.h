@@ -4,10 +4,13 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 #include <string>
+/*
 #include <glm/glm.hpp>
 #include <glad/glad.h>
+*/
 //#include <glm/gtc/matrix_transform.hpp>
-//#include "main.h"
+
+#include "main.h"
 
 #define NUM_FBO_DEBUG 4
 
