@@ -11,9 +11,9 @@ int main(int argc, char *argv[]) {
 	DEMO->getArguments(argc, argv);
 	
 	// Define the Log level
-	LOG->log_level = LOG_HIGH; // Define the highest log detail level
+	LOG->log_level_ = LOG_HIGH; // Define the highest log detail level
 	#ifdef _DEBUG
-	LOG->log_level = LOG_LOW; // Define the lowest log detail level
+	LOG->log_level_ = LOG_LOW; // Define the lowest log detail level
 	#endif
 	
 	// Initialize the GL Framework
