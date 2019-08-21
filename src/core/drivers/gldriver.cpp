@@ -186,13 +186,13 @@ void glDriver::processInput()
 {
 	if (DEMO->debug) {
 		if (glfwGetKey(window, KEY_FORWARD) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CAM_FORWARD, GLDRV->TimeDelta);
+			DEMO->camera->ProcessKeyboard(CameraMovement::FORWARD , GLDRV->TimeDelta);
 		if (glfwGetKey(window, KEY_BACKWARD) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CAM_BACKWARD, GLDRV->TimeDelta);
+			DEMO->camera->ProcessKeyboard(CameraMovement::BACKWARD, GLDRV->TimeDelta);
 		if (glfwGetKey(window, KEY_STRAFELEFT) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CAM_LEFT, GLDRV->TimeDelta);
+			DEMO->camera->ProcessKeyboard(CameraMovement::LEFT, GLDRV->TimeDelta);
 		if (glfwGetKey(window, KEY_STRAFERIGHT) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CAM_RIGHT, GLDRV->TimeDelta);
+			DEMO->camera->ProcessKeyboard(CameraMovement::RIGHT, GLDRV->TimeDelta);
 	}
 
 }

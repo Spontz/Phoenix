@@ -1,22 +1,22 @@
 ﻿// camera.cpp
 // Spontz Demogroup
-/*
-#include <glad/glad.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <vector>
-*/
+
 #include "main.h"
 #include "core/camera.h"
 
-using namespace std;
+// Default camera values
+const float Camera::DEFAULT_CAM_YAW = -90.0f;
+const float Camera::DEFAULT_CAM_PITCH = 0.0f;
+const float Camera::DEFAULT_CAM_SPEED = 15.0f;
+const float Camera::DEFAULT_CAM_SENSITIVITY = 0.1f;
+const float Camera::DEFAULT_CAM_VFOV = 45.0f;
 
-Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
+Camera::Camera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float pitch)
 {
 	Front = glm::vec3(0.0f, 0.0f, -1.0f);
-	MovementSpeed = SPEED;
-	MouseSensitivity = SENSITIVITY;
-	Zoom = ZOOM;
+	MovementSpeed = DEFAULT_CAM_SPEED;
+	MouseSensitivity = DEFAULT_CAM_SENSITIVITY;
+	Zoom = DEFAULT_CAM_VFOV;
 
 	Position = position;
 	WorldUp = up;
@@ -28,9 +28,9 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
 Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch)
 {
 	Front = glm::vec3(0.0f, 0.0f, -1.0f);
-	MovementSpeed = SPEED;
-	MouseSensitivity = SENSITIVITY;
-	Zoom = ZOOM;
+	MovementSpeed = DEFAULT_CAM_SPEED;
+	MouseSensitivity = DEFAULT_CAM_SENSITIVITY;
+	Zoom = DEFAULT_CAM_VFOV;
 
 	Position = glm::vec3(posX, posY, posZ);
 	WorldUp = glm::vec3(upX, upY, upZ);
@@ -42,33 +42,40 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 void Camera::Reset()
 {
 	Front = glm::vec3(0.0f, 0.0f, -1.0f);
-	MovementSpeed = SPEED;
-	MouseSensitivity = SENSITIVITY;
-	Zoom = ZOOM;
+	MovementSpeed = DEFAULT_CAM_SPEED;
+	MouseSensitivity = DEFAULT_CAM_SENSITIVITY;
+	Zoom = DEFAULT_CAM_VFOV;
 
 	Position = glm::vec3(0.0f, 0.0f, 3.0f);
 	WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-	Yaw = YAW;
-	Pitch = PITCH;
+	Yaw = DEFAULT_CAM_YAW;
+	Pitch = DEFAULT_CAM_PITCH;
 	updateCameraVectors();
 }
 
-glm::mat4 Camera::GetViewMatrix()
+glm::mat4 Camera::GetViewMatrix() const
 {
 	return glm::lookAt(Position, Position + Front, Up);
 }
 
-void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
+void Camera::ProcessKeyboard(CameraMovement direction, float deltaTime)
 {
-	float velocity = MovementSpeed * deltaTime;
-	if (direction == CAM_FORWARD)
+	const float velocity = MovementSpeed * deltaTime;
+
+	switch (direction) {
+	case CameraMovement::FORWARD:
 		Position += Front * velocity;
-	if (direction == CAM_BACKWARD)
+		break;
+	case CameraMovement::BACKWARD:
 		Position -= Front * velocity;
-	if (direction == CAM_LEFT)
+		break;
+	case CameraMovement::LEFT:
 		Position -= Right * velocity;
-	if (direction == CAM_RIGHT)
+		break;
+	case CameraMovement::RIGHT:
 		Position += Right * velocity;
+		break;
+	}
 }
 
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
@@ -110,14 +117,14 @@ void Camera::CapturePos()
 	char message[1024];
 	camFile.open("camera.cam", ios::out | ios::app);
 	sprintf_s(message, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
-										DEMO->camera->Position.x,	DEMO->camera->Position.y,	DEMO->camera->Position.z,
-										DEMO->camera->Up.x,			DEMO->camera->Up.y,			DEMO->camera->Up.z,
-										DEMO->camera->Yaw,			DEMO->camera->Pitch,		DEMO->camera->Zoom);
+		DEMO->camera->Position.x, DEMO->camera->Position.y, DEMO->camera->Position.z,
+		DEMO->camera->Up.x, DEMO->camera->Up.y, DEMO->camera->Up.z,
+		DEMO->camera->Yaw, DEMO->camera->Pitch, DEMO->camera->Zoom);
 	camFile << message << "\n";
 	camFile.close();
 }
 
-void Camera::setCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch, float zoom)
+void Camera::setCamera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float pitch, float zoom)
 {
 	Position = position;
 	WorldUp = up;
@@ -127,12 +134,12 @@ void Camera::setCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch,
 	updateCameraVectors();
 }
 
-glm::mat4 Camera::getOrthoMatrix_Projection()
+glm::mat4 Camera::getOrthoMatrix_Projection() const
 {
 	return glm::ortho(-1, 1, 1, -1, -1, 2);
 }
 
-glm::mat4 Camera::getOrthoMatrix_View()
+glm::mat4 Camera::getOrthoMatrix_View() const
 {
 	return glm::lookAt(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 }
