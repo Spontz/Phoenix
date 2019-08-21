@@ -87,16 +87,8 @@ if(MSVC_IDE)
 	GroupSources(src)
 endif()
 
-# Copy dlls
-#if(CMAKE_CL_64)
-#	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-#		COMMAND ${CMAKE_COMMAND} -E copy_directory
-#		"${PROJECT_SOURCE_DIR}/dlls/dll64"
-#		$<TARGET_FILE_DIR:${PROJECT_NAME}>)
-#else()
-#	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-#		COMMAND ${CMAKE_COMMAND} -E copy_directory
-#		"${PROJECT_SOURCE_DIR}/dlls/dll32"
-#		$<TARGET_FILE_DIR:${PROJECT_NAME}>)
-#endif()
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy
+	"${PROJECT_SOURCE_DIR}/third_party/bass24/bass24/x64/bass.dll"
+	$<TARGET_FILE_DIR:${PROJECT_NAME}>)
 
