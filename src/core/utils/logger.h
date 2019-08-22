@@ -3,40 +3,47 @@
 
 #ifndef LOGGER_H
 #define LOGGER_H
-#include <fstream>
-#include <iostream>
-#include <cstdarg>
+
 #include <string>
+#include <fstream>
 
-#define LOG_NONE 0
-#define LOG_ERROR_ONLY 1
-#define LOG_HIGH 2
-#define LOG_MED 3
-#define LOG_LOW 4
-
-#define STR_MAX_SIZE 2048
-
-using namespace std;
-#define LOG CLogger::GetLogger()
-
-class CLogger {
-public:
-	char log_level;	// Log Level: LOG_HIGH, LOG_MED, LOG_LOW
-	void Info(char level, const char * format, ...);
-	void Error(const char * format, ...);
-
-	static CLogger* GetLogger();
-	void CloseLogFile();
-private:
-	char text[STR_MAX_SIZE];	// Formatted text
-	char chain[STR_MAX_SIZE];	// Text chain to be written to file
-
-	CLogger();
-	// Copy constructor for the Logger class.
-	CLogger(const CLogger&) {};
-	CLogger& operator=(const CLogger&) { return *this; };
-	static const std::string m_sFileName;
-	static CLogger* m_pThis;
-	static ofstream m_Logfile;
+enum class LoggerLevels : char {
+	NONE = 0,
+	ERROR_ONLY = 1,
+	HIGH = 2,
+	MED = 3,
+	LOW = 4
 };
+
+// todo: remove, use enum class
+char const LOG_NONE = 0;
+char const LOG_ERROR_ONLY = 1;
+char const LOG_HIGH = 2;
+char const LOG_MED = 3;
+char const LOG_LOW = 4;
+
+class Logger {
+public:
+	static Logger& Instance();
+
+private:
+	Logger();
+
+public:
+	// hack: encapsulate
+	char log_level_ = LOG_HIGH; // Log Level: LOG_HIGH, LOG_MED, LOG_LOW
+
+public:
+	void Info(char level, const char* format, ...) const;
+	void Error(const char* format, ...) const;
+	void CloseLogFile() const;
+
+private:
+	std::string output_file_ = "demo_log.txt";
+	mutable std::ofstream log_ofstream_;
+};
+
+// hack: 0 macros
+#define LOG (&Logger::Instance())
+
 #endif

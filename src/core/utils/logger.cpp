@@ -1,65 +1,60 @@
 // logger.cpp
 // Spontz Demogroup
 
-#include "logger.h"
 #include "main.h"
-#include "core/utils/utilities.h"
+#include "logger.h"
 
-const string CLogger::m_sFileName = "demo_log.txt";
-CLogger* CLogger::m_pThis = NULL;
-ofstream CLogger::m_Logfile;
+#define HACK_LOGGER_STR_MAX_SIZE 2048
 
-
-CLogger::CLogger() {
+Logger & Logger::Instance() {
+	static Logger l;
+	return l;
 }
 
-CLogger* CLogger::GetLogger() {
-	if (m_pThis == NULL) {
-		m_pThis = new CLogger();
-		m_pThis->log_level = LOG_HIGH;
-		if (DEMO->debug)
-			m_Logfile.open(m_sFileName.c_str(), ios::out | ios::trunc);
-	}
-	return m_pThis;
-}
-
-void CLogger::CloseLogFile()
-{
+Logger::Logger() {
 	if (DEMO->debug)
-		m_Logfile.close();
+		log_ofstream_.open(output_file_.c_str(), ios::out | ios::trunc);
 }
 
+void Logger::CloseLogFile() const {
+	if (DEMO->debug)
+		log_ofstream_.close();
+}
 
-void CLogger::Info(char level, const char *message, ...) {
+void Logger::Info(char level, const char* message, ...) const {
 	va_list argptr;
-	
+	char Text_[HACK_LOGGER_STR_MAX_SIZE];	// Formatted text
+	char Chain_[HACK_LOGGER_STR_MAX_SIZE];	// Text chain to be written to file
+
 	// write down the trace to the standard output
-	if (DEMO->debug && this->log_level >= level) {
+	if (DEMO->debug && this->log_level_ >= level) {
 		va_start(argptr, message);
-		vsnprintf(text, STR_MAX_SIZE, message, argptr);
+		vsnprintf(Text_, HACK_LOGGER_STR_MAX_SIZE, message, argptr);
 		va_end(argptr);
 		// Get the new size of the string
-		snprintf(chain, STR_MAX_SIZE, "Info  [%.4f] %s\n", Util::CurrentTime(), text);
-		m_Logfile << chain;
+		snprintf(Chain_, HACK_LOGGER_STR_MAX_SIZE, "Info  [%.4f] %s\n", Util::CurrentTime(), Text_);
+		log_ofstream_ << Chain_;
 	}
 }
 
-void CLogger::Error(const char *message, ...) {
+void Logger::Error(const char* message, ...) const {
 	va_list argptr;
+	char Text_[HACK_LOGGER_STR_MAX_SIZE];	// Formatted text
+	char Chain_[HACK_LOGGER_STR_MAX_SIZE];	// Text chain to be written to file
 
 	// write down the trace to the standard output
 	if (DEMO->debug) {
 		va_start(argptr, message);
-		vsnprintf(text, STR_MAX_SIZE, message, argptr);
+		vsnprintf(Text_, HACK_LOGGER_STR_MAX_SIZE, message, argptr);
 		va_end(argptr);
-		snprintf(chain, STR_MAX_SIZE, "Error [%.4f] %s\n", Util::CurrentTime(), text);
-		m_Logfile << chain;
+		snprintf(Chain_, HACK_LOGGER_STR_MAX_SIZE, "Error [%.4f] %s\n", Util::CurrentTime(), Text_);
+		log_ofstream_ << Chain_;
 #ifdef _DEBUG
-		OutputDebugStringA(chain);
+		OutputDebugStringA(Chain_);
 #endif
 		if (DEMO->slaveMode == 1) {
 			string message = "ERROR::";
-			message += chain;
+			message += Chain_;
 			NETDRV->sendMessage(message);
 		}
 
