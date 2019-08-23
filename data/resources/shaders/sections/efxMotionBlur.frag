@@ -14,20 +14,19 @@ uniform float uVelocityScale;
 
 void main()
 {             
-	vec2 texelSize = 1.0 / vec2(textureSize(scene, 0));
-	vec2 screenTexCoords = gl_FragCoord.xy * texelSize;
-
-	vec2 velocity = texture(velocity, screenTexCoords).rg;
+	vec2 texelSize = 1.0 / textureSize(scene, 0);
+	
+	vec2 velocity = texture(velocity, TexCoords).rg;
 	velocity *= uVelocityScale;
 	
 	float speed = length(velocity / texelSize);
 	int nSamples = clamp(int(speed), 1, MAX_SAMPLES);
 	
 	// Blur the texture
-	FragColor = texture(scene, screenTexCoords);
+	FragColor = texture(scene, TexCoords);
 	for (int i = 1; i < nSamples; ++i) {
 		vec2 offset = velocity * (float(i) / float(nSamples - 1) - 0.5);
-		FragColor += texture(scene, screenTexCoords + offset);
+		FragColor += texture(scene, TexCoords + offset);
 	}
 	FragColor /= float(nSamples);
 }
