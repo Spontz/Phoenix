@@ -3,8 +3,6 @@
 
 typedef struct {
 	unsigned int	FboNum;			// Fbo to use (must have 2 color attachments!)
-	GLuint			bufferColor;	// Attcahment 0 of our FBO
-	GLuint			bufferBrights;	// Attachment 1 of our fbo
 	unsigned int	blurAmount;		// Blur layers to apply
 	char			clearScreen;	// Clear Screen buffer
 	char			clearDepth;		// Clear Depth buffer
@@ -12,9 +10,6 @@ typedef struct {
 	int				shaderBloom;	// Bloom Shader to apply
 	ShaderVars		*shaderVars;	// Shader variables
 
-	// Pointer to the buffers form the Resource manager
-	GLuint	*pingpongFBO[2];
-	GLuint	*pingpongColorbuffer[2];
 } efxBloom_section;
 
 static efxBloom_section *local;
@@ -28,11 +23,6 @@ sEfxBloom::sEfxBloom() {
 
 bool sEfxBloom::load() {
 	// script validation
-	if (RES->bloomLoaded == false) {
-		LOG->Error("EfxBloom [%s]: The internal resources could not be created, so Bloom effect will not work... disabling it!", this->identifier.c_str());
-		return false;
-	}
-
 	if ((this->param.size()) != 4 || (this->strings.size() != 4)) {
 		LOG->Error("EfxBloom [%s]: 4 params are needed (Clear the screen & depth buffers, Fbo to use and Blur Amount), and 2 shader files (2 for Blur and 2 for Bloom)", this->identifier.c_str());
 		return false;
@@ -58,11 +48,6 @@ bool sEfxBloom::load() {
 		return false;
 	}
 	
-	// Store the buffers of our FBO (we assume that in Attachment 0 we have the color and in Attachment 1 we have the brights)
-	local->bufferColor = DEMO->fboManager.fbo[local->FboNum]->colorBufferID[0];
-	local->bufferBrights = DEMO->fboManager.fbo[local->FboNum]->colorBufferID[1];
-
-
 	// Load Blur shader
 	local->shaderBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[1]);
 	// Load Bloom shader
@@ -92,12 +77,6 @@ bool sEfxBloom::load() {
 	my_shaderBloom->setValue("scene", 0);		// The scene is in the Tex unit 0
 	my_shaderBloom->setValue("bloomBlur", 1);	// The bloom blur is in the Tex unit 1
 
-	// Get the FBO's and Color buffers from the Resources manager
-	local->pingpongFBO[0] = &(RES->bloomPingpongFBO[0]);
-	local->pingpongFBO[1] = &(RES->bloomPingpongFBO[1]);
-	local->pingpongColorbuffer[0] = &(RES->bloomPingpongColorbuffer[0]);
-	local->pingpongColorbuffer[1] = &(RES->bloomPingpongColorbuffer[1]);
-
 	return true;
 }
 
@@ -120,48 +99,47 @@ void sEfxBloom::exec() {
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
-		// First step: Blur the image (fbo attachment 1)
+		// First step: Blur the image from the "fbo attachment 1", and store it in our efxBloom fbo manager (efxBloomFbo)
 		bool horizontal = true;
 		bool first_iteration = true;
 		my_shaderBlur->use();
-		GLDRV->setViewport(GLDRV->vpXOffset, GLDRV->vpYOffset, (GLuint)GLDRV->vpWidth, (GLuint)GLDRV->vpHeight);
+		DEMO->efxBloomFbo.active(0);
+
 		for (unsigned int i = 0; i < local->blurAmount; i++)
 		{
-			glBindFramebuffer(GL_FRAMEBUFFER, *local->pingpongFBO[horizontal]);
 			my_shaderBlur->setValue("horizontal", horizontal);
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, first_iteration ? local->bufferBrights : *local->pingpongColorbuffer[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
+			
+			// We always draw the First pass in the efxBloom FBO
+			DEMO->efxBloomFbo.bind(horizontal);
+			
+			// If it's the first iteration, we pick the second attachment of our fbo
+			// if not, we pick the fbo of our efxBloom
+			if (first_iteration)
+				DEMO->fboManager.bind_tex(local->FboNum, 1);
+			else
+				DEMO->efxBloomFbo.bind_tex(!horizontal);
+			
 			// Render scene
 			RES->Draw_QuadFS();
 			horizontal = !horizontal;
 			if (first_iteration)
 				first_iteration = false;
 		}
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		DEMO->efxBloomFbo.unbind(); // Unbind drawing into an Fbo
 		
 		// Second step: Merge the blurred image with the color image (fbo attachment 0)
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		my_shaderBloom->use();
 		// Set new shader variables values
 		local->shaderVars->setValues(false);
-		glActiveTexture(GL_TEXTURE0);// Text unit 0: Scene
-		glBindTexture(GL_TEXTURE_2D, local->bufferColor);
-		glActiveTexture(GL_TEXTURE1);	// Text unit 1: Bloom blur
-		glBindTexture(GL_TEXTURE_2D, *local->pingpongColorbuffer[!horizontal]);
+		
+		// Tex unit 0: scene
+		DEMO->fboManager.fbo[local->FboNum]->active(0);
+		DEMO->fboManager.fbo[local->FboNum]->bind_tex();
+		// Tex unit 1: Bloom blur
+		DEMO->efxBloomFbo.fbo[!horizontal]->active(1);
+		DEMO->efxBloomFbo.fbo[!horizontal]->bind_tex();
+
 		RES->Draw_QuadFS();
-
-/*		// Second Step: Draw texture a lo guarro
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		Shader *my_shad = DEMO->shaderManager.shader[RES->shdr_QuadTex];
-		my_shad->use();
-		my_shad->setValue("screenTexture", 0);
-		glActiveTexture(GL_TEXTURE0);// Text unit 0: Scene
-		glBindTexture(GL_TEXTURE_2D, *local->pingpongColorbuffer[1]);
-		RES->Draw_QuadFS();
-		////
-*/
-
-
 	}		
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();

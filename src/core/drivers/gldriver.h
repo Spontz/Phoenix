@@ -17,8 +17,6 @@
 #include "core/skinnedmesh.hpp"
 
 #define GLDRV glDriver::getInstance()
-
-
 #define GLDRV_MAX_COLOR_ATTACHMENTS 4
 
 using namespace std;
@@ -38,6 +36,11 @@ typedef struct {
 
 // ******************************************************************
 
+typedef struct {
+	int xOffset, yOffset;
+	int width, height;
+} viewport;
+
 class glDriver {
 	
 public:
@@ -47,6 +50,9 @@ public:
 	// Current rendertarget width and height
 	int				width, height;
 	// Current viewport (this data depends on: width, height and AspectRatio)
+	//viewport		vpFramebuffer;	// Framebuffer viewport
+	//viewport		vpActual;		// Current viewport size
+
 	//int				vpWidth, vpHeight, vpXOffset, vpYOffset;
 	float			vpWidth, vpHeight;
 	int				vpXOffset, vpYOffset;
@@ -71,7 +77,7 @@ public:
 	void setupViewportSizes();
 	void setViewport(int x, int y, GLsizei width, GLsizei height);
 	void initFbos();
-	void swap_buffers();
+	void swapBuffers();
 	void close();
 
 	void drawFps();

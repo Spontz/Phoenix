@@ -30,15 +30,12 @@ void Resource::loadAllResources()
 	Load_Text_Fonts();			// Text fonts
 	// Load Lights
 	Load_Lights();
-	// Load effect resources
-	Load_Bloom();
 }
 
 Resource::Resource() {
 	obj_quadFullscreen = 0;
 	shdr_QuadTex = -1;
 	shdr_QuadTexModel = -1;
-	bloomLoaded = false;
 }
 
 
@@ -249,39 +246,6 @@ void Resource::Load_Lights()
 	DEMO->lightManager.addLight(LightType::SpotLight);
 	DEMO->lightManager.addLight(LightType::PointLight);
 	DEMO->lightManager.addLight(LightType::PointLight);
-}
-
-void Resource::Load_Bloom()
-{
-	if (this->bloomLoaded) {	// This means that Bloom has been loaded and we need to reload textures and FBO's
-		glDeleteFramebuffers(2, this->bloomPingpongFBO);
-		glDeleteTextures(2, this->bloomPingpongColorbuffer);
-	}
-
-	glGenFramebuffers(2, this->bloomPingpongFBO);
-	glGenTextures(2, this->bloomPingpongColorbuffer);
-	for (unsigned int i = 0; i < 2; i++)
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, this->bloomPingpongFBO[i]);
-		glBindTexture(GL_TEXTURE_2D, this->bloomPingpongColorbuffer[i]);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, (GLuint)GLDRV->vpWidth, (GLuint)GLDRV->vpHeight, 0, GL_RGB, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->bloomPingpongColorbuffer[i], 0);
-		// also check if framebuffers are complete
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-			LOG->Error("Resource::Load_Bloom: The internal framebuffers could not be created! The Bloom effects will not work properly!!");
-			this->bloomLoaded = false;
-			return;
-		}
-	}
-	// Unbind texture and buffers
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	this->bloomLoaded = true;
 }
 
 // Draw a Quad with texture in full screen

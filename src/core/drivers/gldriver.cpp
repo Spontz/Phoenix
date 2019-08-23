@@ -65,9 +65,6 @@ void window_size_callback(GLFWwindow * window, int width, int height) {
 	GLDRV->initFbos();
 
 	GLDRV->initRender(true);
-
-	// If window if resized, some FBO's effects need to be re-generated
-	RES->Load_Bloom();
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -365,25 +362,45 @@ void glDriver::setupViewportSizes()
 	LOG->Info(LOG_LOW, "The viewport will be placed at pos (X,Y): %d,%d with size (W,H): %d,%d", this->vpXOffset, this->vpYOffset, (int)this->vpWidth, (int)this->vpHeight);
 }
 
-#include <sstream>
-void foo(float a, float b, float c, float d) {
-	std::stringstream ss;
-	ss << "("<< a << ", " << b << ", " << c << ", " << d << ")"<< std::endl;
-	OutputDebugString(ss.str().c_str());
-}
-
 // Set the viewport to any specific position or size
 void glDriver::setViewport(int x, int y, GLsizei width, GLsizei height)
 {
-	foo(x,y, width, height);
 	glViewport(x, y, width, height);
 }
 
 void glDriver::initFbos()
 {
+	////////////// efx FBO Manager: internal FBO's that are being used by the engine effects
+	// Clear Fbo's, if there is any
+	if (DEMO->efxBloomFbo.fbo.size() > 0) {
+		LOG->Info(LOG_LOW, "Ooops! we need to regenerate the Bloom efx FBO's! clearing efx FBO's first!");
+		DEMO->efxBloomFbo.clearFbos();
+	}
+	// init fbo's for Bloom
+	tGLFboFormat bloomFbo;
+	bloomFbo.format = "RGB_16F";
+	bloomFbo.numColorAttachments = 1;
+	bloomFbo.width = GLDRV->vpWidth;
+	bloomFbo.height = GLDRV->vpHeight;
+	bloomFbo.tex_iformat = getTextureInternalFormatByName(bloomFbo.format);
+	bloomFbo.tex_format = getTextureFormatByName(bloomFbo.format);
+	bloomFbo.tex_type = getTextureTypeByName(bloomFbo.format);
+	bloomFbo.tex_components = getTextureComponentsByName(bloomFbo.format);
+
+	int res = 0;
+	for (int i = 0; i < EFXBLOOM_FBO_BUFFERS; i++) {
+		res = DEMO->efxBloomFbo.addFbo(bloomFbo.format, (int)bloomFbo.width, (int)bloomFbo.height, bloomFbo.tex_iformat, bloomFbo.tex_format, bloomFbo.tex_type, bloomFbo.tex_components, bloomFbo.numColorAttachments);
+		if (res>=0)
+			LOG->Info(LOG_LOW, "EfxBloom Fbo %i uploaded: width: %i, height: %i, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, bloomFbo.width, bloomFbo.height, bloomFbo.format, bloomFbo.tex_components, bloomFbo.tex_format, bloomFbo.tex_iformat, bloomFbo.tex_type);
+		else
+			LOG->Error("Error in efxBloom Fbo definition: Efx_Fbo number %i has a non recongised format: '%s', please blame the coder.", i, bloomFbo.format);
+	}
+
+	
+	////////////// FBO Manager: Generic FBO's that can be used by the user
 	// Clear Fbo's, if there is any
 	if (DEMO->fboManager.fbo.size() > 0) {
-		LOG->Info(LOG_LOW, "Ooops! we need to regenerate the FBO's! clearing FBO's first!");
+		LOG->Info(LOG_LOW, "Ooops! we need to regenerate the FBO's! clearing generic FBO's first!");
 		DEMO->fboManager.clearFbos();
 	}
 
@@ -437,7 +454,7 @@ bool glDriver::checkGLError(char * pOut)
 	return true;
 }
 
-void glDriver::swap_buffers() {
+void glDriver::swapBuffers() {
 	glfwSwapBuffers(window);
 }
 

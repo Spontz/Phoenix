@@ -22,13 +22,14 @@
 
 // ******************************************************************
 
-#define SECTION_PARAMS		32
-#define SECTION_STRINGS		32
-#define SECTION_SPLINES		32
-#define SECTION_MODIFIERS	32
+#define SECTION_PARAMS			32
+#define SECTION_STRINGS			32
+#define SECTION_SPLINES			32
+#define SECTION_MODIFIERS		32
 
-#define RENDERING_BUFFERS	10
-#define FBO_BUFFERS			25
+#define RENDERING_BUFFERS		10
+#define FBO_BUFFERS				25
+#define EFXBLOOM_FBO_BUFFERS	2
 
 // Warning! 'FBO_BUFFERS' should not be less than 25, if you want to set less than 25,
 // please check the variable 'scriptCommand' contents in 'demokernel.cpp' file.
@@ -79,7 +80,8 @@ public:
 	SectionManager	sectionManager;
 	TextureManager	textureManager;
 	VideoManager	videoManager;
-	FboManager		fboManager;
+	FboManager		fboManager;					// Generic Fbo Manager (FBO's free to be used by the demo maker)
+	FboManager		efxBloomFbo;				// Bloom efx Fbo Manager (internal FBO's used by the engine)
 	ModelManager	modelManager;
 	ShaderManager	shaderManager;
 	LightManager	lightManager;

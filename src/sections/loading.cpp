@@ -96,7 +96,7 @@ void sLoading::exec() {
 	model = glm::scale(model, glm::vec3(zero2one, local->sy, 0));		// Scale the bar
 	RES->Draw_Obj_QuadTex(local->tex_bar, &model);
 
-	GLDRV->swap_buffers();
+	GLDRV->swapBuffers();
 }
 
 void sLoading::end() {

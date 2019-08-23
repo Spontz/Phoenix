@@ -307,26 +307,6 @@ void demokernel::mainLoop() {
 
 void demokernel::doExec() {
 
-	// TODO: Implement mouse events
-	// capture mouse move and reset the position
-	//demoSystem.mouseButtons = SDL_GetMouseState(&demoSystem.mouseX, &demoSystem.mouseY);
-	
-	// Save the mouse position differences from the center of the window
-	//demoSystem.mouseXvar = (glDriver.width / 2) - demoSystem.mouseX;
-	//demoSystem.mouseYvar = (glDriver.height / 2) - demoSystem.mouseY;
-
-	// Reset the mouse position if the left mouse button is pressed
-	/*if (demoSystem.mouseButtons & SDL_BUTTON(1)) {
-		SDL_ShowCursor(FALSE);
-
-		SDL_WarpMouseInWindow(glDriver.pSDLWindow, glDriver.width / 2, glDriver.height / 2);
-
-	}
-	else if (demoSystem.debug) {
-		SDL_ShowCursor(TRUE);
-	}
-	*/
-
 	// control exit demo (debug, loop) when end time arrives
 	if ((this->endTime > 0) && (this->runTime > this->endTime)) {
 
@@ -773,7 +753,7 @@ void demokernel::processSectionQueues() {
 	}
 	
 	// swap buffer
-	GLDRV->swap_buffers();
+	GLDRV->swapBuffers();
 }
 
 void demokernel::load_spo(string sFile) {

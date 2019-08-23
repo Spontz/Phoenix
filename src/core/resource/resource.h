@@ -47,14 +47,7 @@ public:
 	GLuint obj_skybox;
 	GLuint obj_quadFullscreen; // TODO: Temporal, move to private
 	GLuint obj_qube;
-
 	
-	// Bloom effect special resources
-	GLuint	bloomPingpongFBO[2];			// 2FBO's for Bloom effect
-	GLuint	bloomPingpongColorbuffer[2];	// 2 Color buffers for Bloom effect
-	bool	bloomLoaded;
-	void	Load_Bloom();	// Load resources for Bloom effect
-
 private:
 
 	unsigned int obj_quad_FBO_Debug[NUM_FBO_DEBUG];
