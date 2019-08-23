@@ -84,7 +84,7 @@ void sEfxBlur::exec() {
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
-		// First step: Blur the image from the "fbo attachment 1", and store it in our efxBloom fbo manager (efxBloomFbo)
+		// First step: Blur the image from the "fbo attachment 0", and store it in our efxBloom fbo manager (efxBloomFbo)
 		bool horizontal = true;
 		bool first_iteration = true;
 		my_shaderBlur->use();
@@ -97,10 +97,10 @@ void sEfxBlur::exec() {
 			// We always draw the First pass in the efxBloom FBO
 			DEMO->efxBloomFbo.bind(horizontal);
 			
-			// If it's the first iteration, we pick the second attachment of our fbo
+			// If it's the first iteration, we pick the fbo
 			// if not, we pick the fbo of our efxBloom
 			if (first_iteration)
-				DEMO->fboManager.bind_tex(local->FboNum, 0);
+				DEMO->fboManager.bind_tex(local->FboNum);
 			else
 				DEMO->efxBloomFbo.bind_tex(!horizontal);
 			
@@ -111,36 +111,9 @@ void sEfxBlur::exec() {
 				first_iteration = false;
 		}
 		DEMO->efxBloomFbo.unbind(); // Unbind drawing into an Fbo
-		
 
-		//
-		//RES->Draw_QuadFBOFS(local->FboNum);
-		Shader *my_shad = DEMO->shaderManager.shader[RES->shdr_QuadTex];
-
-		my_shad->use();
-		my_shad->setValue("screenTexture", 0);
-		DEMO->efxBloomFbo.active();
-		DEMO->efxBloomFbo.bind_tex(horizontal);
-//		DEMO->fboManager.active();
-//		DEMO->fboManager.bind_tex(fboNum, attachment);
-
-		RES->Draw_QuadFS();
-
-		/*
-		// Second step: Draw the FBO
-		my_shaderBloom->use();
-		// Set new shader variables values
-		local->shaderVars->setValues(false);
-		
-		// Tex unit 0: scene
-		DEMO->fboManager.fbo[local->FboNum]->active(0);
-		DEMO->fboManager.fbo[local->FboNum]->bind_tex();
-		// Tex unit 1: Bloom blur
-		DEMO->efxBloomFbo.fbo[!horizontal]->active(1);
-		DEMO->efxBloomFbo.fbo[!horizontal]->bind_tex();
-
-		RES->Draw_QuadFS();
-		*/
+		// Second step: Draw the Blurred image
+		RES->Draw_QuadEfxFBOFS(!horizontal);
 	}		
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();

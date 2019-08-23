@@ -286,6 +286,19 @@ void Resource::Draw_QuadFBOFS(int fboNum, GLuint attachment)
 	Draw_QuadFS();
 }
 
+// Draw a Quad with a FBO in full screen
+void Resource::Draw_QuadEfxFBOFS(int efxFboNum, GLuint attachment)
+{
+	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTex];
+
+	my_shad->use();
+	my_shad->setValue("screenTexture", 0);
+	DEMO->efxBloomFbo.active();
+	DEMO->efxBloomFbo.bind_tex(efxFboNum, attachment);
+
+	Draw_QuadFS();
+}
+
 // Draw a Quad in full screen. A texture can be specified and a model matrix
 void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *model)
 {

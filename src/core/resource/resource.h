@@ -23,9 +23,10 @@ public:
 	void loadAllResources();
 
 	void Draw_QuadFS();											// Draws a quad in fullscreen
-	void Draw_QuadFS(int textureNum);							// Draws a quad with fullscreen (the texture number from the texture manager should be specified)
-	void Draw_QuadFS(int textureNum, float alpha);				// Draws a quad with fullscreen with alpha (the texture number from the texture manager should be specified)
-	void Draw_QuadFBOFS(int fbo_num, GLuint attachment = 0);	// Draws a quad with fullscreen (the fbo number from the fbo manager should be specified)
+	void Draw_QuadFS(int textureNum);							// Draws a quad in fullscreen (the texture number from the texture manager should be specified)
+	void Draw_QuadFS(int textureNum, float alpha);				// Draws a quad in fullscreen with alpha (the texture number from the texture manager should be specified)
+	void Draw_QuadFBOFS(int fbo_num, GLuint attachment=0);		// Draws a quad in fullscreen (the fbo number from the fbo manager should be specified)
+	void Draw_QuadEfxFBOFS(int efxFboNum, GLuint attachment=0);	// Draws a quad in fullscreen (the fbo number from the efx fbo manager should be specified)
 	void Draw_Obj_QuadTex(int textureNum, glm::mat4 *model);
 	void Draw_Obj_QuadTex(int textureNum, glm::mat4 *view, glm::mat4 *projection, glm::mat4 *model);
 	void Draw_Skybox(int cubemap);								// Draws a skybox for a given cubemap texture
