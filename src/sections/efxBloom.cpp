@@ -124,6 +124,7 @@ void sEfxBloom::exec() {
 		bool horizontal = true;
 		bool first_iteration = true;
 		my_shaderBlur->use();
+		GLDRV->setViewport(GLDRV->vpXOffset, GLDRV->vpYOffset, (GLuint)GLDRV->vpWidth, (GLuint)GLDRV->vpHeight);
 		for (unsigned int i = 0; i < local->blurAmount; i++)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, *local->pingpongFBO[horizontal]);
@@ -138,13 +139,12 @@ void sEfxBloom::exec() {
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
-
 		// Second step: Merge the blurred image with the color image (fbo attachment 0)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		my_shaderBloom->use();
 		// Set new shader variables values
 		local->shaderVars->setValues(false);
-		glActiveTexture(GL_TEXTURE0)	;// Text unit 0: Scene
+		glActiveTexture(GL_TEXTURE0);// Text unit 0: Scene
 		glBindTexture(GL_TEXTURE_2D, local->bufferColor);
 		glActiveTexture(GL_TEXTURE1);	// Text unit 1: Bloom blur
 		glBindTexture(GL_TEXTURE_2D, *local->pingpongColorbuffer[!horizontal]);
