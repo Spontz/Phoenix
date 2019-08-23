@@ -264,7 +264,8 @@ void Resource::Load_Bloom()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, this->bloomPingpongFBO[i]);
 		glBindTexture(GL_TEXTURE_2D, this->bloomPingpongColorbuffer[i]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, GLDRV->width, GLDRV->height, 0, GL_RGB, GL_FLOAT, NULL);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, (GLuint)GLDRV->vpWidth, (GLuint)GLDRV->vpHeight, 0, GL_RGB, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!

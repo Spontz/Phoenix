@@ -61,7 +61,7 @@ void sBackground::exec() {
 		Texture *my_tex = DEMO->textureManager.texture[local->texture];
 		// Texture and View aspect ratio, stored for Keeping image proportions
 		float tex_aspect = (float)my_tex->width / (float)my_tex->height;
-		float view_aspect = (float)GLDRV->width / (float)GLDRV->height;
+		float view_aspect = GLDRV->AspectRatio;
 
 		// Put orthogonal mode
 		glm::mat4 model = glm::mat4(1.0f);

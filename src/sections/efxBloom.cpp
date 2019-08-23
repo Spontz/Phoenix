@@ -138,17 +138,29 @@ void sEfxBloom::exec() {
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
+
 		// Second step: Merge the blurred image with the color image (fbo attachment 0)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		my_shaderBloom->use();
 		// Set new shader variables values
 		local->shaderVars->setValues(false);
-		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE0)	;// Text unit 0: Scene
 		glBindTexture(GL_TEXTURE_2D, local->bufferColor);
-		glActiveTexture(GL_TEXTURE1);
+		glActiveTexture(GL_TEXTURE1);	// Text unit 1: Bloom blur
 		glBindTexture(GL_TEXTURE_2D, *local->pingpongColorbuffer[!horizontal]);
 		RES->Draw_QuadFS();
-		
+
+/*		// Second Step: Draw texture a lo guarro
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		Shader *my_shad = DEMO->shaderManager.shader[RES->shdr_QuadTex];
+		my_shad->use();
+		my_shad->setValue("screenTexture", 0);
+		glActiveTexture(GL_TEXTURE0);// Text unit 0: Scene
+		glBindTexture(GL_TEXTURE_2D, *local->pingpongColorbuffer[1]);
+		RES->Draw_QuadFS();
+		////
+*/
+
 
 	}		
 	glEnable(GL_DEPTH_TEST);
