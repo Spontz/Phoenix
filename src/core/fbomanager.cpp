@@ -34,11 +34,16 @@ void FboManager::bind_tex(int fbo_num, GLuint attachment)
 	}
 }
 
-void FboManager::unbind()
-{
+void FboManager::unbind() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	// Restore the driver viewport
-	GLDRV->setViewport();
+	GLDRV->setViewport(
+		GLDRV->vpXOffset,
+		GLDRV->vpYOffset,
+		static_cast<int>(GLDRV->vpWidth),
+		static_cast<int>(GLDRV->vpHeight)
+	);
 }
 
 // Adds a Fbo into the queue, returns the ID of the texture added

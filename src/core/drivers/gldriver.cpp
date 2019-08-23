@@ -7,9 +7,6 @@
 using namespace std;
 using namespace glm;
 
-// Initialize the glDriver main pointer to NULL
-glDriver* glDriver::m_pThis = NULL;
-
 // **************************************************
 // Demo states to show in the drawTiming information
 
@@ -200,9 +197,8 @@ void glDriver::processInput()
 // **************************************************
 
 glDriver * glDriver::getInstance() {
-	if (m_pThis == NULL)
-		m_pThis = new glDriver();
-	return m_pThis;
+	static glDriver obj;
+	return &obj;
 }
 
 glDriver::glDriver() {
@@ -331,8 +327,7 @@ void glDriver::initRender(int clear)
 	TimeDelta = TimeCurrentFrame - TimeLastFrame;
 
 	// set the viewport to the standard size
-	setViewport();
-	//setViewport(0, 0, this->width, this->height);
+	setViewport(vpXOffset, vpYOffset, static_cast<int>(vpWidth), static_cast<int>(vpHeight));
 	
 	// clear some buffers if needed
 	if (clear) {
@@ -370,15 +365,17 @@ void glDriver::setupViewportSizes()
 	LOG->Info(LOG_LOW, "The viewport will be placed at pos (X,Y): %d,%d with size (W,H): %d,%d", this->vpXOffset, this->vpYOffset, (int)this->vpWidth, (int)this->vpHeight);
 }
 
-// Set the viewport to the original size
-void glDriver::setViewport()
-{
-	glViewport(this->vpXOffset, this->vpYOffset, (int)this->vpWidth, (int)this->vpHeight);
+#include <sstream>
+void foo(float a, float b, float c, float d) {
+	std::stringstream ss;
+	ss << "("<< a << ", " << b << ", " << c << ", " << d << ")"<< std::endl;
+	OutputDebugString(ss.str().c_str());
 }
 
 // Set the viewport to any specific position or size
 void glDriver::setViewport(int x, int y, GLsizei width, GLsizei height)
 {
+	foo(x,y, width, height);
 	glViewport(x, y, width, height);
 }
 

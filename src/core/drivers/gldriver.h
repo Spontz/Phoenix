@@ -69,7 +69,6 @@ public:
 	void initStates();
 	void initRender(int clear);
 	void setupViewportSizes();
-	void setViewport();
 	void setViewport(int x, int y, GLsizei width, GLsizei height);
 	void initFbos();
 	void swap_buffers();
@@ -92,10 +91,6 @@ public:
 
 private:
 	GLFWwindow* window;
-
-	static glDriver* m_pThis;
-
-
 };
 
 void window_size_callback(GLFWwindow* window, int width, int height);
