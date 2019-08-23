@@ -31,6 +31,7 @@ enum SectionType {
 	FboBind,
 	FboUnbind,
 	EfxBloom,
+	EfxBlur,
 	EfxFader,
 	EfxMotionBlur,
 	Test

@@ -31,6 +31,7 @@ tSectionID sectionID[] = {
 	{"fboBind",				SectionType::FboBind},
 	{"fboUnbind",			SectionType::FboUnbind},
 	{"efxBloom",			SectionType::EfxBloom},
+	{"efxBlur",				SectionType::EfxBlur},
 	{"efxFader",			SectionType::EfxFader},
 	{"efxMotionblur",		SectionType::EfxMotionBlur},
 	{"test",				SectionType::Test}
@@ -109,6 +110,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::EfxBloom:
 		mySection = new sEfxBloom();
+		break;
+	case SectionType::EfxBlur:
+		mySection = new sEfxBlur();
 		break;
 	case SectionType::EfxFader:
 		mySection = new sEfxFader();
