@@ -358,6 +358,13 @@ void glDriver::setupViewportSizes()
 		this->vpHeight = (float)this->width / this->AspectRatio;
 		this->vpYOffset = (int)(((float)this->height - this->vpHeight) / 2.0);
 	}
+
+	// Prevent zero division
+	if (vpWidth < 1.0)
+		vpWidth = 1.0;
+	if (vpHeight < 1.0)
+		vpHeight = 1.0;
+
 	LOG->Info(LOG_LOW, "Requested resolution (W,H): %d,%d. Aspect ratio: %.4f", this->width, this->height, this->AspectRatio);
 	LOG->Info(LOG_LOW, "The viewport will be placed at pos (X,Y): %d,%d with size (W,H): %d,%d", this->vpXOffset, this->vpYOffset, (int)this->vpWidth, (int)this->vpHeight);
 }

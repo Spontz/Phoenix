@@ -222,7 +222,6 @@ char * netDriver::processMessage(char * message)
 void netDriver::sendMessage(string message)
 {
 	if (this->connectedToEditor) {
-		message += "\r";
 		dyad_write(serv_connect, message.c_str(), (int)message.length());
 	}
 }
