@@ -375,6 +375,13 @@ void glDriver::setViewport(int x, int y, GLsizei width, GLsizei height)
 	glViewport(x, y, width, height);
 }
 
+void glDriver::setFramebuffer()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// Restore the driver viewport
+	setViewport(vpXOffset, vpYOffset, static_cast<int>(vpWidth), static_cast<int>(vpHeight));
+}
+
 void glDriver::initFbos()
 {
 	////////////// efx FBO Manager: internal FBO's that are being used by the engine effects

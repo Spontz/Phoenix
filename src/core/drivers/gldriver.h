@@ -76,6 +76,7 @@ public:
 	void initRender(int clear);
 	void setupViewportSizes();
 	void setViewport(int x, int y, GLsizei width, GLsizei height);
+	void setFramebuffer(); // Unbinds any Framebuffer and sets to the default viewport
 	void initFbos();
 	void swapBuffers();
 	void close();
