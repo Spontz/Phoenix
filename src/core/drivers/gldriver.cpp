@@ -198,12 +198,12 @@ Viewport Viewport::FromRenderTarget(GLsizei rt_width, GLsizei rt_height, GLsizei
 	const float rt_aspect_ratio_float = static_cast<float>(rt_width) / static_cast<float>(rt_height);
 	const float vp_aspect_ratio_float = static_cast<float>(vp_aspect_x) / static_cast<float>(vp_aspect_y);
 
-	if (rt_aspect_ratio_float > vp_aspect_ratio_float) {
-		height = static_cast<GLsizei>(static_cast<float>(height) / rt_aspect_ratio_float * vp_aspect_ratio_float);
+	if (rt_aspect_ratio_float < vp_aspect_ratio_float) {
+		height = static_cast<GLsizei>(static_cast<float>(height) * rt_aspect_ratio_float / vp_aspect_ratio_float);
 		y = (rt_height - height) / 2;
 	}
-	else if (rt_aspect_ratio_float < vp_aspect_ratio_float) {
-		width = static_cast<GLsizei>(static_cast<float>(width) * rt_aspect_ratio_float / vp_aspect_ratio_float);
+	else if (rt_aspect_ratio_float > vp_aspect_ratio_float) {
+		width = static_cast<GLsizei>(static_cast<float>(width) / rt_aspect_ratio_float * vp_aspect_ratio_float);
 		x = (rt_width - width) / 2;
 	}
 

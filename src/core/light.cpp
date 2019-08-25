@@ -32,7 +32,7 @@ void Light::draw(float size) {
 	glm::mat4 projection = glm::perspective(
 		glm::radians(DEMO->camera->Zoom),
 		GLDRV->GetCurrentViewport().GetAspectRatio(),
-		//static_cast<float>(GLDRV->script__gl_width__framebuffer_width_) / static_cast<float>(GLDRV->script__gl_height__framebuffer_height_),
+		// GLDRV->GetFramebufferViewport().GetAspectRatio(),
 		0.1f,
 		10000.0f
 	);
