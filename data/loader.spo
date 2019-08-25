@@ -1,8 +1,0 @@
-[loading]
-id loader
-string /resources/loading/loadingback.jpg
-string /resources/loading/loadingfront.jpg
-string /resources/loading/loadingbar.jpg
-fProgressBarPositionX 0
-fProgressBarPositionY 0-0.4
-fBorderWidth 0.1

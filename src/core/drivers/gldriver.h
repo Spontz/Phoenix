@@ -15,6 +15,7 @@
 #include "core/texture.h"
 #include "core/model.h"
 #include "core/skinnedmesh.hpp"
+#include "core/viewport.h"
 
 // HACK: get rid of macros
 #define GLDRV (&glDriver::GetInstance())
@@ -32,24 +33,6 @@ typedef struct {
 	char* format;
 	int numColorAttachments;
 } tGLFboFormat;
-
-// ******************************************************************
-
-struct Viewport {
-	Viewport() = default;
-	Viewport(GLint x, GLint y, GLsizei width, GLsizei height);
-
-	// Enforce aspect, center viewport, keep maximum area (top/down or left/right "black bars")
-	// given a render target size and a desired viewport aspect ratio.
-	static Viewport FromRenderTarget(GLsizei rt_width, GLsizei rt_height, GLsizei vp_aspect_x, GLsizei vp_aspect_y);
-
-	float GetAspectRatio() const { return static_cast<float>(width) / static_cast<float>(height);}
-
-	GLint	x;
-	GLint	y;
-	GLsizei	width;
-	GLsizei	height;
-};
 
 // ******************************************************************
 
