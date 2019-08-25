@@ -16,12 +16,12 @@ void FboManager::active(int index) const
 	glActiveTexture(GL_TEXTURE0 + index);
 }
 
-void FboManager::bind(int fbo_num)
-{
+void FboManager::bind(int fbo_num) {
 	if (fbo_num < fbo.size()) {
 		Fbo *my_fbo = fbo[fbo_num];
 		// Adjust the viewport to the fbo size
-		GLDRV->setViewport(0, 0, my_fbo->width, my_fbo->height);
+		//GLDRV->setViewport(0, 0, my_fbo->width, my_fbo->height);
+		GLDRV->SetCurrentViewport({ 0, 0, my_fbo->width, my_fbo->height });
 		my_fbo->bind();
 	}
 }
@@ -36,14 +36,16 @@ void FboManager::bind_tex(int fbo_num, GLuint attachment)
 
 void FboManager::unbind() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	// Restore the driver viewport
+	GLDRV->SetCurrentViewport(GLDRV->GetFramebufferViewport());
+	/*
 	GLDRV->setViewport(
 		GLDRV->vpXOffset,
 		GLDRV->vpYOffset,
 		static_cast<int>(GLDRV->vpWidth),
 		static_cast<int>(GLDRV->vpHeight)
 	);
+	*/
 }
 
 // Adds a Fbo into the queue, returns the ID of the texture added

@@ -66,7 +66,7 @@ void sParticleMatrix::exec() {
 	EvalBlendingStart();
 	glDepthMask(GL_FALSE); // Disable depth buffer writting
 
-	glm::mat4 projection = glm::perspective(glm::radians(DEMO->camera->Zoom), GLDRV->AspectRatio, 0.1f, 10000.0f);
+	glm::mat4 projection = glm::perspective(glm::radians(DEMO->camera->Zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
 	glm::mat4 vp = projection * view;	//TODO: This mutliplication should be done in the shader, by passing the 2 matrix
 	

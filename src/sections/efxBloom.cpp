@@ -136,6 +136,7 @@ void sEfxBloom::exec() {
 		DEMO->fboManager.fbo[local->FboNum]->active(0);
 		DEMO->fboManager.fbo[local->FboNum]->bind_tex();
 		// Tex unit 1: Bloom blur
+		auto tmp = DEMO->efxBloomFbo.fbo;
 		DEMO->efxBloomFbo.fbo[!horizontal]->active(1);
 		DEMO->efxBloomFbo.fbo[!horizontal]->bind_tex();
 

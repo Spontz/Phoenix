@@ -4,20 +4,22 @@
 #include "main.h"
 #include "core/drivers/events.h"
 
-using namespace std;
-using namespace glm;
+// Demo states to show in the drawTiming information ****************
 
-// **************************************************
-// Demo states to show in the drawTiming information
-
-char *stateStr[] = {"play", "play - RW", "play - FF", 
-					"paused", "paused - RW", "paused - FF" };
+char* stateStr[] = {
+	"play",
+	"play - RW",
+	"play - FF",
+	"paused",
+	"paused - RW",
+	"paused - FF"
+};
 
 // ******************************************************************
 
 typedef struct {
-	char *name;
-	int tex_iformat;		// internalformat
+	char* name;
+	int tex_iformat; // internalformat
 	int tex_format;
 	int tex_type;
 	int tex_components;
@@ -37,30 +39,31 @@ glTexTable_t textureModes[] = {
 };
 #define TEXTURE_MODE (sizeof(textureModes) / sizeof(glTexTable_t))
 
-// ******************************************************************
-
-
-
-// CALBACKS **************************************************
+// GLFW CALLBACKS ***************************************************
 
 void error_callback(int, const char* err_str)
 {
 	LOG->Error("GLFW Error: %s", err_str);
 }
 
-void window_size_callback(GLFWwindow * window, int width, int height) {
-	GLDRV->width = width;
-	GLDRV->height = height;
-	if (GLDRV->width == 0)
-		GLDRV->width = 1;
-	if (GLDRV->height == 0)
-		GLDRV->height = 1;
+void window_size_callback(GLFWwindow* window, int width, int height) {
+	// TODO/HACK: Add min size to window @ OS api level and get rid of this
+	width = std::max(width, 1);
+	height = std::max(height, 1);
 
-	GLDRV->mouse_lastxpos = (float)width / 2.0f;
-	GLDRV->mouse_lastypos = (float)height / 2.0f;
+	GLDRV->script__gl_width__framebuffer_width_ = width;
+	GLDRV->script__gl_height__framebuffer_height_ = height;
+
+	// RT will be set to FB later
+	//GLDRV->current_rt_width_ = width;
+	//GLDRV->current_rt_height_ = height;
+
+	GLDRV->mouse_lastxpos = static_cast<float>(width) / 2.0f;
+	GLDRV->mouse_lastypos = static_cast<float>(height) / 2.0f;
 
 	// Recalculate viewport sizes
-	GLDRV->setupViewportSizes();
+	GLDRV->OnFramebufferSizeChanged();
+
 	// Recalculate fbo's with the new window size
 	GLDRV->initFbos();
 
@@ -89,10 +92,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		}
 
 	}
-	
+
 }
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// glfw: whenever the mouse scroll wheel scrolls, this callback is
+// called
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	DEMO->camera->ProcessMouseScroll((float)yoffset);
@@ -141,15 +145,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				DEMO->drawSound = !DEMO->drawSound;
 			else if (key == KEY_SHOWFBO) {
 				DEMO->drawFbo++;
-				if(DEMO->drawFbo>=7)
-					DEMO->drawFbo=0;
+				if (DEMO->drawFbo >= 7)
+					DEMO->drawFbo = 0;
 			}
 			else if (key == KEY_CHANGEATTACH) {
 				DEMO->drawFboAttachment++;
 				if (DEMO->drawFboAttachment >= GLDRV_MAX_COLOR_ATTACHMENTS)
 					DEMO->drawFboAttachment = 0;
 			}
-				
+
 			else if (key == KEY_CAPTURE) {
 				DEMO->camera->CapturePos();
 			}
@@ -174,13 +178,50 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-// ----------------------------------------------------------------------
+// Viewport *********************************************************
+
+Viewport::Viewport(GLint x, GLint y, GLsizei width, GLsizei height)
+	:
+	x(x),
+	y(y),
+	width(width),
+	height(height)
+{
+}
+
+Viewport Viewport::FromRenderTarget(GLsizei rt_width, GLsizei rt_height, GLsizei vp_aspect_x, GLsizei vp_aspect_y) {
+	GLsizei width = rt_width;
+	GLsizei height = rt_height;
+	GLint x = 0;
+	GLint y = 0;
+
+	const float rt_aspect_ratio_float = static_cast<float>(rt_width) / static_cast<float>(rt_height);
+	const float vp_aspect_ratio_float = static_cast<float>(vp_aspect_x) / static_cast<float>(vp_aspect_y);
+
+	if (rt_aspect_ratio_float > vp_aspect_ratio_float) {
+		width = static_cast<GLsizei>(static_cast<float>(width) * rt_aspect_ratio_float / vp_aspect_ratio_float);
+		x = (rt_width - width) / 2;
+	}
+	else if (rt_aspect_ratio_float < vp_aspect_ratio_float) {
+		height = static_cast<GLsizei>(static_cast<float>(height) / rt_aspect_ratio_float * vp_aspect_ratio_float);
+		y = (rt_height - height) / 2;
+	}
+
+	return { x,y,width,height };
+}
+
+// glDriver *********************************************************
+
+glDriver& glDriver::GetInstance() {
+	static glDriver obj;
+	return obj;
+}
 
 void glDriver::processInput()
 {
 	if (DEMO->debug) {
 		if (glfwGetKey(window, KEY_FORWARD) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CameraMovement::FORWARD , GLDRV->TimeDelta);
+			DEMO->camera->ProcessKeyboard(CameraMovement::FORWARD, GLDRV->TimeDelta);
 		if (glfwGetKey(window, KEY_BACKWARD) == GLFW_PRESS)
 			DEMO->camera->ProcessKeyboard(CameraMovement::BACKWARD, GLDRV->TimeDelta);
 		if (glfwGetKey(window, KEY_STRAFELEFT) == GLFW_PRESS)
@@ -191,33 +232,30 @@ void glDriver::processInput()
 
 }
 
-// **************************************************
-
-glDriver * glDriver::getInstance() {
-	static glDriver obj;
-	return &obj;
-}
-
-glDriver::glDriver() {
-	int i = 0;
-	width = 200;
-	height = 100;
-	fullScreen = 0;
-	saveInfo = 0;
-	AspectRatio = 2;
-	stencil = 0;
-	accum = 0;
-	multisampling = 0;
-	gamma = 1.0f;
-	mouse_lastxpos = width / 2.0f;
-	mouse_lastypos = height / 2.0f;
-	
-	for (i=0; i<FBO_BUFFERS; i++) {
-		this->fbo[i].width = this->fbo[i].height = 0;
-		this->fbo[i].ratio = 0;
+glDriver::glDriver()
+	:
+	TimeCurrentFrame(0.0f),
+	TimeDelta(0.0f),
+	TimeLastFrame(0.0f),
+	window(nullptr),
+	script__gl_width__framebuffer_width_(0),
+	script__gl_height__framebuffer_height_(0),
+	mouse_lastxpos(0),
+	mouse_lastypos(0),
+	fullScreen(0),
+	saveInfo(0),
+	stencil(0),
+	accum(0),
+	multisampling(0),
+	gamma(1.0f)
+{
+	// hack:
+	for (auto i = 0; i < FBO_BUFFERS; ++i) {
+		fbo[i].width = 0;
+		fbo[i].height = 0;
+		fbo[i].ratio = 0;
 	}
-	// Register error callback first
-	glfwSetErrorCallback(error_callback);
+
 }
 
 void glDriver::initFramework() {
@@ -228,10 +266,21 @@ void glDriver::initFramework() {
 	}
 	else {
 		LOG->Info(LOG_MED, "GLFW library version is: %s", glfwGetVersionString());
+		glfwSetErrorCallback(error_callback);
 	}
 }
 
 void glDriver::initGraphics() {
+	script__gl_width__framebuffer_width_ = 200;
+	script__gl_height__framebuffer_height_ = 100;
+	framebuffer_aspect_x_ = 16;
+	framebuffer_aspect_y_ = 9;
+
+	mouse_lastxpos = script__gl_width__framebuffer_width_ / 2.0f;
+	mouse_lastypos = script__gl_height__framebuffer_height_ / 2.0f;
+
+	OnFramebufferSizeChanged();
+
 	// Create a windowed mode window and its OpenGL context
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -239,20 +288,20 @@ void glDriver::initGraphics() {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	if (GLDRV->fullScreen)
-		window = glfwCreateWindow(width, height, DEMO->demoName, glfwGetPrimaryMonitor(), nullptr);
-	else
-		window = glfwCreateWindow(width, height, DEMO->demoName, nullptr, nullptr);
+	window = glfwCreateWindow(
+		script__gl_width__framebuffer_width_,
+		script__gl_height__framebuffer_height_,
+		DEMO->demoName,
+		GLDRV->fullScreen ? glfwGetPrimaryMonitor() : nullptr,
+		nullptr
+	);
 
-	if (!window) {
+	if (!window)
 		glfwTerminate();
-	}
 
 	// Enable multisampling (aka anti-aliasing)
-	if (this->multisampling) {
-		glfwWindowHint(GLFW_SAMPLES, 4);		// This does mean that the size of all the buffers is increased by 4
-	}
-
+	if (this->multisampling)
+		glfwWindowHint(GLFW_SAMPLES, 4); // This does mean that the size of all the buffers is increased by 4
 
 	// Make the window's context current
 	glfwMakeContextCurrent(window);
@@ -264,21 +313,18 @@ void glDriver::initGraphics() {
 	glfwSetScrollCallback(window, scroll_callback);
 
 	// Initialize glad
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		LOG->Error("Failed to initialize GLAD");
-	}
-
 
 	// Enable multisampling state (aka anti-aliasing)
-	if (this->multisampling) {
+	if (this->multisampling)
 		glEnable(GL_MULTISAMPLE);
-	}
 
 	// Calculate the Viewport sizes
-	this->setupViewportSizes();
+	OnFramebufferSizeChanged();
 
 	// Init render
-	this->initRender(true);
+	initRender(true);
 
 	// During init, enable debug output
 	if (DEMO->debug) {
@@ -291,14 +337,13 @@ void glDriver::initGraphics() {
 	}
 
 	// init fbo's
-	this->initFbos();
+	initFbos();
 
 	// Init internal timer
 	TimeCurrentFrame = static_cast<float>(glfwGetTime());
 }
 
-void glDriver::initStates()
-{
+void glDriver::initStates() {
 	glDisable(GL_BLEND);						// blending disabled
 	glBlendFunc(GL_ONE, GL_ONE);				// Additive blending function by default
 	glBlendEquation(GL_FUNC_ADD);				// ADD function by default
@@ -310,22 +355,22 @@ void glDriver::initStates()
 	glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL - TODO: Should be LESS according learnopengl.com
 }
 
-void glDriver::initRender(int clear)
-{
+void glDriver::initRender(int clear) {
 	// Vsync Management
 	glfwSwapInterval(0); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
 
 	// reset the default gl state
 	this->initStates();
-	
+
 	// Set the internal timer
 	TimeLastFrame = TimeCurrentFrame;
 	TimeCurrentFrame = static_cast<float>(glfwGetTime());
 	TimeDelta = TimeCurrentFrame - TimeLastFrame;
 
 	// set the viewport to the standard size
-	setViewport(vpXOffset, vpYOffset, static_cast<int>(vpWidth), static_cast<int>(vpHeight));
-	
+	// setViewport(vpXOffset, vpYOffset, static_cast<int>(vpWidth), static_cast<int>(vpHeight));
+	SetCurrentViewport(GetFramebufferViewport());
+
 	// clear some buffers if needed
 	if (clear) {
 		glClearColor(0, 0, 0, 0);
@@ -339,15 +384,18 @@ void glDriver::initRender(int clear)
 	}
 }
 
-void glDriver::setupViewportSizes()
-{
+void glDriver::OnFramebufferSizeChanged() {
+	SetCurrentViewport(GetFramebufferViewport());
+
+
+	/*
 	// Calculate the viewport size according the given Width, Height and Aspect Ratio
 	this->vpWidth = (float)this->width;
 	this->vpHeight = (float)this->height;
 	this->vpXOffset = 0; // Width offset (X)
 	this->vpYOffset = 0; // Height offset (Y)
 
-	// Si la anchura que necesitamos es demasiado grande, hya q recalcular una nueva anchura y poner unos bordes a los lados 
+	// Si la anchura que necesitamos es demasiado grande, hya q recalcular una nueva anchura y poner unos bordes a los lados
 	if (((float)this->width / this->AspectRatio) > (float)this->height) {
 		vpWidth = (float)this->height * this->AspectRatio;
 		this->vpXOffset = (int)(((float)this->width - this->vpWidth) / 2.0);
@@ -367,23 +415,26 @@ void glDriver::setupViewportSizes()
 
 	LOG->Info(LOG_LOW, "Requested resolution (W,H): %d,%d. Aspect ratio: %.4f", this->width, this->height, this->AspectRatio);
 	LOG->Info(LOG_LOW, "The viewport will be placed at pos (X,Y): %d,%d with size (W,H): %d,%d", this->vpXOffset, this->vpYOffset, (int)this->vpWidth, (int)this->vpHeight);
+	*/
 }
 
-// Set the viewport to any specific position or size
-void glDriver::setViewport(int x, int y, GLsizei width, GLsizei height)
-{
-	glViewport(x, y, width, height);
+void glDriver::SetCurrentViewport(Viewport const& viewport) {
+	current_viewport_ = viewport;
+	glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+
+	exprtk__vpWidth__current_viewport_width_ = static_cast<float>(viewport.width);
+	exprtk__vpHeight__current_viewport_height_ = static_cast<float>(viewport.height);
+	script__gl_aspect__current_viewport_aspect_ = current_viewport_.GetAspectRatio();
 }
 
-void glDriver::setFramebuffer()
-{
+void glDriver::setFramebuffer() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	// Restore the driver viewport
-	setViewport(vpXOffset, vpYOffset, static_cast<int>(vpWidth), static_cast<int>(vpHeight));
+	SetCurrentViewport(GetFramebufferViewport());
+	//SetCurrentViewport(vpXOffset, vpYOffset, static_cast<int>(vpWidth), static_cast<int>(vpHeight));
 }
 
-void glDriver::initFbos()
-{
+void glDriver::initFbos() {
 	////////////// efx FBO Manager: internal FBO's that are being used by the engine effects
 	// Clear Fbo's, if there is any
 	if (DEMO->efxBloomFbo.fbo.size() > 0) {
@@ -394,8 +445,8 @@ void glDriver::initFbos()
 	tGLFboFormat bloomFbo;
 	bloomFbo.format = "RGB_16F";
 	bloomFbo.numColorAttachments = 1;
-	bloomFbo.width = GLDRV->vpWidth;
-	bloomFbo.height = GLDRV->vpHeight;
+	bloomFbo.width = static_cast<float>(script__gl_width__framebuffer_width_);
+	bloomFbo.height = static_cast<float>(script__gl_height__framebuffer_height_);
 	bloomFbo.tex_iformat = getTextureInternalFormatByName(bloomFbo.format);
 	bloomFbo.tex_format = getTextureFormatByName(bloomFbo.format);
 	bloomFbo.tex_type = getTextureTypeByName(bloomFbo.format);
@@ -404,13 +455,13 @@ void glDriver::initFbos()
 	int res = 0;
 	for (int i = 0; i < EFXBLOOM_FBO_BUFFERS; i++) {
 		res = DEMO->efxBloomFbo.addFbo(bloomFbo.format, (int)bloomFbo.width, (int)bloomFbo.height, bloomFbo.tex_iformat, bloomFbo.tex_format, bloomFbo.tex_type, bloomFbo.tex_components, bloomFbo.numColorAttachments);
-		if (res>=0)
+		if (res >= 0)
 			LOG->Info(LOG_LOW, "EfxBloom Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, bloomFbo.width, bloomFbo.height, bloomFbo.format, bloomFbo.tex_components, bloomFbo.tex_format, bloomFbo.tex_iformat, bloomFbo.tex_type);
 		else
 			LOG->Error("Error in efxBloom Fbo definition: Efx_Fbo number %i has a non recongised format: '%s', please blame the coder.", i, bloomFbo.format);
 	}
 
-	
+
 	////////////// FBO Manager: Generic FBO's that can be used by the user
 	// Clear Fbo's, if there is any
 	if (DEMO->fboManager.fbo.size() > 0) {
@@ -422,8 +473,8 @@ void glDriver::initFbos()
 	for (int i = 0; i < FBO_BUFFERS; i++) {
 		if (((this->fbo[i].width != 0) && (this->fbo[i].height != 0)) || (this->fbo[i].ratio != 0)) {
 			if (this->fbo[i].ratio != 0) {
-				this->fbo[i].width = (float)(this->width / this->fbo[i].ratio);
-				this->fbo[i].height = (float)(this->height / this->fbo[i].ratio);
+				this->fbo[i].width = (float)(this->script__gl_width__framebuffer_width_ / this->fbo[i].ratio);
+				this->fbo[i].height = (float)(this->script__gl_height__framebuffer_height_ / this->fbo[i].ratio);
 			}
 
 			this->fbo[i].tex_iformat = getTextureInternalFormatByName(this->fbo[i].format);
@@ -447,8 +498,7 @@ int glDriver::window_should_close() {
 	return glfwWindowShouldClose(window);
 }
 
-bool glDriver::checkGLError(char * pOut)
-{
+bool glDriver::checkGLError(char* pOut) {
 	GLenum err = glGetError();
 	if (err == GL_NO_ERROR)
 		return false;
@@ -482,9 +532,8 @@ void glDriver::drawFps() {
 
 }
 
-
 void glDriver::drawTiming() {
-	char *state;
+	char* state;
 	if (DEMO->state & DEMO_PAUSE) {
 		if (DEMO->state & DEMO_REWIND) state = stateStr[4];
 		else if (DEMO->state & DEMO_FASTFORWARD) state = stateStr[5];
@@ -500,7 +549,7 @@ void glDriver::drawTiming() {
 	DEMO->text->glPrintf(-1, 0.7f, "sound: %0.1f", BASSDRV->sound_cpu());
 	DEMO->text->glPrintf(-1, 0.6f, "texmem: %.2fmb", DEMO->textureManager.mem + DEMO->fboManager.mem);
 	DEMO->text->glPrintf(-1, 0.5f, "Cam Speed: %.0f", DEMO->camera->MovementSpeed);
-	DEMO->text->glPrintf(-1, 0.4f, "Cam Pos: %.1f,%.1f,%.1f", DEMO->camera->Position.x,DEMO->camera->Position.y,DEMO->camera->Position.z);
+	DEMO->text->glPrintf(-1, 0.4f, "Cam Pos: %.1f,%.1f,%.1f", DEMO->camera->Position.x, DEMO->camera->Position.y, DEMO->camera->Position.z);
 	DEMO->text->glPrintf(-1, 0.3f, "Cam Front: %.1f,%.1f,%.1f", DEMO->camera->Front.x, DEMO->camera->Front.y, DEMO->camera->Front.z);
 	DEMO->text->glPrintf(-1, 0.2f, "%s", state);
 }
@@ -511,17 +560,17 @@ void glDriver::drawFbo() {
 	glBlendFunc(GL_ONE, GL_ONE);
 	glDisable(GL_DEPTH_TEST);
 
-	int fbo_num_min = ((DEMO->drawFbo - 1)*NUM_FBO_DEBUG);
-	int fbo_num_max = (NUM_FBO_DEBUG-1)+ ((DEMO->drawFbo - 1)*NUM_FBO_DEBUG);
+	int fbo_num_min = ((DEMO->drawFbo - 1) * NUM_FBO_DEBUG);
+	int fbo_num_max = (NUM_FBO_DEBUG - 1) + ((DEMO->drawFbo - 1) * NUM_FBO_DEBUG);
 	int fbo_attachment = DEMO->drawFboAttachment;
 	DEMO->text->glPrintf(-1, -0.5f, "Showing FBO's: %d to %d - Attachment: %d", fbo_num_min, fbo_num_max, fbo_attachment);
 	for (int i = 0; i < NUM_FBO_DEBUG; i++) {
-		int fbo_num = (0+i)+((DEMO->drawFbo-1)*NUM_FBO_DEBUG);
+		int fbo_num = (0 + i) + ((DEMO->drawFbo - 1) * NUM_FBO_DEBUG);
 		RES->Draw_Obj_QuadFBO_Debug(i, fbo_num, fbo_attachment);
 	}
 	glEnable(GL_DEPTH_TEST);
 }
-int glDriver::getTextureFormatByName(char *name) {
+int glDriver::getTextureFormatByName(char* name) {
 	for (int i = 0; i < TEXTURE_MODE; i++) {
 		if (_strcmpi(name, textureModes[i].name) == 0) {
 			return textureModes[i].tex_format;
@@ -530,7 +579,7 @@ int glDriver::getTextureFormatByName(char *name) {
 	return -1;
 }
 
-int glDriver::getTextureInternalFormatByName(char *name) {
+int glDriver::getTextureInternalFormatByName(char* name) {
 	for (int i = 0; i < TEXTURE_MODE; i++) {
 		if (_strcmpi(name, textureModes[i].name) == 0) {
 			return textureModes[i].tex_iformat;
@@ -539,7 +588,7 @@ int glDriver::getTextureInternalFormatByName(char *name) {
 	return -1;
 }
 
-int glDriver::getTextureTypeByName(char *name) {
+int glDriver::getTextureTypeByName(char* name) {
 	for (int i = 0; i < TEXTURE_MODE; i++) {
 		if (_strcmpi(name, textureModes[i].name) == 0) {
 			return textureModes[i].tex_type;
@@ -548,7 +597,7 @@ int glDriver::getTextureTypeByName(char *name) {
 	return -1;
 }
 
-int glDriver::getTextureComponentsByName(char *name) {
+int glDriver::getTextureComponentsByName(char* name) {
 	for (int i = 0; i < TEXTURE_MODE; i++) {
 		if (_strcmpi(name, textureModes[i].name) == 0) {
 			return textureModes[i].tex_components;
