@@ -279,8 +279,6 @@ void glDriver::initGraphics() {
 	mouse_lastxpos = script__gl_width__framebuffer_width_ / 2.0f;
 	mouse_lastypos = script__gl_height__framebuffer_height_ / 2.0f;
 
-	OnFramebufferSizeChanged();
-
 	// Create a windowed mode window and its OpenGL context
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -419,9 +417,9 @@ void glDriver::OnFramebufferSizeChanged() {
 }
 
 void glDriver::SetCurrentViewport(Viewport const& viewport) {
-	current_viewport_ = viewport;
 	glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
 
+	current_viewport_ = viewport;
 	exprtk__vpWidth__current_viewport_width_ = static_cast<float>(viewport.width);
 	exprtk__vpHeight__current_viewport_height_ = static_cast<float>(viewport.height);
 	script__gl_aspect__current_viewport_aspect_ = current_viewport_.GetAspectRatio();
