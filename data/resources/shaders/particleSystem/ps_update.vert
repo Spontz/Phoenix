@@ -16,6 +16,7 @@ out int Type0;
 
 void main()
 {
+
 	Position0 = Position;
 	Velocity0 = Velocity;
 	Color0 = Color;

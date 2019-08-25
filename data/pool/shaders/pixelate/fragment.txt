@@ -1,0 +1,14 @@
+#version 120
+uniform vec2 iResolution; // Use 256 in order to "see something"
+uniform float sample; // Use 4.0 to 16.0
+uniform sampler2D iChannel0; // Texture to pixellate
+
+
+void main(void)
+{
+	vec2 uv = gl_TexCoord[0].xy;
+	uv = uv * iResolution;
+	
+	vec3 col = texture2D(iChannel0, floor(uv/sample)*sample/iResolution).rgb;	
+	gl_FragColor = vec4(col, 1.0);
+}

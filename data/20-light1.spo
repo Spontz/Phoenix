@@ -1,0 +1,41 @@
+[light]
+id 20
+start 0
+end 100
+enabled 1
+layer 20
+blend ONE ONE
+
+; Changes the light properties
+
+; Light to affect (from 0 to 3)
+fLightNumber 0
+
+; link Position to camera (for debug): It places the light (but not the "look at") into the camera position
+fLinkToCamera 0
+; Is this light being used for Shadow Mapping? (1=yes, 0=no)
+fShadowMapping 0
+; Shadow Mapping properties (only affect when doing Shadow Mapping)
+; Near & far plane (the more far away, the less precission)
+fShadowMapNearPlane 0.1
+fShadowMapFarPlane 50.0
+; Size of our light (the more size, less precission, but more iluminated)
+fShadowMapSize 20.0
+
+; Draw a cube representing the light (1=draw it, 0=do not draw) (useful for DEBUG)
+fDebugDraw 1
+
+; Light Properties (optional):
+;*********************************************
+; Light position
+string light_posX:=0;light_posY:=2*sin(t/2);light_posZ:=2*cos(t/2);
+; Light direction to look at
+string light_dirX:=0;light_dirY:=0;light_dirZ:=0;
+; Light Ambient Color
+string light_colAmbR:=100;light_colAmbG:=0.5+0.5*cos(t);light_colAmbB:=0;
+; Light Diffuse Color
+string light_colDifR:=1;light_colDifG:=0;light_colDifB:=0;
+; Ambient light strength (0.0 to 1.0)
+string light_ambientStrength:=0.2;
+; Specular light strength (0.0 to 1.0)
+string light_specularStrength:=0.8;

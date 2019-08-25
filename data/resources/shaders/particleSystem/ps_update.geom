@@ -52,7 +52,7 @@ void main()
 			vec3 Dir = GetRandomDir(gTime);
 			//Dir.y = max(Dir.y, 0.5); // We make sure that we emmit up
 			//Velocity1 = normalize(Dir);
-			Velocity1 = Velocity0[0];//+ normalize(Dir)/1.0; // Divide by random factor
+			Velocity1 = Velocity0[0]+ normalize(Dir)/1.0; // Divide by random factor
 			Age1 = 0.0;
 			EmitVertex();
 			EndPrimitive();
@@ -65,11 +65,12 @@ void main()
 		EmitVertex();
 		EndPrimitive();
     }
-	// If its an emmitted particle...
 	else {
+		float t1 = Age0[0];
+		float t2 = Age;
+		float deltaTime = t2-t1;
 		vec3 DeltaP = gDeltaTime * Velocity0[0]; // xDelta = v*t
 		vec3 DeltaV = vec3(0.0, -0.0981, 0.0) * gDeltaTime; // vDelta = accel*tDetla
-		DeltaV += vec3(0.1, 0.0, 0.0) * gDeltaTime; // vDelta = accel*tDetla
 
 		//vec3 DeltaP = gDeltaTime * Velocity0[0]; // xDelta = v*t
 		//vec3 DeltaV = vec3(gDeltaTime*1000) * (0.0, -9.81, 0.0); // vDelta = accel*tDetla
@@ -77,12 +78,10 @@ void main()
 		if (Age < gShellLifetime) {
 			Type1 = PARTICLE_TYPE_SHELL;
 			Position1 = Position0[0] + DeltaP; // x = x0 + xDelta
-			float randomNum = (Position0[0].x + Position0[0].y + Position0[0].z); 
-			vec3 Dir = GetRandomDir(randomNum);
-			Velocity1 = Velocity0[0] + DeltaV/Dir; // v = v0 + vDelta
+			Velocity1 = Velocity0[0] + DeltaV; // v = v0 + vDelta
 			Age1 = Age;
 			EmitVertex();
-			EndPrimitive(); // Generate the particle!
+			EndPrimitive();
 		}
 	}
 }

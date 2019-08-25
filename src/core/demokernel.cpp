@@ -28,9 +28,9 @@ typedef struct {
 
 // HACK, TODO: improve this
 struct InitScriptCommands {
-	static tScriptCommand const* F() {
+	static std::vector<tScriptCommand> const& F() {
 
-		static const tScriptCommand r[] = {
+		static std::vector<tScriptCommand> r {
 
 			{"demo_name",				VTYPE_STRING,		&DEMO->demoName			},
 			{"debug",					VTYPE_INT,			&DEMO->debug			},
@@ -138,15 +138,14 @@ struct InitScriptCommands {
 			{"fbo_24_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[24].numColorAttachments },
 		};
 
-		return &r[0];
+		return r;
 	}
 };
 
-// HACK, TODO: improve this
 static auto const& scriptCommand = InitScriptCommands::F();
 
 // HACK, TODO: improve this
-#define COMMANDS_NUMBER (sizeof(scriptCommand) / sizeof(tScriptCommand))
+#define COMMANDS_NUMBER (scriptCommand.size())
 
 // ******************************************************************
 

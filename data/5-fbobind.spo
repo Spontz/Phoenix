@@ -1,0 +1,21 @@
+[fbobind]
+id 5
+start 0
+end 100
+enabled 1
+layer 5
+blend ONE ONE
+
+; Stores the buffer in the video
+; card memory as a texture,
+; for a later use
+
+; Integer representing the FBO texture unit
+; This FBO has 2 attachments because we are going to filter the brights, so we avoid rendering the scene 2 times
+fFboUnit 4
+
+; Clear the screen buffer after capturing? (1=yes, 0=no)
+fClearScreenBuffer 1
+
+; Clear the depth buffer after capturing? (1=yes, 0=no)
+fClearDepthBuffer 1

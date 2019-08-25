@@ -1,0 +1,13 @@
+[fbounbind]
+id 30
+start 0
+end 100
+enabled 1
+layer 30
+blend ONE ONE
+
+; Clear the screen buffer after capturing? (1=yes, 0=no)
+fClearScreenBuffer 1
+
+; Clear the depth buffer after capturing? (1=yes, 0=no)
+fClearDepthBuffer 1

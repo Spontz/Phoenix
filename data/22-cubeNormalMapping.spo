@@ -1,0 +1,42 @@
+[objectShader]
+id 22
+start 0
+end 100
+enabled 1
+layer 22
+blend ONE ZERO
+;blend SRC_ALPHA ONE_MINUS_SRC_ALPHA
+
+sModelFilePath /pool/models/cube/cube.obj
+sVShaderPath /pool/models/cube/normalmapping.vert
+sFShaderPath /pool/models/cube/normalmapping.frag
+
+fEnableDepthBufferClearing 0
+fEnableDrawWireframe 0
+
+; **********************
+; * OBJECT POSITIONING *
+; **********************
+; Translation for object n
+string tx:=-1;ty:=0;tz:=0;
+; Rotation for object n
+;string rx:=180*sin(t/2);ry:=90*sin(t/2);rz:=0;
+string rx:=30;ry:=45;rz:=0;
+; Scale for object n
+string sx:=0.8;sy:=0.8;sz:=0.8;
+
+
+; **********************
+; ** SHADER VARIABLES **
+; **********************
+;uniform vec3 lightPos v1:=2;v2:=2;v3:=2;
+uniform vec3 lightPos v1:=light0_posX;v2:=light0_posY;v3:=light0_posZ;
+uniform vec3 viewPos v1:=cam_posX;v2:=cam_posY;v3:=cam_posZ;
+uniform vec3 lightColDiff v1:=light0_colAmbR;v2:=light0_colAmbG;v3:=light0_colAmbB;
+; Object Ambient Color Strenght between 0.1 and 1.0
+uniform float ambientObjectStrenght v1:=0.1;
+
+; Light Diffuse Color Strenght between 0.1 and 1.0 (this enhances the normals)
+uniform float diffuseLightStrenght v1:=0.9;
+; Light Specular Strenght between 0.1 and 1.0 (this gives more realism)
+uniform float specularLightStrenght v1:=0.9;

@@ -1,0 +1,7 @@
+demo_name Phoenix demo engine
+debug 1
+loop 1
+sound 1
+demo_start 0.0
+demo_end 50
+slave 1

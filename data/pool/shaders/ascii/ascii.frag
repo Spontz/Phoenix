@@ -22,7 +22,7 @@ float character(float n, vec2 p) // some compilers have the word "char" reserved
 
 void main(void)
 {
-	vec2 uv = vec2(TexCoords.x, TexCoords.y);
+	vec2 uv = vec2(TexCoords.x, 1.0 - TexCoords.y);
 	uv = uv * iResolution;
 	
 	vec3 col = texture(screenTexture, floor(uv/sample)*sample/iResolution).rgb;
@@ -39,8 +39,8 @@ void main(void)
 	if (gray > 0.8) n = 11512810.0; // #
 	
 	vec2 p = mod(uv/4.0, 2.0) - vec2(1.0);
-	//col = gray*vec3(character(n, p));	// Draw in Grey
-	col = col*character(n, p);			// Draw in Colors
+	//col = gray*vec3(character(n, p));
+	col = col*character(n, p);
 
 	FragColor = vec4(col, 1.0);
 }
