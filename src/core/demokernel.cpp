@@ -48,7 +48,7 @@ struct InitScriptCommands {
 			{"gl_info",					VTYPE_INT,			&GLDRV->saveInfo		},
 			{"gl_width",				VTYPE_INT,			&GLDRV->script__gl_width__framebuffer_width_		},
 			{"gl_height",				VTYPE_INT,			&GLDRV->script__gl_height__framebuffer_height_		},
-			{"gl_aspect",				VTYPE_FLOAT,		&GLDRV->script__gl_aspect__current_viewport_aspect_	},
+			{"gl_aspect",				VTYPE_FLOAT,		&GLDRV->script__gl_aspect__current_viewport_aspect_ratio_	},
 			{"gl_stencil",				VTYPE_INT,			&GLDRV->stencil			},
 			{"gl_accum",				VTYPE_INT,			&GLDRV->accum			},
 			{"gl_multisampling",		VTYPE_INT,			&GLDRV->multisampling	},
@@ -303,9 +303,9 @@ void demokernel::mainLoop() {
 	this->state = DEMO_PLAY;
 
 	/* Loop until the user closes the window */
-	while ((!GLDRV->window_should_close()) && (!this->exitDemo)) {
+	while ((!GLDRV->WindowShouldClose()) && (!this->exitDemo)) {
 		// Poll for and process events
-		GLDRV->processInput();
+		GLDRV->ProcessInput();
 		// 
 		this->doExec();
 

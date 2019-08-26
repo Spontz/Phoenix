@@ -4,17 +4,8 @@
 #ifndef GLDRIVER_H
 #define GLDRIVER_H
 
-#include <iostream>
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#define  GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
-#include "core/shader.h"
-#include "core/texture.h"
-#include "core/model.h"
-#include "core/skinnedmesh.hpp"
 #include "core/viewport.h"
 
 // HACK: get rid of macros
@@ -23,7 +14,7 @@
 
 // ******************************************************************
 
-typedef struct {
+struct tGLFboFormat {
 	float width, height;
 	int tex_iformat;
 	int tex_format;
@@ -32,15 +23,14 @@ typedef struct {
 	int ratio;
 	char* format;
 	int numColorAttachments;
-} tGLFboFormat;
+};
 
 // ******************************************************************
 
 class glDriver {
-
+	// hack, todo: remove friends
 	friend class mathDriver; // for exprtk__ members
 	friend struct InitScriptCommands; // for script__ members;
-	//friend void ::window_size_callback(GLFWwindow*, int, int); // hack bind to static
 
 public:
 	int				fullScreen;
@@ -50,15 +40,22 @@ private:
 	// hack: create script_vars struct and pass to glDriver on construction
 	unsigned int	script__gl_width__framebuffer_width_;
 	unsigned int	script__gl_height__framebuffer_height_;
-	float			script__gl_aspect__current_viewport_aspect_;
+	float			script__gl_aspect__current_viewport_aspect_ratio_;
 
 private:
 	// hack: create exprtk_vars struct and pass to glDriver on construction
 	float			exprtk__vpWidth__current_viewport_width_;
 	float			exprtk__vpHeight__current_viewport_height_;
-	float			exprtk__aspectRatio__current_viewport_aspect_;
+	float			exprtk__aspectRatio__current_viewport_aspect_ratio_;
+
+private:
+	GLFWwindow* window;
+	Viewport		current_viewport_;
+	float			framebuffer_viewport_aspect_ratio_;
+	GLsizei			current_rt_width_, current_rt_height_;
 
 public:
+	// TODO: make private
 	int				stencil;
 	int				accum;
 	int				multisampling;
@@ -67,62 +64,50 @@ public:
 	float			TimeLastFrame;
 	float			TimeDelta;
 	tGLFboFormat	fbo[FBO_BUFFERS];
-
 	float			mouse_lastxpos, mouse_lastypos;
 
-public:
+private:
 	glDriver();
 
 public:
 	static glDriver& GetInstance();
-	static void window_size_callback(GLFWwindow* window, int width, int height);
+
+private:
+	static void GLFWWindowSizeCallback(GLFWwindow* p_glfw_window, int width, int height);
+	void OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int height);
 
 public:
 	void initFramework();
 	void initGraphics();
-	void initStates();
 	void initRender(int clear);
-	void OnFramebufferSizeChanged();
-	void setFramebuffer(); // Unbinds any framebuffer and sets default viewport
-	void initFbos();
-	void swapBuffers();
-	void close();
 
 	void drawFps();
 	void drawTiming();
 	void drawFbo();
-	void processInput();
 
-	int window_should_close();
+	void close();
 
+	Viewport GetFramebufferViewport() const;
+	float GetFramebufferAspectRatio() const;
+	void setFramebuffer(); // Unbinds any framebuffer and sets default viewport
+
+	Viewport const& GetCurrentViewport() const;
+	void SetCurrentViewport(Viewport const& viewport);
+
+	void swapBuffers();
+	void ProcessInput();
+	int WindowShouldClose();
+
+private:
+	void initFbos();
+	void initStates();
+	
 	bool checkGLError(char* pOut);
 
 	int getTextureFormatByName(char* name);
 	int getTextureInternalFormatByName(char* name);
 	int getTextureTypeByName(char* name);
 	int getTextureComponentsByName(char* name);
-
-	void			SetCurrentViewport(Viewport const& viewport);
-	Viewport		GetFramebufferViewport() const {
-		return Viewport::FromRenderTargetAndAspectRatio(
-			script__gl_width__framebuffer_width_,
-			script__gl_height__framebuffer_height_,
-			framebuffer_viewport_aspect_ratio_
-		);
-	};
-	Viewport const&	GetCurrentViewport() const { return current_viewport_; };
-	float			GetFramebufferAspectRatio() const { return static_cast<float>(script__gl_width__framebuffer_width_) / static_cast<float>(script__gl_height__framebuffer_height_); }
-
-private:
-	GLFWwindow*	window;
-	Viewport	current_viewport_;
-	float		framebuffer_viewport_aspect_ratio_;
-
-	// Current rendertarget size
-	GLsizei		current_rt_width_;
-	GLsizei		current_rt_height_;
 };
-
-void window_size_callback(GLFWwindow* window, int width, int height);
 
 #endif

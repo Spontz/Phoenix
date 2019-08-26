@@ -57,7 +57,8 @@ typedef struct {
 // ******************************************************************
 
 class demokernel {
-
+private:
+	demokernel();
 public:
 	// ******************************************************************
 	// VARIABLES
@@ -136,7 +137,7 @@ public:
 	// MEMBERS
 
 	static demokernel& GetInstance();
-	demokernel();
+
 	void getArguments(int argc, char *argv[]);
 	void initDemo();
 	void mainLoop();

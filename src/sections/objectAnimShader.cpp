@@ -1,6 +1,8 @@
 #include "main.h"
 #include "core/shadervars.h"
-#include <glm/gtc/type_ptr.hpp>
+//#include <glm/gtc/type_ptr.hpp>
+
+#include "core/skinnedmesh.hpp"
 
 // ******************************************************************
 

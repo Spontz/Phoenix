@@ -46,28 +46,32 @@ void error_callback(int, const char* err_str)
 	LOG->Error("GLFW Error: %s", err_str);
 }
 
-void glDriver::window_size_callback(GLFWwindow* window, int width, int height) {
+void glDriver::GLFWWindowSizeCallback(GLFWwindow* p_glfw_window, int width, int height) {
+	GLDRV->OnWindowSizeChanged(p_glfw_window, width, height);
+}
+
+void glDriver::OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int height) {
 	// TODO/HACK: Add min size to window @ OS api level and get rid of this
 	width = std::max(width, 1);
 	height = std::max(height, 1);
 
-	GLDRV->script__gl_width__framebuffer_width_ = width;
-	GLDRV->script__gl_height__framebuffer_height_ = height;
+	script__gl_width__framebuffer_width_ = width;
+	script__gl_height__framebuffer_height_ = height;
 
 	// RT will be set to FB later
 	//GLDRV->current_rt_width_ = width;
 	//GLDRV->current_rt_height_ = height;
 
-	GLDRV->mouse_lastxpos = static_cast<float>(width) / 2.0f;
-	GLDRV->mouse_lastypos = static_cast<float>(height) / 2.0f;
+	mouse_lastxpos = static_cast<float>(width) / 2.0f;
+	mouse_lastypos = static_cast<float>(height) / 2.0f;
 
 	// Recalculate viewport sizes
-	GLDRV->OnFramebufferSizeChanged();
+	SetCurrentViewport(GetFramebufferViewport());
 
 	// Recalculate fbo's with the new window size
-	GLDRV->initFbos();
+	initFbos();
 
-	GLDRV->initRender(true);
+	initRender(true);
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -185,7 +189,7 @@ glDriver& glDriver::GetInstance() {
 	return obj;
 }
 
-void glDriver::processInput()
+void glDriver::ProcessInput()
 {
 	if (DEMO->debug) {
 		if (glfwGetKey(window, KEY_FORWARD) == GLFW_PRESS)
@@ -218,7 +222,12 @@ glDriver::glDriver()
 	stencil(0),
 	accum(0),
 	multisampling(0),
-	gamma(1.0f)
+	gamma(1.0f),
+	current_viewport_{0,0,0,0},
+	exprtk__aspectRatio__current_viewport_aspect_ratio_(0.0f),
+	exprtk__vpHeight__current_viewport_height_(0.0f),
+	exprtk__vpWidth__current_viewport_width_(0.0f),
+	script__gl_aspect__current_viewport_aspect_ratio_(0.0f)
 {
 	// hack:
 	for (auto i = 0; i < FBO_BUFFERS; ++i) {
@@ -275,7 +284,7 @@ void glDriver::initGraphics() {
 	glfwMakeContextCurrent(window);
 
 	// Configure GLFW callbacks
-	glfwSetWindowSizeCallback(window, window_size_callback);
+	glfwSetWindowSizeCallback(window, GLFWWindowSizeCallback);
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
@@ -289,7 +298,7 @@ void glDriver::initGraphics() {
 		glEnable(GL_MULTISAMPLE);
 
 	// Calculate the Viewport sizes
-	OnFramebufferSizeChanged();
+	SetCurrentViewport(GetFramebufferViewport());
 
 	// Init render
 	initRender(true);
@@ -352,46 +361,66 @@ void glDriver::initRender(int clear) {
 	}
 }
 
-void glDriver::OnFramebufferSizeChanged() {
-	SetCurrentViewport(GetFramebufferViewport());
 
-	/*
-	// Calculate the viewport size according the given Width, Height and Aspect Ratio
-	this->vpWidth = (float)this->width;
-	this->vpHeight = (float)this->height;
-	this->vpXOffset = 0; // Width offset (X)
-	this->vpYOffset = 0; // Height offset (Y)
+/*
+Moved to Viewport::FromRenderTargetAndAspectRatio
 
-	// Si la anchura que necesitamos es demasiado grande, hya q recalcular una nueva anchura y poner unos bordes a los lados
-	if (((float)this->width / this->AspectRatio) > (float)this->height) {
-		vpWidth = (float)this->height * this->AspectRatio;
-		this->vpXOffset = (int)(((float)this->width - this->vpWidth) / 2.0);
-	}
+// Calculate the viewport size according the given Width, Height and Aspect Ratio
+this->vpWidth = (float)this->width;
+this->vpHeight = (float)this->height;
+this->vpXOffset = 0; // Width offset (X)
+this->vpYOffset = 0; // Height offset (Y)
 
-	// Si la altura que necesitamos es demasiado grande, hya q recalcular una nueva altura y poner unos bordes arriba y abajo
-	if (((float)this->height * this->AspectRatio) > (float)this->width) {
-		this->vpHeight = (float)this->width / this->AspectRatio;
-		this->vpYOffset = (int)(((float)this->height - this->vpHeight) / 2.0);
-	}
+// Si la anchura que necesitamos es demasiado grande, hya q recalcular una nueva anchura y poner unos bordes a los lados
+if (((float)this->width / this->AspectRatio) > (float)this->height) {
+	vpWidth = (float)this->height * this->AspectRatio;
+	this->vpXOffset = (int)(((float)this->width - this->vpWidth) / 2.0);
+}
 
-	// Prevent zero division
-	if (vpWidth < 1.0)
-		vpWidth = 1.0;
-	if (vpHeight < 1.0)
-		vpHeight = 1.0;
+// Si la altura que necesitamos es demasiado grande, hya q recalcular una nueva altura y poner unos bordes arriba y abajo
+if (((float)this->height * this->AspectRatio) > (float)this->width) {
+	this->vpHeight = (float)this->width / this->AspectRatio;
+	this->vpYOffset = (int)(((float)this->height - this->vpHeight) / 2.0);
+}
 
-	LOG->Info(LOG_LOW, "Requested resolution (W,H): %d,%d. Aspect ratio: %.4f", this->width, this->height, this->AspectRatio);
-	LOG->Info(LOG_LOW, "The viewport will be placed at pos (X,Y): %d,%d with size (W,H): %d,%d", this->vpXOffset, this->vpYOffset, (int)this->vpWidth, (int)this->vpHeight);
-	*/
+// Prevent zero division
+if (vpWidth < 1.0)
+	vpWidth = 1.0;
+if (vpHeight < 1.0)
+	vpHeight = 1.0;
+
+LOG->Info(LOG_LOW, "Requested resolution (W,H): %d,%d. Aspect ratio: %.4f", this->width, this->height, this->AspectRatio);
+LOG->Info(LOG_LOW, "The viewport will be placed at pos (X,Y): %d,%d with size (W,H): %d,%d", this->vpXOffset, this->vpYOffset, (int)this->vpWidth, (int)this->vpHeight);
+*/
+
+
+Viewport glDriver::GetFramebufferViewport() const {
+	return Viewport::FromRenderTargetAndAspectRatio(
+		script__gl_width__framebuffer_width_,
+		script__gl_height__framebuffer_height_,
+		framebuffer_viewport_aspect_ratio_
+	);
+}
+
+Viewport const& glDriver::GetCurrentViewport() const {
+	return current_viewport_;
+}
+
+float glDriver::GetFramebufferAspectRatio() const {
+	return static_cast<float>(script__gl_width__framebuffer_width_) / static_cast<float>(script__gl_height__framebuffer_height_);
 }
 
 void glDriver::SetCurrentViewport(Viewport const& viewport) {
 	glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
 
 	current_viewport_ = viewport;
+
 	exprtk__vpWidth__current_viewport_width_ = static_cast<float>(viewport.width);
 	exprtk__vpHeight__current_viewport_height_ = static_cast<float>(viewport.height);
-	script__gl_aspect__current_viewport_aspect_ = current_viewport_.GetAspectRatio();
+
+	const float vp_aspect_ratio = current_viewport_.GetAspectRatio();
+	script__gl_aspect__current_viewport_aspect_ratio_ = vp_aspect_ratio;
+	exprtk__aspectRatio__current_viewport_aspect_ratio_ = vp_aspect_ratio;
 }
 
 void glDriver::setFramebuffer() {
@@ -461,7 +490,7 @@ void glDriver::initFbos() {
 
 }
 
-int glDriver::window_should_close() {
+int glDriver::WindowShouldClose() {
 	return glfwWindowShouldClose(window);
 }
 
