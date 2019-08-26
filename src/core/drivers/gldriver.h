@@ -49,7 +49,7 @@ public:
 	int				saveInfo;
 
 private:
-	// hack: create scripv_vars struct and pass to glDriver on construction
+	// hack: create script_vars struct and pass to glDriver on construction
 	unsigned int	script__gl_width__framebuffer_width_;
 	unsigned int	script__gl_height__framebuffer_height_;
 	float			script__gl_aspect__current_viewport_aspect_;
