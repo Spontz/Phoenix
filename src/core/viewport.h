@@ -2,44 +2,46 @@
 
 #include <main.h>
 
-struct Viewport {
-	Viewport() = default;
-	Viewport(GLint x, GLint y, GLsizei width, GLsizei height)
-		:
-		x(x),
-		y(y),
-		width(width),
-		height(height)
-	{
-	}
+struct UIntFraction {
+	unsigned int numerator;
+	unsigned int denominator;
 
+	GLfloat GetRatio() const {
+		return static_cast<float>(numerator) / static_cast<float>(denominator);
+	}
+};
+
+struct Viewport {
 	// Enforce aspect, center viewport, keep maximum area (top/down or left/right "black bars")
 	// given a render target size and a desired viewport aspect ratio.
-	static Viewport FromRenderTarget(GLsizei rt_width, GLsizei rt_height, GLsizei vp_aspect_x, GLsizei vp_aspect_y){
-		GLsizei width = rt_width;
-	GLsizei height = rt_height;
-	GLint x = 0;
-	GLint y = 0;
+	static Viewport FromRenderTargetAndAspectRatio(unsigned int rt_width, unsigned int rt_height, float viewport_aspect_ratio) {
+		unsigned int w = rt_width;
+		unsigned int h = rt_height;
+		int x = 0;
+		int y = 0;
 
-	const float rt_aspect_ratio_float = static_cast<float>(rt_width) / static_cast<float>(rt_height);
-	const float vp_aspect_ratio_float = static_cast<float>(vp_aspect_x) / static_cast<float>(vp_aspect_y);
+		const float rt_aspect_ratio = static_cast<float>(rt_width) / static_cast<float>(rt_height);
 
-	if (rt_aspect_ratio_float < vp_aspect_ratio_float) {
-		height = static_cast<GLsizei>(static_cast<float>(height) * rt_aspect_ratio_float / vp_aspect_ratio_float);
-		y = (rt_height - height) / 2;
+		if (rt_aspect_ratio < viewport_aspect_ratio) {
+			h = static_cast<unsigned int>(static_cast<float>(h) * rt_aspect_ratio / viewport_aspect_ratio);
+			y = (rt_height - h) / 2;
+		}
+		else if (rt_aspect_ratio > viewport_aspect_ratio) {
+			w = static_cast<unsigned int>(static_cast<float>(w) / rt_aspect_ratio * viewport_aspect_ratio);
+			x = (rt_width - w) / 2;
+		}
+
+		return { x,y,w,h };
 	}
-	else if (rt_aspect_ratio_float > vp_aspect_ratio_float) {
-		width = static_cast<GLsizei>(static_cast<float>(width) / rt_aspect_ratio_float * vp_aspect_ratio_float);
-		x = (rt_width - width) / 2;
-	}
 
-	return { x,y,width,height };
-}
+	static Viewport FromRenderTargetAndAspectFraction(unsigned int rt_width, unsigned int rt_height, UIntFraction const& viewport_aspect) {
+		return FromRenderTargetAndAspectRatio(rt_width, rt_height, viewport_aspect.GetRatio());
+	}
 
 	float GetAspectRatio() const { return static_cast<float>(width) / static_cast<float>(height); }
 
-	GLint	x;
-	GLint	y;
-	GLsizei	width;
-	GLsizei	height;
+	int				x;
+	int				y;
+	unsigned int	width;
+	unsigned int	height;
 };

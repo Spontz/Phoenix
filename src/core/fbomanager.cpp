@@ -7,7 +7,7 @@
 
 // Init vars
 FboManager::FboManager() {
-	fbo.clear(); 
+	fbo.clear();
 	mem = 0;
 }
 
@@ -18,10 +18,15 @@ void FboManager::active(int index) const
 
 void FboManager::bind(int fbo_num) {
 	if (fbo_num < fbo.size()) {
-		Fbo *my_fbo = fbo[fbo_num];
+		Fbo* my_fbo = fbo[fbo_num];
 		// Adjust the viewport to the fbo size
 		//GLDRV->setViewport(0, 0, my_fbo->width, my_fbo->height);
-		GLDRV->SetCurrentViewport({ 0, 0, my_fbo->width, my_fbo->height });
+		GLDRV->SetCurrentViewport({
+			0,
+			0,
+			static_cast<unsigned int>(my_fbo->width),
+			static_cast<unsigned int>(my_fbo->height)
+			});
 		my_fbo->bind();
 	}
 }
@@ -29,7 +34,7 @@ void FboManager::bind(int fbo_num) {
 void FboManager::bind_tex(int fbo_num, GLuint attachment)
 {
 	if (fbo_num < fbo.size()) {
-		Fbo *my_fbo = fbo[fbo_num];
+		Fbo* my_fbo = fbo[fbo_num];
 		my_fbo->bind_tex(attachment);
 	}
 }
@@ -51,7 +56,7 @@ void FboManager::unbind() {
 // Adds a Fbo into the queue, returns the ID of the texture added
 int FboManager::addFbo(string engine_format, int width, int height, int iformat, int format, int type, int components, unsigned int numColorAttachments) {
 	int fbo_id = -1;
-	Fbo *new_fbo = new Fbo();
+	Fbo* new_fbo = new Fbo();
 	if (new_fbo->upload(engine_format, (int)fbo.size(), width, height, iformat, format, type, numColorAttachments)) {
 		fbo.push_back(new_fbo);
 		mem += (float)(new_fbo->width * new_fbo->height * components) / 1048576.0f;		// increase the texture mem

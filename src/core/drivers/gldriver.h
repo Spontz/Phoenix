@@ -49,11 +49,13 @@ public:
 	int				saveInfo;
 
 private:
-	int				script__gl_width__framebuffer_width_;
-	int				script__gl_height__framebuffer_height_;
+	// hack: create scripv_vars struct and pass to glDriver on construction
+	unsigned int	script__gl_width__framebuffer_width_;
+	unsigned int	script__gl_height__framebuffer_height_;
 	float			script__gl_aspect__current_viewport_aspect_;
 
 private:
+	// hack: create exprtk_vars struct and pass to glDriver on construction
 	float			exprtk__vpWidth__current_viewport_width_;
 	float			exprtk__vpHeight__current_viewport_height_;
 	float			exprtk__aspectRatio__current_viewport_aspect_;
@@ -103,20 +105,19 @@ public:
 
 	void			SetCurrentViewport(Viewport const& viewport);
 	Viewport		GetFramebufferViewport() const {
-		return Viewport::FromRenderTarget(
+		return Viewport::FromRenderTargetAndAspectRatio(
 			script__gl_width__framebuffer_width_,
 			script__gl_height__framebuffer_height_,
-			framebuffer_aspect_x_,
-			framebuffer_aspect_y_
+			framebuffer_viewport_aspect_ratio_
 		);
 	};
 	Viewport const&	GetCurrentViewport() const { return current_viewport_; };
+	float			GetFramebufferAspectRatio() const { return static_cast<float>(script__gl_width__framebuffer_width_) / static_cast<float>(script__gl_height__framebuffer_height_); }
 
 private:
 	GLFWwindow*	window;
 	Viewport	current_viewport_;
-	GLsizei		framebuffer_aspect_x_;
-	GLsizei		framebuffer_aspect_y_;
+	float		framebuffer_viewport_aspect_ratio_;
 
 	// Current rendertarget size
 	GLsizei		current_rt_width_;

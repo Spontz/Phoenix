@@ -208,6 +208,7 @@ glDriver::glDriver()
 	window(nullptr),
 	script__gl_width__framebuffer_width_(0),
 	script__gl_height__framebuffer_height_(0),
+	framebuffer_viewport_aspect_ratio_(0.0f),
 	mouse_lastxpos(0),
 	mouse_lastypos(0),
 	fullScreen(0),
@@ -241,8 +242,7 @@ void glDriver::initFramework() {
 void glDriver::initGraphics() {
 	script__gl_width__framebuffer_width_ = 200;
 	script__gl_height__framebuffer_height_ = 100;
-	framebuffer_aspect_x_ = 16;
-	framebuffer_aspect_y_ = 9;
+	framebuffer_viewport_aspect_ratio_ = UIntFraction{ 16, 9 }.GetRatio();
 
 	mouse_lastxpos = script__gl_width__framebuffer_width_ / 2.0f;
 	mouse_lastypos = script__gl_height__framebuffer_height_ / 2.0f;
@@ -352,7 +352,6 @@ void glDriver::initRender(int clear) {
 
 void glDriver::OnFramebufferSizeChanged() {
 	SetCurrentViewport(GetFramebufferViewport());
-
 
 	/*
 	// Calculate the viewport size according the given Width, Height and Aspect Ratio
