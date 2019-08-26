@@ -45,7 +45,7 @@
 
 // ******************************************************************
 
-#define DEMO demokernel::getInstance()
+#define DEMO (&demokernel::GetInstance())
 
 // ******************************************************************
 
@@ -135,7 +135,7 @@ public:
 	// ******************************************************************
 	// MEMBERS
 
-	static demokernel* getInstance();
+	static demokernel& GetInstance();
 	demokernel();
 	void getArguments(int argc, char *argv[]);
 	void initDemo();

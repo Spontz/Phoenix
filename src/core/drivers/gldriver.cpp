@@ -46,7 +46,7 @@ void error_callback(int, const char* err_str)
 	LOG->Error("GLFW Error: %s", err_str);
 }
 
-void window_size_callback(GLFWwindow* window, int width, int height) {
+void glDriver::window_size_callback(GLFWwindow* window, int width, int height) {
 	// TODO/HACK: Add min size to window @ OS api level and get rid of this
 	width = std::max(width, 1);
 	height = std::max(height, 1);
@@ -202,6 +202,8 @@ void glDriver::processInput()
 
 glDriver::glDriver()
 	:
+	current_rt_height_(0),
+	current_rt_width_(0),
 	TimeCurrentFrame(0.0f),
 	TimeDelta(0.0f),
 	TimeLastFrame(0.0f),

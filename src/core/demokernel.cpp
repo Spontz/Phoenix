@@ -221,11 +221,9 @@ glTable_t alphaFunc[ALPHA_FUNC] = {
 };
 
 
-demokernel * demokernel::getInstance() {
-	if (m_pThis == NULL) {
-		m_pThis = new demokernel();
-	}
-	return m_pThis;
+demokernel& demokernel::GetInstance() {
+	static demokernel r;
+	return r;
 }
 
 demokernel::demokernel() {

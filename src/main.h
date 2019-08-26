@@ -1,9 +1,12 @@
 // main.h
 // Spontz Demogroup
 
-
 #ifndef MAIN_H
 #define MAIN_H
+
+#ifdef PHOENIX_MAIN
+	#define STB_IMAGE_IMPLEMENTATION
+#endif
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

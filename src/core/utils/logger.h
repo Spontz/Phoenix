@@ -24,7 +24,7 @@ char const LOG_LOW = 4;
 
 class Logger {
 public:
-	static Logger& Instance();
+	static Logger& GetInstance();
 
 private:
 	Logger();
@@ -44,6 +44,6 @@ private:
 };
 
 // hack: 0 macros
-#define LOG (&Logger::Instance())
+#define LOG (&Logger::GetInstance())
 
 #endif

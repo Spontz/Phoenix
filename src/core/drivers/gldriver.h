@@ -36,13 +36,11 @@ typedef struct {
 
 // ******************************************************************
 
-void window_size_callback(GLFWwindow* window, int width, int height); // hack bind to static
-
 class glDriver {
 
 	friend class mathDriver; // for exprtk__ members
 	friend struct InitScriptCommands; // for script__ members;
-	friend void ::window_size_callback(GLFWwindow*, int, int); // hack bind to static
+	//friend void ::window_size_callback(GLFWwindow*, int, int); // hack bind to static
 
 public:
 	int				fullScreen;
@@ -77,6 +75,7 @@ public:
 
 public:
 	static glDriver& GetInstance();
+	static void window_size_callback(GLFWwindow* window, int width, int height);
 
 public:
 	void initFramework();
