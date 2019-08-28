@@ -74,13 +74,13 @@ void glDriver::OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int hei
 	initRender(true);
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void mouse_callback(GLFWwindow* p_glfw_window, double xpos, double ypos)
 {
 	if (DEMO->debug) {
 		float x = (float)xpos;
 		float y = (float)ypos;
 
-		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+		if (glfwGetMouseButton(p_glfw_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 
 			float xoffset = x - GLDRV->mouse_lastxpos;
 			float yoffset = GLDRV->mouse_lastypos - y; // reversed since y-coordinates go from bottom to top
@@ -90,7 +90,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 			DEMO->camera->ProcessMouseMovement(xoffset, yoffset);
 		}
-		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+		if (glfwGetMouseButton(p_glfw_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
 			GLDRV->mouse_lastxpos = x;
 			GLDRV->mouse_lastypos = y;
 		}
@@ -101,7 +101,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is
 // called
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scroll_callback(GLFWwindow* p_glfw_window, double xoffset, double yoffset)
 {
 	DEMO->camera->ProcessMouseScroll((float)yoffset);
 }
@@ -118,7 +118,7 @@ void APIENTRY glErrorCallback(GLenum source, GLenum type,
 		type, severity, message);
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void key_callback(GLFWwindow* p_glfw_window, int key, int scancode, int action, int mods) {
 
 	if (action == GLFW_PRESS) {
 		if (key == KEY_EXIT)
@@ -192,13 +192,13 @@ glDriver& glDriver::GetInstance() {
 void glDriver::ProcessInput()
 {
 	if (DEMO->debug) {
-		if (glfwGetKey(window, KEY_FORWARD) == GLFW_PRESS)
+		if (glfwGetKey(p_glfw_window_, KEY_FORWARD) == GLFW_PRESS)
 			DEMO->camera->ProcessKeyboard(CameraMovement::FORWARD, GLDRV->TimeDelta);
-		if (glfwGetKey(window, KEY_BACKWARD) == GLFW_PRESS)
+		if (glfwGetKey(p_glfw_window_, KEY_BACKWARD) == GLFW_PRESS)
 			DEMO->camera->ProcessKeyboard(CameraMovement::BACKWARD, GLDRV->TimeDelta);
-		if (glfwGetKey(window, KEY_STRAFELEFT) == GLFW_PRESS)
+		if (glfwGetKey(p_glfw_window_, KEY_STRAFELEFT) == GLFW_PRESS)
 			DEMO->camera->ProcessKeyboard(CameraMovement::LEFT, GLDRV->TimeDelta);
-		if (glfwGetKey(window, KEY_STRAFERIGHT) == GLFW_PRESS)
+		if (glfwGetKey(p_glfw_window_, KEY_STRAFERIGHT) == GLFW_PRESS)
 			DEMO->camera->ProcessKeyboard(CameraMovement::RIGHT, GLDRV->TimeDelta);
 	}
 
@@ -211,7 +211,7 @@ glDriver::glDriver()
 	TimeCurrentFrame(0.0f),
 	TimeDelta(0.0f),
 	TimeLastFrame(0.0f),
-	window(nullptr),
+	p_glfw_window_(nullptr),
 	script__gl_width__framebuffer_width_(0),
 	script__gl_height__framebuffer_height_(0),
 	framebuffer_viewport_aspect_ratio_(0.0f),
@@ -223,7 +223,7 @@ glDriver::glDriver()
 	accum(0),
 	multisampling(0),
 	gamma(1.0f),
-	current_viewport_{0,0,0,0},
+	current_viewport_{ 0,0,0,0 },
 	exprtk__aspectRatio__current_viewport_aspect_ratio_(0.0f),
 	exprtk__vpHeight__current_viewport_height_(0.0f),
 	exprtk__vpWidth__current_viewport_width_(0.0f),
@@ -235,7 +235,6 @@ glDriver::glDriver()
 		fbo[i].height = 0;
 		fbo[i].ratio = 0;
 	}
-
 }
 
 void glDriver::initFramework() {
@@ -253,7 +252,7 @@ void glDriver::initFramework() {
 void glDriver::initGraphics() {
 	script__gl_width__framebuffer_width_ = 200;
 	script__gl_height__framebuffer_height_ = 100;
-	framebuffer_viewport_aspect_ratio_ = UIntFraction{ 16, 9 }.GetRatio();
+	framebuffer_viewport_aspect_ratio_ = UIntFraction{ 16,9 }.GetRatio();
 
 	mouse_lastxpos = script__gl_width__framebuffer_width_ / 2.0f;
 	mouse_lastypos = script__gl_height__framebuffer_height_ / 2.0f;
@@ -265,7 +264,7 @@ void glDriver::initGraphics() {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = glfwCreateWindow(
+	p_glfw_window_ = glfwCreateWindow(
 		script__gl_width__framebuffer_width_,
 		script__gl_height__framebuffer_height_,
 		DEMO->demoName,
@@ -273,7 +272,7 @@ void glDriver::initGraphics() {
 		nullptr
 	);
 
-	if (!window)
+	if (!p_glfw_window_)
 		glfwTerminate();
 
 	// Enable multisampling (aka anti-aliasing)
@@ -281,13 +280,13 @@ void glDriver::initGraphics() {
 		glfwWindowHint(GLFW_SAMPLES, 4); // This does mean that the size of all the buffers is increased by 4
 
 	// Make the window's context current
-	glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(p_glfw_window_);
 
 	// Configure GLFW callbacks
-	glfwSetWindowSizeCallback(window, GLFWWindowSizeCallback);
-	glfwSetKeyCallback(window, key_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
+	glfwSetWindowSizeCallback(p_glfw_window_, GLFWWindowSizeCallback);
+	glfwSetKeyCallback(p_glfw_window_, key_callback);
+	glfwSetCursorPosCallback(p_glfw_window_, mouse_callback);
+	glfwSetScrollCallback(p_glfw_window_, scroll_callback);
 
 	// Initialize glad
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -423,7 +422,7 @@ void glDriver::SetCurrentViewport(Viewport const& viewport) {
 	exprtk__aspectRatio__current_viewport_aspect_ratio_ = vp_aspect_ratio;
 }
 
-void glDriver::setFramebuffer() {
+void glDriver::SetFramebuffer() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	// Restore the driver viewport
 	SetCurrentViewport(GetFramebufferViewport());
@@ -491,7 +490,7 @@ void glDriver::initFbos() {
 }
 
 int glDriver::WindowShouldClose() {
-	return glfwWindowShouldClose(window);
+	return glfwWindowShouldClose(p_glfw_window_);
 }
 
 bool glDriver::checkGLError(char* pOut) {
@@ -515,17 +514,16 @@ bool glDriver::checkGLError(char* pOut) {
 }
 
 void glDriver::swapBuffers() {
-	glfwSwapBuffers(window);
+	glfwSwapBuffers(p_glfw_window_);
 }
 
 void glDriver::close() {
-	glfwSetWindowShouldClose(window, GL_TRUE);
+	glfwSetWindowShouldClose(p_glfw_window_, GL_TRUE);
 	glfwTerminate();
 }
 
 void glDriver::drawFps() {
 	DEMO->text->glPrintf(-1, 0.9f, "FPS: %.0f", DEMO->fps);
-
 }
 
 void glDriver::drawTiming() {
@@ -543,11 +541,11 @@ void glDriver::drawTiming() {
 	}
 	DEMO->text->glPrintf(-1, 0.8f, "%d - %.1f/%.1f", DEMO->frameCount, DEMO->runTime, DEMO->endTime);
 	DEMO->text->glPrintf(-1, 0.7f, "sound: %0.1f", BASSDRV->sound_cpu());
-	DEMO->text->glPrintf(-1, 0.6f, "texmem: %.2fmb", DEMO->textureManager.mem + DEMO->fboManager.mem);
+	DEMO->text->glPrintf(-1, 0.6f, "texmem: %.2fmb", (DEMO->textureManager.mem + DEMO->fboManager.mem));
 	DEMO->text->glPrintf(-1, 0.5f, "Cam Speed: %.0f", DEMO->camera->MovementSpeed);
 	DEMO->text->glPrintf(-1, 0.4f, "Cam Pos: %.1f,%.1f,%.1f", DEMO->camera->Position.x, DEMO->camera->Position.y, DEMO->camera->Position.z);
 	DEMO->text->glPrintf(-1, 0.3f, "Cam Front: %.1f,%.1f,%.1f", DEMO->camera->Front.x, DEMO->camera->Front.y, DEMO->camera->Front.z);
-	DEMO->text->glPrintf(-1, 0.2f, "%s", state);
+	DEMO->text->glPrintf(-1, 0.2f, state);
 }
 
 // Draw the Fbo output

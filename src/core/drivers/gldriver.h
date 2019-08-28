@@ -49,7 +49,7 @@ private:
 	float			exprtk__aspectRatio__current_viewport_aspect_ratio_;
 
 private:
-	GLFWwindow* window;
+	GLFWwindow*		p_glfw_window_;
 	Viewport		current_viewport_;
 	float			framebuffer_viewport_aspect_ratio_;
 	GLsizei			current_rt_width_, current_rt_height_;
@@ -89,7 +89,7 @@ public:
 
 	Viewport GetFramebufferViewport() const;
 	float GetFramebufferAspectRatio() const;
-	void setFramebuffer(); // Unbinds any framebuffer and sets default viewport
+	void SetFramebuffer(); // Unbinds any framebuffer and sets default viewport
 
 	Viewport const& GetCurrentViewport() const;
 	void SetCurrentViewport(Viewport const& viewport);

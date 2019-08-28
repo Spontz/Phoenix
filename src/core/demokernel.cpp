@@ -752,7 +752,7 @@ void demokernel::processSectionQueues() {
 	LOG->Info(LOG_MED,"End queue processing!");
 
 	// Set back to the frambuffer and restore the viewport
-	GLDRV->setFramebuffer();
+	GLDRV->SetFramebuffer();
 
 	if (this->debug) {
 		if (this->drawFps)

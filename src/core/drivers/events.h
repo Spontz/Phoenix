@@ -5,11 +5,6 @@
 #define EVENTS_H
 
 
-#include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-
 // ******************************************************************
 
 // definition of engine control keys

@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
 		log.log_level_ = LOG_LOW; // Define the lowest log detail level
 	#endif
 
-// Initialize the GL Framework
+	// Initialize the GL Framework
 	gldrv.initFramework();
 
 	// Check the data folder
@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
 	{
 		std::stringstream ss;
 		ss.precision(2);
-		ss << "Average Framerate: " << std::to_string(static_cast<float>(demo.frameCount) / demo.runTime) << ".";
+		ss << "Average Framerate: " << static_cast<float>(demo.frameCount) / demo.runTime << ".";
 		log.Info(LOG_LOW, ss.str().c_str());
 	}
 

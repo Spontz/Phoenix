@@ -4,9 +4,6 @@
 #ifndef MATHDRIVER_H
 #define MATHDRIVER_H
 
-
-using namespace std;
-
 // ******************************************************************
 //typedef exprtk::symbol_table<double> symbol_table_t;
 //typedef exprtk::expression<double>     expression_t;
