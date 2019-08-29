@@ -111,8 +111,11 @@ void sObjectShader::exec() {
 	// End ShadowMapping
 
 	// view/projection transformations
-	float zoom = DEMO->camera->Zoom;
-	glm::mat4 projection = glm::perspective(glm::radians(zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
+	glm::mat4 projection = glm::perspective(
+		glm::radians(DEMO->camera->Zoom),
+		GLDRV->GetFramebufferViewport().GetAspectRatio(),
+		0.1f, 10000.0f
+	);
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
 	my_shader->setValue("projection", projection);
 	my_shader->setValue("view", view);

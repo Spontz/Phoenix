@@ -40,7 +40,7 @@ private:
 	// hack: create script_vars struct and pass to glDriver on construction
 	unsigned int	script__gl_width__framebuffer_width_;
 	unsigned int	script__gl_height__framebuffer_height_;
-	float			script__gl_aspect__current_viewport_aspect_ratio_;
+	float			script__gl_aspect__framebuffer_viewport_aspect_ratio_;
 
 private:
 	// hack: create exprtk_vars struct and pass to glDriver on construction
@@ -51,7 +51,6 @@ private:
 private:
 	GLFWwindow*		p_glfw_window_;
 	Viewport		current_viewport_;
-	float			framebuffer_viewport_aspect_ratio_;
 	GLsizei			current_rt_width_, current_rt_height_;
 
 public:

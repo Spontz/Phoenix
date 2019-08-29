@@ -212,9 +212,17 @@ glDriver::glDriver()
 	TimeDelta(0.0f),
 	TimeLastFrame(0.0f),
 	p_glfw_window_(nullptr),
-	script__gl_width__framebuffer_width_(0),
-	script__gl_height__framebuffer_height_(0),
-	framebuffer_viewport_aspect_ratio_(0.0f),
+
+	script__gl_width__framebuffer_width_(640),
+	script__gl_height__framebuffer_height_(480),
+	script__gl_aspect__framebuffer_viewport_aspect_ratio_(UIntFraction{ 16,9 }.GetRatio()),
+
+	exprtk__aspectRatio__current_viewport_aspect_ratio_(0.0f),
+	exprtk__vpHeight__current_viewport_height_(0.0f),
+	exprtk__vpWidth__current_viewport_width_(0.0f),
+
+	current_viewport_{ 0,0,0,0 },
+
 	mouse_lastxpos(0),
 	mouse_lastypos(0),
 	fullScreen(0),
@@ -222,12 +230,7 @@ glDriver::glDriver()
 	stencil(0),
 	accum(0),
 	multisampling(0),
-	gamma(1.0f),
-	current_viewport_{ 0,0,0,0 },
-	exprtk__aspectRatio__current_viewport_aspect_ratio_(0.0f),
-	exprtk__vpHeight__current_viewport_height_(0.0f),
-	exprtk__vpWidth__current_viewport_width_(0.0f),
-	script__gl_aspect__current_viewport_aspect_ratio_(0.0f)
+	gamma(1.0f)
 {
 	// hack:
 	for (auto i = 0; i < FBO_BUFFERS; ++i) {
@@ -250,10 +253,6 @@ void glDriver::initFramework() {
 }
 
 void glDriver::initGraphics() {
-	script__gl_width__framebuffer_width_ = 200;
-	script__gl_height__framebuffer_height_ = 100;
-	framebuffer_viewport_aspect_ratio_ = UIntFraction{ 16,9 }.GetRatio();
-
 	mouse_lastxpos = script__gl_width__framebuffer_width_ / 2.0f;
 	mouse_lastypos = script__gl_height__framebuffer_height_ / 2.0f;
 
@@ -397,7 +396,7 @@ Viewport glDriver::GetFramebufferViewport() const {
 	return Viewport::FromRenderTargetAndAspectRatio(
 		script__gl_width__framebuffer_width_,
 		script__gl_height__framebuffer_height_,
-		framebuffer_viewport_aspect_ratio_
+		script__gl_aspect__framebuffer_viewport_aspect_ratio_
 	);
 }
 
@@ -416,10 +415,7 @@ void glDriver::SetCurrentViewport(Viewport const& viewport) {
 
 	exprtk__vpWidth__current_viewport_width_ = static_cast<float>(viewport.width);
 	exprtk__vpHeight__current_viewport_height_ = static_cast<float>(viewport.height);
-
-	const float vp_aspect_ratio = current_viewport_.GetAspectRatio();
-	script__gl_aspect__current_viewport_aspect_ratio_ = vp_aspect_ratio;
-	exprtk__aspectRatio__current_viewport_aspect_ratio_ = vp_aspect_ratio;
+	exprtk__aspectRatio__current_viewport_aspect_ratio_ = current_viewport_.GetAspectRatio();
 }
 
 void glDriver::SetFramebuffer() {
