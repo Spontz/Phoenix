@@ -2,21 +2,12 @@
 // Spontz Demogroup
 
 #include <bass.h>
+
 #include "main.h"
 
-
-// Initialize the bassDriver main pointer to NULL
-bassDriver* bassDriver::m_pThis = NULL;
-
-
-bassDriver * bassDriver::getInstance() {
-	if (m_pThis == NULL)
-		m_pThis = new bassDriver();
-	return m_pThis;
-}
-
-bassDriver::bassDriver() {
-
+bassDriver& bassDriver::GetInstance() {
+	static bassDriver instance;
+	return instance;
 }
 
 void bassDriver::init() {

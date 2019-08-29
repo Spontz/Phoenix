@@ -2,10 +2,7 @@
 // Spontz Demogroup
 // fastmath library: https://archive.codeplex.com/?p=fastmathparser
 
-
-//#include <fastmathparser/exprtk.hpp>
 #include "main.h"
-
 
 mathDriver::mathDriver(Section *sec) {
 	expression = "";
@@ -82,9 +79,9 @@ mathDriver::mathDriver(Section *sec) {
 	}
 
 	// Graphic constants
-	SymbolTable.add_variable("vpWidth", GLDRV->vpWidth);
-	SymbolTable.add_variable("vpHeight", GLDRV->vpHeight);
-	SymbolTable.add_variable("aspectRatio", GLDRV->AspectRatio);
+	SymbolTable.add_variable("vpWidth", GLDRV->exprtk__vpWidth__current_viewport_width_);
+	SymbolTable.add_variable("vpHeight", GLDRV->exprtk__vpHeight__current_viewport_height_);
+	SymbolTable.add_variable("aspectRatio", GLDRV->exprtk__aspectRatio__current_viewport_aspect_ratio_);
 
 	// Fbo constants
 	SymbolTable.add_variable("fbo0Width", GLDRV->fbo[0].width);

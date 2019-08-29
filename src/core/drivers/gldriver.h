@@ -4,59 +4,57 @@
 #ifndef GLDRIVER_H
 #define GLDRIVER_H
 
-#include <iostream>
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#define  GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
-#include "core/shader.h"
-#include "core/texture.h"
-#include "core/model.h"
-#include "core/skinnedmesh.hpp"
+#include "core/viewport.h"
 
-#define GLDRV glDriver::getInstance()
+// HACK: get rid of macros
+#define GLDRV (&glDriver::GetInstance())
 #define GLDRV_MAX_COLOR_ATTACHMENTS 4
-
-using namespace std;
 
 // ******************************************************************
 
-typedef struct {
+struct tGLFboFormat {
 	float width, height;
 	int tex_iformat;
 	int tex_format;
 	int tex_type;
 	int tex_components;
 	int ratio;
-	char *format;
+	char* format;
 	int numColorAttachments;
-} tGLFboFormat;
+};
 
 // ******************************************************************
 
-typedef struct {
-	int xOffset, yOffset;
-	int width, height;
-} viewport;
-
 class glDriver {
-	
+	// hack, todo: remove friends
+	friend class mathDriver; // for exprtk__ members
+	friend struct InitScriptCommands; // for script__ members;
+
 public:
-	float			AspectRatio;
 	int				fullScreen;
 	int				saveInfo;
-	// Current rendertarget width and height
-	int				width, height;
-	// Current viewport (this data depends on: width, height and AspectRatio)
-	//viewport		vpFramebuffer;	// Framebuffer viewport
-	//viewport		vpActual;		// Current viewport size
 
-	//int				vpWidth, vpHeight, vpXOffset, vpYOffset;
-	float			vpWidth, vpHeight;
-	int				vpXOffset, vpYOffset;
+private:
+	// hack: create script_vars struct and pass to glDriver on construction
+	unsigned int	script__gl_width__framebuffer_width_;
+	unsigned int	script__gl_height__framebuffer_height_;
+	float			script__gl_aspect__framebuffer_viewport_aspect_ratio_;
 
+private:
+	// hack: create exprtk_vars struct and pass to glDriver on construction
+	float			exprtk__vpWidth__current_viewport_width_;
+	float			exprtk__vpHeight__current_viewport_height_;
+	float			exprtk__aspectRatio__current_viewport_aspect_ratio_;
+
+private:
+	GLFWwindow*		p_glfw_window_;
+	Viewport		current_viewport_;
+	GLsizei			current_rt_width_, current_rt_height_;
+
+public:
+	// TODO: make private
 	int				stencil;
 	int				accum;
 	int				multisampling;
@@ -65,41 +63,50 @@ public:
 	float			TimeLastFrame;
 	float			TimeDelta;
 	tGLFboFormat	fbo[FBO_BUFFERS];
-
 	float			mouse_lastxpos, mouse_lastypos;
 
-	static glDriver* getInstance();
+private:
 	glDriver();
+
+public:
+	static glDriver& GetInstance();
+
+private:
+	static void GLFWWindowSizeCallback(GLFWwindow* p_glfw_window, int width, int height);
+	void OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int height);
+
+public:
 	void initFramework();
 	void initGraphics();
-	void initStates();
 	void initRender(int clear);
-	void setupViewportSizes();
-	void setViewport(int x, int y, GLsizei width, GLsizei height);
-	void setFramebuffer(); // Unbinds any Framebuffer and sets to the default viewport
-	void initFbos();
-	void swapBuffers();
-	void close();
 
 	void drawFps();
 	void drawTiming();
 	void drawFbo();
-	void processInput();
 
-	int window_should_close();
+	void close();
 
-	bool checkGLError(char *pOut);
+	Viewport GetFramebufferViewport() const;
+	float GetFramebufferAspectRatio() const;
+	void SetFramebuffer(); // Unbinds any framebuffer and sets default viewport
 
-	int getTextureFormatByName(char *name);
-	int getTextureInternalFormatByName(char *name);
-	int getTextureTypeByName(char *name);
-	int getTextureComponentsByName(char *name);
+	Viewport const& GetCurrentViewport() const;
+	void SetCurrentViewport(Viewport const& viewport);
 
+	void swapBuffers();
+	void ProcessInput();
+	int WindowShouldClose();
 
 private:
-	GLFWwindow* window;
-};
+	void initFbos();
+	void initStates();
+	
+	bool checkGLError(char* pOut);
 
-void window_size_callback(GLFWwindow* window, int width, int height);
+	int getTextureFormatByName(char* name);
+	int getTextureInternalFormatByName(char* name);
+	int getTextureTypeByName(char* name);
+	int getTextureComponentsByName(char* name);
+};
 
 #endif

@@ -76,7 +76,7 @@ void sDrawVideo::exec() {
 	{
 		// Texture and View aspect ratio, stored for Keeping image proportions
 		float tex_aspect = (float)my_video->width / (float)my_video->height;
-		float view_aspect = GLDRV->AspectRatio;
+		float view_aspect = GLDRV->GetCurrentViewport().GetAspectRatio();
 		
 		// Put orthogonal mode
 		glm::mat4 model = glm::mat4(1.0f);

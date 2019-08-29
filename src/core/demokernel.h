@@ -45,7 +45,7 @@
 
 // ******************************************************************
 
-#define DEMO demokernel::getInstance()
+#define DEMO (&demokernel::GetInstance())
 
 // ******************************************************************
 
@@ -57,7 +57,8 @@ typedef struct {
 // ******************************************************************
 
 class demokernel {
-
+private:
+	demokernel();
 public:
 	// ******************************************************************
 	// VARIABLES
@@ -135,8 +136,8 @@ public:
 	// ******************************************************************
 	// MEMBERS
 
-	static demokernel* getInstance();
-	demokernel();
+	static demokernel& GetInstance();
+
 	void getArguments(int argc, char *argv[]);
 	void initDemo();
 	void mainLoop();

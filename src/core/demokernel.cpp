@@ -7,9 +7,6 @@
 #include <sys/stat.h>
 #include "main.h"
 
-
-using namespace std;
-
 // Initialize the demokernel main pointer to NULL
 demokernel* demokernel::m_pThis = NULL;
 
@@ -17,125 +14,138 @@ demokernel* demokernel::m_pThis = NULL;
 // scripting
 // ******************************************************************
 
+// HACK, TODO: improve this
 #define VTYPE_INT		0
 #define VTYPE_FLOAT		1
 #define VTYPE_STRING	2
 
+// HACK, TODO: improve this
 typedef struct {
 	char *cName;
 	char vType;
 	void *vAddr;
 } tScriptCommand;
 
-static tScriptCommand scriptCommand[] = {
+// HACK, TODO: improve this
+struct InitScriptCommands {
+	static std::vector<tScriptCommand> const& F() {
 
-	{"demo_name",				VTYPE_STRING,		&DEMO->demoName			},
-	{"debug",					VTYPE_INT,			&DEMO->debug			},
-	{"record",					VTYPE_INT,			&DEMO->record			},
-	{"record_fps",				VTYPE_FLOAT,		&DEMO->recordFps		},
-	{"compress_tga",			VTYPE_INT,			&DEMO->compressTga		},
-	{"loop",					VTYPE_INT,			&DEMO->loop				},
-	{"sound",					VTYPE_INT,			&DEMO->sound			},
-	{"bench",					VTYPE_INT,			&DEMO->bench			},
-	{"demo_start",				VTYPE_FLOAT,		&DEMO->startTime		},
-	{"demo_end",				VTYPE_FLOAT,		&DEMO->endTime			},
-	{"slave",					VTYPE_INT,			&DEMO->slaveMode		},
+		static std::vector<tScriptCommand> r {
 
-	{"gl_fullscreen",			VTYPE_INT,			&GLDRV->fullScreen		},
-	{"gl_info",					VTYPE_INT,			&GLDRV->saveInfo		},
-	{"gl_width",				VTYPE_INT,			&GLDRV->width			},
-	{"gl_height",				VTYPE_INT,			&GLDRV->height			},
-	{"gl_aspect",				VTYPE_FLOAT,		&GLDRV->AspectRatio		},
-	{"gl_stencil",				VTYPE_INT,			&GLDRV->stencil			},
-	{"gl_accum",				VTYPE_INT,			&GLDRV->accum			},
-	{"gl_multisampling",		VTYPE_INT,			&GLDRV->multisampling	},
+			{"demo_name",				VTYPE_STRING,		&DEMO->demoName			},
+			{"debug",					VTYPE_INT,			&DEMO->debug			},
+			{"record",					VTYPE_INT,			&DEMO->record			},
+			{"record_fps",				VTYPE_FLOAT,		&DEMO->recordFps		},
+			{"compress_tga",			VTYPE_INT,			&DEMO->compressTga		},
+			{"loop",					VTYPE_INT,			&DEMO->loop				},
+			{"sound",					VTYPE_INT,			&DEMO->sound			},
+			{"bench",					VTYPE_INT,			&DEMO->bench			},
+			{"demo_start",				VTYPE_FLOAT,		&DEMO->startTime		},
+			{"demo_end",				VTYPE_FLOAT,		&DEMO->endTime			},
+			{"slave",					VTYPE_INT,			&DEMO->slaveMode		},
 
-	{"gl_gamma",				VTYPE_FLOAT,		&GLDRV->gamma			},
+			{"gl_fullscreen",			VTYPE_INT,			&GLDRV->fullScreen		},
+			{"gl_info",					VTYPE_INT,			&GLDRV->saveInfo		},
+			{"gl_width",				VTYPE_INT,			&GLDRV->script__gl_width__framebuffer_width_		},
+			{"gl_height",				VTYPE_INT,			&GLDRV->script__gl_height__framebuffer_height_		},
+			{"gl_aspect",				VTYPE_FLOAT,		&GLDRV->script__gl_aspect__framebuffer_viewport_aspect_ratio_	},
+			{"gl_stencil",				VTYPE_INT,			&GLDRV->stencil			},
+			{"gl_accum",				VTYPE_INT,			&GLDRV->accum			},
+			{"gl_multisampling",		VTYPE_INT,			&GLDRV->multisampling	},
 
-	{"fbo_0_ratio",				VTYPE_INT,			&GLDRV->fbo[0].ratio	},
-	{"fbo_0_format",			VTYPE_STRING,		&GLDRV->fbo[0].format	},
-	{"fbo_0_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[0].numColorAttachments	},
-	{"fbo_1_ratio",				VTYPE_INT,			&GLDRV->fbo[1].ratio	},
-	{"fbo_1_format",			VTYPE_STRING,		&GLDRV->fbo[1].format	},
-	{"fbo_1_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[1].numColorAttachments	},
-	{"fbo_2_ratio",				VTYPE_INT,			&GLDRV->fbo[2].ratio	},
-	{"fbo_2_format",			VTYPE_STRING,		&GLDRV->fbo[2].format	},
-	{"fbo_2_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[2].numColorAttachments	},
-	{"fbo_3_ratio",				VTYPE_INT,			&GLDRV->fbo[3].ratio	},
-	{"fbo_3_format",			VTYPE_STRING,		&GLDRV->fbo[3].format	},
-	{"fbo_3_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[3].numColorAttachments	},
-	{"fbo_4_ratio",				VTYPE_INT,			&GLDRV->fbo[4].ratio	},
-	{"fbo_4_format",			VTYPE_STRING,		&GLDRV->fbo[4].format	},
-	{"fbo_4_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[4].numColorAttachments	},
-	{"fbo_5_ratio",				VTYPE_INT,			&GLDRV->fbo[5].ratio	},
-	{"fbo_5_format",			VTYPE_STRING,		&GLDRV->fbo[5].format	},
-	{"fbo_5_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[5].numColorAttachments	},
-	{"fbo_6_ratio",				VTYPE_INT,			&GLDRV->fbo[6].ratio	},
-	{"fbo_6_format",			VTYPE_STRING,		&GLDRV->fbo[6].format	},
-	{"fbo_6_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[6].numColorAttachments	},
-	{"fbo_7_ratio",				VTYPE_INT,			&GLDRV->fbo[7].ratio	},
-	{"fbo_7_format",			VTYPE_STRING,		&GLDRV->fbo[7].format	},
-	{"fbo_7_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[7].numColorAttachments	},
-	{"fbo_8_ratio",				VTYPE_INT,			&GLDRV->fbo[8].ratio	},
-	{"fbo_8_format",			VTYPE_STRING,		&GLDRV->fbo[8].format	},
-	{"fbo_8_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[8].numColorAttachments	},
-	{"fbo_9_ratio",				VTYPE_INT,			&GLDRV->fbo[9].ratio	},
-	{"fbo_9_format",			VTYPE_STRING,		&GLDRV->fbo[9].format	},
-	{"fbo_9_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[9].numColorAttachments	},
-	{"fbo_10_ratio",			VTYPE_INT,			&GLDRV->fbo[10].ratio	},
-	{"fbo_10_format",			VTYPE_STRING,		&GLDRV->fbo[10].format	},
-	{"fbo_10_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[10].numColorAttachments	},
-	{"fbo_11_ratio",			VTYPE_INT,			&GLDRV->fbo[11].ratio	},
-	{"fbo_11_format",			VTYPE_STRING,		&GLDRV->fbo[11].format	},
-	{"fbo_11_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[11].numColorAttachments	},
-	{"fbo_12_ratio",			VTYPE_INT,			&GLDRV->fbo[12].ratio	},
-	{"fbo_12_format",			VTYPE_STRING,		&GLDRV->fbo[12].format	},
-	{"fbo_12_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[12].numColorAttachments	},
-	{"fbo_13_ratio",			VTYPE_INT,			&GLDRV->fbo[13].ratio	},
-	{"fbo_13_format",			VTYPE_STRING,		&GLDRV->fbo[13].format	},
-	{"fbo_13_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[13].numColorAttachments	},
-	{"fbo_14_ratio",			VTYPE_INT,			&GLDRV->fbo[14].ratio	},
-	{"fbo_14_format",			VTYPE_STRING,		&GLDRV->fbo[14].format	},
-	{"fbo_14_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[14].numColorAttachments	},
-	{"fbo_15_ratio",			VTYPE_INT,			&GLDRV->fbo[15].ratio	},
-	{"fbo_15_format",			VTYPE_STRING,		&GLDRV->fbo[15].format	},
-	{"fbo_15_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[15].numColorAttachments	},
-	{"fbo_16_ratio",			VTYPE_INT,			&GLDRV->fbo[16].ratio	},
-	{"fbo_16_format",			VTYPE_STRING,		&GLDRV->fbo[16].format	},
-	{"fbo_16_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[16].numColorAttachments	},
-	{"fbo_17_ratio",			VTYPE_INT,			&GLDRV->fbo[17].ratio	},
-	{"fbo_17_format",			VTYPE_STRING,		&GLDRV->fbo[17].format	},
-	{"fbo_17_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[17].numColorAttachments	},
-	{"fbo_18_ratio",			VTYPE_INT,			&GLDRV->fbo[18].ratio	},
-	{"fbo_18_format",			VTYPE_STRING,		&GLDRV->fbo[18].format	},
-	{"fbo_18_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[18].numColorAttachments	},
-	{"fbo_19_ratio",			VTYPE_INT,			&GLDRV->fbo[19].ratio	},
-	{"fbo_19_format",			VTYPE_STRING,		&GLDRV->fbo[19].format	},
-	{"fbo_19_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[19].numColorAttachments	},
+			{"gl_gamma",				VTYPE_FLOAT,		&GLDRV->gamma			},
 
-	{"fbo_20_width",			VTYPE_FLOAT,		&GLDRV->fbo[20].width	},
-	{"fbo_20_height",			VTYPE_FLOAT,		&GLDRV->fbo[20].height	},
-	{"fbo_20_format",			VTYPE_STRING,		&GLDRV->fbo[20].format	},
-	{"fbo_20_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[20].numColorAttachments	},
-	{"fbo_21_width",			VTYPE_FLOAT,		&GLDRV->fbo[21].width	},
-	{"fbo_21_height",			VTYPE_FLOAT,		&GLDRV->fbo[21].height	},
-	{"fbo_21_format",			VTYPE_STRING,		&GLDRV->fbo[21].format	},
-	{"fbo_21_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[21].numColorAttachments	},
-	{"fbo_22_width",			VTYPE_FLOAT,		&GLDRV->fbo[22].width	},
-	{"fbo_22_height",			VTYPE_FLOAT,		&GLDRV->fbo[22].height	},
-	{"fbo_22_format",			VTYPE_STRING,		&GLDRV->fbo[22].format	},
-	{"fbo_22_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[22].numColorAttachments	},
-	{"fbo_23_width",			VTYPE_FLOAT,		&GLDRV->fbo[23].width	},
-	{"fbo_23_height",			VTYPE_FLOAT,		&GLDRV->fbo[23].height	},
-	{"fbo_23_format",			VTYPE_STRING,		&GLDRV->fbo[23].format	},
-	{"fbo_23_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[23].numColorAttachments },
-	{"fbo_24_width",			VTYPE_FLOAT,		&GLDRV->fbo[24].width	},
-	{"fbo_24_height",			VTYPE_FLOAT,		&GLDRV->fbo[24].height	},
-	{"fbo_24_format",			VTYPE_STRING,		&GLDRV->fbo[24].format	},
-	{"fbo_24_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[24].numColorAttachments },
+			{"fbo_0_ratio",				VTYPE_INT,			&GLDRV->fbo[0].ratio	},
+			{"fbo_0_format",			VTYPE_STRING,		&GLDRV->fbo[0].format	},
+			{"fbo_0_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[0].numColorAttachments	},
+			{"fbo_1_ratio",				VTYPE_INT,			&GLDRV->fbo[1].ratio	},
+			{"fbo_1_format",			VTYPE_STRING,		&GLDRV->fbo[1].format	},
+			{"fbo_1_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[1].numColorAttachments	},
+			{"fbo_2_ratio",				VTYPE_INT,			&GLDRV->fbo[2].ratio	},
+			{"fbo_2_format",			VTYPE_STRING,		&GLDRV->fbo[2].format	},
+			{"fbo_2_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[2].numColorAttachments	},
+			{"fbo_3_ratio",				VTYPE_INT,			&GLDRV->fbo[3].ratio	},
+			{"fbo_3_format",			VTYPE_STRING,		&GLDRV->fbo[3].format	},
+			{"fbo_3_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[3].numColorAttachments	},
+			{"fbo_4_ratio",				VTYPE_INT,			&GLDRV->fbo[4].ratio	},
+			{"fbo_4_format",			VTYPE_STRING,		&GLDRV->fbo[4].format	},
+			{"fbo_4_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[4].numColorAttachments	},
+			{"fbo_5_ratio",				VTYPE_INT,			&GLDRV->fbo[5].ratio	},
+			{"fbo_5_format",			VTYPE_STRING,		&GLDRV->fbo[5].format	},
+			{"fbo_5_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[5].numColorAttachments	},
+			{"fbo_6_ratio",				VTYPE_INT,			&GLDRV->fbo[6].ratio	},
+			{"fbo_6_format",			VTYPE_STRING,		&GLDRV->fbo[6].format	},
+			{"fbo_6_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[6].numColorAttachments	},
+			{"fbo_7_ratio",				VTYPE_INT,			&GLDRV->fbo[7].ratio	},
+			{"fbo_7_format",			VTYPE_STRING,		&GLDRV->fbo[7].format	},
+			{"fbo_7_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[7].numColorAttachments	},
+			{"fbo_8_ratio",				VTYPE_INT,			&GLDRV->fbo[8].ratio	},
+			{"fbo_8_format",			VTYPE_STRING,		&GLDRV->fbo[8].format	},
+			{"fbo_8_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[8].numColorAttachments	},
+			{"fbo_9_ratio",				VTYPE_INT,			&GLDRV->fbo[9].ratio	},
+			{"fbo_9_format",			VTYPE_STRING,		&GLDRV->fbo[9].format	},
+			{"fbo_9_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[9].numColorAttachments	},
+			{"fbo_10_ratio",			VTYPE_INT,			&GLDRV->fbo[10].ratio	},
+			{"fbo_10_format",			VTYPE_STRING,		&GLDRV->fbo[10].format	},
+			{"fbo_10_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[10].numColorAttachments	},
+			{"fbo_11_ratio",			VTYPE_INT,			&GLDRV->fbo[11].ratio	},
+			{"fbo_11_format",			VTYPE_STRING,		&GLDRV->fbo[11].format	},
+			{"fbo_11_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[11].numColorAttachments	},
+			{"fbo_12_ratio",			VTYPE_INT,			&GLDRV->fbo[12].ratio	},
+			{"fbo_12_format",			VTYPE_STRING,		&GLDRV->fbo[12].format	},
+			{"fbo_12_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[12].numColorAttachments	},
+			{"fbo_13_ratio",			VTYPE_INT,			&GLDRV->fbo[13].ratio	},
+			{"fbo_13_format",			VTYPE_STRING,		&GLDRV->fbo[13].format	},
+			{"fbo_13_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[13].numColorAttachments	},
+			{"fbo_14_ratio",			VTYPE_INT,			&GLDRV->fbo[14].ratio	},
+			{"fbo_14_format",			VTYPE_STRING,		&GLDRV->fbo[14].format	},
+			{"fbo_14_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[14].numColorAttachments	},
+			{"fbo_15_ratio",			VTYPE_INT,			&GLDRV->fbo[15].ratio	},
+			{"fbo_15_format",			VTYPE_STRING,		&GLDRV->fbo[15].format	},
+			{"fbo_15_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[15].numColorAttachments	},
+			{"fbo_16_ratio",			VTYPE_INT,			&GLDRV->fbo[16].ratio	},
+			{"fbo_16_format",			VTYPE_STRING,		&GLDRV->fbo[16].format	},
+			{"fbo_16_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[16].numColorAttachments	},
+			{"fbo_17_ratio",			VTYPE_INT,			&GLDRV->fbo[17].ratio	},
+			{"fbo_17_format",			VTYPE_STRING,		&GLDRV->fbo[17].format	},
+			{"fbo_17_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[17].numColorAttachments	},
+			{"fbo_18_ratio",			VTYPE_INT,			&GLDRV->fbo[18].ratio	},
+			{"fbo_18_format",			VTYPE_STRING,		&GLDRV->fbo[18].format	},
+			{"fbo_18_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[18].numColorAttachments	},
+			{"fbo_19_ratio",			VTYPE_INT,			&GLDRV->fbo[19].ratio	},
+			{"fbo_19_format",			VTYPE_STRING,		&GLDRV->fbo[19].format	},
+			{"fbo_19_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[19].numColorAttachments	},
+
+			{"fbo_20_width",			VTYPE_FLOAT,		&GLDRV->fbo[20].width	},
+			{"fbo_20_height",			VTYPE_FLOAT,		&GLDRV->fbo[20].height	},
+			{"fbo_20_format",			VTYPE_STRING,		&GLDRV->fbo[20].format	},
+			{"fbo_20_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[20].numColorAttachments	},
+			{"fbo_21_width",			VTYPE_FLOAT,		&GLDRV->fbo[21].width	},
+			{"fbo_21_height",			VTYPE_FLOAT,		&GLDRV->fbo[21].height	},
+			{"fbo_21_format",			VTYPE_STRING,		&GLDRV->fbo[21].format	},
+			{"fbo_21_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[21].numColorAttachments	},
+			{"fbo_22_width",			VTYPE_FLOAT,		&GLDRV->fbo[22].width	},
+			{"fbo_22_height",			VTYPE_FLOAT,		&GLDRV->fbo[22].height	},
+			{"fbo_22_format",			VTYPE_STRING,		&GLDRV->fbo[22].format	},
+			{"fbo_22_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[22].numColorAttachments	},
+			{"fbo_23_width",			VTYPE_FLOAT,		&GLDRV->fbo[23].width	},
+			{"fbo_23_height",			VTYPE_FLOAT,		&GLDRV->fbo[23].height	},
+			{"fbo_23_format",			VTYPE_STRING,		&GLDRV->fbo[23].format	},
+			{"fbo_23_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[23].numColorAttachments },
+			{"fbo_24_width",			VTYPE_FLOAT,		&GLDRV->fbo[24].width	},
+			{"fbo_24_height",			VTYPE_FLOAT,		&GLDRV->fbo[24].height	},
+			{"fbo_24_format",			VTYPE_STRING,		&GLDRV->fbo[24].format	},
+			{"fbo_24_colorAttachments",	VTYPE_INT,			&GLDRV->fbo[24].numColorAttachments },
+		};
+
+		return r;
+	}
 };
 
-#define COMMANDS_NUMBER (sizeof(scriptCommand) / sizeof(tScriptCommand))
+static auto const& scriptCommand = InitScriptCommands::F();
+
+// HACK, TODO: improve this
+#define COMMANDS_NUMBER (scriptCommand.size())
 
 // ******************************************************************
 
@@ -211,11 +221,9 @@ glTable_t alphaFunc[ALPHA_FUNC] = {
 };
 
 
-demokernel * demokernel::getInstance() {
-	if (m_pThis == NULL) {
-		m_pThis = new demokernel();
-	}
-	return m_pThis;
+demokernel& demokernel::GetInstance() {
+	static demokernel r;
+	return r;
 }
 
 demokernel::demokernel() {
@@ -295,9 +303,9 @@ void demokernel::mainLoop() {
 	this->state = DEMO_PLAY;
 
 	/* Loop until the user closes the window */
-	while ((!GLDRV->window_should_close()) && (!this->exitDemo)) {
+	while ((!GLDRV->WindowShouldClose()) && (!this->exitDemo)) {
 		// Poll for and process events
-		GLDRV->processInput();
+		GLDRV->ProcessInput();
 		// 
 		this->doExec();
 
@@ -744,7 +752,7 @@ void demokernel::processSectionQueues() {
 	LOG->Info(LOG_MED,"End queue processing!");
 
 	// Set back to the frambuffer and restore the viewport
-	GLDRV->setFramebuffer();
+	GLDRV->SetFramebuffer();
 
 	if (this->debug) {
 		if (this->drawFps)

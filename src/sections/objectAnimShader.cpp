@@ -1,6 +1,8 @@
 #include "main.h"
 #include "core/shadervars.h"
-#include <glm/gtc/type_ptr.hpp>
+//#include <glm/gtc/type_ptr.hpp>
+
+#include "core/skinnedmesh.hpp"
 
 // ******************************************************************
 
@@ -107,7 +109,7 @@ void sObjectAnimShader::exec() {
 
 	// view/projection transformations
 	float zoom = DEMO->camera->Zoom;
-	glm::mat4 projection = glm::perspective(glm::radians(zoom), GLDRV->AspectRatio, 0.1f, 10000.0f);
+	glm::mat4 projection = glm::perspective(glm::radians(zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
 	my_shader->setValue("projection", projection);
 	my_shader->setValue("view", view);

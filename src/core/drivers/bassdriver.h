@@ -5,18 +5,21 @@
 #define BASSDRIVER_H
 
 
-#define BASSDRV bassDriver::getInstance()
+// hack: get rid of macros
+#define BASSDRV (&bassDriver::GetInstance())
 
-using namespace std;
 
 // ******************************************************************
 
 class bassDriver {
 	
 public:
-	
-	static bassDriver* getInstance();
-	bassDriver();
+	static bassDriver& GetInstance();
+
+private:
+	bassDriver() = default;
+
+public:
 	void init();
 	void play();
 	void update();
@@ -25,10 +28,6 @@ public:
 	void end();
 
 	float sound_cpu();
-
-private:
-
-	static bassDriver* m_pThis;
 };
 
 #endif

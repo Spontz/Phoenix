@@ -6,7 +6,7 @@
 
 #define HACK_LOGGER_STR_MAX_SIZE 2048
 
-Logger & Logger::Instance() {
+Logger & Logger::GetInstance() {
 	static Logger l;
 	return l;
 }
