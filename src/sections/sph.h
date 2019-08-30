@@ -51,7 +51,10 @@ namespace sections {
 	private:
 		std::vector<v3>			particles_pos_; // separated for perfomance
 		std::vector<Particle>	particles_;
-		int pass_sph_billboard_ = -1;
+		int						billboard_shader_id_ = -1;
+		Shader*					p_billboard_shader_ = nullptr;
+
+		GLuint gl_buffer_id_;
 	};
 
 }
