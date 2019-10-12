@@ -3,10 +3,11 @@
 
 typedef struct {
 	unsigned int	FboNum;			// Fbo to use (must have 2 color attachments!)
-	unsigned int	blurAmount;		// Blur layers to apply
+	float			blurAmount;		// Blur layers to apply
 	char			clearScreen;	// Clear Screen buffer
 	char			clearDepth;		// Clear Depth buffer
 	int				shaderBlur;		// Blur Shader to apply
+	mathDriver		*exprBlur;		// Equations for the Blur effect
 	ShaderVars		*shaderVars;	// Shader variables
 
 } efxBlur_section;
@@ -22,8 +23,8 @@ sEfxBlur::sEfxBlur() {
 
 bool sEfxBlur::load() {
 	// script validation
-	if ((this->param.size()) != 4 || (this->strings.size() != 2)) {
-		LOG->Error("EfxBlur [%s]: 4 params are needed (Clear the screen & depth buffers, Fbo to use and Blur Amount), and 2 blur shader files", this->identifier.c_str());
+	if ((this->param.size()) != 3 || (this->strings.size() != 3)) {
+		LOG->Error("EfxBlur [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 3 strings (One with the formula of the Blur Amount + the 2 blur shader files)", this->identifier.c_str());
 		return false;
 	}
 	
@@ -35,16 +36,23 @@ bool sEfxBlur::load() {
 	local->clearScreen = (int)this->param[0];
 	local->clearDepth = (int)this->param[1];
 	local->FboNum = (int)this->param[2];
-	local->blurAmount = (unsigned int)this->param[3];
-
+	
 	// Check if the fbo can be used for the effect
 	if (local->FboNum < 0 || local->FboNum >= DEMO->fboManager.fbo.size()) {
 		LOG->Error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", this->identifier.c_str(), local->FboNum, DEMO->fboManager.fbo.size()-1);
 		return false;
 	}
 	
+	// Load the Blur amount formula
+	local->exprBlur = new mathDriver(this);
+	// Load positions, process constants and compile expression
+	local->exprBlur->expression = this->strings[0]; // The first string should contain the blur amount
+	local->exprBlur->SymbolTable.add_variable("blurAmount", local->blurAmount);
+	local->exprBlur->Expression.register_symbol_table(local->exprBlur->SymbolTable);
+	local->exprBlur->compileFormula();
+
 	// Load Blur shader
-	local->shaderBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[1]);
+	local->shaderBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2]);
 	if (local->shaderBlur < 0)
 		return false;
 
@@ -81,6 +89,9 @@ void sEfxBlur::exec() {
 	// Get the shaders
 	Shader *my_shaderBlur = DEMO->shaderManager.shader[local->shaderBlur];
 
+	// Evaluate the expression
+	local->exprBlur->Expression.value();
+
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
@@ -90,7 +101,11 @@ void sEfxBlur::exec() {
 		my_shaderBlur->use();
 		DEMO->efxBloomFbo.active(0);
 
-		for (unsigned int i = 0; i < local->blurAmount; i++)
+		// Prevent negative Blurs
+		if (local->blurAmount < 0)
+			local->blurAmount = 0;
+		unsigned int iBlurAmount = static_cast<unsigned int>(local->blurAmount);
+		for (unsigned int i = 0; i < iBlurAmount; i++)
 		{
 			my_shaderBlur->setValue("horizontal", horizontal);
 			

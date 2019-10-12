@@ -3,11 +3,12 @@
 
 typedef struct {
 	unsigned int	FboNum;			// Fbo to use (must have 2 color attachments!)
-	unsigned int	blurAmount;		// Blur layers to apply
+	float			blurAmount;		// Blur layers to apply
 	char			clearScreen;	// Clear Screen buffer
 	char			clearDepth;		// Clear Depth buffer
 	int				shaderBlur;		// Blur Shader to apply
 	int				shaderBloom;	// Bloom Shader to apply
+	mathDriver		*exprBloom;		// Equations for the Bloom effect
 	ShaderVars		*shaderVars;	// Shader variables
 
 } efxBloom_section;
@@ -23,8 +24,8 @@ sEfxBloom::sEfxBloom() {
 
 bool sEfxBloom::load() {
 	// script validation
-	if ((this->param.size()) != 4 || (this->strings.size() != 4)) {
-		LOG->Error("EfxBloom [%s]: 4 params are needed (Clear the screen & depth buffers, Fbo to use and Blur Amount), and 2 shader files (2 for Blur and 2 for Bloom)", this->identifier.c_str());
+	if ((this->param.size()) != 3 || (this->strings.size() != 5)) {
+		LOG->Error("EfxBloom [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 5 strings (One with the formula of the Blur Amount + the 4 with the Blur and then Bloom shader files)", this->identifier.c_str());
 		return false;
 	}
 	
@@ -36,8 +37,7 @@ bool sEfxBloom::load() {
 	local->clearScreen = (int)this->param[0];
 	local->clearDepth = (int)this->param[1];
 	local->FboNum = (int)this->param[2];
-	local->blurAmount = (unsigned int)this->param[3];
-
+	
 	// Check if the fbo can be used for the effect
 	if (local->FboNum < 0 || local->FboNum >= DEMO->fboManager.fbo.size()) {
 		LOG->Error("EfxBloom [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", this->identifier.c_str(), local->FboNum, DEMO->fboManager.fbo.size()-1);
@@ -48,10 +48,18 @@ bool sEfxBloom::load() {
 		return false;
 	}
 	
+	// Load the Blur amount formula
+	local->exprBloom = new mathDriver(this);
+	// Load positions, process constants and compile expression
+	local->exprBloom->expression = this->strings[0]; // The first string should contain the blur amount
+	local->exprBloom->SymbolTable.add_variable("blurAmount", local->blurAmount);
+	local->exprBloom->Expression.register_symbol_table(local->exprBloom->SymbolTable);
+	local->exprBloom->compileFormula();
+
 	// Load Blur shader
-	local->shaderBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[1]);
+	local->shaderBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2]);
 	// Load Bloom shader
-	local->shaderBloom = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[2], DEMO->dataFolder + this->strings[3]);
+	local->shaderBloom = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[3], DEMO->dataFolder + this->strings[4]);
 	if (local->shaderBlur < 0 || local->shaderBloom < 0)
 		return false;
 
@@ -95,6 +103,9 @@ void sEfxBloom::exec() {
 	Shader *my_shaderBlur = DEMO->shaderManager.shader[local->shaderBlur];
 	Shader *my_shaderBloom = DEMO->shaderManager.shader[local->shaderBloom];
 
+	// Evaluate the expression
+	local->exprBloom->Expression.value();
+
 
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
@@ -105,7 +116,11 @@ void sEfxBloom::exec() {
 		my_shaderBlur->use();
 		DEMO->efxBloomFbo.active(0);
 
-		for (unsigned int i = 0; i < local->blurAmount; i++)
+		// Prevent negative Blurs
+		if (local->blurAmount < 0)
+			local->blurAmount = 0;
+		unsigned int iBlurAmount = static_cast<unsigned int>(local->blurAmount);
+		for (unsigned int i = 0; i < iBlurAmount; i++)
 		{
 			my_shaderBlur->setValue("horizontal", horizontal);
 			
