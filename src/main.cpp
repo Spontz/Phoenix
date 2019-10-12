@@ -14,9 +14,9 @@ int main(int argc, char* argv[]) {
 
 	// Define the Log level
 	#ifdef _DEBUG
-		log.log_level_ = LOG_HIGH; // Define the highest log detail level
-	#else
 		log.log_level_ = LOG_LOW; // Define the lowest log detail level
+	#else
+		log.log_level_ = LOG_HIGH; // Define the highest log detail level
 	#endif
 
 	// Initialize the GL Framework
@@ -38,13 +38,6 @@ int main(int argc, char* argv[]) {
 
 	log.Info(LOG_HIGH, "Initializing main loop...");
 	demo.mainLoop();
-
-	{
-		std::stringstream ss;
-		ss.precision(2);
-		ss << "Average Framerate: " << static_cast<float>(demo.frameCount) / demo.runTime << ".";
-		log.Info(LOG_LOW, ss.str().c_str());
-	}
 
 	log.Info(LOG_HIGH, "Closing demo. We hope you enjoyed watching this demo! See you next time! Watch more at www.spontz.org.");
 	demo.closeDemo();
