@@ -54,6 +54,10 @@ void sCamera::exec() {
 		DEMO->camera->setCamera(glm::vec3(new_pos[0], new_pos[1], new_pos[2]),
 			glm::vec3(new_pos[3], new_pos[4], new_pos[5]),
 			new_pos[6], new_pos[7], new_pos[8]);
+		LOG->Error("NewPos: %.2f,%.2f,%.2f - %.2f,%.2f,%.2f - %.2f,%.2f,%.2f",
+			new_pos[0], new_pos[1], new_pos[2],
+			new_pos[3], new_pos[4], new_pos[5],
+			new_pos[6], new_pos[7], new_pos[8]);
 	}
 	
 	

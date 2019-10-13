@@ -97,12 +97,12 @@ void Spline::MotionCalcStep(ChanVec resVec, float step)
 		ds1b = (1.0f - key1->tens) * (1.0f + key1->cont) * (1.0f - key1->bias);
 
 		// First we check if Key0 is not the step 0 or 1
-		if (have_prev_key)//(fabs(key0->step) > FLT_EPSILON)
-			adj0 = tlength / (key1->step - this->key[cnt - 1]->step);
+		//if (have_prev_key)//(fabs(key0->step) > FLT_EPSILON)
+			//adj0 = tlength / (key1->step - this->key[cnt - 1]->step);
 		
 		// First we check if its not the last step or last step+1
-		if (have_next_key)//(fabs(key1->step - this->steps) < FLT_EPSILON)
-			adj1 = tlength / (this->key[cnt + 2]->step - key0->step);
+		//if (have_next_key)//(fabs(key1->step - this->steps) < FLT_EPSILON)
+			//adj1 = tlength / (this->key[cnt + 2]->step - key0->step);
 	}
 
 	// Compute the channel components.
