@@ -67,7 +67,7 @@ void Spline::MotionCalcStep(ChanVec resVec, float step)
 
 	// Get keyframe pair to evaluate. This should be within the range
 	// of the motion or this will raise an illegal access (fixed).
-	int cnt;
+	int cnt=0;
 	for (cnt = 0; cnt < this->keys; cnt++) {
 		if (this->key[cnt]->step >= step)
 			break;
@@ -75,7 +75,8 @@ void Spline::MotionCalcStep(ChanVec resVec, float step)
 	// Prevent invalid access when step is 0
 	if (cnt != 0) {
 		cnt--;
-	}		
+	}
+
 	key0 = this->key[cnt];
 	key1 = this->key[cnt + 1];
 	// Check if we have previous and next keys
@@ -83,6 +84,8 @@ void Spline::MotionCalcStep(ChanVec resVec, float step)
 		have_prev_key = false;
 	if (cnt + 2 >= this->keys)
 		have_next_key = false;
+
+	step -= key0->step;
 
 	// Get tween length and fractional tween position.
 	tlength = key1->step - key0->step;
@@ -97,12 +100,12 @@ void Spline::MotionCalcStep(ChanVec resVec, float step)
 		ds1b = (1.0f - key1->tens) * (1.0f + key1->cont) * (1.0f - key1->bias);
 
 		// First we check if Key0 is not the step 0 or 1
-		//if (have_prev_key)//(fabs(key0->step) > FLT_EPSILON)
-			//adj0 = tlength / (key1->step - this->key[cnt - 1]->step);
+		if (have_prev_key)
+			adj0 = tlength / (key1->step - this->key[cnt - 1]->step);
 		
 		// First we check if its not the last step or last step+1
-		//if (have_next_key)//(fabs(key1->step - this->steps) < FLT_EPSILON)
-			//adj1 = tlength / (this->key[cnt + 2]->step - key0->step);
+		if (have_next_key)
+			adj1 = tlength / (this->key[cnt + 2]->step - key0->step);
 	}
 
 	// Compute the channel components.
@@ -110,12 +113,12 @@ void Spline::MotionCalcStep(ChanVec resVec, float step)
 		d10 = key1->cv[i] - key0->cv[i];
 
 		if (!key1->linear) {
-			if (!have_prev_key)//(fabs(key0->step) < FLT_EPSILON)
+			if (!have_prev_key)
 				dd0 = 0.5f * (dd0a + dd0b) * d10;
 			else
 				dd0 = adj0 * (dd0a * (key0->cv[i] - this->key[cnt-1]->cv[i]) + dd0b * d10);
 
-			if (!have_next_key)//(fabs(key1->step - mot->steps) < FLT_EPSILON)
+			if (!have_next_key)
 				ds1 = 0.5f * (ds1a + ds1b) * d10;
 			else
 				ds1 = adj1 * (ds1a * d10 + ds1b * (this->key[cnt + 2]->cv[i] - key1->cv[i]));
