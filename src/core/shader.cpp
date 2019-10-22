@@ -26,6 +26,13 @@ Shader::Shader()
 
 int Shader::load(const std::string & vertexPath, const std::string & fragmentPath, const std::string & geometryPath, vector<string> feedbackVaryings)
 {
+	// If we already have loaded this shader, we unload it first
+	if (ID > 0) {
+		glUseProgram(0);
+		glDeleteProgram(ID);
+		ID = 0;
+	}
+
 	vertexShader_Filename = vertexPath;
 	fragmentShader_Filename = fragmentPath;
 	geometryShader_Filename = geometryPath;
@@ -108,8 +115,6 @@ int Shader::load(const std::string & vertexPath, const std::string & fragmentPat
 		}
 		glTransformFeedbackVaryings(ID, (GLsizei)feedbackVaryings_cStr.size(), &feedbackVaryings_cStr[0], GL_INTERLEAVED_ATTRIBS);
 	}
-
-		
 
 	glLinkProgram(ID);
 	checkCompileErrors(ID, "PROGRAM");
