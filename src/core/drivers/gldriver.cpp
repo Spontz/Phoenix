@@ -113,7 +113,7 @@ void APIENTRY glErrorCallback(GLenum source, GLenum type,
 	const GLchar* message,
 	const void* userParam)
 {
-	LOG->Error("GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s",
+	LOG->Info(LOG_LOW, "Error GL callback: %s type = 0x%x, severity = 0x%x, message = %s",
 		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
 		type, severity, message);
 }
