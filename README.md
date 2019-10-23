@@ -39,10 +39,9 @@ Or, if using formulas in shaders, like this:
 
 ## Considerations when writing formulas:
 
-* No spaces should be placed into a formula, even between the variables.
 * Equal (=) is written like this: `:=`, for example: `uniform float scale v1:=10*beat;`
 * At the end of any formula, we should write a semicolon `;`, for example: `uniform float scale v1:=10*beat;`
-* If you want to write multiple formulas, split them also with semicolon, for example: `uniform float rotation v1:=90*sin(t);v2:=0;v3:=180*cos(t);`
+* If you want to write multiple formulas, split them also with semicolon, for example: `uniform float rotation v1:=90*sin(t); v2:=0; v3:=180*cos(t);`
 * A complete description of the formulas you can make can be found here: https://archive.codeplex.com/?p=fastmathparser
 
 ## Variables
@@ -112,3 +111,18 @@ In this case we will send 2 textures, one in texture unit 0 and the other one in
 `uniform sampler2D texture_1 0 fbo2`
 
 In this case we are sending to the shader a texture named `texture_1` with the content of the `fbo` number 2, everything loaded in texture unit 0.
+
+## Writing Shaders
+### Uniform variables in 'objectShader' Section
+There variables that can be used in the shaders (vertex, fragment and geometry), when are invoked during an `objectShader` section are:
+* `model`: model mat4 matrix
+* `view`: view mat4 matrix
+* `projection`: projection mat4 matrix
+* `prev_model`: previous frame model mat4 matrix (required for Blur and Bloom effects)
+* `prev_view`: previous frame view mat4 matrix (required for Blur and Bloom effects)
+* `prev_projection`: previous frame projection mat4 matrix (required for Blur and Bloom effects)
+* `lightSpaceMatrix`: it has the mat4 spaceMatrix of the light0 (if you want to update the light0 position, you should use a `lightSection` section before
+* `texture_diffuseN` (N is an incremental number, starting at 1): sampler2D diffuse texture of our model (it it has any defined)
+* `texture_specularN` (N is an incremental number, starting at 1): sampler2D specular texture of our model (it it has any defined)
+* `texture_normalN` (N is an incremental number, starting at 1): sampler2D normal texture of our model (it it has any defined)
+* `texture_heightN` (N is an incremental number, starting at 1): sampler2D height texture of our model (it it has any defined)
