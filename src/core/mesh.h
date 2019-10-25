@@ -24,18 +24,16 @@
 
 using namespace std;
 
-#define NUM_BONES_PER_VERTEX	4 // Number of bones information to store per vertex
+
+#define NUM_BONES_PER_VERTEX	4 // Number of Bones per Vertex
 
 struct VertexBoneData
 {
 	unsigned int IDs[NUM_BONES_PER_VERTEX];
 	float Weights[NUM_BONES_PER_VERTEX];
 
-	VertexBoneData()
-	{
-		Reset();
-	}
-
+	VertexBoneData() { Reset(); }
+	
 	void Reset()
 	{
 		for (unsigned int i = 0; i < NUM_BONES_PER_VERTEX; ++i)
@@ -54,8 +52,10 @@ struct Vertex {
 	glm::vec2		TexCoords;
 	glm::vec3		Tangent;
 	glm::vec3		Bitangent;
-	VertexBoneData	BoneData;
+	VertexBoneData	Bone;
 };
+
+
 
 class Mesh {
 public:
@@ -64,14 +64,19 @@ public:
 	vector<int>				textures;
 	GLuint					VAO;
 
-	// TODO: implement baseVertex and baseIndex, for drawing meshes even more faster with one single array of vertices
-	// add: unsigned int baseVertex, unsigned int baseIndex
-	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<int> textures);
+	Mesh(const aiScene *pScene, const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, vector<int> textures);
 	// render the mesh
 	void Draw(Shader shader);
+	void boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transforms);
+	void setBoneTransformations(GLuint shaderProgram, GLfloat currentTime);
 
 private:
 	unsigned int VBO, EBO;
+	const aiScene	*m_pScene;
+	const aiMesh	*m_pMesh;
+	unsigned int	m_NumBones;			// Number of bones
+	double			m_animDuration;		// Animation duration in seconds
+	unsigned int	m_currentAnimation;	// Current Animation
 
 	// initializes all the buffer objects/arrays
 	void setupMesh();

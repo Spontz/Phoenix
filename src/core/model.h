@@ -8,7 +8,11 @@
 #include <glad/glad.h> 
 
 #include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <stb_image.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -31,7 +35,6 @@ class Model
 {
 public:
 	const aiScene* scene;
-	vector<int> textures_loaded;
 	vector<Mesh> meshes;
 	string directory;	// Path of the model file
 	string filename;	// Name of the model file
@@ -46,6 +49,20 @@ public:
 	void Draw(Shader shader);
 
 private:
+	struct BoneInfo
+	{
+		glm::mat4 BoneOffset;
+		glm::mat4 FinalTransformation;
+
+		BoneInfo()
+		{
+			BoneOffset = glm::mat4(0.0f);
+			FinalTransformation = glm::mat4(0.0f);
+		}
+	};
+
+	glm::mat4 m_GlobalInverseTransform; // Global transformation matrix for nodes (vertices relative to bones)
+
 	// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
 	void loadModel(string const &path);
 	// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).

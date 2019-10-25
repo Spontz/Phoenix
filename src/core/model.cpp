@@ -1,15 +1,5 @@
 ﻿// model.cpp
 // Spontz Demogroup
-/*
-#include <glad/glad.h> 
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <stb_image.h>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-*/
 
 #include "main.h"
 #include "core/texture.h"
@@ -24,6 +14,16 @@
 #include <map>
 #include <vector>
 using namespace std;
+
+
+// For converting between ASSIMP and glm
+// TODO: Mirar de sacar este código fuera, ya que lo tengo repetido en el model.cpp y el mesh.cpp
+static inline glm::vec3 vec3_cast(const aiVector3D &v) { return glm::vec3(v.x, v.y, v.z); }
+static inline glm::vec2 vec2_cast(const aiVector3D &v) { return glm::vec2(v.x, v.y); } // it's aiVector3D because assimp's texture coordinates use that
+static inline glm::quat quat_cast(const aiQuaternion &q) { return glm::quat(q.w, q.x, q.y, q.z); }
+static inline glm::mat4 mat4_cast(const aiMatrix4x4 &m) { return glm::transpose(glm::make_mat4(&m.a1)); }
+static inline glm::mat4 mat4_cast(const aiMatrix3x3 &m) { return glm::transpose(glm::make_mat3(&m.a1)); }
+
 
 
 Model::Model(string const &path, bool gamma)
@@ -62,6 +62,10 @@ void Model::loadModel(string const &path)
 	directory = filepath.substr(0, filepath.find_last_of('/'));
 	filename = filepath.substr(filepath.find_last_of('/')+1, filepath.length());
 	LOG->Info(LOG_LOW, "Loading Model: %s", filename.c_str());
+
+	// Get transformation matrix for nodes (vertices relative to bones)
+	m_GlobalInverseTransform = mat4_cast(scene->mRootNode->mTransformation);
+	m_GlobalInverseTransform = glm::inverse(m_GlobalInverseTransform);
 	// process ASSIMP's root node recursively
 	processNode(scene->mRootNode, scene);
 }
@@ -90,6 +94,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;
 	vector<int> textures;
+	vector<BoneInfo> boneInfo;
+
 	LOG->Info(LOG_LOW, "Loading mesh: %s", mesh->mName.C_Str());
 
 	if (mesh->HasTangentsAndBitangents() == false)
@@ -149,7 +155,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 		for (unsigned int j = 0; j < face.mNumIndices; j++)
 			indices.push_back(face.mIndices[j]);
 	}
-	// process materials
+	
+	// Process materials
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 	// we assume a convention for sampler names in the shaders. Each diffuse texture should be named
 	// as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER. 
@@ -179,9 +186,41 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	textures.insert(textures.end(), unknownMaps.begin(), unknownMaps.end());
 	LOG->Info(LOG_LOW, "  The mesh has %d unknownMaps", unknownMaps.size());
 
+	// Process Bones
+	map<std::string, unsigned int> boneMapping; // maps a bone name to its index
+	unsigned int BoneIndex = 0;
+	unsigned int BoneCounter = 0;
+	for (unsigned int i = 0; i < mesh->mNumBones; ++i)
+	{
+		string boneName(mesh->mBones[i]->mName.data);
+
+		if (boneMapping.find(boneName) == boneMapping.end())
+		{
+			// Allocate an index for the new bone
+			BoneIndex = BoneCounter;
+			BoneCounter++;
+			BoneInfo bi;
+			bi.BoneOffset = mat4_cast(mesh->mBones[i]->mOffsetMatrix);
+			boneInfo.push_back(bi);
+
+			// Store the bone mapping: Bone Name + Bone Position in array
+			boneMapping[boneName] = BoneIndex;
+		}
+		else
+		{
+			BoneIndex = boneMapping[boneName];
+		}
+
+		for (unsigned int j = 0; j < mesh->mBones[i]->mNumWeights; ++j)
+		{
+			unsigned int VertexID = mesh->mBones[i]->mWeights[j].mVertexId;
+			float Weight = mesh->mBones[i]->mWeights[j].mWeight;
+			vertices[VertexID].Bone.AddBoneData(BoneIndex, Weight);
+		}
+	}
 
 	// return a mesh object created from the extracted mesh data
-	return Mesh(vertices, indices, textures);
+	return Mesh(scene, mesh, vertices, indices, textures);
 }
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.

@@ -18,19 +18,52 @@
 #include <iostream>
 #include <vector>
 
-#define POSITION_LOCATION	0
-#define NORMAL_LOCATION		1
-#define TEX_COORD_LOCATION	2
-#define TANGENT_LOCATION	3
-#define BITANGENT_LOCATION	4
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/quaternion.hpp>
+
+#define POSITION_LOCATION		0
+#define NORMAL_LOCATION			1
+#define TEX_COORD_LOCATION		2
+#define TANGENT_LOCATION		3
+#define BITANGENT_LOCATION		4
+#define BONE_ID_LOCATION		5
+#define BONE_WEIGHT_LOCATION	6
 
 using namespace std;
 
-Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<int> textures)
+// For converting between ASSIMP and glm
+static inline glm::vec3 vec3_cast(const aiVector3D &v) { return glm::vec3(v.x, v.y, v.z); }
+static inline glm::vec2 vec2_cast(const aiVector3D &v) { return glm::vec2(v.x, v.y); } // it's aiVector3D because assimp's texture coordinates use that
+static inline glm::quat quat_cast(const aiQuaternion &q) { return glm::quat(q.w, q.x, q.y, q.z); }
+static inline glm::mat4 mat4_cast(const aiMatrix4x4 &m) { return glm::transpose(glm::make_mat4(&m.a1)); }
+static inline glm::mat4 mat4_cast(const aiMatrix3x3 &m) { return glm::transpose(glm::make_mat3(&m.a1)); }
+
+
+void VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
 {
+	for (unsigned int i = 0; i < NUM_BONES_PER_VERTEX; ++i)
+		if (Weights[i] == 0.0)
+		{
+			IDs[i] = BoneID;
+			Weights[i] = Weight;
+			return;
+		}
+}
+
+Mesh::Mesh(const aiScene *pScene, const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, vector<int> textures)
+{
+	this->m_pScene = pScene;
+	this->m_pMesh = pMesh;
 	this->vertices = vertices;
 	this->indices = indices;
 	this->textures = textures;
+
+	m_currentAnimation = 0;
+	m_NumBones = m_pMesh->mNumBones;
+
 	// now that we have all the required data, set the vertex buffers and its attribute pointers.
 	setupMesh();
 }
@@ -38,7 +71,6 @@ Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<int> te
 // initializes all the buffer objects/arrays
 void Mesh::setupMesh()
 {
-	// TODO: Do it like in skinnedmesh, I like that way of storing buffers more
 	// create VAO, VBO and ElementBuffer
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -72,6 +104,14 @@ void Mesh::setupMesh()
 	glEnableVertexAttribArray(BITANGENT_LOCATION);
 	glVertexAttribPointer(BITANGENT_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
 
+	// Bone Vertex ID's
+	glEnableVertexAttribArray(BONE_ID_LOCATION);
+	glVertexAttribPointer(BONE_ID_LOCATION, NUM_BONES_PER_VERTEX, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, Bone) + offsetof(VertexBoneData, IDs)));
+	
+	// Bone Vertex Weights
+	glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);
+	glVertexAttribPointer(BONE_ID_LOCATION, NUM_BONES_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, Bone) + offsetof(VertexBoneData, Weights)));
+	
 	glBindVertexArray(0);
 }
 
@@ -114,4 +154,38 @@ void Mesh::Draw(Shader shader)
 
 	// always good practice to set everything back to defaults once configured.
 	glActiveTexture(GL_TEXTURE0);
+}
+
+void Mesh::boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transforms)
+{
+	glm::mat4 Identity = glm::mat4(1.0f);
+
+	//TODO: I think that this line does not make any sense... because its overwritten later
+	m_animDuration = (float)m_pScene->mAnimations[m_currentAnimation]->mDuration;
+
+	/* Calc animation duration */
+	unsigned int numPosKeys = m_pScene->mAnimations[m_currentAnimation]->mChannels[0]->mNumPositionKeys;
+	m_animDuration = m_pScene->mAnimations[m_currentAnimation]->mChannels[0]->mPositionKeys[numPosKeys - 1].mTime;
+
+	float TicksPerSecond = (float)(m_pScene->mAnimations[m_currentAnimation]->mTicksPerSecond != 0 ? m_pScene->mAnimations[m_currentAnimation]->mTicksPerSecond : 25.0f);
+	float TimeInTicks = timeInSeconds * TicksPerSecond;
+	float AnimationTime = (float)fmod(TimeInTicks, m_animDuration);
+
+	/*ReadNodeHeirarchy(AnimationTime, m_pScene->mRootNode, Identity);
+
+	Transforms.resize(m_NumBones);
+
+	for (unsigned int i = 0; i < m_NumBones; i++) {
+		Transforms[i] = m_BoneInfo[i].FinalTransformation;
+	}
+	*/
+}
+
+void Mesh::setBoneTransformations(GLuint shaderProgram, GLfloat currentTime)
+{
+	if (m_pScene->HasAnimations()) {
+		std::vector<glm::mat4> Transforms;
+		boneTransform((float)currentTime, Transforms);
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
+	}
 }
