@@ -117,7 +117,7 @@ void Mesh::setupMesh()
 }
 
 // render the mesh
-void Mesh::Draw(Shader shader, float currentTime)
+void Mesh::Draw(Shader shader)
 {
 	// bind appropriate textures
 	unsigned int diffuseNr = 1;

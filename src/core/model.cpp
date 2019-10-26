@@ -46,11 +46,11 @@ Model::~Model()
 
 void Model::Draw(Shader shader, float currentTime)
 {
-	// Set the Bones transformations
+	// Set the Bones transformations and send the Bones info to the Shader (gBones uniform)
 	setBoneTransformations(shader.ID, currentTime);
 	// Then, draw the meshes
 	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i].Draw(shader, currentTime);
+		meshes[i].Draw(shader);
 }
 
 unsigned int Model::getNumAnimations()
@@ -272,11 +272,13 @@ void Model::setBoneTransformations(GLuint shaderProgram, GLfloat currentTime)
 
 		int numTransforms = (int)Transforms.size();
 		for (int i = 0; i < numTransforms; i++) {
+			glm::mat4 T = Transforms[i];
+
 			LOG->Info(LOG_LOW, "Transform %d:\t %.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f", i,
-				Transforms[0][0], Transforms[0][1], Transforms[0][2], Transforms[0][3],
-				Transforms[1][0], Transforms[1][1], Transforms[1][2], Transforms[1][3],
-				Transforms[2][0], Transforms[2][1], Transforms[2][2], Transforms[2][3],
-				Transforms[3][0], Transforms[3][1], Transforms[3][2], Transforms[3][3]);
+				T[0][0], T[0][1], T[0][2], T[0][3],
+				T[1][0], T[1][1], T[1][2], T[1][3],
+				T[2][0], T[2][1], T[2][2], T[2][3],
+				T[3][0], T[3][1], T[3][2], T[3][3]);
 		}
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
 	}
