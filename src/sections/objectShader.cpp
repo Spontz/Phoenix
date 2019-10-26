@@ -115,6 +115,7 @@ void sObjectShader::exec() {
 	// view/projection transformations
 	glm::mat4 projection = glm::perspective(
 		glm::radians(DEMO->camera->Zoom),
+		//GLDRV->GetCurrentViewport().GetAspectRatio(),
 		GLDRV->GetFramebufferViewport().GetAspectRatio(),
 		0.1f, 10000.0f
 	);

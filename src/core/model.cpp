@@ -110,6 +110,7 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 	}
 }
 
+
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 {
 	// data to fill
@@ -264,12 +265,36 @@ vector<int> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, str
 
 
 /////////////// Bones calculations
-void Model::setBoneTransformations(GLuint shaderProgram, GLfloat currentTime)
+void Model::setBoneTransformations(GLuint shaderProgram, float currentTime)
 {
+	// TODO: Hacer que los Transforms sea una propiedad de cada uno del Bone, asi no se tiene q hacer
+	// Resize ni cosas raras, y asi ya tenemos un vector de transformaciones de tamaño fijo
 	if (m_pScene->HasAnimations()) {
 		std::vector<glm::mat4> Transforms;
-		boneTransform((float)currentTime, Transforms);
+		boneTransform(currentTime, Transforms);
 
+		// For debugging
+		/*
+		map<string, unsigned int>::iterator it;
+		for (it = m_BoneMapping.begin(); it != m_BoneMapping.end(); it++)
+		{
+			LOG->Info(LOG_LOW, "BoneMapping: %s: %d", it->first.c_str(), it->second);
+		}
+		*/
+		/*
+		int numBoneInfo = (int)m_BoneInfo.size();
+		for (int i = 0; i < numBoneInfo; i++) {
+			//glm::mat4 M = m_BoneInfo[i].BoneOffset;
+			glm::mat4 M = m_BoneInfo[i].FinalTransformation;
+			LOG->Info(LOG_LOW, "BoneInfo %d:\t %.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f", i,
+				M[0][0], M[0][1], M[0][2], M[0][3],
+				M[1][0], M[1][1], M[1][2], M[1][3],
+				M[2][0], M[2][1], M[2][2], M[2][3],
+				M[3][0], M[3][1], M[3][2], M[3][3]);
+		}
+		*/
+
+		/*
 		int numTransforms = (int)Transforms.size();
 		for (int i = 0; i < numTransforms; i++) {
 			glm::mat4 T = Transforms[i];
@@ -280,7 +305,9 @@ void Model::setBoneTransformations(GLuint shaderProgram, GLfloat currentTime)
 				T[2][0], T[2][1], T[2][2], T[2][3],
 				T[3][0], T[3][1], T[3][2], T[3][3]);
 		}
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
+		*/
+		//glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, &Transforms[0][0][0]);
 	}
 }
 
@@ -292,7 +319,7 @@ void Model::boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transform
 	//TODO: I think that this line does not make any sense... because its overwritten later
 	m_animDuration = (float)m_pScene->mAnimations[currentAnimation]->mDuration;
 
-	/* Calc animation duration */
+	// Calc animation duration
 	unsigned int numPosKeys = m_pScene->mAnimations[currentAnimation]->mChannels[0]->mNumPositionKeys;
 	m_animDuration = m_pScene->mAnimations[currentAnimation]->mChannels[0]->mPositionKeys[numPosKeys - 1].mTime;
 

@@ -31,6 +31,28 @@ void SkinnedMesh::setBoneTransformations(GLuint shaderProgram, GLfloat currentTi
 		std::vector<glm::mat4> Transforms;
 		boneTransform((float)currentTime, Transforms);
 
+		// For debugging
+		/*
+		map<string, unsigned int>::iterator it;
+		for (it = m_BoneMapping.begin(); it != m_BoneMapping.end(); it++)
+		{
+			LOG->Info(LOG_LOW, "BoneMapping: %s: %d", it->first.c_str(), it->second);
+		}
+		*/
+		/*
+		int numBoneInfo = (int)m_BoneInfo.size();
+		for (int i = 0; i < numBoneInfo; i++) {
+			//glm::mat4 M = m_BoneInfo[i].BoneOffset;
+			glm::mat4 M = m_BoneInfo[i].FinalTransformation;
+			LOG->Info(LOG_LOW, "BoneInfo %d:\t %.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f", i,
+				M[0][0], M[0][1], M[0][2], M[0][3],
+				M[1][0], M[1][1], M[1][2], M[1][3],
+				M[2][0], M[2][1], M[2][2], M[2][3],
+				M[3][0], M[3][1], M[3][2], M[3][3]);
+		}
+		*/
+
+		/*
 		int numTransforms = (int)Transforms.size();
 		for (int i = 0; i < numTransforms; i++) {
 			glm::mat4 T = Transforms[i];
@@ -41,8 +63,10 @@ void SkinnedMesh::setBoneTransformations(GLuint shaderProgram, GLfloat currentTi
 				T[2][0], T[2][1], T[2][2], T[2][3],
 				T[3][0], T[3][1], T[3][2], T[3][3]);
 		}
+		*/
 
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
+		//glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, &Transforms[0][0][0]);
 	}
 }
 

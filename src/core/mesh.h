@@ -41,8 +41,8 @@ struct BoneInfo
 
 struct VertexBoneData
 {
-	unsigned int IDs[NUM_BONES_PER_VERTEX];
-	float Weights[NUM_BONES_PER_VERTEX];
+	GLuint IDs[NUM_BONES_PER_VERTEX];
+	GLfloat Weights[NUM_BONES_PER_VERTEX];
 
 	VertexBoneData() { Reset(); }
 	

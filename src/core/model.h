@@ -70,7 +70,7 @@ private:
 	Mesh processMesh(aiMesh *mesh, const aiScene *scene);
 
 	// Bones Calculations
-	void setBoneTransformations(GLuint shaderProgram, GLfloat currentTime);
+	void setBoneTransformations(GLuint shaderProgram, float currentTime);
 	void boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transforms);
 	// Bones Transformations
 	void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
