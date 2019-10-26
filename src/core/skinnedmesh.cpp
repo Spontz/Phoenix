@@ -30,6 +30,16 @@ void SkinnedMesh::setBoneTransformations(GLuint shaderProgram, GLfloat currentTi
 	if (m_pScene->HasAnimations()) {
 		std::vector<glm::mat4> Transforms;
 		boneTransform((float)currentTime, Transforms);
+
+		int numTransforms = (int)Transforms.size();
+		for (int i = 0; i < numTransforms; i++) {
+			LOG->Info(LOG_LOW, "Transform %d:\t %.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f", i,
+				Transforms[0][0], Transforms[0][1], Transforms[0][2], Transforms[0][3],
+				Transforms[1][0], Transforms[1][1], Transforms[1][2], Transforms[1][3],
+				Transforms[2][0], Transforms[2][1], Transforms[2][2], Transforms[2][3],
+				Transforms[3][0], Transforms[3][1], Transforms[3][2], Transforms[3][3]);
+		}
+
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
 	}
 }
