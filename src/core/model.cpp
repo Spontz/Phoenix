@@ -40,22 +40,22 @@ Model::~Model()
 	filepath = "";
 }
 
-void Model::Draw(Shader shader)
+void Model::Draw(Shader shader, float currentTime)
 {
 	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i].Draw(shader);
+		meshes[i].Draw(shader, currentTime);
 }
 
 void Model::loadModel(string const &path)
 {
 	filepath = path;
 	// read file via ASSIMP
-	Assimp::Importer importer;
-	scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals);
+	
+	scene = m_Importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals);
 	// check for errors
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 	{
-		LOG->Error("Error loading file [%s]: %s", filepath.c_str(), importer.GetErrorString());
+		LOG->Error("Error loading file [%s]: %s", filepath.c_str(), m_Importer.GetErrorString());
 		return;
 	}
 	// retrieve the directory path of the filepath and the filename (without the data folder, because each loader adds the data folder)
@@ -95,6 +95,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	vector<unsigned int> indices;
 	vector<int> textures;
 	vector<BoneInfo> boneInfo;
+	map<std::string, unsigned int> boneMapping; // maps a bone name to its index
 
 	LOG->Info(LOG_LOW, "Loading mesh: %s", mesh->mName.C_Str());
 
@@ -187,7 +188,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	LOG->Info(LOG_LOW, "  The mesh has %d unknownMaps", unknownMaps.size());
 
 	// Process Bones
-	map<std::string, unsigned int> boneMapping; // maps a bone name to its index
 	unsigned int BoneIndex = 0;
 	unsigned int BoneCounter = 0;
 	for (unsigned int i = 0; i < mesh->mNumBones; ++i)
@@ -220,7 +220,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	}
 
 	// return a mesh object created from the extracted mesh data
-	return Mesh(scene, mesh, vertices, indices, textures);
+	return Mesh(scene, mesh, vertices, indices, textures, boneInfo, boneMapping);
 }
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.

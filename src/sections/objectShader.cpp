@@ -144,7 +144,7 @@ void sObjectShader::exec() {
 	// Set the values
 	local->vars->setValues(false);
 
-	my_model->Draw(*my_shader);
+	my_model->Draw(*my_shader, this->runTime);
 
 	
 	if (local->drawWireframe)

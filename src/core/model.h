@@ -34,6 +34,7 @@ using namespace std;
 class Model
 {
 public:
+
 	const aiScene* scene;
 	vector<Mesh> meshes;
 	string directory;	// Path of the model file
@@ -46,21 +47,10 @@ public:
 	virtual ~Model();
 
 	// draws the model, and thus all its meshes
-	void Draw(Shader shader);
+	void Draw(Shader shader, float currentTime);
 
 private:
-	struct BoneInfo
-	{
-		glm::mat4 BoneOffset;
-		glm::mat4 FinalTransformation;
-
-		BoneInfo()
-		{
-			BoneOffset = glm::mat4(0.0f);
-			FinalTransformation = glm::mat4(0.0f);
-		}
-	};
-
+	Assimp::Importer m_Importer;
 	glm::mat4 m_GlobalInverseTransform; // Global transformation matrix for nodes (vertices relative to bones)
 
 	// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
