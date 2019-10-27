@@ -33,6 +33,7 @@ void SkinnedMesh::setBoneTransformations(GLuint shaderProgram, GLfloat currentTi
 
 		// For debugging
 		/*
+		// OK: Saca el mapeo de los Bones
 		map<string, unsigned int>::iterator it;
 		for (it = m_BoneMapping.begin(); it != m_BoneMapping.end(); it++)
 		{
@@ -40,6 +41,7 @@ void SkinnedMesh::setBoneTransformations(GLuint shaderProgram, GLfloat currentTi
 		}
 		*/
 		/*
+		// OK: Saca las matrices de Transformaciones de los Bones (offset o FinalTransformation)
 		int numBoneInfo = (int)m_BoneInfo.size();
 		for (int i = 0; i < numBoneInfo; i++) {
 			//glm::mat4 M = m_BoneInfo[i].BoneOffset;
@@ -53,6 +55,7 @@ void SkinnedMesh::setBoneTransformations(GLuint shaderProgram, GLfloat currentTi
 		*/
 
 		/*
+		// OK: Saca la transformación final que le pasamos al shader
 		int numTransforms = (int)Transforms.size();
 		for (int i = 0; i < numTransforms; i++) {
 			glm::mat4 T = Transforms[i];
@@ -206,6 +209,17 @@ bool SkinnedMesh::InitFromScene(const aiScene* pScene, const std::string& fileNa
 		InitMesh(i, paiMesh, Positions, Normals, TexCoords, Bones, Indices);
 	}
 	
+	/*
+	// Saca por log los valores de Bone (ID y Weight) que hay guardado a nivel de vértice
+	for (unsigned int i = 0; i < NumVertices; i++) {
+		LOG->Info(LOG_LOW, "Vertex %d, [%d,%.3f][%d,%.3f][%d,%.3f][%d,%.3f]", i,
+			Bones[i].IDs[0], Bones[i].Weights[0],
+			Bones[i].IDs[1], Bones[i].Weights[1],
+			Bones[i].IDs[2], Bones[i].Weights[2],
+			Bones[i].IDs[3], Bones[i].Weights[3]);
+	}
+	*/
+
 	/* init the material */
 	if (!InitMaterials(pScene, fileName))
 		return false;

@@ -49,8 +49,9 @@ void Model::Draw(Shader shader, float currentTime)
 	// Set the Bones transformations and send the Bones info to the Shader (gBones uniform)
 	setBoneTransformations(shader.ID, currentTime);
 	// Then, draw the meshes
-	for (unsigned int i = 0; i < meshes.size(); i++)
+	for (unsigned int i = 0; i < meshes.size(); i++) {
 		meshes[i].Draw(shader);
+	}
 }
 
 unsigned int Model::getNumAnimations()
@@ -90,6 +91,21 @@ void Model::loadModel(string const &path)
 
 	// Count total number of meshes
 	m_NumMeshes = static_cast<unsigned int>(meshes.size());
+
+	/*
+	// Saca por log los valores de Bone (ID y Weight) que hay guardado a nivel de vértice
+	int numVerts = 0;
+	for (unsigned int i = 0; i < m_NumMeshes; i++) {
+		for (int j = 0; j < meshes[i].vertices.size(); j++) {
+			LOG->Info(LOG_LOW, "Vertex %d, [%d,%.3f][%d,%.3f][%d,%.3f][%d,%.3f]", numVerts,
+				meshes[i].vertices[j].Bone.IDs[0], meshes[i].vertices[j].Bone.Weights[0],
+				meshes[i].vertices[j].Bone.IDs[1], meshes[i].vertices[j].Bone.Weights[1],
+				meshes[i].vertices[j].Bone.IDs[2], meshes[i].vertices[j].Bone.Weights[2],
+				meshes[i].vertices[j].Bone.IDs[3], meshes[i].vertices[j].Bone.Weights[3]);
+			numVerts++;
+		}
+	}
+	*/
 }
 
 // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
@@ -239,7 +255,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 			vertices[VertexID].Bone.AddBoneData(BoneIndex, Weight);
 		}
 	}
-
 	// return a mesh object created from the extracted mesh data
 	return Mesh(scene, mesh, vertices, indices, textures);
 }
@@ -275,6 +290,7 @@ void Model::setBoneTransformations(GLuint shaderProgram, float currentTime)
 
 		// For debugging
 		/*
+		// OK: Saca el mapeo de los Bones
 		map<string, unsigned int>::iterator it;
 		for (it = m_BoneMapping.begin(); it != m_BoneMapping.end(); it++)
 		{
@@ -282,6 +298,7 @@ void Model::setBoneTransformations(GLuint shaderProgram, float currentTime)
 		}
 		*/
 		/*
+		// OK: Saca las matrices de Transformaciones de los Bones (offset o FinalTransformation)
 		int numBoneInfo = (int)m_BoneInfo.size();
 		for (int i = 0; i < numBoneInfo; i++) {
 			//glm::mat4 M = m_BoneInfo[i].BoneOffset;
@@ -295,6 +312,7 @@ void Model::setBoneTransformations(GLuint shaderProgram, float currentTime)
 		*/
 
 		/*
+		// OK: Saca la transformación final que le pasamos al shader
 		int numTransforms = (int)Transforms.size();
 		for (int i = 0; i < numTransforms; i++) {
 			glm::mat4 T = Transforms[i];
