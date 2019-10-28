@@ -41,7 +41,7 @@ struct BoneInfo
 
 struct VertexBoneData
 {
-	GLuint IDs[NUM_BONES_PER_VERTEX];
+	GLint IDs[NUM_BONES_PER_VERTEX];
 	GLfloat Weights[NUM_BONES_PER_VERTEX];
 
 	VertexBoneData() { Reset(); }
@@ -59,12 +59,14 @@ struct VertexBoneData
 };
 
 struct Vertex {
-	glm::vec3		Position;
-	glm::vec3		Normal;
-	glm::vec2		TexCoords;
-	glm::vec3		Tangent;
-	glm::vec3		Bitangent;
-	VertexBoneData	Bone;
+	glm::vec3		Position;	// 0 start
+	glm::vec3		Normal;		// 3 * 4 = 12 start
+	glm::vec2		TexCoords;	// 12+12 = 24start
+	glm::vec3		Tangent;	// 24+ 8 = 32start
+	glm::vec3		Bitangent;	// 32+12 = 44start
+	VertexBoneData	Bone;		// BoneID: 44+12 = 56start
+								// Weight: 56+16 = 72start
+								// End: 72+16 = 88end
 };
 
 

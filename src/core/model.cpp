@@ -310,7 +310,6 @@ void Model::setBoneTransformations(GLuint shaderProgram, float currentTime)
 				M[3][0], M[3][1], M[3][2], M[3][3]);
 		}
 		*/
-
 		/*
 		// OK: Saca la transformación final que le pasamos al shader
 		int numTransforms = (int)Transforms.size();
@@ -324,8 +323,29 @@ void Model::setBoneTransformations(GLuint shaderProgram, float currentTime)
 				T[3][0], T[3][1], T[3][2], T[3][3]);
 		}
 		*/
+		/*// Fake: Modifico las transformaciones para enviar la matriz identidad en todas ellas
+		int numTransforms = (int)Transforms.size();
+		for (int i = 0; i < numTransforms; i++) {
+			Transforms[i] = glm::mat4(1.0f);
+		}
+		*/
+		
+		
+		/*
+		// Fake: cargamos las matrices en un array de floats
+		int numTransforms = (int)Transforms.size();
+		float T[32][4][4];
+		for (int i = 0; i < numTransforms; i++) {
+			for (int j = 0; j < 4; j++)
+				for (int k = 0; k < 4; k++)
+					T[i][j][k] = Transforms[i][j][k];
+		}
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), 32, GL_FALSE, &T[0][0][0]);
+		*/
+		
 		//glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, &Transforms[0][0][0]);
+		
 	}
 }
 

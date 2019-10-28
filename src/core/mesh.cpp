@@ -93,16 +93,19 @@ void Mesh::setupMesh()
 
 	// Bone Vertex ID's
 	glEnableVertexAttribArray(BONE_ID_LOCATION);
-	glVertexAttribPointer(BONE_ID_LOCATION, NUM_BONES_PER_VERTEX, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, Bone) + offsetof(VertexBoneData, IDs)));
+	int kk = offsetof(Vertex, Bone) + offsetof(VertexBoneData, IDs); // Should be 56
+	int kk2 = offsetof(Vertex, Bone) + offsetof(VertexBoneData, Weights); // Should be 72
+	glVertexAttribPointer(BONE_ID_LOCATION, 4, GL_INT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, Bone) + offsetof(VertexBoneData, IDs)));
 	
 	// Bone Vertex Weights
 	glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);
-	glVertexAttribPointer(BONE_WEIGHT_LOCATION, NUM_BONES_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, Bone) + offsetof(VertexBoneData, Weights)));
+	glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, Bone) + offsetof(VertexBoneData, Weights)));
 
 	glBindVertexArray(0);
 }
 
 // render the mesh
+// TODO: Insted of send the fill shader, only sending the ID of the shader should be enough
 void Mesh::Draw(Shader shader)
 {
 	// bind appropriate textures
