@@ -196,6 +196,7 @@ GLint Shader::getUniformLocation(const char *name) const
 
 // Check complie errors on shader
 // ------------------------------------------------------------------------
+// TODO: This should return true or false if the shader is giving errors
 void Shader::checkCompileErrors(GLuint shader, std::string type)
 {
 	GLint success;

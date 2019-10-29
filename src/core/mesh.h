@@ -23,8 +23,6 @@
 #include <vector>
 
 using namespace std;
-
-
 #define NUM_BONES_PER_VERTEX	4 // Number of Bones per Vertex
 
 struct BoneInfo
@@ -41,7 +39,7 @@ struct BoneInfo
 
 struct VertexBoneData
 {
-	GLint IDs[NUM_BONES_PER_VERTEX];
+	GLuint IDs[NUM_BONES_PER_VERTEX];
 	GLfloat Weights[NUM_BONES_PER_VERTEX];
 
 	VertexBoneData() { Reset(); }
@@ -59,17 +57,13 @@ struct VertexBoneData
 };
 
 struct Vertex {
-	glm::vec3		Position;	// 0 start
-	glm::vec3		Normal;		// 3 * 4 = 12 start
-	glm::vec2		TexCoords;	// 12+12 = 24start
-	glm::vec3		Tangent;	// 24+ 8 = 32start
-	glm::vec3		Bitangent;	// 32+12 = 44start
-	VertexBoneData	Bone;		// BoneID: 44+12 = 56start
-								// Weight: 56+16 = 72start
-								// End: 72+16 = 88end
+	glm::vec3		Position;
+	glm::vec3		Normal;
+	glm::vec2		TexCoords;
+	glm::vec3		Tangent;
+	glm::vec3		Bitangent;
+	VertexBoneData	Bone;
 };
-
-
 
 class Mesh {
 public:
@@ -81,10 +75,10 @@ public:
 
 	Mesh(const aiScene *pScene, const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, vector<int> textures);
 	// render the mesh
-	void Draw(Shader shader);
+	void Draw(GLuint shaderID);
 	
 private:
-	unsigned int VBO, EBO;
+	unsigned int		VBO, EBO;
 	const aiScene		*m_pScene;
 	const aiMesh		*m_pMesh;
 

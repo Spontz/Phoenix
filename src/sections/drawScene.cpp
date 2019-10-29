@@ -8,6 +8,9 @@ typedef struct {
 	int			shader;
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
+	int			playAnimation;		// Do we want to play the animation?
+	int			AnimationNumber;	// Number of animation to play
+	float		AnimationTime;		// Animation time (in seconds)
 
 	float		tx,ty,tz;	// Traslation
 	float		rx,ry,rz;	// Rotation
@@ -20,40 +23,53 @@ typedef struct {
 
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
 	ShaderVars	*vars;			// For storing any other shader variables
-} objectShader_section;
+} drawScene_section;
 
-static objectShader_section *local;
+static drawScene_section *local;
 
 // ******************************************************************
 
-sObjectShader::sObjectShader() {
-	type = SectionType::ObjectShader;
+sDrawScene::sDrawScene() {
+	type = SectionType::DrawScene;
 }
 
-bool sObjectShader::load() {
-	if ((this->param.size() != 2) || (this->strings.size() != 6)) {
-		LOG->Error("ObjectShader [%s]: 2 param and 6 strings needed", this->identifier.c_str());
+bool sDrawScene::load() {
+	if ((this->param.size() != 4) || (this->strings.size() != 7)) {
+		LOG->Error("DrawScene [%s]: 4 param and 7 strings needed", this->identifier.c_str());
 		return false;
 	}
 
-	local = (objectShader_section*)malloc(sizeof(objectShader_section));
+	local = (drawScene_section*)malloc(sizeof(drawScene_section));
 	this->vars = (void*)local;
 
 
 	// Depth Buffer Clearing Flag
 	local->enableDepthBufferClearing = (int)this->param[0];
 	local->drawWireframe= (int)this->param[1];
-	
 
+	// Animation parameters
+	local->playAnimation = (int)this->param[2];
+	local->AnimationNumber = (int)this->param[3];
+	
 	// Load model and shader
 	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
 	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2]);
 	if (local->model < 0 || local->shader < 0)
 		return false;
 
+	// Load model properties
+	Model *my_model;
+	my_model = DEMO->modelManager.model[local->model];
+	my_model->playAnimation = local->playAnimation;
+	my_model->setAnimation(local->AnimationNumber);
+
+
 	local->exprPosition = new mathDriver(this);
-	// Load positions, process constants and compile expression
-	local->exprPosition->expression = this->strings[3] + this->strings[4] + this->strings[5]; // Concatenate the 3 positioning strings (position+rotation+scale)
+	// Load all the other strings
+	for (int i = 3; i < strings.size(); i++)
+		local->exprPosition->expression += this->strings[i];
+
+	local->exprPosition->SymbolTable.add_variable("aTime", local->AnimationTime);
 	local->exprPosition->SymbolTable.add_variable("tx", local->tx);
 	local->exprPosition->SymbolTable.add_variable("ty", local->ty);
 	local->exprPosition->SymbolTable.add_variable("tz", local->tz);
@@ -83,12 +99,12 @@ bool sObjectShader::load() {
 	return true;
 }
 
-void sObjectShader::init() {
+void sDrawScene::init() {
 	
 }
 
-void sObjectShader::exec() {
-	local = (objectShader_section *)this->vars;
+void sDrawScene::exec() {
+	local = (drawScene_section *)this->vars;
 
 	Model *my_model = DEMO->modelManager.model[local->model];
 	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
@@ -109,7 +125,6 @@ void sObjectShader::exec() {
 
 	// For ShadowMapping
 	my_shader->setValue("lightSpaceMatrix", DEMO->lightManager.light[0]->spaceMatrix);
-	
 	// End ShadowMapping
 
 	// view/projection transformations
@@ -133,7 +148,7 @@ void sObjectShader::exec() {
 	model = glm::scale(model, glm::vec3(local->sx, local->sy, local->sz));
 	my_shader->setValue("model", model);
 
-	// MotionBlur
+	// For MotionBlur
 	my_shader->setValue("prev_projection", local->prev_projection);
 	my_shader->setValue("prev_view", local->prev_view);
 	my_shader->setValue("prev_model", local->prev_model);
@@ -147,9 +162,8 @@ void sObjectShader::exec() {
 	// Set the values
 	local->vars->setValues(false);
 
-	my_model->Draw(my_shader->ID, this->runTime);
+	my_model->Draw(my_shader->ID, local->AnimationTime);
 
-	
 	if (local->drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
@@ -157,6 +171,6 @@ void sObjectShader::exec() {
 	EvalBlendingEnd();
 }
 
-void sObjectShader::end() {
+void sDrawScene::end() {
 	
 }

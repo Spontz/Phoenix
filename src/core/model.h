@@ -34,20 +34,19 @@ using namespace std;
 class Model
 {
 public:
-
-	
 	vector<Mesh>	meshes;
 	string			directory;	// Path of the model file
 	string			filename;	// Name of the model file
 	string			filepath;	// Full path of the model file
 	bool			gammaCorrection;
+	bool			playAnimation;	// Do we want to compute the transofrmations for playing animations?
 
 	// constructor, expects a filepath to a 3D model.
 	Model(string const &path, bool gamma = false);
 	virtual ~Model();
 
 	// draws the model, and thus all its meshes
-	void Draw(Shader shader, float currentTime);
+	void Draw(GLuint shaderID, float currentTime);
 	unsigned int getNumAnimations();
 	void setAnimation(unsigned int a);
 

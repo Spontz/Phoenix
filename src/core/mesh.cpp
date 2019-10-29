@@ -91,11 +91,9 @@ void Mesh::setupMesh()
 	glEnableVertexAttribArray(BITANGENT_LOCATION);
 	glVertexAttribPointer(BITANGENT_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
 
-	// Bone Vertex ID's
+	// Bone Vertex ID's as Unsigned INT
 	glEnableVertexAttribArray(BONE_ID_LOCATION);
-	int kk = offsetof(Vertex, Bone) + offsetof(VertexBoneData, IDs); // Should be 56
-	int kk2 = offsetof(Vertex, Bone) + offsetof(VertexBoneData, Weights); // Should be 72
-	glVertexAttribPointer(BONE_ID_LOCATION, 4, GL_INT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, Bone) + offsetof(VertexBoneData, IDs)));
+	glVertexAttribIPointer(BONE_ID_LOCATION, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void*)(offsetof(Vertex, Bone) + offsetof(VertexBoneData, IDs)));
 	
 	// Bone Vertex Weights
 	glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);
@@ -106,7 +104,7 @@ void Mesh::setupMesh()
 
 // render the mesh
 // TODO: Insted of send the fill shader, only sending the ID of the shader should be enough
-void Mesh::Draw(Shader shader)
+void Mesh::Draw(GLuint shaderID)
 {
 	// bind appropriate textures
 	unsigned int diffuseNr = 1;
@@ -132,7 +130,7 @@ void Mesh::Draw(Shader shader)
 			number = std::to_string(heightNr++); // transfer unsigned int to stream
 		
 		// now set the sampler to the correct texture unit
-		glUniform1i(glGetUniformLocation(shader.ID, (tex->type + number).c_str()), i);
+		glUniform1i(glGetUniformLocation(shaderID, (tex->type + number).c_str()), i);
 		// and finally bind the texture
 		tex->bind(i);
 	}

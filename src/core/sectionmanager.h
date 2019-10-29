@@ -26,6 +26,7 @@ enum SectionType {
 	DrawVideo,
 	DrawQuad,
 	DrawFbo,
+	DrawScene,
 	ParticleMatrix,
 	Sound,
 	FboBind,

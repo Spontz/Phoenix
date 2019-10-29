@@ -31,6 +31,7 @@ Model::Model(string const &path, bool gamma)
 	gammaCorrection = gamma;
 	m_NumMeshes = 0; 
 	m_NumBones = 0;
+	playAnimation = false;	// By default, animations are disabled
 	currentAnimation = 0;
 	
 	loadModel(path);
@@ -44,13 +45,14 @@ Model::~Model()
 	filepath = "";
 }
 
-void Model::Draw(Shader shader, float currentTime)
+void Model::Draw(GLuint shaderID, float currentTime)
 {
 	// Set the Bones transformations and send the Bones info to the Shader (gBones uniform)
-	setBoneTransformations(shader.ID, currentTime);
+	if (this->playAnimation)
+		setBoneTransformations(shaderID, currentTime);
 	// Then, draw the meshes
 	for (unsigned int i = 0; i < meshes.size(); i++) {
-		meshes[i].Draw(shader);
+		meshes[i].Draw(shaderID);
 	}
 }
 
@@ -91,21 +93,6 @@ void Model::loadModel(string const &path)
 
 	// Count total number of meshes
 	m_NumMeshes = static_cast<unsigned int>(meshes.size());
-
-	/*
-	// Saca por log los valores de Bone (ID y Weight) que hay guardado a nivel de vértice
-	int numVerts = 0;
-	for (unsigned int i = 0; i < m_NumMeshes; i++) {
-		for (int j = 0; j < meshes[i].vertices.size(); j++) {
-			LOG->Info(LOG_LOW, "Vertex %d, [%d,%.3f][%d,%.3f][%d,%.3f][%d,%.3f]", numVerts,
-				meshes[i].vertices[j].Bone.IDs[0], meshes[i].vertices[j].Bone.Weights[0],
-				meshes[i].vertices[j].Bone.IDs[1], meshes[i].vertices[j].Bone.Weights[1],
-				meshes[i].vertices[j].Bone.IDs[2], meshes[i].vertices[j].Bone.Weights[2],
-				meshes[i].vertices[j].Bone.IDs[3], meshes[i].vertices[j].Bone.Weights[3]);
-			numVerts++;
-		}
-	}
-	*/
 }
 
 // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
@@ -287,63 +274,6 @@ void Model::setBoneTransformations(GLuint shaderProgram, float currentTime)
 	if (m_pScene->HasAnimations()) {
 		std::vector<glm::mat4> Transforms;
 		boneTransform(currentTime, Transforms);
-
-		// For debugging
-		/*
-		// OK: Saca el mapeo de los Bones
-		map<string, unsigned int>::iterator it;
-		for (it = m_BoneMapping.begin(); it != m_BoneMapping.end(); it++)
-		{
-			LOG->Info(LOG_LOW, "BoneMapping: %s: %d", it->first.c_str(), it->second);
-		}
-		*/
-		/*
-		// OK: Saca las matrices de Transformaciones de los Bones (offset o FinalTransformation)
-		int numBoneInfo = (int)m_BoneInfo.size();
-		for (int i = 0; i < numBoneInfo; i++) {
-			//glm::mat4 M = m_BoneInfo[i].BoneOffset;
-			glm::mat4 M = m_BoneInfo[i].FinalTransformation;
-			LOG->Info(LOG_LOW, "BoneInfo %d:\t %.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f", i,
-				M[0][0], M[0][1], M[0][2], M[0][3],
-				M[1][0], M[1][1], M[1][2], M[1][3],
-				M[2][0], M[2][1], M[2][2], M[2][3],
-				M[3][0], M[3][1], M[3][2], M[3][3]);
-		}
-		*/
-		/*
-		// OK: Saca la transformación final que le pasamos al shader
-		int numTransforms = (int)Transforms.size();
-		for (int i = 0; i < numTransforms; i++) {
-			glm::mat4 T = Transforms[i];
-
-			LOG->Info(LOG_LOW, "Transform %d:\t %.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f\t%.3f,%.3f,%.3f,%.3f", i,
-				T[0][0], T[0][1], T[0][2], T[0][3],
-				T[1][0], T[1][1], T[1][2], T[1][3],
-				T[2][0], T[2][1], T[2][2], T[2][3],
-				T[3][0], T[3][1], T[3][2], T[3][3]);
-		}
-		*/
-		/*// Fake: Modifico las transformaciones para enviar la matriz identidad en todas ellas
-		int numTransforms = (int)Transforms.size();
-		for (int i = 0; i < numTransforms; i++) {
-			Transforms[i] = glm::mat4(1.0f);
-		}
-		*/
-		
-		
-		/*
-		// Fake: cargamos las matrices en un array de floats
-		int numTransforms = (int)Transforms.size();
-		float T[32][4][4];
-		for (int i = 0; i < numTransforms; i++) {
-			for (int j = 0; j < 4; j++)
-				for (int k = 0; k < 4; k++)
-					T[i][j][k] = Transforms[i][j][k];
-		}
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), 32, GL_FALSE, &T[0][0][0]);
-		*/
-		
-		//glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, glm::value_ptr(Transforms[0]));
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, &Transforms[0][0][0]);
 		
 	}
