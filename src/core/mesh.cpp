@@ -43,9 +43,8 @@ void VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
 	assert(0);
 }
 
-Mesh::Mesh(const aiScene *pScene, const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, vector<int> textures)
+Mesh::Mesh(const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, vector<int> textures)
 {
-	this->m_pScene = pScene;
 	this->m_pMesh = pMesh;
 	this->vertices = vertices;
 	this->indices = indices;

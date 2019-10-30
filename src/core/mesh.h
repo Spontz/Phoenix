@@ -73,13 +73,12 @@ public:
 	GLuint					VAO;
 	
 
-	Mesh(const aiScene *pScene, const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, vector<int> textures);
+	Mesh(const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, vector<int> textures);
 	// render the mesh
 	void Draw(GLuint shaderID);
 	
 private:
 	unsigned int		VBO, EBO;
-	const aiScene		*m_pScene;
 	const aiMesh		*m_pMesh;
 
 	// initializes all the buffer objects/arrays

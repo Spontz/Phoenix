@@ -243,7 +243,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 		}
 	}
 	// return a mesh object created from the extracted mesh data
-	return Mesh(scene, mesh, vertices, indices, textures);
+	return Mesh(mesh, vertices, indices, textures);
 }
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.
