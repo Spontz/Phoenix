@@ -39,8 +39,11 @@ Material::Material(aiMaterial *pMaterial, string modelDirectory, string modelFil
 	textures.insert(textures.end(), unknownMaps.begin(), unknownMaps.end());
 	LOG->Info(LOG_LOW, "  The mesh has %d unknownMaps", unknownMaps.size());
 
-	aiColor3D color(0.f, 0.f, 0.f);
-	pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+	pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, this->colDiffuse);
+	pMaterial->Get(AI_MATKEY_COLOR_AMBIENT, this->colAmbient);
+	pMaterial->Get(AI_MATKEY_COLOR_SPECULAR, this->colSpecular);
+	pMaterial->Get(AI_MATKEY_BLEND_FUNC, this->bendFunc);
+	pMaterial->Get(AI_MATKEY_ENABLE_WIREFRAME, this->wireframe);
 }
 
 

@@ -33,8 +33,8 @@ private:
 
 	vector<int> loadTextures(aiMaterial *mat, aiTextureType type, string typeName);
 	const aiMaterial	*m_pMaterial;
-	string			m_ModelDirectory;	// Path of the model file
-	string			m_ModelFilename;	// Name of the model file
+	string				m_ModelDirectory;	// Path of the model file
+	string				m_ModelFilename;	// Name of the model file
 
 
 };
