@@ -181,36 +181,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 			indices.push_back(face.mIndices[j]);
 	}
 	
-	// Process materials
-	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-	// we assume a convention for sampler names in the shaders. Each diffuse texture should be named
-	// as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER. 
-	// Same applies to other texture as the following list summarizes:
-	// diffuse: texture_diffuseN
-	// specular: texture_specularN
-	// normal: texture_normalN
-
-	// 1. diffuse maps
-	vector<int> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-	LOG->Info(LOG_LOW, "  The mesh has %d diffuseMaps", diffuseMaps.size());
-	// 2. specular maps
-	vector<int> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-	LOG->Info(LOG_LOW, "  The mesh has %d specularMaps", specularMaps.size());
-	// 3. normal maps
-	std::vector<int> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-	LOG->Info(LOG_LOW, "  The mesh has %d normalMaps", normalMaps.size());
-	// 4. height maps
-	std::vector<int> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-	LOG->Info(LOG_LOW, "  The mesh has %d heightMaps", heightMaps.size());
-	// Unknown
-	std::vector<int> unknownMaps = loadMaterialTextures(material, aiTextureType_NONE, "texture_unknown");
-	textures.insert(textures.end(), unknownMaps.begin(), unknownMaps.end());
-	LOG->Info(LOG_LOW, "  The mesh has %d unknownMaps", unknownMaps.size());
-
 	// Process Bones of this mesh and loads it into the "BoneInfo" and "BoneMapping" lists
 	// BoneInfo and BoneMapping are like an indexed database of bones (TODO: Put all the Bones stuff in a Class)
 	for (unsigned int i = 0; i < mesh->mNumBones; ++i)
@@ -242,8 +212,12 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 			vertices[VertexID].Bone.AddBoneData(BoneIndex, Weight);
 		}
 	}
+
+	// Process materials
+	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
 	// return a mesh object created from the extracted mesh data
-	return Mesh(mesh, vertices, indices, textures);
+	return Mesh(mesh, vertices, indices, material, directory, filename);
 }
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.

@@ -11,12 +11,28 @@
 #include <iostream>
 #include <vector>
 
-Material::Material(aiMaterial *pMaterial, string modelDirectory, string modelFilename)
+Material::Material()
+{
+	this->name = "";
+	this->colDiffuse = glm::vec3(0);
+	this->colSpecular = glm::vec3(0);
+	this->colAmbient = glm::vec3(0);
+	this->wireframe = false;
+	this->blendFunc = 1; // Additive blending by default
+}
+
+void Material::Load(const aiMaterial *pMaterial, string modelDirectory, string modelFilename)
 {
 	this->m_pMaterial = pMaterial;
 	this->m_ModelDirectory = modelDirectory;
 	this->m_ModelFilename = modelFilename;
-
+	
+	// we assume a convention for sampler names in the shaders. Each diffuse texture should be named
+	// as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER. 
+	// Same applies to other texture as the following list summarizes:
+	// diffuse: texture_diffuseN
+	// specular: texture_specularN
+	// normal: texture_normalN
 
 	// 1. diffuse maps
 	vector<int> diffuseMaps = loadTextures(pMaterial, aiTextureType_DIFFUSE, "texture_diffuse");
@@ -42,14 +58,13 @@ Material::Material(aiMaterial *pMaterial, string modelDirectory, string modelFil
 	pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, this->colDiffuse);
 	pMaterial->Get(AI_MATKEY_COLOR_AMBIENT, this->colAmbient);
 	pMaterial->Get(AI_MATKEY_COLOR_SPECULAR, this->colSpecular);
-	pMaterial->Get(AI_MATKEY_BLEND_FUNC, this->bendFunc);
+	pMaterial->Get(AI_MATKEY_BLEND_FUNC, this->blendFunc);
 	pMaterial->Get(AI_MATKEY_ENABLE_WIREFRAME, this->wireframe);
 }
 
-
 // checks all material textures of a given type and loads the textures if they're not loaded yet.
 // the required info is returned as a Texture struct.
-vector<int> Material::loadTextures(aiMaterial *mat, aiTextureType type, string typeName)
+vector<int> Material::loadTextures(const aiMaterial *mat, aiTextureType type, string typeName)
 {
 	vector<int> textures;
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)

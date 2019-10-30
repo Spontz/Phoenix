@@ -20,18 +20,20 @@
 // Specs: http://assimp.sourceforge.net/lib_html/materials.html
 class Material {
 public:
+	string		name;
 	vector<int> textures;
 	glm::vec3	colDiffuse;
 	glm::vec3	colSpecular;
 	glm::vec3	colAmbient;
 	bool		wireframe;	// The material is in wireframe?
-	int			bendFunc;	// Blend function
+	int			blendFunc;	// Blend function
 
-	Material(aiMaterial *pMaterial, string modelDirectory, string modelFilename);
+	Material();
+	void Load(const aiMaterial *pMaterial, string modelDirectory, string modelFilename);
 	
 private:
+	vector<int> loadTextures(const aiMaterial *mat, aiTextureType type, string typeName);
 
-	vector<int> loadTextures(aiMaterial *mat, aiTextureType type, string typeName);
 	const aiMaterial	*m_pMaterial;
 	string				m_ModelDirectory;	// Path of the model file
 	string				m_ModelFilename;	// Name of the model file

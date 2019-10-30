@@ -1,10 +1,5 @@
 ﻿// mesh.cpp
 // Spontz Demogroup
-/*
-#include <glad/glad.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-*/
 
 #include "main.h"
 #include "core/texture.h"
@@ -43,12 +38,14 @@ void VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
 	assert(0);
 }
 
-Mesh::Mesh(const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, vector<int> textures)
+Mesh::Mesh(const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, const aiMaterial *pMaterial, string directory, string filename)
 {
 	this->m_pMesh = pMesh;
 	this->vertices = vertices;
 	this->indices = indices;
-	this->textures = textures;
+
+	// Setup the material of our mesh (each mesh has only one material)
+	this->material.Load(pMaterial, directory, filename);
 
 	// now that we have all the required data, set the vertex buffers and its attribute pointers.
 	setupMesh();
@@ -102,7 +99,6 @@ void Mesh::setupMesh()
 }
 
 // render the mesh
-// TODO: Insted of send the fill shader, only sending the ID of the shader should be enough
 void Mesh::Draw(GLuint shaderID)
 {
 	// bind appropriate textures
@@ -110,11 +106,12 @@ void Mesh::Draw(GLuint shaderID)
 	unsigned int specularNr = 1;
 	unsigned int normalNr = 1;
 	unsigned int heightNr = 1;
-	for (unsigned int i = 0; i < textures.size(); i++)
+
+	for (unsigned int i = 0; i < material.textures.size(); i++)
 	{
-		if (textures[i] == -1) // Avoid illegal access
+		if (material.textures[i] == -1) // Avoid illegal access
 			return;
-		Texture *tex = DEMO->textureManager.texture[textures[i]];
+		Texture *tex = DEMO->textureManager.texture[material.textures[i]];
 		tex->active(i);		// active proper texture unit before binding
 		// retrieve texture number (the N in diffuse_textureN)
 		string number;

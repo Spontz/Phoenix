@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 
 #include "core/demokernel.h"
+#include "core/material.h"
 #include "core/texture.h"
 #include "core/shader.h"
 
@@ -64,11 +65,11 @@ class Mesh {
 public:
 	vector<Vertex>			vertices;
 	vector<unsigned int>	indices;
-	vector<int>				textures;
+	Material				material;
 	GLuint					VAO;
 	
 
-	Mesh(const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, vector<int> textures);
+	Mesh(const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, const aiMaterial *pMaterial, string directory, string filename);
 	// render the mesh
 	void Draw(GLuint shaderID);
 	
