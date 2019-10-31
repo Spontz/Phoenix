@@ -114,7 +114,7 @@ void Mesh::Draw(GLuint shaderID)
 		Texture *tex = DEMO->textureManager.texture[material.textures[i]];
 		tex->active(i);		// active proper texture unit before binding
 		// retrieve texture number (the N in diffuse_textureN)
-		string number;
+/*		string number;
 
 		if (tex->type == "texture_diffuse")
 			number = std::to_string(diffuseNr++);
@@ -127,6 +127,8 @@ void Mesh::Draw(GLuint shaderID)
 		
 		// now set the sampler to the correct texture unit
 		glUniform1i(glGetUniformLocation(shaderID, (tex->type + number).c_str()), i);
+		*/
+		glUniform1i(glGetUniformLocation(shaderID, tex->shaderName.c_str()), i);
 		// and finally bind the texture
 		tex->bind(i);
 	}

@@ -76,7 +76,11 @@ vector<int> Material::loadTextures(const aiMaterial *mat, aiTextureType type, st
 			filepath = m_ModelFilename.substr(0, m_ModelFilename.find_last_of('.')) + ".jpg";	// In that case, we change this to "<model_name.jpg>"
 		fullpath = m_ModelDirectory + "/" + filepath.C_Str();
 		int tex = DEMO->textureManager.addTexture(fullpath.c_str(), false, typeName);
-		textures.push_back(tex);
+		if (tex > 0) {
+			Texture *my_tex = DEMO->textureManager.texture[tex];
+			my_tex->shaderName = my_tex->type + std::to_string(i + 1);
+			textures.push_back(tex);
+		}
 	}
 	return textures;
 }
