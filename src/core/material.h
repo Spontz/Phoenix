@@ -17,22 +17,37 @@
 #include <iostream>
 #include <vector>
 
+
+struct textureStack
+{
+	int		ID;				// ID form the texture manager
+	int		blendOperation;	// Blend operation with the base color
+	float	strength;		// Strength factor
+
+	textureStack()
+	{ 
+		ID = -1;
+		blendOperation = 0;
+		strength = 0;
+	}
+};
+
 // Specs: http://assimp.sourceforge.net/lib_html/materials.html
 class Material {
 public:
 	string		name;
-	vector<int> textures;
+	//vector<int> textures;
+	vector<textureStack> textures;
 	glm::vec3	colDiffuse;
 	glm::vec3	colSpecular;
 	glm::vec3	colAmbient;
-	bool		wireframe;	// The material is in wireframe?
-	int			blendFunc;	// Blend function
+	float		strenghtSpecular;
 
 	Material();
 	void Load(const aiMaterial *pMaterial, string modelDirectory, string modelFilename);
 	
 private:
-	vector<int> loadTextures(const aiMaterial *mat, aiTextureType type, string typeName);
+	vector<textureStack> loadTextures(const aiMaterial *mat, aiTextureType type, string typeName);
 
 	const aiMaterial	*m_pMaterial;
 	string				m_ModelDirectory;	// Path of the model file

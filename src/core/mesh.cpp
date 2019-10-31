@@ -109,9 +109,9 @@ void Mesh::Draw(GLuint shaderID)
 
 	for (unsigned int i = 0; i < material.textures.size(); i++)
 	{
-		if (material.textures[i] == -1) // Avoid illegal access
+		if (material.textures[i].ID == -1) // Avoid illegal access
 			return;
-		Texture *tex = DEMO->textureManager.texture[material.textures[i]];
+		Texture *tex = DEMO->textureManager.texture[material.textures[i].ID];
 		tex->active(i);		// active proper texture unit before binding
 		// retrieve texture number (the N in diffuse_textureN)
 /*		string number;
