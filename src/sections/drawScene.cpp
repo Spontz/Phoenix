@@ -109,8 +109,6 @@ void sDrawScene::exec() {
 	Model *my_model = DEMO->modelManager.model[local->model];
 	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
 	
-	//my_model->setAnimation(1);
-
 	// Start evaluating blending
 	EvalBlendingStart();
 
