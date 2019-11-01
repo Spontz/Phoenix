@@ -115,8 +115,9 @@ void Mesh::Draw(GLuint shaderID)
 			return;
 		Texture *tex = DEMO->textureManager.texture[material.textures[i].ID];
 		// active proper texture unit before binding
-		tex->active(i);
-		glUniform1i(glGetUniformLocation(shaderID, tex->shaderName.c_str()), i);
+		tex->active(i); // TODO: In theory, this active is not needed, because is done during the "tex->bind(i)"
+		glUniform1i(glGetUniformLocation(shaderID, material.textures[i].shaderName.c_str()), i);
+		//glUniform1i(glGetUniformLocation(shaderID, tex->shaderName.c_str()), i);
 		// and finally bind the texture
 		tex->bind(i);
 	}
@@ -128,7 +129,6 @@ void Mesh::Draw(GLuint shaderID)
 
 	// always good practice to set everything back to defaults once configured.
 	glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 

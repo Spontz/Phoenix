@@ -21,12 +21,14 @@
 struct textureStack
 {
 	int		ID;				// ID form the texture manager
+	string	shaderName;		// Name that receives the texture in the shader
 	int		blendOperation;	// Blend operation with the base color
 	float	strength;		// Strength factor
 
 	textureStack()
 	{ 
 		ID = -1;
+		shaderName = "";
 		blendOperation = 0;
 		strength = 0;
 	}

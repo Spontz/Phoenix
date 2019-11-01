@@ -45,6 +45,7 @@ public:
 
 private:
 	// utility function for checking shader compilation/linking errors.
-	void checkCompileErrors(GLuint shader, std::string type);
+	// Return true if errors have been found
+	bool checkCompileErrors(GLuint shader, std::string type);
 };
 #endif

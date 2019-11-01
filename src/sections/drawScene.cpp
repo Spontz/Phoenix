@@ -162,6 +162,7 @@ void sDrawScene::exec() {
 
 	my_model->Draw(my_shader->ID, local->AnimationTime);
 
+	glUseProgram(0);
 	if (local->drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	

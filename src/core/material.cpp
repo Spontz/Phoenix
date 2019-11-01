@@ -40,14 +40,18 @@ void Material::Load(const aiMaterial *pMaterial, string modelDirectory, string m
 	vector<textureStack> specularMaps = loadTextures(pMaterial, aiTextureType_SPECULAR, "texture_specular");
 	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	LOG->Info(LOG_LOW, "  The mesh has %d specularMaps", specularMaps.size());
-	// 3. normal maps
-	std::vector<textureStack> normalMaps = loadTextures(pMaterial, aiTextureType_HEIGHT, "texture_normal");
-	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-	LOG->Info(LOG_LOW, "  The mesh has %d normalMaps", normalMaps.size());
+	// 3. ambient maps
+	std::vector<textureStack> ambientMaps = loadTextures(pMaterial, aiTextureType_AMBIENT, "texture_ambient");
+	textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
+	LOG->Info(LOG_LOW, "  The mesh has %d ambientMaps", ambientMaps.size());
 	// 4. height maps
-	std::vector<textureStack> heightMaps = loadTextures(pMaterial, aiTextureType_AMBIENT, "texture_height");
+	std::vector<textureStack> heightMaps = loadTextures(pMaterial, aiTextureType_HEIGHT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 	LOG->Info(LOG_LOW, "  The mesh has %d heightMaps", heightMaps.size());
+	// 5. normal maps
+	std::vector<textureStack> normalMaps = loadTextures(pMaterial, aiTextureType_NORMALS, "texture_normal");
+	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+	LOG->Info(LOG_LOW, "  The mesh has %d normalMaps", normalMaps.size());
 	// Unknown
 	std::vector<textureStack> unknownMaps = loadTextures(pMaterial, aiTextureType_NONE, "texture_unknown");
 	textures.insert(textures.end(), unknownMaps.begin(), unknownMaps.end());
@@ -90,7 +94,7 @@ vector<textureStack> Material::loadTextures(const aiMaterial * mat, aiTextureTyp
 		tex.strength = blendFactor;
 		if (tex.ID > 0) {
 			Texture *my_tex = DEMO->textureManager.texture[tex.ID];
-			my_tex->shaderName = my_tex->type + std::to_string(i + 1);
+			tex.shaderName = typeName + std::to_string(i + 1);
 			textures.push_back(tex);
 		}
 	}

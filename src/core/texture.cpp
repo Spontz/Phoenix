@@ -8,7 +8,6 @@
 Texture::Texture()
 {
 	type = "texture_diffuse"; // default is set to diffuse texture
-	shaderName = "texture_diffuse";
 	use_linear = true;
 	textureID = 0;
 	mem = 0;

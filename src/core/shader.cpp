@@ -82,12 +82,14 @@ int Shader::load(const std::string & vertexPath, const std::string & fragmentPat
 	vertex = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertex, 1, &vShaderCode, NULL);
 	glCompileShader(vertex);
-	checkCompileErrors(vertex, "VERTEX");
+	if (checkCompileErrors(vertex, "VERTEX"))
+		return 0;
 	// fragment Shader
 	fragment = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragment, 1, &fShaderCode, NULL);
 	glCompileShader(fragment);
-	checkCompileErrors(fragment, "FRAGMENT");
+	if (checkCompileErrors(fragment, "FRAGMENT"))
+		return 0;
 	// if geometry shader is given, compile geometry shader
 	unsigned int geometry;
 	if (geometryPath != "") {
@@ -95,7 +97,8 @@ int Shader::load(const std::string & vertexPath, const std::string & fragmentPat
 		geometry = glCreateShader(GL_GEOMETRY_SHADER);
 		glShaderSource(geometry, 1, &gShaderCode, NULL);
 		glCompileShader(geometry);
-		checkCompileErrors(geometry, "GEOMETRY");
+		if (checkCompileErrors(geometry, "GEOMETRY"))
+			return 0;
 	}
 	// shader Program
 	ID = glCreateProgram();
@@ -117,7 +120,8 @@ int Shader::load(const std::string & vertexPath, const std::string & fragmentPat
 	}
 
 	glLinkProgram(ID);
-	checkCompileErrors(ID, "PROGRAM");
+	if (checkCompileErrors(ID, "PROGRAM"))
+		return 0;
 	// delete the shaders as they're linked into our program now and no longer necessery
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
@@ -196,13 +200,13 @@ GLint Shader::getUniformLocation(const char *name) const
 
 // Check complie errors on shader
 // ------------------------------------------------------------------------
-// TODO: This should return true or false if the shader is giving errors
-void Shader::checkCompileErrors(GLuint shader, std::string type)
+bool Shader::checkCompileErrors(GLuint shader, std::string type)
 {
 	GLint success;
 	GLint size;
 	GLsizei p_size = 0;
 	GLchar *infoLog;
+	bool errors = false;
 	if (type != "PROGRAM") {
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 		if (!success) {
@@ -211,6 +215,7 @@ void Shader::checkCompileErrors(GLuint shader, std::string type)
 			glGetShaderInfoLog(shader, size, &p_size, infoLog);
 			LOG->Error("Shader Compile (in %s): files %s, %s, log: %s", type.c_str(), this->vertexShader_Filename.c_str(), this->fragmentShader_Filename.c_str(), infoLog);
 			free(infoLog);
+			errors = true;
 		}
 	}
 	else {
@@ -221,6 +226,8 @@ void Shader::checkCompileErrors(GLuint shader, std::string type)
 			glGetProgramInfoLog(shader, size, &p_size, infoLog);
 			LOG->Error("Shader Linking: file %s, %s, log: %s", this->vertexShader_Filename.c_str(), this->fragmentShader_Filename.c_str(), infoLog);
 			free(infoLog);
+			errors = true;
 		}
 	}
+	return errors;
 }
