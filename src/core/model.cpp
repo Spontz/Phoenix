@@ -17,24 +17,19 @@ using namespace std;
 
 
 // For converting between ASSIMP and glm
-// TODO: Mirar de sacar este código fuera, ya que lo tengo repetido en el model.cpp y el mesh.cpp
 static inline glm::vec3 vec3_cast(const aiVector3D &v) { return glm::vec3(v.x, v.y, v.z); }
 static inline glm::vec2 vec2_cast(const aiVector3D &v) { return glm::vec2(v.x, v.y); } // it's aiVector3D because assimp's texture coordinates use that
 static inline glm::quat quat_cast(const aiQuaternion &q) { return glm::quat(q.w, q.x, q.y, q.z); }
 static inline glm::mat4 mat4_cast(const aiMatrix4x4 &m) { return glm::transpose(glm::make_mat4(&m.a1)); }
 static inline glm::mat4 mat4_cast(const aiMatrix3x3 &m) { return glm::transpose(glm::make_mat3(&m.a1)); }
 
-
-
-Model::Model(string const &path, bool gamma)
+Model::Model(bool gamma)
 {
 	gammaCorrection = gamma;
 	m_NumMeshes = 0; 
 	m_NumBones = 0;
 	playAnimation = false;	// By default, animations are disabled
 	currentAnimation = 0;
-	
-	loadModel(path);
 }
 
 Model::~Model()
@@ -68,7 +63,8 @@ void Model::setAnimation(unsigned int a)
 	}
 }
 
-void Model::loadModel(string const &path)
+// Returns false if model has not been properly loaded
+bool Model::Load(string const &path)
 {
 	filepath = path;
 	// read file via ASSIMP
@@ -78,7 +74,7 @@ void Model::loadModel(string const &path)
 	if (!m_pScene || m_pScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !m_pScene->mRootNode) // if is Not Zero
 	{
 		LOG->Error("Error loading file [%s]: %s", filepath.c_str(), m_Importer.GetErrorString());
-		return;
+		return false;
 	}
 	// retrieve the directory path of the filepath and the filename (without the data folder, because each loader adds the data folder)
 	directory = filepath.substr(0, filepath.find_last_of('/'));
@@ -93,6 +89,7 @@ void Model::loadModel(string const &path)
 
 	// Count total number of meshes
 	m_NumMeshes = static_cast<unsigned int>(meshes.size());
+	return true;
 }
 
 // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
@@ -241,6 +238,7 @@ vector<int> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, str
 
 
 /////////////// Bones calculations
+// TODO: Do a Bones Class, with all this calculations
 void Model::setBoneTransformations(GLuint shaderProgram, float currentTime)
 {
 	// TODO: Hacer que los Transforms sea una propiedad de cada uno del Bone, asi no se tiene q hacer

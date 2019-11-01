@@ -223,9 +223,9 @@ void ShaderVars::setValues(bool loading)
 
 	for (i = 0; i < sampler2D.size(); i++) {
 		my_sampler2D = sampler2D[i];
+		glActiveTexture(GL_TEXTURE0 + my_sampler2D->texUnitID);
 		if (loading)	// If we are not loading it, there is no need to set the value
 			my_shader->setValue(my_sampler2D->name, my_sampler2D->texUnitID);
-		glActiveTexture(GL_TEXTURE0 + my_sampler2D->texUnitID);
 		glBindTexture(GL_TEXTURE_2D, my_sampler2D->texGLid);
 	}
 }

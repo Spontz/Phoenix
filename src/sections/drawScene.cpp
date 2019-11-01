@@ -160,7 +160,7 @@ void sDrawScene::exec() {
 
 
 	// Set the values
-	local->vars->setValues(false);
+	local->vars->setValues(true); // TODO: Why?? This should work with false!
 
 	my_model->Draw(my_shader->ID, local->AnimationTime);
 

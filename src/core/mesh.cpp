@@ -101,33 +101,21 @@ void Mesh::setupMesh()
 // render the mesh
 void Mesh::Draw(GLuint shaderID)
 {
-	// bind appropriate textures
-	unsigned int diffuseNr = 1;
-	unsigned int specularNr = 1;
-	unsigned int normalNr = 1;
-	unsigned int heightNr = 1;
+	// Send material properties
+	glUniform3fv(glGetUniformLocation(shaderID, "color_ambient"), 1, &material.colAmbient[0]);
+	glUniform3fv(glGetUniformLocation(shaderID, "color_specular"), 1, &material.colSpecular[0]);
+	glUniform1f(glGetUniformLocation(shaderID, "strenght_specular"), material.strenghtSpecular);
+	glUniform3fv(glGetUniformLocation(shaderID, "color_diffuse"), 1, &material.colDiffuse[0]);
 
-	for (unsigned int i = 0; i < material.textures.size(); i++)
+	// Send textures
+	unsigned int numTextures = static_cast<unsigned int>(material.textures.size());
+	for (unsigned int i = 0; i < numTextures; i++)
 	{
 		if (material.textures[i].ID == -1) // Avoid illegal access
 			return;
 		Texture *tex = DEMO->textureManager.texture[material.textures[i].ID];
-		tex->active(i);		// active proper texture unit before binding
-		// retrieve texture number (the N in diffuse_textureN)
-/*		string number;
-
-		if (tex->type == "texture_diffuse")
-			number = std::to_string(diffuseNr++);
-		else if (tex->type == "texture_specular")
-			number = std::to_string(specularNr++); // transfer unsigned int to stream
-		else if (tex->type == "texture_normal")
-			number = std::to_string(normalNr++); // transfer unsigned int to stream
-		else if (tex->type == "texture_height")
-			number = std::to_string(heightNr++); // transfer unsigned int to stream
-		
-		// now set the sampler to the correct texture unit
-		glUniform1i(glGetUniformLocation(shaderID, (tex->type + number).c_str()), i);
-		*/
+		// active proper texture unit before binding
+		tex->active(i);
 		glUniform1i(glGetUniformLocation(shaderID, tex->shaderName.c_str()), i);
 		// and finally bind the texture
 		tex->bind(i);
@@ -140,6 +128,7 @@ void Mesh::Draw(GLuint shaderID)
 
 	// always good practice to set everything back to defaults once configured.
 	glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 

@@ -28,9 +28,9 @@ int ModelManager::addModel(string path) {
 	}
 
 	// if we must load the model...
-	Model *new_model = NULL;
-	new_model = new Model(path);
-	if (new_model) {
+	Model *new_model = new Model();
+	bool loaded = new_model->Load(path);
+	if (loaded == true) {
 		model.push_back(new_model);
 		model_id = (int)model.size() - 1;
 		LOG->Info(LOG_MED, "Model %s [id: %d] loaded OK", path.c_str(), model_id);
