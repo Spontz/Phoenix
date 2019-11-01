@@ -38,7 +38,6 @@ struct textureStack
 class Material {
 public:
 	string		name;
-	//vector<int> textures;
 	vector<textureStack> textures;
 	glm::vec3	colDiffuse;
 	glm::vec3	colSpecular;

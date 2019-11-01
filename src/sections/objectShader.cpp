@@ -78,7 +78,7 @@ bool sObjectShader::load() {
 	}
 
 	// Set shader variables values
-	local->vars->setValues(true);
+	local->vars->setValues();
 
 	return true;
 }
@@ -145,7 +145,7 @@ void sObjectShader::exec() {
 
 
 	// Set the values
-	local->vars->setValues(false);
+	local->vars->setValues();
 
 	my_model->Draw(my_shader->ID, this->runTime);
 

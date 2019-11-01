@@ -48,7 +48,7 @@ bool sDrawQuad::load() {
 	}
 
 	// Set shader variables values
-	local->shaderVars->setValues(true);
+	local->shaderVars->setValues();
 	
 	return true;
 }
@@ -67,7 +67,7 @@ void sDrawQuad::exec() {
 	if (local->clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
 	
 	// Set new shader variables values
-	local->shaderVars->setValues(false);
+	local->shaderVars->setValues();
 
 	// Render scene
 	EvalBlendingStart();

@@ -75,7 +75,7 @@ public:
 	// constructor generates the shader on the fly
 	ShaderVars(Section* sec, Shader* shad);
 	bool ReadString(const char *string_var); // Reads a string that contains vars and add it
-	void setValues(bool loading);
+	void setValues();
 
 private:
 	Shader* my_shader;		// Shader where the vars are poiting

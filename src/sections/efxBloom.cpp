@@ -81,7 +81,7 @@ bool sEfxBloom::load() {
 		local->shaderVars->ReadString(this->uniform[i].c_str());
 	}
 	// Set shader variables values
-	local->shaderVars->setValues(true);
+	local->shaderVars->setValues();
 	my_shaderBloom->setValue("scene", 0);		// The scene is in the Tex unit 0
 	my_shaderBloom->setValue("bloomBlur", 1);	// The bloom blur is in the Tex unit 1
 
@@ -145,7 +145,7 @@ void sEfxBloom::exec() {
 		// Second step: Merge the blurred image with the color image (fbo attachment 0)
 		my_shaderBloom->use();
 		// Set new shader variables values
-		local->shaderVars->setValues(false);
+		local->shaderVars->setValues();
 		
 		// Tex unit 0: scene
 		DEMO->fboManager.fbo[local->FboNum]->active(0);

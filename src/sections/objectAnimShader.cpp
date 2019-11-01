@@ -79,7 +79,7 @@ bool sObjectAnimShader::load() {
 	}
 
 	// Set the values
-	local->vars->setValues(true);
+	local->vars->setValues();
 	
 	return true;
 }
@@ -125,7 +125,7 @@ void sObjectAnimShader::exec() {
 	my_shader->setValue("model", model);
 
 	// Set the values
-	local->vars->setValues(false);
+	local->vars->setValues();
 
 	// Guarrada para pasar una textura
 	glUniform1i(glGetUniformLocation(my_shader->ID, "texture_diffuse1"), 0); // Pick some random texture

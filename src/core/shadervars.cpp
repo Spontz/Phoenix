@@ -175,7 +175,7 @@ bool ShaderVars::ReadString(const char * string_var)
 }
 
 // Set all the shader values. Please note that the shader must be used before!!
-void ShaderVars::setValues(bool loading)
+void ShaderVars::setValues()
 {
 	unsigned int i = 0;
 	varFloat*		my_vfloat;
@@ -223,8 +223,7 @@ void ShaderVars::setValues(bool loading)
 
 	for (i = 0; i < sampler2D.size(); i++) {
 		my_sampler2D = sampler2D[i];
-		if (loading)	// If we are not loading it, there is no need to set the value
-			my_shader->setValue(my_sampler2D->name, my_sampler2D->texUnitID);
+		my_shader->setValue(my_sampler2D->name, my_sampler2D->texUnitID);
 		glActiveTexture(GL_TEXTURE0 + my_sampler2D->texUnitID);
 		glBindTexture(GL_TEXTURE_2D, my_sampler2D->texGLid);
 	}

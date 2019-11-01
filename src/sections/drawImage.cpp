@@ -77,7 +77,7 @@ bool sDrawImage::load() {
 	}
 
 	// Set shader variables values
-	local->vars->setValues(true);
+	local->vars->setValues();
 
 	return true;
 }
@@ -123,7 +123,7 @@ void sDrawImage::exec() {
 		my_tex->bind();
 
 		// Set the values
-		local->vars->setValues(false);
+		local->vars->setValues();
 
 		RES->Draw_QuadFS();
 	}

@@ -44,7 +44,7 @@ bool sEfxFader::load() {
 	}
 	
 	// Set shader variables values
-	local->shaderVars->setValues(true);
+	local->shaderVars->setValues();
 
 	return true;
 }
@@ -64,7 +64,7 @@ void sEfxFader::exec() {
 	{
 		my_shaderFader->use();
 		// Set shader variables values
-		local->shaderVars->setValues(false);
+		local->shaderVars->setValues();
 		// Render scene
 		RES->Draw_QuadFS();
 	}		

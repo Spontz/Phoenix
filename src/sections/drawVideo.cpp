@@ -52,7 +52,7 @@ bool sDrawVideo::load() {
 	}
 
 	// Set shader variables values
-	local->shaderVars->setValues(true);
+	local->shaderVars->setValues();
 
 	return true;
 }
@@ -101,7 +101,7 @@ void sDrawVideo::exec() {
 		my_shader->setValue("model", model);
 		my_shader->setValue("screenTexture", 0);
 		// Set other shader variables values
-		local->shaderVars->setValues(false);
+		local->shaderVars->setValues();
 		my_video->bind(0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);

@@ -70,7 +70,7 @@ bool sEfxBlur::load() {
 		local->shaderVars->ReadString(this->uniform[i].c_str());
 	}
 	// Set shader variables values
-	local->shaderVars->setValues(true);
+	local->shaderVars->setValues();
 	
 	return true;
 }

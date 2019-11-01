@@ -94,7 +94,7 @@ bool sDrawScene::load() {
 	}
 
 	// Set shader variables values
-	local->vars->setValues(true);
+	local->vars->setValues();
 
 	return true;
 }
@@ -158,7 +158,7 @@ void sDrawScene::exec() {
 
 
 	// Set the values
-	local->vars->setValues(true); // TODO: Why?? This should work with false!
+	local->vars->setValues();
 
 	my_model->Draw(my_shader->ID, local->AnimationTime);
 

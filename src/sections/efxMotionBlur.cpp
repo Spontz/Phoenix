@@ -49,7 +49,7 @@ bool sEfxMotionBlur::load() {
 		local->shaderVars->ReadString(this->uniform[i].c_str());
 	}
 	// Set shader variables values
-	local->shaderVars->setValues(true);
+	local->shaderVars->setValues();
 
 	my_shaderMotionBlur->setValue("scene", 0);		// The scene is in the Tex unit 0
 	my_shaderMotionBlur->setValue("velocity", 1);	// The velocity is in the Tex unit 1
@@ -79,7 +79,7 @@ void sEfxMotionBlur::exec() {
 
 		// Set new shader variables values
 		my_shaderMotionBlur->setValue("uVelocityScale", DEMO->fps/local->FPSScale); //uVelocityScale = currentFps / targetFps;
-		local->shaderVars->setValues(false);
+		local->shaderVars->setValues();
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, local->bufferColor);
