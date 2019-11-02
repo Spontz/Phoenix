@@ -7,8 +7,6 @@
 mathDriver::mathDriver(Section *sec) {
 	expression = "";
 	
-	//SymbolMatTable.add_variable("matrix", DEMO->light->SpaceMatrix);
-
 	// Add the variables that will be used by all sections
 	SymbolTable.add_variable("t", sec->runTime);
 	SymbolTable.add_variable("tend", sec->duration);
@@ -148,12 +146,4 @@ void mathDriver::compileFormula()
 		LOG->Error("Error in formula, please check expression: %s", expression.c_str());
 }
 
-/*
-void mathDriver::compileFormulaMat()
-{
-	ExpressionMat.register_symbol_table(SymbolMatTable);
-	if (!ParserMat.compile(expression, ExpressionMat))
-		LOG->Error("Error in formula, please check expression: %s", expression.c_str());
-}
-*/
 
