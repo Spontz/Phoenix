@@ -18,7 +18,7 @@ smooth in vec4 vPosition;
 smooth in vec4 vPrevPosition;
 
 uniform sampler2D texture_diffuse1;
-uniform sampler2D texture_normal1;
+uniform sampler2D texture_height1;
 
 uniform vec3 lightPos;
 uniform vec3 lightColDiff;
@@ -32,7 +32,7 @@ uniform float specularLightStrenght; // 0.2 and up, recommended 0.8
 void main()
 {           
      // obtain normal from normal map in range [0,1]
-    vec3 normal = texture(texture_normal1, fs_in.TexCoords).rgb;
+    vec3 normal = texture(texture_height1, fs_in.TexCoords).rgb;
     // transform normal vector to range [-1,1]
     normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
    
