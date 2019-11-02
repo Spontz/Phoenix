@@ -57,10 +57,11 @@ public:
 
 	// ******************************************************************
 
-	virtual bool load() { return true; };	// load data from disk
-	virtual void init()		{};	// set up local variables before execution
-	virtual void exec()		{};	// render a new frame
-	virtual void end ()		{};	// destroy allocated memory
+	virtual bool	load()		{ return true; };	// load data from disk
+	virtual void	init()		{};	// set up local variables before execution
+	virtual void	exec()		{};	// render a new frame
+	virtual void	end ()		{};	// destroy allocated memory
+	virtual string	debug()		{ return string(); };	// outputs a message for debugging
 			
 private:
 

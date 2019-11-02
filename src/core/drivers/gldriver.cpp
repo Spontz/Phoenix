@@ -145,6 +145,8 @@ void key_callback(GLFWwindow* p_glfw_window, int key, int scancode, int action, 
 				DEMO->drawTiming = !DEMO->drawTiming;
 			else if (key == KEY_SHOWFPS)
 				DEMO->drawFps = !DEMO->drawFps;
+			else if (key == KEY_SHOWSCENEINFO)
+				DEMO->drawSceneInfo = !DEMO->drawSceneInfo;
 			else if (key == KEY_SHOWSOUND)
 				DEMO->drawSound = !DEMO->drawSound;
 			else if (key == KEY_SHOWFBO) {
@@ -516,6 +518,29 @@ void glDriver::swapBuffers() {
 void glDriver::close() {
 	glfwSetWindowShouldClose(p_glfw_window_, GL_TRUE);
 	glfwTerminate();
+}
+
+// Draws the information of all the scenes that are being drawn
+void glDriver::drawSceneInfo()
+{
+	Section *ds;
+	int sec_id;
+	string message = "Drawing:\n" ;
+
+	for (int i = 0; i < DEMO->sectionManager.execSection.size(); i++) {
+		sec_id = DEMO->sectionManager.execSection[i].second;	// The second value is the ID of the section
+		ds = DEMO->sectionManager.section[sec_id];
+		message += ds->debug();									// Loads the debug message from the section and adds to the queue
+	}
+
+	std::stringstream ss(message);
+	std::string to;
+
+	float pos = 0;
+	while (std::getline(ss, to, '\n')) {
+		DEMO->text->RenderText(to, 0.4f, 0.9f + pos, 0.1f, glm::vec3(1, 1, 1));
+		pos -= 0.05f;
+	}
 }
 
 void glDriver::drawFps() {

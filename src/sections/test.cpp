@@ -27,3 +27,7 @@ void sTest::exec() {
 
 void sTest::end() {
 }
+
+string sTest::debug() {
+	return string();
+}

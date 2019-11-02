@@ -165,3 +165,7 @@ void sEfxBloom::exec() {
 void sEfxBloom::end() {
 	
 }
+
+string sEfxBloom::debug() {
+	return string();
+}

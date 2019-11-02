@@ -128,6 +128,7 @@ public:
 	char drawSound;								// Draw sound render
 	char drawTiming;							// Draw time of the demo
 	char drawFps;								// Draw FPS's of the demo
+	char drawSceneInfo;							// Draw debug Info from teh sections
 
 	// Drawing
 	char drawFbo;								// Draw FBO's

@@ -89,3 +89,7 @@ void sParticleMatrix::exec() {
 
 void sParticleMatrix::end() {
 }
+
+string sParticleMatrix::debug() {
+	return string();
+}

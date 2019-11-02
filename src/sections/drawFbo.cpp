@@ -72,3 +72,7 @@ void sDrawFbo::exec() {
 void sDrawFbo::end() {
 	
 }
+
+string sDrawFbo::debug() {
+	return string();
+}

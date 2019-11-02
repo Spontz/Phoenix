@@ -84,3 +84,7 @@ void sDrawQuad::exec() {
 void sDrawQuad::end() {
 	
 }
+
+string sDrawQuad::debug() {
+	return string();
+}

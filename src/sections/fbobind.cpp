@@ -57,3 +57,7 @@ void sFboBind::exec() {
 void sFboBind::end() {
 	
 }
+
+string sFboBind::debug() {
+	return string();
+}

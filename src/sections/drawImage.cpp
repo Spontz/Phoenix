@@ -134,3 +134,7 @@ void sDrawImage::exec() {
 void sDrawImage::end() {
 	
 }
+
+string sDrawImage::debug() {
+	return string();
+}

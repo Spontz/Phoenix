@@ -138,3 +138,7 @@ void sEfxBlur::exec() {
 void sEfxBlur::end() {
 	
 }
+
+string sEfxBlur::debug() {
+	return string();
+}

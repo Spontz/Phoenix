@@ -174,3 +174,7 @@ void sSound::end() {
 	if (r != TRUE)
 		LOG->Error("Sound [%s]: BASS_ChannelStop returned error: %i", this->identifier.c_str(), BASS_ErrorGetCode());
 }
+
+string sSound::debug() {
+	return string();
+}

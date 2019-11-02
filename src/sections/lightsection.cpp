@@ -89,3 +89,7 @@ void sLight::exec() {
 
 void sLight::end() {
 }
+
+string sLight::debug() {
+	return string();
+}

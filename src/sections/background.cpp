@@ -87,3 +87,7 @@ void sBackground::exec() {
 
 void sBackground::end() {
 }
+
+string sBackground::debug() {
+	return string();
+}

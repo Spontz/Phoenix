@@ -120,3 +120,7 @@ void sDrawSkybox::exec() {
 void sDrawSkybox::end() {
 	
 }
+
+string sDrawSkybox::debug() {
+	return string();
+}

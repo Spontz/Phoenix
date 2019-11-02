@@ -93,3 +93,7 @@ void sEfxMotionBlur::exec() {
 
 void sEfxMotionBlur::end() {
 }
+
+string sEfxMotionBlur::debug() {
+	return string();
+}

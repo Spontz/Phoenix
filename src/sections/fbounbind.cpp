@@ -48,3 +48,7 @@ void sFboUnbind::exec() {
 void sFboUnbind::end() {
 	
 }
+
+string sFboUnbind::debug() {
+	return string();
+}

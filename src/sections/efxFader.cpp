@@ -76,3 +76,7 @@ void sEfxFader::exec() {
 void sEfxFader::end() {
 	
 }
+
+string sEfxFader::debug() {
+	return string();
+}

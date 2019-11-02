@@ -80,9 +80,11 @@ public:
 	void initGraphics();
 	void initRender(int clear);
 
+	void drawSceneInfo();
 	void drawFps();
 	void drawTiming();
 	void drawFbo();
+
 
 	void close();
 

@@ -102,3 +102,7 @@ void sLoading::exec() {
 void sLoading::end() {
 	
 }
+
+string sLoading::debug() {
+	return string();
+}

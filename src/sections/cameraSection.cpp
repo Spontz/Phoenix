@@ -61,3 +61,7 @@ void sCamera::exec() {
 
 void sCamera::end() {
 }
+
+string sCamera::debug() {
+	return string();
+}

@@ -114,3 +114,7 @@ void sDrawVideo::exec() {
 void sDrawVideo::end() {
 	
 }
+
+string sDrawVideo::debug() {
+	return string();
+}

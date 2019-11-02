@@ -605,6 +605,7 @@ void demokernel::initSectionQueues() {
 	// Demo states
 	this->drawFps = 1;
 	this->drawTiming = 1;
+	this->drawSceneInfo = 0;
 	this->drawSound = 0;
 	this->drawFbo = 0;
 	this->drawFboAttachment = 0;
@@ -755,6 +756,8 @@ void demokernel::processSectionQueues() {
 	GLDRV->SetFramebuffer();
 
 	if (this->debug) {
+		if (this->drawSceneInfo)
+			GLDRV->drawSceneInfo();
 		if (this->drawFps)
 			GLDRV->drawFps();
 		if (this->drawTiming)
