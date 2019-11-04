@@ -606,7 +606,6 @@ void demokernel::initSectionQueues() {
 	this->drawFps = 1;
 	this->drawTiming = 1;
 	this->drawSceneInfo = 0;
-	this->drawSound = 0;
 	this->drawFbo = 0;
 	this->drawFboAttachment = 0;
 

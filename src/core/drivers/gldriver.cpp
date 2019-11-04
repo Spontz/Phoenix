@@ -147,8 +147,6 @@ void key_callback(GLFWwindow* p_glfw_window, int key, int scancode, int action, 
 				DEMO->drawFps = !DEMO->drawFps;
 			else if (key == KEY_SHOWSCENEINFO)
 				DEMO->drawSceneInfo = !DEMO->drawSceneInfo;
-			else if (key == KEY_SHOWSOUND)
-				DEMO->drawSound = !DEMO->drawSound;
 			else if (key == KEY_SHOWFBO) {
 				DEMO->drawFbo++;
 				if (DEMO->drawFbo >= 7)

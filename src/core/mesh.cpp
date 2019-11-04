@@ -128,6 +128,7 @@ void Mesh::Draw(GLuint shaderID)
 	glBindVertexArray(0);
 
 	// always good practice to set everything back to defaults once configured.
+	// TODO: Should we reset all the Tex units, right? Not only the first one!
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }

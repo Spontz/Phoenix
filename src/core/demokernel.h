@@ -125,7 +125,6 @@ public:
 	int slaveMode; // 1 = network slave; 0 = standalone mode;
 
 	// Drawing states
-	char drawSound;								// Draw sound render
 	char drawTiming;							// Draw time of the demo
 	char drawFps;								// Draw FPS's of the demo
 	char drawSceneInfo;							// Draw debug Info from teh sections
