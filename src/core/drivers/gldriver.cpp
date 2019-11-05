@@ -523,7 +523,7 @@ void glDriver::drawSceneInfo()
 {
 	Section *ds;
 	int sec_id;
-	string message = "Drawing:\n" ;
+	string message = "Drawing Stack:\n--------------------------------------------\n" ;
 
 	for (int i = 0; i < DEMO->sectionManager.execSection.size(); i++) {
 		sec_id = DEMO->sectionManager.execSection[i].second;	// The second value is the ID of the section
@@ -536,8 +536,8 @@ void glDriver::drawSceneInfo()
 
 	float pos = 0;
 	while (std::getline(ss, to, '\n')) {
-		DEMO->text->RenderText(to, 0.4f, 0.9f + pos, 0.1f, glm::vec3(1, 1, 1));
-		pos -= 0.05f;
+		DEMO->text->RenderText(to, 0.2f, 0.9f + pos, 0.15f, glm::vec3(1, 1, 1));
+		pos -= 0.07f;
 	}
 }
 

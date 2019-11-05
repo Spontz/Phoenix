@@ -139,6 +139,7 @@ void Font::glPrintf(float x, float y, const char *message, ...) {
 
 void Font::RenderText(string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
 {
+	float stretch = 0.7f;
 	// Prevent rendering text if shader has not been properly loaded
 	if (shdr_font == -1)
 		return;
@@ -168,8 +169,8 @@ void Font::RenderText(string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec
 		GLfloat xpos = x + ch.Bearing.x * scale;
 		GLfloat ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
 
-		GLfloat w = ch.Size.x * scale;
-		GLfloat h = ch.Size.y * scale;
+		GLfloat w = (ch.Size.x * scale)*stretch;
+		GLfloat h = (ch.Size.y * scale);
 
 		GLfloat u = ch.coordOffset.x;
 		GLfloat usize = (float)(ch.Size.x) / (float)width;
@@ -196,7 +197,7 @@ void Font::RenderText(string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec
 		// Render quad
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		x += (ch.Advance) * scale;
+		x += ((ch.Advance) * scale)*stretch;
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);

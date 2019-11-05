@@ -181,7 +181,7 @@ string sDrawScene::debug()
 	Model *my_model = DEMO->modelManager.model[local->model];
 
 	string msg;
-	msg = "drawSection: " + this->identifier + "\n";
+	msg = "[ drawSection id: " + this-> identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " file: " + my_model->filename + "\n";
 	msg += " meshes: " + std::to_string(my_model->meshes.size()) + "\n";
 /*	for (int i=0; i<my_model->meshes.size(); i++) {
