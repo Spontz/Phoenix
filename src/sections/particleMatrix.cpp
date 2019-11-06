@@ -46,9 +46,18 @@ bool sParticleMatrix::load() {
 		return false;
 
 	// Create the particle system
+	// Set the emitters
+	glm::vec3 initPosition = glm::vec3(0, 0, -10);
+	vector<glm::vec3> Emitter_positions;
+	for (unsigned int i = 0; i < local->numEmitters; i++) {
+		float circle = 2 * 3.1415f* ((float)(i + 1) / ((float)local->numEmitters));
+		glm::vec3 new_emitter = initPosition + glm::vec3(sin(circle), 0, cos(circle));
+		Emitter_positions.push_back(new_emitter);
+	}
+
+
 	local->pSystem = new ParticleSystem(local->numMaxParticles, local->numEmitters, local->emissionTime, local->particleLifeTime, local->particleSize, local->particleTexture);
-	glm::vec3 Position(0, 0, -10);
-	local->pSystem->InitParticleSystem(Position);
+	local->pSystem->InitParticleSystem(Emitter_positions);
 
 	return true;
 }
@@ -57,7 +66,7 @@ void sParticleMatrix::init() {
 }
 
 
-float lastTime = 0;
+static float lastTime = 0;
 
 void sParticleMatrix::exec() {
 	local = (particleMatrix_section *)this->vars;
@@ -68,6 +77,7 @@ void sParticleMatrix::exec() {
 
 	glm::mat4 projection = glm::perspective(glm::radians(DEMO->camera->Zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
+	glm::mat4 model = glm::mat4(1.0);
 	glm::mat4 vp = projection * view;	//TODO: This mutliplication should be done in the shader, by passing the 2 matrix
 	
 	// Render particles
@@ -78,7 +88,7 @@ void sParticleMatrix::exec() {
 		//glm::vec3 Position(0, 0, 3.8f);
 		//local->pSystem->resetParticleSystem(Position);
 	}
-	local->pSystem->Render(deltaTime, vp, DEMO->camera->Position);
+	local->pSystem->Render(deltaTime, vp, model, DEMO->camera->Position);
 
 
 	// End evaluating blending

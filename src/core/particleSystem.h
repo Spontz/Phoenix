@@ -15,20 +15,19 @@ public:
 	ParticleSystem(unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime, float particleSize, int particleTexture);
 	~ParticleSystem();
 
-	bool InitParticleSystem(const glm::vec3 &Pos);
-	void Render(float deltaTime, const glm::mat4 &VP, const glm::vec3 &CameraPos);
+	bool InitParticleSystem(const vector<glm::vec3> emitterPositions);
+	void Render(float deltaTime, const glm::mat4 &VP, const glm::mat4 &model, const glm::vec3 &CameraPos);
 	void resetParticleSystem(const glm::vec3 &Pos);
 
 private:
 
 	void UpdateEmitters(float deltaTime);
 	void UpdateParticles(float deltaTime);
-	void RenderParticles(const glm::mat4 &VP, const glm::vec3 &CameraPos);
+	void RenderParticles(const glm::mat4 &VP, const glm::mat4 &model, const glm::vec3 &CameraPos);
 
 	bool initShaderBillboard();		// For drawing the quads using geometry shaders
 	bool initShaderParticleSystem();// For drawing the particles using geometry shaders
 
-	glm::vec3 initPosition;			// Initial position
 	unsigned int	numMaxParticles;	// Number of maximum particles
 	unsigned int	numEmitters;		// Number of emmiters
 	float			emissionTime;

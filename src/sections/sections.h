@@ -20,6 +20,7 @@ class sDrawVideo : public Section { public:	sDrawVideo();  bool load(); void ini
 class sDrawQuad : public Section { public:	sDrawQuad();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sDrawScene : public Section { public:	sDrawScene();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sParticleMatrix : public Section { public:	sParticleMatrix();  bool load(); void init(); void exec(); void end(); string debug(); };
+class sParticleScene : public Section { public:	sParticleScene();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sEfxBloom : public Section { public:	sEfxBloom();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sEfxBlur : public Section { public:	sEfxBlur();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sEfxFader : public Section { public:	sEfxFader();  bool load(); void init(); void exec(); void end(); string debug(); };

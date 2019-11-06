@@ -68,18 +68,17 @@ ParticleSystem::~ParticleSystem()
 }
 
 
-bool ParticleSystem::InitParticleSystem(const glm::vec3 &Position)
+bool ParticleSystem::InitParticleSystem(const vector<glm::vec3> emitterPositions)
 {
-	this->initPosition = Position;
-	//Particle* Particles = (Particle*)malloc(sizeof(Particle) * numMaxParticles);	 // This is only need if we want to upload all the particles to the GPU, which is a waste of resources
 	Particle* Particles = (Particle*)malloc(sizeof(Particle) * numEmitters);
 	ZERO_MEM(Particles);
 
 	// Init the particle 0, the initial emitter
 	for (unsigned int i = 0; i < numEmitters; i++) {
 		Particles[i].Type = PARTICLE_TYPE_LAUNCHER;
-		float circle = 2*3.1415f* ( (float)(i+1) / ((float)numEmitters));
-		Particles[i].Pos = initPosition + glm::vec3(sin(circle), 0, cos(circle));
+		Particles[i].Pos = emitterPositions[i];
+		//float circle = 2 * 3.1415f* ((float)(i + 1) / ((float)numEmitters));
+		//Particles[i].Pos = glm::vec3(0,0,-10) + glm::vec3(sin(circle), 0, cos(circle));
 		Particles[i].Vel = glm::vec3(0.0f, 1.0f, 0.0f);
 		Particles[i].Col = glm::vec3(1.0f, 1.0f, 1.0f);
 		Particles[i].Size = 1.0;
@@ -176,13 +175,13 @@ bool ParticleSystem::InitParticleSystem(const glm::vec3 &Position)
 }
 
 
-void ParticleSystem::Render(float deltaTime, const glm::mat4 &VP, const glm::vec3 &CameraPos)
+void ParticleSystem::Render(float deltaTime, const glm::mat4 &VP, const glm::mat4 &model, const glm::vec3 &CameraPos)
 {
 	m_time += deltaTime;
 
 	glBindVertexArray(m_VAO);
 		UpdateParticles(deltaTime);
-		RenderParticles(VP, CameraPos);
+		RenderParticles(VP, model, CameraPos);
 	glBindVertexArray(0);
 
 	m_currVB = m_currTFB;
@@ -225,8 +224,8 @@ void ParticleSystem::UpdateEmitters(float deltaTime)
 		// Change data and move some random positions
 		for (unsigned int i = 0; i < numEmitters; i++) {
 			data[i].Type = PARTICLE_TYPE_LAUNCHER;
-			float sphere = 2 * 3.1415f* ((float)(i + 1) / ((float)numEmitters));
-			data[i].Pos = initPosition + glm::vec3(sin(sphere), -0.1*m_time, cos(sphere));
+			//float sphere = 2 * 3.1415f* ((float)(i + 1) / ((float)numEmitters));
+			//data[i].Pos = initPosition + glm::vec3(sin(sphere), -0.1*m_time, cos(sphere));
 			data[i].Vel = glm::vec3(1.0f, 0.01f, 0.0f);
 			data[i].lifeTime = 10.0f; // TODO: investigate why only emmits if this is greater than 0...
 			data[i].Size = 1.0f;
@@ -245,6 +244,10 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	particleSystem_shader->use();
 	particleSystem_shader->setValue("gTime", this->m_time);
 	particleSystem_shader->setValue("gDeltaTime", deltaTime);
+	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
+	particleSystem_shader->setValue("gLauncherLifetime", this->emissionTime); // Time between emissions
+	particleSystem_shader->setValue("gShellLifetime", this->particleLifeTime);
+
 
 	bindRandomTexture(RANDOM_TEXTURE_UNIT);
 
@@ -294,14 +297,18 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 }
 
-void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::vec3 &CameraPos)
+void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::mat4 &model, const glm::vec3 &CameraPos)
 {
 	//Use the billboard shader and send variables
 	Shader *my_shader;
 	my_shader = DEMO->shaderManager.shader[billboardShader];
 	my_shader->use();
 	my_shader->setValue("gCameraPos", CameraPos); // Set camera position
-	my_shader->setValue("gVP", VP);	// Set billboard size
+	my_shader->setValue("gVP", VP);					// Set ViewProjection Matrix
+	my_shader->setValue("model", model);			// Set Model Matrix
+	my_shader->setValue("gColorMap", 0);			// Set color map to 0
+	my_shader->setValue("gBillboardSize", this->particleSize);	// Set billboard size
+
 
 	// Activate texture
 	m_pTexture->bind(0);

@@ -26,6 +26,7 @@ tSectionID sectionID[] = {
 	{"drawQuad",			SectionType::DrawQuad},
 	{"drawFbo",				SectionType::DrawFbo},
 	{"particleMatrix",		SectionType::ParticleMatrix},
+	{"particleScene",		SectionType::ParticleScene},
 	{"sound",				SectionType::Sound},
 	{"fboBind",				SectionType::FboBind},
 	{"fboUnbind",			SectionType::FboUnbind},
@@ -103,6 +104,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::ParticleMatrix:
 		mySection = new sParticleMatrix();
+		break;
+	case SectionType::ParticleScene:
+		mySection = new sParticleScene();
 		break;
 	case SectionType::EfxBloom:
 		mySection = new sEfxBloom();
