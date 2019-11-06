@@ -22,6 +22,7 @@ public:
 	int addTexture(string path, bool flip = true, string type = "texture_diffuse");
 	int addCubemap(vector<std::string> path, bool flip);
 	int	getOpenGLTextureID(int index);
+	void initTextureStates();
 
 private:
 

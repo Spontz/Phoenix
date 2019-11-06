@@ -115,3 +115,10 @@ int TextureManager::getOpenGLTextureID(int index)
 		return texture[index]->textureID;
 	return -1;
 }
+
+void TextureManager::initTextureStates()
+{
+	// Bind no texture in texUnit 0
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}

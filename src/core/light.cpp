@@ -8,13 +8,9 @@ Light::Light(string name, LightType lightType, glm::vec3 position) {
 	this->name = name;
 	this->lightType = lightType;
 	this->position = position;
-
-	// Colors
-	this->colAmbient = glm::vec3(1, 0, 0);	// Red by default
-
 	this->direction = glm::vec3(0, 0, 0);	// Looking at center by default
-	this->ambientStrength = 0.2f;
-	this->specularStrength = 0.8f;
+	
+	initColorValues();
 }
 
 void Light::CalcSpaceMatrix(float left, float right, float bottom, float top, float near_plane, float far_plane) {
@@ -32,7 +28,6 @@ void Light::draw(float size) {
 	glm::mat4 projection = glm::perspective(
 		glm::radians(DEMO->camera->Zoom),
 		GLDRV->GetCurrentViewport().GetAspectRatio(),
-		// GLDRV->GetFramebufferViewport().GetAspectRatio(),
 		0.1f,
 		10000.0f
 	);
@@ -48,4 +43,19 @@ void Light::draw(float size) {
 	my_shad->setValue("model", model);
 
 	RES->Draw_Cube();
+}
+
+void Light::initColorValues()
+{
+	// By defalt, light colors and strenght is at zeroNo light
+	colAmbient = glm::vec3(0, 0, 0);
+	colDiffuse = glm::vec3(0, 0, 0);
+	colSpecular = glm::vec3(0, 0, 0);
+	ambientStrength = 0;
+	specularStrength = 0;
+
+	// Spot and Point Lights: For implementing the attenuation of the light, we need this 3 components
+	constant = 0;
+	linear = 0;
+	quadratic = 0;
 }

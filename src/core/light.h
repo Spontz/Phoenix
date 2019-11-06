@@ -45,6 +45,8 @@ public:
 
 	// For debugging: Draws a qube with the light position
 	void draw(float size);
+	// Init light Color Values
+	void initColorValues();
 
 private:
 };

@@ -328,6 +328,12 @@ void glDriver::initStates() {
 
 	glEnable(GL_DEPTH_TEST);					// depth test enabled
 	glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL - TODO: Should be LESS according learnopengl.com
+
+	// Init lights colors, fbo's, shader ID's and texture States
+	DEMO->lightManager.initAllLightsColors();
+	DEMO->fboManager.unbind();
+	DEMO->shaderManager.unbindShaders();
+	DEMO->textureManager.initTextureStates();
 }
 
 void glDriver::initRender(int clear) {
