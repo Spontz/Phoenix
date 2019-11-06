@@ -122,5 +122,5 @@ void sDrawSkybox::end() {
 }
 
 string sDrawSkybox::debug() {
-	return string();
+	return "[ drawSkybox id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 }

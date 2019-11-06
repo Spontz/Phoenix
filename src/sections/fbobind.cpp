@@ -59,5 +59,10 @@ void sFboBind::end() {
 }
 
 string sFboBind::debug() {
-	return string();
+	local = (fbobind_section *)this->vars;
+
+	string msg;
+	msg = "[ fboBind id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg += " fbo: " + std::to_string(local->fbo) + "\n";
+	return msg;
 }

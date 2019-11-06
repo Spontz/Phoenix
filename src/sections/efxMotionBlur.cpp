@@ -95,5 +95,5 @@ void sEfxMotionBlur::end() {
 }
 
 string sEfxMotionBlur::debug() {
-	return string();
+	return "[ efxMotionBlur id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 }

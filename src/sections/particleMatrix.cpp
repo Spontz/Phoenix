@@ -91,5 +91,5 @@ void sParticleMatrix::end() {
 }
 
 string sParticleMatrix::debug() {
-	return string();
+	return "[ particleMatrix id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 }

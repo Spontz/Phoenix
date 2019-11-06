@@ -167,5 +167,5 @@ void sEfxBloom::end() {
 }
 
 string sEfxBloom::debug() {
-	return string();
+	return "[ efxBloom id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 }

@@ -63,5 +63,5 @@ void sCamera::end() {
 }
 
 string sCamera::debug() {
-	return string();
+	return "[ cameraSection id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 }

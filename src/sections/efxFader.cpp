@@ -78,5 +78,5 @@ void sEfxFader::end() {
 }
 
 string sEfxFader::debug() {
-	return string();
+	return "[ efxFader id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 }

@@ -89,5 +89,12 @@ void sBackground::end() {
 }
 
 string sBackground::debug() {
-	return string();
+	local = (background_section *)this->vars;
+	Texture *my_tex;
+	my_tex = DEMO->textureManager.texture[local->texture];
+
+	string msg;
+	msg = "[ background id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg += " filename: " + my_tex->filename + "\n";
+	return msg;
 }

@@ -29,5 +29,5 @@ void sTest::end() {
 }
 
 string sTest::debug() {
-	return string();
+	return "[ testSection id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 }

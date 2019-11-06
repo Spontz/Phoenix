@@ -140,5 +140,5 @@ void sEfxBlur::end() {
 }
 
 string sEfxBlur::debug() {
-	return string();
+	return "[ efxBlur id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 }

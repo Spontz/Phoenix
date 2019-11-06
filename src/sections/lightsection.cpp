@@ -91,5 +91,10 @@ void sLight::end() {
 }
 
 string sLight::debug() {
-	return string();
+	local = (light_section *)this->vars;
+
+	string msg;
+	msg = "[ lightsection id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg += " light: " + std::to_string(local->lightNum) + "\n";
+	return msg;
 }
