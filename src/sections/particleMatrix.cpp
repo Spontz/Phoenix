@@ -47,17 +47,24 @@ bool sParticleMatrix::load() {
 
 	// Create the particle system
 	// Set the emitters
+	vector<Particle> Emitter;
+	Emitter.resize(local->numEmitters);
 	glm::vec3 initPosition = glm::vec3(0, 0, -10);
-	vector<glm::vec3> Emitter_positions;
+	// Load the emitters, based in our model vertexes
+	int numEmitter = 0;
 	for (unsigned int i = 0; i < local->numEmitters; i++) {
 		float circle = 2 * 3.1415f* ((float)(i + 1) / ((float)local->numEmitters));
-		glm::vec3 new_emitter = initPosition + glm::vec3(sin(circle), 0, cos(circle));
-		Emitter_positions.push_back(new_emitter);
+		Emitter[i].Type = PARTICLE_TYPE_LAUNCHER;
+		Emitter[i].Pos = initPosition + glm::vec3(sin(circle), 0, cos(circle));
+		Emitter[i].Vel = glm::vec3(0.0f, 1.0f, 0.0f);
+		Emitter[i].Col = glm::vec3(0.0f, 1.0f, 0.0f);
+		Emitter[i].Size = 1.0;
+		Emitter[i].lifeTime = 0.0f;
 	}
 
 
 	local->pSystem = new ParticleSystem(local->numMaxParticles, local->numEmitters, local->emissionTime, local->particleLifeTime, local->particleSize, local->particleTexture);
-	local->pSystem->InitParticleSystem(Emitter_positions);
+	local->pSystem->InitParticleSystem(Emitter);
 
 	return true;
 }

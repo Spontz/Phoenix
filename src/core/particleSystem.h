@@ -9,13 +9,26 @@
 
 #include "main.h"
 
+#define PARTICLE_TYPE_LAUNCHER 0
+#define PARTICLE_TYPE_SHELL 1
+
+struct Particle
+{
+	glm::vec3 Pos;	// Position:	loc 0 (vec3)
+	glm::vec3 Vel;	// Velocity:	loc 1 (vec3)
+	glm::vec3 Col;	// Color:		loc 2 (vec3)
+	float lifeTime;	// lifeTime:	loc 3 (float)
+	float Size;		// size:		loc 4 (float)
+	int Type;		// type:		loc 5 (int)
+};
+
 class ParticleSystem
 {
 public:
 	ParticleSystem(unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime, float particleSize, int particleTexture);
 	~ParticleSystem();
 
-	bool InitParticleSystem(const vector<glm::vec3> emitterPositions);
+	bool InitParticleSystem(const vector<Particle> emitter);
 	void Render(float deltaTime, const glm::mat4 &VP, const glm::mat4 &model, const glm::vec3 &CameraPos);
 	void resetParticleSystem(const glm::vec3 &Pos);
 

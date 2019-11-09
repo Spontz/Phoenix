@@ -6,9 +6,6 @@
 
 using namespace std;
 
-#define PARTICLE_TYPE_LAUNCHER 0
-#define PARTICLE_TYPE_SHELL 1
-
 #define RANDOM_TEXTURE_UNIT 3
 
 #define LOC_POSITION 0
@@ -23,15 +20,6 @@ constexpr int particleBindingPoint = 0;
 constexpr int billboardBindingPoint = 1;// free to choose, must be less than the GL_MAX_VERTEX_ATTRIB_BINDINGS limit
 
 
-struct Particle
-{
-	glm::vec3 Pos;	// Position: loc 0 (vec3)
-	glm::vec3 Vel;	// Velocity: loc 1 (vec3)
-	glm::vec3 Col;	// Color: loc 2 (vec3)
-	float lifeTime;	// lifeTime: loc 3 (float)
-	float Size;		// size: loc 4 (float)
-	int Type;		// type: loc 5 (int)
-};
 
 
 ParticleSystem::ParticleSystem(unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime, float particleSize, int particleTexture)
@@ -68,7 +56,7 @@ ParticleSystem::~ParticleSystem()
 }
 
 
-bool ParticleSystem::InitParticleSystem(const vector<glm::vec3> emitterPositions)
+bool ParticleSystem::InitParticleSystem(const vector<Particle> emitter)
 {
 	Particle* Particles = (Particle*)malloc(sizeof(Particle) * numEmitters);
 	ZERO_MEM(Particles);
@@ -76,13 +64,11 @@ bool ParticleSystem::InitParticleSystem(const vector<glm::vec3> emitterPositions
 	// Init the particle 0, the initial emitter
 	for (unsigned int i = 0; i < numEmitters; i++) {
 		Particles[i].Type = PARTICLE_TYPE_LAUNCHER;
-		Particles[i].Pos = emitterPositions[i];
-		//float circle = 2 * 3.1415f* ((float)(i + 1) / ((float)numEmitters));
-		//Particles[i].Pos = glm::vec3(0,0,-10) + glm::vec3(sin(circle), 0, cos(circle));
-		Particles[i].Vel = glm::vec3(0.0f, 1.0f, 0.0f);
-		Particles[i].Col = glm::vec3(1.0f, 1.0f, 1.0f);
-		Particles[i].Size = 1.0;
-		Particles[i].lifeTime = 0.0f;
+		Particles[i].Pos = emitter[i].Pos;
+		Particles[i].Vel = emitter[i].Vel;
+		Particles[i].Col = emitter[i].Col;
+		Particles[i].Size = emitter[i].Size;
+		Particles[i].lifeTime = emitter[i].lifeTime;
 	}
 
 	// Gen the VAO
@@ -147,8 +133,8 @@ bool ParticleSystem::InitParticleSystem(const vector<glm::vec3> emitterPositions
 	Shader *particleSystem_shader = DEMO->shaderManager.shader[particleSystemShader];
 	particleSystem_shader->use();
 	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-	particleSystem_shader->setValue("gLauncherLifetime", this->emissionTime); // Time between emissions
-	particleSystem_shader->setValue("gShellLifetime", this->particleLifeTime);
+	particleSystem_shader->setValue("fEmissionTime", this->emissionTime); // Time between emissions
+	particleSystem_shader->setValue("fParticleLifetime", this->particleLifeTime);
 
 	if (!initRandomTexture(1000)) {
 		return false;
@@ -165,7 +151,7 @@ bool ParticleSystem::InitParticleSystem(const vector<glm::vec3> emitterPositions
 	my_shader = DEMO->shaderManager.shader[billboardShader];
 	my_shader->use();
 	my_shader->setValue("gColorMap", 0);			// Set color map to 0
-	my_shader->setValue("gBillboardSize", this->particleSize);	// Set billboard size
+	my_shader->setValue("fParticleSize", this->particleSize);	// Set billboard size
 	
 	if (this->particleTexture>=0)
 		m_pTexture = DEMO->textureManager.texture[this->particleTexture];
@@ -303,11 +289,11 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::mat4 &model
 	Shader *my_shader;
 	my_shader = DEMO->shaderManager.shader[billboardShader];
 	my_shader->use();
-	my_shader->setValue("gCameraPos", CameraPos); // Set camera position
-	my_shader->setValue("gVP", VP);					// Set ViewProjection Matrix
-	my_shader->setValue("model", model);			// Set Model Matrix
-	my_shader->setValue("gColorMap", 0);			// Set color map to 0
-	my_shader->setValue("gBillboardSize", this->particleSize);	// Set billboard size
+	my_shader->setValue("gCameraPos", CameraPos);				// Set camera position
+	my_shader->setValue("gVP", VP);								// Set ViewProjection Matrix
+	my_shader->setValue("model", model);						// Set Model Matrix
+	my_shader->setValue("gColorMap", 0);						// Set color map to 0
+	my_shader->setValue("fParticleSize", this->particleSize);	// Set particle size (billboard size)
 
 
 	// Activate texture
@@ -321,9 +307,17 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::mat4 &model
 	glBindVertexBuffer(billboardBindingPoint, m_particleBuffer[m_currTFB], 0, sizeof(Particle));
 	*/
 	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)0);	// Position
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)12);	// Velocity (12 bytes)
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)24);	// Color (12 bytes)
+
 		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
+
 	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
 }
 
 bool ParticleSystem::initShaderBillboard()

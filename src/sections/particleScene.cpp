@@ -84,6 +84,7 @@ bool sParticleScene::load() {
 	local->particleLifeTime = this->param[1];
 	local->numMaxParticles = local->numEmitters + static_cast<unsigned int>(static_cast<float>(local->numEmitters)*local->particleLifeTime*(1.0f / local->emissionTime));
 	local->particleSize = this->param[2];
+	LOG->Info(LOG_LOW, "Particle Scene [%s]: Num max of particles will be: %d", this->identifier.c_str(), local->numMaxParticles);
 
 
 	// TODO: In theory, this is not needed because the num of particles is now calculated... but could change this
@@ -91,22 +92,27 @@ bool sParticleScene::load() {
 	//	LOG->Info(LOG_HIGH, "Particle Matrix [%s]: NumMaxParticles is too low! should be greater than: numEmitters + numEmitters*ParticleLifetime/EmissionTime", this->identifier.c_str());
 
 
-	
-	vector<glm::vec3> Emitter_positions;
-	Emitter_positions.resize(local->numEmitters);
+	vector<Particle> Emitter;
+	Emitter.resize(local->numEmitters);
 
 	// Load the emitters, based in our model vertexes
 	int numEmitter = 0;
 	for (int i = 0; i < my_model->meshes.size(); i++) {
 		for (int j = 0; j < my_model->meshes[i].vertices.size(); j++) {
-			Emitter_positions[numEmitter] = my_model->meshes[i].vertices[j].Position;
+			Emitter[numEmitter].Type = PARTICLE_TYPE_LAUNCHER;
+			Emitter[numEmitter].Pos = my_model->meshes[i].vertices[j].Position;
+			Emitter[numEmitter].Vel = glm::vec3(0.0f, 1.0f, 0.0f);
+			Emitter[numEmitter].Col = glm::vec3(1.0f, 1.0f, 1.0f);
+			Emitter[numEmitter].Size = 1.0f; // At this moment not being used, need to change the Billboard shader
+			Emitter[numEmitter].lifeTime = 0.0f;
 			numEmitter++;
 		}
 	}
 
 	// Create the particle system
 	local->pSystem = new ParticleSystem(local->numMaxParticles, local->numEmitters, local->emissionTime, local->particleLifeTime, local->particleSize, local->particleTexture);
-	local->pSystem->InitParticleSystem(Emitter_positions);
+	if (!local->pSystem->InitParticleSystem(Emitter))
+		return false;
 
 	return true;
 }
