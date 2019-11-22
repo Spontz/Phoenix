@@ -47,6 +47,7 @@ void Model::Draw(GLuint shaderID, float currentTime)
 		setBoneTransformations(shaderID, currentTime);
 	// Then, draw the meshes
 	for (unsigned int i = 0; i < meshes.size(); i++) {
+		glUniformMatrix4fv(glGetUniformLocation(shaderID, "model_anim"), 1, GL_FALSE, &(meshes[i].FinalTransformation[0][0]));
 		meshes[i].Draw(shaderID);
 	}
 }
@@ -101,7 +102,8 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 		// the node object only contains indices to index the actual objects in the scene. 
 		// the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		meshes.push_back(processMesh(mesh, scene));
+		LOG->Info(LOG_LOW, "Reading node name: %s", node->mName.data);
+		meshes.push_back(processMesh(node->mName.data, mesh, scene));
 	}
 	// after we've processed all of the meshes (if any) we then recursively process each of the children nodes
 	for (unsigned int i = 0; i < node->mNumChildren; i++)
@@ -111,7 +113,7 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 }
 
 
-Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
+Mesh Model::processMesh(string nodeName, aiMesh *mesh, const aiScene *scene)
 {
 	// data to fill
 	vector<Vertex> vertices;
@@ -214,7 +216,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
 	// return a mesh object created from the extracted mesh data
-	return Mesh(mesh, vertices, indices, material, directory, filename);
+	return Mesh(nodeName, mesh, vertices, indices, material, directory, filename);
 }
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.
@@ -286,6 +288,8 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 
 	glm::mat4 NodeTransformation = mat4_cast(pNode->mTransformation);
 
+	if (AnimationTime > 0)
+		int kk = 0;
 	const aiNodeAnim* pNodeAnim = FindNodeAnim(pAnimation, NodeName);
 
 	if (pNodeAnim) {
@@ -306,13 +310,34 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 		CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
 		glm::vec3 translation = glm::vec3(Translation.x, Translation.y, Translation.z);
 		glm::mat4 TranslationM = glm::translate(glm::mat4(1.0f), translation);
-
+		/*
+		// Show debug info
+		LOG->Info(LOG_LOW, "Node Anim: %s, second: %.3f", pNodeAnim->mNodeName.data, AnimationTime);
+		LOG->Info(LOG_LOW, "S: %.3f, %.3f, %.3f", scale.x, scale.y, scale.z);
+		LOG->Info(LOG_LOW, "R: %.3f, %.3f, %.3f, %.3f", RotationQ.x, RotationQ.y, RotationQ.z, RotationQ.w);
+		LOG->Info(LOG_LOW, "T: %.3f, %.3f, %.3f", translation.x, translation.y, translation.z);
+		*/
 		// Combine the above transformations
 		NodeTransformation = TranslationM * RotationM *ScalingM;
 	}
 
 	// Combine with node Transformation with Parent Transformation
 	glm::mat4 GlobalTransformation = ParentTransform * NodeTransformation;
+	
+	// TODO: Guarrada, mirar de hacerlo mejor y no usar el size()
+	for (int i = 0; i < this->meshes.size(); i++) {
+		if (NodeName == this->meshes[i].nodeName) {
+			this->meshes[i].FinalTransformation = m_GlobalInverseTransform * GlobalTransformation;
+			/*LOG->Info(LOG_LOW, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %i [time: %.3f]", NodeName.c_str(), i, AnimationTime);
+			glm::mat4 M = GlobalTransformation;
+			LOG->Info(LOG_LOW, "M: [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f]",
+				M[0][0], M[0][1], M[0][2], M[0][3],
+				M[1][0], M[1][1], M[1][2], M[1][3], 
+				M[2][0], M[2][1], M[2][2], M[2][3], 
+				M[3][0], M[3][1], M[3][2], M[3][3]);
+				*/
+		}
+	}
 
 	if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) {
 		unsigned int BoneIndex = m_BoneMapping[NodeName];
@@ -400,6 +425,11 @@ void Model::CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, con
 	const aiQuaternion& EndRotationQ = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
 	aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
 	Out = Out.Normalize();
+	/*LOG->Info(LOG_LOW, "rot: factor: %.3f", Factor);
+	LOG->Info(LOG_LOW, "rot: Start: %.3f, %.3f, %.3f, %.3f", StartRotationQ.x, StartRotationQ.y, StartRotationQ.z, StartRotationQ.w);
+	LOG->Info(LOG_LOW, "rot: End:   %.3f, %.3f, %.3f, %.3f", EndRotationQ.x, EndRotationQ.y, EndRotationQ.z, EndRotationQ.w);
+	LOG->Info(LOG_LOW, "rot: Out:   %.3f, %.3f, %.3f, %.3f", Out.x, Out.y, Out.z, Out.w);
+	*/
 }
 
 void Model::CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)

@@ -38,8 +38,10 @@ void VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
 	assert(0);
 }
 
-Mesh::Mesh(const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, const aiMaterial *pMaterial, string directory, string filename)
+Mesh::Mesh(string nodeName, const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, const aiMaterial *pMaterial, string directory, string filename)
 {
+	this->FinalTransformation = glm::mat4(1.0); // Load identity matrix by default
+	this->nodeName = nodeName;
 	this->m_pMesh = pMesh;
 	this->vertices = vertices;
 	this->indices = indices;

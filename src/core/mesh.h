@@ -67,9 +67,11 @@ public:
 	vector<unsigned int>	indices;
 	Material				material;
 	GLuint					VAO;
+	string					nodeName;
+	glm::mat4				FinalTransformation; // Transformation Matrix for positioning the mesh
 	
 
-	Mesh(const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, const aiMaterial *pMaterial, string directory, string filename);
+	Mesh(string nodeName, const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, const aiMaterial *pMaterial, string directory, string filename);
 	// render the mesh
 	void Draw(GLuint shaderID);
 	
