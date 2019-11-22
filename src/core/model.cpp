@@ -246,7 +246,8 @@ void Model::setBoneTransformations(GLuint shaderProgram, float currentTime)
 	if (m_pScene->HasAnimations()) {
 		std::vector<glm::mat4> Transforms;
 		boneTransform(currentTime, Transforms);
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, &Transforms[0][0][0]);
+		if (Transforms.size() > 0)
+			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, &Transforms[0][0][0]);
 		
 	}
 }
