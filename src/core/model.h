@@ -40,6 +40,7 @@ public:
 	string			filepath;	// Full path of the model file
 	bool			gammaCorrection;
 	bool			playAnimation;	// Do we want to compute the transofrmations for playing animations?
+	glm::mat4		modelTransform;	// Model initial matrix
 
 	// constructor, expects a filepath to a 3D model.
 	Model(bool gamma = false);
@@ -66,6 +67,9 @@ private:
 	// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
 	void processNode(aiNode *node, const aiScene *scene);
 	Mesh processMesh(string nodeName, aiMesh *mesh, const aiScene *scene);
+
+	// Set mesh transformations
+	void setMeshesModelTransform(glm::mat4 &modelMatrix);
 
 	// Bones Calculations
 	void setBoneTransformations(GLuint shaderProgram, float currentTime);

@@ -144,7 +144,7 @@ void sDrawScene::exec() {
 	model = glm::rotate(model, glm::radians(local->ry), glm::vec3(0, 1, 0));
 	model = glm::rotate(model, glm::radians(local->rz), glm::vec3(0, 0, 1));
 	model = glm::scale(model, glm::vec3(local->sx, local->sy, local->sz));
-	my_shader->setValue("model", model);
+	my_model->modelTransform = model;
 
 	// For MotionBlur
 	my_shader->setValue("prev_projection", local->prev_projection);
@@ -155,7 +155,6 @@ void sDrawScene::exec() {
 	local->prev_view = view;
 	local->prev_model = model;
 	// End MotionBlur
-
 
 	// Set the values
 	local->vars->setValues();

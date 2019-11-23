@@ -28,8 +28,9 @@ Model::Model(bool gamma)
 	gammaCorrection = gamma;
 	m_NumMeshes = 0; 
 	m_NumBones = 0;
-	playAnimation = false;	// By default, animations are disabled
+	playAnimation = false;			// By default, animations are disabled
 	currentAnimation = 0;
+	modelTransform = glm::mat4(1.0f);	// Load Identity matrix by default
 }
 
 Model::~Model()
@@ -45,9 +46,12 @@ void Model::Draw(GLuint shaderID, float currentTime)
 	// Set the Bones transformations and send the Bones info to the Shader (gBones uniform)
 	if (this->playAnimation)
 		setBoneTransformations(shaderID, currentTime);
+	else
+		setMeshesModelTransform(this->modelTransform);	// Load the model transformation on all sub-meshes, if no animation is required
+
 	// Then, draw the meshes
 	for (unsigned int i = 0; i < meshes.size(); i++) {
-		glUniformMatrix4fv(glGetUniformLocation(shaderID, "model_anim"), 1, GL_FALSE, &(meshes[i].FinalTransformation[0][0]));
+		glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, &(meshes[i].meshTransform[0][0]));
 		meshes[i].Draw(shaderID);
 	}
 }
@@ -238,6 +242,11 @@ vector<int> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, str
 	return textures;
 }
 
+void Model::setMeshesModelTransform(glm::mat4 &modelMatrix)
+{
+	for (int i = 0; i < meshes.size(); i++)
+		meshes[i].meshTransform = modelMatrix;
+}
 
 /////////////// Bones calculations
 // TODO: Do a Bones Class, with all this calculations
@@ -257,8 +266,6 @@ void Model::setBoneTransformations(GLuint shaderProgram, float currentTime)
 
 void Model::boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transforms)
 {
-	glm::mat4 Identity = glm::mat4(1.0f);
-
 	//TODO: I think that this line does not make any sense... because its overwritten later
 	m_animDuration = (float)m_pScene->mAnimations[currentAnimation]->mDuration;
 
@@ -271,7 +278,7 @@ void Model::boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transform
 	float TimeInTicks = timeInSeconds * TicksPerSecond;
 	float AnimationTime = (float)fmod(TimeInTicks, m_animDuration);
 
-	ReadNodeHeirarchy(AnimationTime, m_pScene->mRootNode, Identity);
+	ReadNodeHeirarchy(AnimationTime, m_pScene->mRootNode, this->modelTransform);
 
 	Transforms.resize(m_NumBones);
 
@@ -327,7 +334,7 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 	// TODO: Guarrada, mirar de hacerlo mejor y no usar el size()
 	for (int i = 0; i < this->meshes.size(); i++) {
 		if (NodeName == this->meshes[i].nodeName) {
-			this->meshes[i].FinalTransformation = m_GlobalInverseTransform * GlobalTransformation;
+			this->meshes[i].meshTransform = m_GlobalInverseTransform * GlobalTransformation;
 			/*LOG->Info(LOG_LOW, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %i [time: %.3f]", NodeName.c_str(), i, AnimationTime);
 			glm::mat4 M = GlobalTransformation;
 			LOG->Info(LOG_LOW, "M: [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f]",

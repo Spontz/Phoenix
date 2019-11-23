@@ -68,7 +68,7 @@ public:
 	Material				material;
 	GLuint					VAO;
 	string					nodeName;
-	glm::mat4				FinalTransformation; // Transformation Matrix for positioning the mesh
+	glm::mat4				meshTransform; // Transformation Matrix for positioning the mesh
 	
 
 	Mesh(string nodeName, const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, const aiMaterial *pMaterial, string directory, string filename);
