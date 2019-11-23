@@ -13,6 +13,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <exprtk.hpp>
 #include <glad/glad.h>
+#include <assimp/version.h>
 
 #include "core/demokernel.h"
 
