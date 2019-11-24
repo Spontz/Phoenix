@@ -69,7 +69,7 @@ private:
 	Mesh processMesh(string nodeName, aiMesh *mesh, const aiScene *scene);
 
 	// Set mesh transformations
-	void setMeshesModelTransform(glm::mat4 &modelMatrix);
+	void setMeshesModelTransform(glm::mat4 &modelTransform);
 
 	// Bones Calculations
 	void setBoneTransformations(GLuint shaderProgram, float currentTime);

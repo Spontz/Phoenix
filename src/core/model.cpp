@@ -43,11 +43,12 @@ Model::~Model()
 
 void Model::Draw(GLuint shaderID, float currentTime)
 {
+	// Load the model transformation on all sub-meshes
+	setMeshesModelTransform(this->modelTransform);
+
 	// Set the Bones transformations and send the Bones info to the Shader (gBones uniform)
 	if (this->playAnimation)
 		setBoneTransformations(shaderID, currentTime);
-	else
-		setMeshesModelTransform(this->modelTransform);	// Load the model transformation on all sub-meshes, if no animation is required
 
 	// Then, draw the meshes
 	for (unsigned int i = 0; i < meshes.size(); i++) {
@@ -246,10 +247,10 @@ vector<int> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, str
 	return textures;
 }
 
-void Model::setMeshesModelTransform(glm::mat4 &modelMatrix)
+void Model::setMeshesModelTransform(glm::mat4 &modelTransform)
 {
 	for (int i = 0; i < meshes.size(); i++)
-		meshes[i].meshTransform = modelMatrix;
+		meshes[i].meshTransform = modelTransform;
 }
 
 /////////////// Bones calculations
