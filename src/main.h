@@ -4,6 +4,9 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#define PHOENIX_MAJOR_VERSION 0
+#define PHOENIX_MINOR_VERSION 1
+
 #ifdef PHOENIX_MAIN
 	#define STB_IMAGE_IMPLEMENTATION
 #endif

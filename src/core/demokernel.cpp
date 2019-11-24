@@ -263,6 +263,9 @@ void demokernel::getArguments(int argc, char *argv[]) {
 
 void demokernel::initDemo() {
 	
+	// Show Phoenix version
+	LOG->Info(LOG_HIGH, "Spontz visuals engine 'Phoenix' version: %d.%d", PHOENIX_MAJOR_VERSION, PHOENIX_MINOR_VERSION);
+
 	// initialize graphics driver
 	GLDRV->initGraphics();
 	LOG->Info(LOG_HIGH,"OpenGL environment created");
