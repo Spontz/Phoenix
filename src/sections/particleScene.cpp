@@ -98,9 +98,9 @@ bool sParticleScene::load() {
 	// Load the emitters, based in our model vertexes
 	int numEmitter = 0;
 	for (int i = 0; i < my_model->meshes.size(); i++) {
-		for (int j = 0; j < my_model->meshes[i].vertices.size(); j++) {
+		for (int j = 0; j < my_model->meshes[i].unique_vertices_pos.size(); j++) {
 			Emitter[numEmitter].Type = PARTICLE_TYPE_LAUNCHER;
-			Emitter[numEmitter].Pos = my_model->meshes[i].vertices[j].Position;
+			Emitter[numEmitter].Pos = my_model->meshes[i].unique_vertices_pos[j];
 			Emitter[numEmitter].Vel = glm::vec3(0.0f, 1.0f, 0.0f);
 			Emitter[numEmitter].Col = glm::vec3(1.0f, 1.0f, 1.0f);
 			Emitter[numEmitter].Size = 1.0f; // At this moment not being used, need to change the Billboard shader
