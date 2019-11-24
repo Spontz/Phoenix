@@ -128,9 +128,6 @@ void sDrawSceneMatrix::exec() {
 	// Start evaluating blending
 	EvalBlendingStart();
 
-	// Evaluate the expression
-	local->exprPosition->Expression.value();
-
 	if (local->drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	if (local->enableDepthBufferClearing == 1)
@@ -166,6 +163,7 @@ void sDrawSceneMatrix::exec() {
 	{
 		for (int j = 0; j < my_model_ref->meshes[i].unique_vertices_pos.size(); j++)
 		{
+			// Evaluate the expression
 			local->exprPosition->Expression.value();
 			my_shader->setValue("n", local->n); // we send also the number of object to the shader
 
@@ -186,8 +184,8 @@ void sDrawSceneMatrix::exec() {
 
 			my_model->Draw(my_shader->ID, local->AnimationTime);
 
+			object++; 
 			local->n = (float)object;
-			object++;
 		}
 	}
 	
@@ -218,7 +216,7 @@ string sDrawSceneMatrix::debug()
 	msg = "[ drawSceneMatrix id: " + this-> identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " Matrix file: " + my_model_ref->filename + "\n";
 	msg += " file: " + my_model->filename + "\n";
-	msg += " objects drawn: " + std::to_string((int)(local->n)+1) + "\n";
+	msg += " objects drawn: " + std::to_string((int)(local->n)) + "\n";
 	msg += " meshes in each scene: " + std::to_string(my_model->meshes.size()) + "\n";
 	return msg;
 }
