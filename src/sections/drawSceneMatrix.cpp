@@ -211,27 +211,14 @@ string sDrawSceneMatrix::debug()
 {
 	local = (drawSceneMatrix_section *)this->vars;
 
+	Model *my_model_ref = DEMO->modelManager.model[local->model_ref];
 	Model *my_model = DEMO->modelManager.model[local->model];
 
 	string msg;
 	msg = "[ drawSceneMatrix id: " + this-> identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg += " Matrix file: " + my_model_ref->filename + "\n";
 	msg += " file: " + my_model->filename + "\n";
-	msg += " objects drawn: " + std::to_string(local->n) + "\n";
+	msg += " objects drawn: " + std::to_string((int)(local->n)+1) + "\n";
 	msg += " meshes in each scene: " + std::to_string(my_model->meshes.size()) + "\n";
-/*	for (int i=0; i<my_model->meshes.size(); i++) {
-		msg += "  mesh: " + std::to_string(i) + "\n";
-		msg += "    Num vertices: " + std::to_string(my_model->meshes[i].vertices.size()) + "\n";
-		msg += "    Num textures: " + std::to_string(my_model->meshes[i].material.textures.size()) + "\n";
-		msg += "    Color Diffuse [" +	std::to_string(my_model->meshes[i].material.colDiffuse.r) + " / " +
-										std::to_string(my_model->meshes[i].material.colDiffuse.g) + " / " +
-										std::to_string(my_model->meshes[i].material.colDiffuse.b) + " ] " + "\n";
-		msg += "    Color Ambient [" + std::to_string(my_model->meshes[i].material.colAmbient.r) + " / " +
-										std::to_string(my_model->meshes[i].material.colAmbient.g) + " / " +
-										std::to_string(my_model->meshes[i].material.colAmbient.b) + " ] " + "\n";
-		msg += "    Color Specular [" + std::to_string(my_model->meshes[i].material.colSpecular.r) + " / " +
-										std::to_string(my_model->meshes[i].material.colSpecular.g) + " / " +
-										std::to_string(my_model->meshes[i].material.colSpecular.b) + " ] " + "\n";
-	}
-*/	
 	return msg;
 }
