@@ -19,6 +19,7 @@ class sDrawSkybox : public Section { public:	sDrawSkybox();  bool load(); void i
 class sDrawVideo : public Section { public:	sDrawVideo();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sDrawQuad : public Section { public:	sDrawQuad();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sDrawScene : public Section { public:	sDrawScene();  bool load(); void init(); void exec(); void end(); string debug(); };
+class sDrawSceneMatrix : public Section { public:	sDrawSceneMatrix();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sParticleMatrix : public Section { public:	sParticleMatrix();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sParticleScene : public Section { public:	sParticleScene();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sEfxBloom : public Section { public:	sEfxBloom();  bool load(); void init(); void exec(); void end(); string debug(); };

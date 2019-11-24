@@ -45,12 +45,33 @@ Mesh::Mesh(string nodeName, const aiMesh *pMesh, vector<Vertex> vertices, vector
 	this->m_pMesh = pMesh;
 	this->vertices = vertices;
 	this->indices = indices;
+	
+	loadUniqueVerticesPos();
 
 	// Setup the material of our mesh (each mesh has only one material)
 	this->material.Load(pMaterial, directory, filename);
 
 	// now that we have all the required data, set the vertex buffers and its attribute pointers.
 	setupMesh();
+}
+
+
+
+void Mesh::loadUniqueVerticesPos()
+{
+	// Loads the unique vertices list
+	bool vertexFound = false;
+	for (int i = 0; i < vertices.size(); i++) {
+		vertexFound = false;
+		for (int j = 0; j < unique_vertices_pos.size(); j++) {
+			if (vertices[i].Position == unique_vertices_pos[j]) {
+				vertexFound = true;
+			}
+		}
+		if (vertexFound == false)
+			unique_vertices_pos.push_back(vertices[i].Position);
+	}
+
 }
 
 // initializes all the buffer objects/arrays
@@ -99,6 +120,7 @@ void Mesh::setupMesh()
 
 	glBindVertexArray(0);
 }
+
 
 // render the mesh
 void Mesh::Draw(GLuint shaderID)

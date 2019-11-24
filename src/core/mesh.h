@@ -65,6 +65,7 @@ class Mesh {
 public:
 	vector<Vertex>			vertices;
 	vector<unsigned int>	indices;
+	vector<glm::vec3>		unique_vertices_pos; // Unique vertices positions
 	Material				material;
 	GLuint					VAO;
 	string					nodeName;
@@ -81,5 +82,8 @@ private:
 
 	// initializes all the buffer objects/arrays
 	void setupMesh();
+
+	// Loads the unique vertices positions
+	void loadUniqueVerticesPos();
 };
 #endif

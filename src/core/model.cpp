@@ -74,7 +74,10 @@ bool Model::Load(string const &path)
 	filepath = path;
 	// read file via ASSIMP
 	
-	m_pScene = m_Importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals);
+	m_pScene = m_Importer.ReadFile(filepath, aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals
+		| aiProcess_Triangulate);// | aiProcess_JoinIdenticalVertices); // TODO: JoinIdenticalVertices dows not work: https://github.com/assimp/assimp/issues/2006
+		//| aiProcess_OptimizeGraph | aiProcess_OptimizeMeshes); // TODO: Investigate if this flags work fine with an animated model with complex hierarchy
+	//m_pScene = m_Importer.ReadFile(filepath, aiProcessPreset_TargetRealtime_MaxQuality); // TODO: Investigate if this preset is useful for us
 	// check for errors
 	if (!m_pScene || m_pScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !m_pScene->mRootNode) // if is Not Zero
 	{
@@ -123,6 +126,7 @@ Mesh Model::processMesh(string nodeName, aiMesh *mesh, const aiScene *scene)
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;
 	vector<int> textures;
+
 
 	LOG->Info(LOG_LOW, "Loading mesh: %s", mesh->mName.C_Str());
 

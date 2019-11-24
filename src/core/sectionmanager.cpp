@@ -20,6 +20,7 @@ tSectionID sectionID[] = {
 	{"camera",				SectionType::CameraSec},
 	{"light",				SectionType::LightSec},
 	{"drawScene",			SectionType::DrawScene},
+	{"drawSceneMatrix",		SectionType::DrawSceneMatrix},
 	{"drawImage",			SectionType::DrawImage},
 	{"drawSkybox",			SectionType::DrawSkybox},
 	{"drawVideo",			SectionType::DrawVideo},
@@ -101,6 +102,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::DrawScene:
 		mySection = new sDrawScene();
+		break;
+	case SectionType::DrawSceneMatrix:
+		mySection = new sDrawSceneMatrix();
 		break;
 	case SectionType::ParticleMatrix:
 		mySection = new sParticleMatrix();

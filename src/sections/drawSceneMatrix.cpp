@@ -4,7 +4,8 @@
 // ******************************************************************
 
 typedef struct {
-	int			model;
+	int			model_ref;	// Reference model to be use to store positions
+	int			model;		// Model to draw
 	int			shader;
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
@@ -12,34 +13,35 @@ typedef struct {
 	int			AnimationNumber;	// Number of animation to play
 	float		AnimationTime;		// Animation time (in seconds)
 
+	float		n;			// Object to draw
 	float		tx,ty,tz;	// Traslation
 	float		rx,ry,rz;	// Rotation
 	float		sx,sy,sz;	// Scale
 	
 	// Previous model, projection and view matrix, for being used in effects like motion blur
-	glm::mat4	prev_model;
-	glm::mat4	prev_projection;
-	glm::mat4	prev_view;
+	vector<glm::mat4>	*prev_model;		// The model needs to be stored on a vector because we need to store the previous model matrix of each object
+	glm::mat4			prev_projection;
+	glm::mat4			prev_view;
 
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
 	ShaderVars	*vars;			// For storing any other shader variables
-} drawScene_section;
+} drawSceneMatrix_section;
 
-static drawScene_section *local;
+static drawSceneMatrix_section *local;
 
 // ******************************************************************
 
-sDrawScene::sDrawScene() {
+sDrawSceneMatrix::sDrawSceneMatrix() {
 	type = SectionType::DrawScene;
 }
 
-bool sDrawScene::load() {
-	if ((this->param.size() != 4) || (this->strings.size() != 7)) {
-		LOG->Error("DrawScene [%s]: 4 param and 7 strings needed", this->identifier.c_str());
+bool sDrawSceneMatrix::load() {
+	if ((this->param.size() != 4) || (this->strings.size() != 8)) {
+		LOG->Error("DrawSceneMatrix [%s]: 4 param and 8 strings needed", this->identifier.c_str());
 		return false;
 	}
 
-	local = (drawScene_section*)malloc(sizeof(drawScene_section));
+	local = (drawSceneMatrix_section*)malloc(sizeof(drawSceneMatrix_section));
 	this->vars = (void*)local;
 
 
@@ -51,11 +53,23 @@ bool sDrawScene::load() {
 	local->playAnimation = (int)this->param[2];
 	local->AnimationNumber = (int)this->param[3];
 	
-	// Load model and shader
-	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2]);
-	if (local->model < 0 || local->shader < 0)
+	// Load ref. model, model and shader
+	local->model_ref = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
+	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[1]);
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[2], DEMO->dataFolder + this->strings[3]);
+	if (local->model_ref < 0 || local->model < 0 || local->shader < 0)
 		return false;
+
+	// Calculate the number of matrices that we need to store
+	Model *my_model_ref;
+	my_model_ref = DEMO->modelManager.model[local->model_ref];
+	int num_matrices = 0;
+	for (int i = 0; i < my_model_ref->meshes.size(); i++)
+	{
+		num_matrices += (int)my_model_ref->meshes[i].unique_vertices_pos.size();
+	}
+	local->prev_model = new vector<glm::mat4>;
+	local->prev_model->resize(num_matrices);
 
 	// Load model properties
 	Model *my_model;
@@ -66,10 +80,11 @@ bool sDrawScene::load() {
 
 	local->exprPosition = new mathDriver(this);
 	// Load all the other strings
-	for (int i = 3; i < strings.size(); i++)
+	for (int i = 4; i < strings.size(); i++)
 		local->exprPosition->expression += this->strings[i];
 
 	local->exprPosition->SymbolTable.add_variable("aTime", local->AnimationTime);
+	local->exprPosition->SymbolTable.add_variable("n", local->n);
 	local->exprPosition->SymbolTable.add_variable("tx", local->tx);
 	local->exprPosition->SymbolTable.add_variable("ty", local->ty);
 	local->exprPosition->SymbolTable.add_variable("tz", local->tz);
@@ -99,13 +114,14 @@ bool sDrawScene::load() {
 	return true;
 }
 
-void sDrawScene::init() {
+void sDrawSceneMatrix::init() {
 	
 }
 
-void sDrawScene::exec() {
-	local = (drawScene_section *)this->vars;
+void sDrawSceneMatrix::exec() {
+	local = (drawSceneMatrix_section *)this->vars;
 
+	Model *my_model_ref = DEMO->modelManager.model[local->model_ref];
 	Model *my_model = DEMO->modelManager.model[local->model];
 	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
 	
@@ -135,31 +151,49 @@ void sDrawScene::exec() {
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
 	my_shader->setValue("projection", projection);
 	my_shader->setValue("view", view);
-
-
-	// render the loaded model
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(local->tx, local->ty, local->tz));
-	model = glm::rotate(model, glm::radians(local->rx), glm::vec3(1, 0, 0));
-	model = glm::rotate(model, glm::radians(local->ry), glm::vec3(0, 1, 0));
-	model = glm::rotate(model, glm::radians(local->rz), glm::vec3(0, 0, 1));
-	model = glm::scale(model, glm::vec3(local->sx, local->sy, local->sz));
-	my_model->modelTransform = model;
-
-	// For MotionBlur
+	// For MotionBlur: send the previous matrix
 	my_shader->setValue("prev_projection", local->prev_projection);
 	my_shader->setValue("prev_view", local->prev_view);
-	my_shader->setValue("prev_model", local->prev_model);
-
-	local->prev_projection = projection;
-	local->prev_view = view;
-	local->prev_model = model;
-	// End MotionBlur
 
 	// Set the other shader variable values
 	local->vars->setValues();
 
-	my_model->Draw(my_shader->ID, local->AnimationTime);
+	// Set the position of the reference model
+	glm::mat4 model;
+	local->n = 0;
+	int object = 0;
+	for (int i = 0; i < my_model_ref->meshes.size(); i++)
+	{
+		for (int j = 0; j < my_model_ref->meshes[i].unique_vertices_pos.size(); j++)
+		{
+			local->exprPosition->Expression.value();
+			my_shader->setValue("n", local->n); // we send also the number of object to the shader
+
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, my_model_ref->meshes[i].unique_vertices_pos[j]);
+
+			// Now render the object using the "model_ref" as a model matrix start position
+			model = glm::translate(model, glm::vec3(local->tx, local->ty, local->tz));
+			model = glm::rotate(model, glm::radians(local->rx), glm::vec3(1, 0, 0));
+			model = glm::rotate(model, glm::radians(local->ry), glm::vec3(0, 1, 0));
+			model = glm::rotate(model, glm::radians(local->rz), glm::vec3(0, 0, 1));
+			model = glm::scale(model, glm::vec3(local->sx, local->sy, local->sz));
+			my_model->modelTransform = model;
+
+			// For MotionBlur, we send the previous model matrix, and then store it for later use
+			my_shader->setValue("prev_model", local->prev_model[0][object]);
+			local->prev_model[0][object] = model;
+
+			my_model->Draw(my_shader->ID, local->AnimationTime);
+
+			local->n = (float)object;
+			object++;
+		}
+	}
+	
+	// For MotionBlur: store the previous matrix
+	local->prev_projection = projection;
+	local->prev_view = view;
 
 	glUseProgram(0);
 	if (local->drawWireframe)
@@ -169,20 +203,21 @@ void sDrawScene::exec() {
 	EvalBlendingEnd();
 }
 
-void sDrawScene::end() {
+void sDrawSceneMatrix::end() {
 	
 }
 
-string sDrawScene::debug()
+string sDrawSceneMatrix::debug()
 {
-	local = (drawScene_section *)this->vars;
+	local = (drawSceneMatrix_section *)this->vars;
 
 	Model *my_model = DEMO->modelManager.model[local->model];
 
 	string msg;
-	msg = "[ drawScene id: " + this-> identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg = "[ drawSceneMatrix id: " + this-> identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " file: " + my_model->filename + "\n";
-	msg += " meshes: " + std::to_string(my_model->meshes.size()) + "\n";
+	msg += " objects drawn: " + std::to_string(local->n) + "\n";
+	msg += " meshes in each scene: " + std::to_string(my_model->meshes.size()) + "\n";
 /*	for (int i=0; i<my_model->meshes.size(); i++) {
 		msg += "  mesh: " + std::to_string(i) + "\n";
 		msg += "    Num vertices: " + std::to_string(my_model->meshes[i].vertices.size()) + "\n";
