@@ -8,8 +8,18 @@ project(Phoenix)
 set(CMAKE_CXX_STANDARD 17)
 
 if(MSVC)
+ option(STATIC_CRT "Statically link MSVC CRT" ON)
  add_compile_options(-bigobj)
  add_definitions(/MP)
+endif()
+
+if(MSVC AND STATIC_CRT)
+    add_compile_options(
+        "$<$<CONFIG:Debug>:/MTd>"
+        "$<$<CONFIG:RelWithDebInfo>:/MT>"
+        "$<$<CONFIG:Release>:/MT>"
+        "$<$<CONFIG:MinSizeRel>:/MT>"
+    )
 endif()
 
 #set(VCPKG_LIBRARY_LINKAGE static)
