@@ -73,7 +73,7 @@ void main()
 		if (Age < fParticleLifetime) {
 			Type1 = PARTICLE_TYPE_SHELL;
 			Position1 = Position0[0] + DeltaP; // x = x0 + xDelta
-			float randomNum = (Position0[0].x + Position0[0].y + Position0[0].z); 
+			//float randomNum = (Position0[0].x + Position0[0].y + Position0[0].z); 
 			//vec3 Dir = GetRandomDir(randomNum);
 			//vec3 Dir = vec3(1.0, 1.0, 1.0);
 			//Velocity1 = Velocity0[0] + DeltaV/Dir; // v = v0 + vDelta
