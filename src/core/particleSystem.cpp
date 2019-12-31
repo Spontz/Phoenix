@@ -63,7 +63,7 @@ bool ParticleSystem::InitParticleSystem(const vector<Particle> emitter)
 
 	// Init the particle 0, the initial emitter
 	for (unsigned int i = 0; i < numEmitters; i++) {
-		Particles[i].Type = PARTICLE_TYPE_LAUNCHER;
+		Particles[i].Type = PARTICLE_TYPE_EMITTER;
 		Particles[i].Pos = emitter[i].Pos;
 		Particles[i].Vel = emitter[i].Vel;
 		Particles[i].Col = emitter[i].Col;
@@ -182,7 +182,7 @@ void ParticleSystem::resetParticleSystem(const glm::vec3 &Pos)
 	ZERO_MEM(Particles);
 
 	// Init the particle 0, the initial emitter
-	Particles[0].Type = PARTICLE_TYPE_LAUNCHER;
+	Particles[0].Type = PARTICLE_TYPE_EMITTER;
 	Particles[0].Pos = Pos;
 	Particles[0].Vel = glm::vec3(0.0f, 0.01f, 0.0f);
 	Particles[0].lifeTime = 0.0f;
@@ -209,7 +209,7 @@ void ParticleSystem::UpdateEmitters(float deltaTime)
 		Particle *data = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle)*numEmitters, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);// | GL_MAP_UNSYNCHRONIZED_BIT);
 		// Change data and move some random positions
 		for (unsigned int i = 0; i < numEmitters; i++) {
-			data[i].Type = PARTICLE_TYPE_LAUNCHER;
+			data[i].Type = PARTICLE_TYPE_EMITTER;
 			//float sphere = 2 * 3.1415f* ((float)(i + 1) / ((float)numEmitters));
 			//data[i].Pos = initPosition + glm::vec3(sin(sphere), -0.1*m_time, cos(sphere));
 			data[i].Vel = glm::vec3(1.0f, 0.01f, 0.0f);

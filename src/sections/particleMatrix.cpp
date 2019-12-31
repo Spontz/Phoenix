@@ -54,7 +54,7 @@ bool sParticleMatrix::load() {
 	int numEmitter = 0;
 	for (unsigned int i = 0; i < local->numEmitters; i++) {
 		float circle = 2 * 3.1415f* ((float)(i + 1) / ((float)local->numEmitters));
-		Emitter[i].Type = PARTICLE_TYPE_LAUNCHER;
+		Emitter[i].Type = PARTICLE_TYPE_EMITTER;
 		Emitter[i].Pos = initPosition + glm::vec3(sin(circle), 0, cos(circle));
 		Emitter[i].Vel = glm::vec3(0.0f, 1.0f, 0.0f);
 		Emitter[i].Col = glm::vec3(0.0f, 1.0f, 0.0f);

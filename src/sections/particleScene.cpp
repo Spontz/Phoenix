@@ -8,9 +8,11 @@ typedef struct {
 	// Particle engine variables
 	unsigned int	numMaxParticles;
 	unsigned int	numEmitters;
+	float			currentEmitter;
 	float			emissionTime;
 	float			particleLifeTime;
 	float			particleSize;
+	float			particleSpeed;
 	int				particleTexture;
 	ParticleSystem *pSystem;
 
@@ -18,6 +20,10 @@ typedef struct {
 	float		tx, ty, tz;	// Traslation
 	float		rx, ry, rz;	// Rotation
 	float		sx, sy, sz;	// Scale
+
+	float		velX, velY, velZ;		// Velocity
+	float		forceX, forceY, forceZ;	// Force
+	float		colorR, colorG, colorB;	// Color
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
 
 } particleScene_section;
@@ -60,8 +66,24 @@ bool sParticleScene::load() {
 	local->exprPosition->SymbolTable.add_variable("sx", local->sx);
 	local->exprPosition->SymbolTable.add_variable("sy", local->sy);
 	local->exprPosition->SymbolTable.add_variable("sz", local->sz);
-	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
-	local->exprPosition->compileFormula();
+
+	local->exprPosition->SymbolTable.add_variable("partSpeed", local->particleSpeed);
+	local->exprPosition->SymbolTable.add_variable("velX", local->velX);
+	local->exprPosition->SymbolTable.add_variable("velY", local->velY);
+	local->exprPosition->SymbolTable.add_variable("velZ", local->velZ);
+
+	local->exprPosition->SymbolTable.add_variable("forceX", local->forceX);
+	local->exprPosition->SymbolTable.add_variable("forceY", local->forceY);
+	local->exprPosition->SymbolTable.add_variable("forceZ", local->forceZ);
+
+	local->exprPosition->SymbolTable.add_variable("colorR", local->colorR);
+	local->exprPosition->SymbolTable.add_variable("colorG", local->colorG);
+	local->exprPosition->SymbolTable.add_variable("colorB", local->colorB);
+
+	local->exprPosition->SymbolTable.add_variable("nE", local->currentEmitter);
+
+	//local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
+	//local->exprPosition->compileFormula();
 
 
 	// Load model properties
@@ -75,6 +97,11 @@ bool sParticleScene::load() {
 	}
 
 	local->numEmitters = numEmitters;
+	local->exprPosition->SymbolTable.add_constant("TnE", (float)local->numEmitters);
+	
+	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
+	local->exprPosition->compileFormula();
+
 	local->emissionTime = this->param[0];
 	if (local->emissionTime <= 0) {
 		LOG->Error("Particle Scene [%s]: Emission tiem should be greater than 0", this->identifier.c_str());
@@ -97,15 +124,18 @@ bool sParticleScene::load() {
 
 	// Load the emitters, based in our model vertexes
 	int numEmitter = 0;
+	local->currentEmitter = 0;
 	for (int i = 0; i < my_model->meshes.size(); i++) {
 		for (int j = 0; j < my_model->meshes[i].unique_vertices_pos.size(); j++) {
-			Emitter[numEmitter].Type = PARTICLE_TYPE_LAUNCHER;
+			local->exprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
+			Emitter[numEmitter].Type = PARTICLE_TYPE_EMITTER;
 			Emitter[numEmitter].Pos = my_model->meshes[i].unique_vertices_pos[j];
-			Emitter[numEmitter].Vel = glm::vec3(0.0f, 1.0f, 0.0f);
-			Emitter[numEmitter].Col = glm::vec3(1.0f, 1.0f, 1.0f);
+			Emitter[numEmitter].Vel = glm::vec3(local->velX, local->velY, local->velZ);
+			Emitter[numEmitter].Col = glm::vec3(local->colorR, local->colorG, local->colorB);
 			Emitter[numEmitter].Size = 1.0f; // At this moment not being used, need to change the Billboard shader
 			Emitter[numEmitter].lifeTime = 0.0f;
 			numEmitter++;
+			local->currentEmitter = static_cast<float>(numEmitter);
 		}
 	}
 
@@ -143,12 +173,13 @@ void sParticleScene::exec() {
 	model = glm::rotate(model, glm::radians(local->rx), glm::vec3(1, 0, 0));
 	model = glm::rotate(model, glm::radians(local->ry), glm::vec3(0, 1, 0));
 	model = glm::rotate(model, glm::radians(local->rz), glm::vec3(0, 0, 1));
-	model = glm::scale(model, glm::vec3(local->sx, local->sy, local->sz));
+	model = glm::scale(model, glm::	vec3(local->sx, local->sy, local->sz));
 	
 	glm::mat4 vp = projection * view;	//TODO: This mutliplication should be done in the shader, by passing the 2 matrix
 	
 	// Render particles
 	float deltaTime = this->runTime - lastTime;
+	deltaTime = deltaTime * local->particleSpeed;
 	lastTime = this->runTime;
 	if (deltaTime < 0) {
 		deltaTime = -deltaTime;	// In case we rewind the demo

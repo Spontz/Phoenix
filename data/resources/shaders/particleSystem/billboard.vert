@@ -12,6 +12,6 @@ out vec3 Color0;
 void main()
 {
 	Velocity0 = Velocity;
-	Color0 = Color;//vec3(0.0, 1.0, 0.0);//Color;
+	Color0 = Color;
 	gl_Position = model * vec4(Position, 1.0);
 }

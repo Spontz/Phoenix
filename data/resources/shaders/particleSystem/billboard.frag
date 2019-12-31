@@ -12,7 +12,11 @@ void main()
 {
 	FragColor = texture(gColorMap, TexCoord) * vec4(Color1.rgb, 1.0f);
 
-//	if (FragColor.r >= 0.9 && FragColor.g >= 0.9 && FragColor.b >= 0.9) {
-//		discard;
-//    }
+/*	if ((Color1.r < 0.0) &&
+		(Color1.g < 0.0) &&
+		(Color1.b < 0.0)) {
+	
+		discard;
+    }
+*/
 }

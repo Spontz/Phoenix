@@ -9,7 +9,7 @@
 
 #include "main.h"
 
-#define PARTICLE_TYPE_LAUNCHER 0
+#define PARTICLE_TYPE_EMITTER 0
 #define PARTICLE_TYPE_SHELL 1
 
 struct Particle
