@@ -3,7 +3,6 @@
 uniform sampler2D gColorMap;
 
 in vec2 TexCoord;
-in vec3 Velocity1;
 in vec3 Color1;
 
 out vec4 FragColor;

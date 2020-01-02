@@ -9,11 +9,9 @@ uniform vec3 gCameraPos;
 uniform float fParticleSize;
 
 // Info from the VS
-in vec3 Velocity0[];
 in vec3 Color0[];
 
 // Info sent to FS
-out vec3 Velocity1;
 out vec3 Color1;
 
 out vec2 TexCoord;

@@ -297,17 +297,14 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::mat4 &model
 	glBindVertexBuffer(billboardBindingPoint, m_particleBuffer[m_currTFB], 0, sizeof(Particle));
 	*/
 	glEnableVertexAttribArray(LOC_POSITION);
-	glEnableVertexAttribArray(LOC_VELOCITY);
 	glEnableVertexAttribArray(LOC_COLOR);
 
 	glVertexAttribPointer(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Pos));	// Position (12 bytes)
-	glVertexAttribPointer(LOC_VELOCITY, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Vel));	// Velocity (12 bytes)
 	glVertexAttribPointer(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Col));		// Color (12 bytes)
 
 		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
 
 	glDisableVertexAttribArray(LOC_POSITION);
-	glDisableVertexAttribArray(LOC_VELOCITY);
 	glDisableVertexAttribArray(LOC_COLOR);
 }
 
