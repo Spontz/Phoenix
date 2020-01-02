@@ -18,8 +18,7 @@ struct Particle
 	glm::vec3 Vel;	// Velocity:	loc 1 (vec3)
 	glm::vec3 Col;	// Color:		loc 2 (vec3)
 	float lifeTime;	// lifeTime:	loc 3 (float)
-	float Size;		// size:		loc 4 (float)
-	int Type;		// type:		loc 5 (int)
+	int Type;		// type:		loc 4 (int)
 };
 
 class ParticleSystem

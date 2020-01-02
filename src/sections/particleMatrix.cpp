@@ -58,7 +58,6 @@ bool sParticleMatrix::load() {
 		Emitter[i].Pos = initPosition + glm::vec3(sin(circle), 0, cos(circle));
 		Emitter[i].Vel = glm::vec3(0.0f, 1.0f, 0.0f);
 		Emitter[i].Col = glm::vec3(0.0f, 1.0f, 0.0f);
-		Emitter[i].Size = 1.0;
 		Emitter[i].lifeTime = 0.0f;
 	}
 

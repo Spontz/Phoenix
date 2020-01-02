@@ -132,7 +132,6 @@ bool sParticleScene::load() {
 			Emitter[numEmitter].Pos = my_model->meshes[i].unique_vertices_pos[j];
 			Emitter[numEmitter].Vel = glm::vec3(local->velX, local->velY, local->velZ);
 			Emitter[numEmitter].Col = glm::vec3(local->colorR, local->colorG, local->colorB);
-			Emitter[numEmitter].Size = 1.0f; // At this moment not being used, need to change the Billboard shader
 			Emitter[numEmitter].lifeTime = 0.0f;
 			numEmitter++;
 			local->currentEmitter = static_cast<float>(numEmitter);

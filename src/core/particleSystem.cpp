@@ -12,8 +12,7 @@ using namespace std;
 #define LOC_VELOCITY 1
 #define LOC_COLOR 2
 #define LOC_LIFETIME 3
-#define LOC_SIZE 4
-#define LOC_TYPE 5
+#define LOC_TYPE 4
 
 //accessible constant declarations
 constexpr int particleBindingPoint = 0;
@@ -67,7 +66,6 @@ bool ParticleSystem::InitParticleSystem(const vector<Particle> emitter)
 		Particles[i].Pos = emitter[i].Pos;
 		Particles[i].Vel = emitter[i].Vel;
 		Particles[i].Col = emitter[i].Col;
-		Particles[i].Size = emitter[i].Size;
 		Particles[i].lifeTime = emitter[i].lifeTime;
 	}
 
@@ -107,10 +105,6 @@ bool ParticleSystem::InitParticleSystem(const vector<Particle> emitter)
 	glVertexAttribFormat(LOC_LIFETIME, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, lifeTime));	// Lifetime (4 bytes)
 	glVertexAttribBinding(LOC_LIFETIME, particleBindingPoint);
 	glEnableVertexAttribArray(LOC_LIFETIME);
-
-	glVertexAttribFormat(LOC_SIZE, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, Size));	// Size (4 bytes)
-	glVertexAttribBinding(LOC_SIZE, particleBindingPoint);
-	glEnableVertexAttribArray(LOC_SIZE);
 
 	glVertexAttribFormat(LOC_TYPE, 1, GL_INT, GL_FALSE, offsetof(Particle, Type));	// Type (4 bytes)
 	glVertexAttribBinding(LOC_TYPE, particleBindingPoint);
@@ -214,7 +208,6 @@ void ParticleSystem::UpdateEmitters(float deltaTime)
 			//data[i].Pos = initPosition + glm::vec3(sin(sphere), -0.1*m_time, cos(sphere));
 			data[i].Vel = glm::vec3(1.0f, 0.01f, 0.0f);
 			data[i].lifeTime = 10.0f; // TODO: investigate why only emmits if this is greater than 0...
-			data[i].Size = 1.0f;
 			data[i].Col = glm::vec3(1, 1, 1);
 		}
 		glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -242,19 +235,17 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
 	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[m_currTFB]);
 
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	glEnableVertexAttribArray(3);
-	glEnableVertexAttribArray(4);
-	glEnableVertexAttribArray(5);
+	glEnableVertexAttribArray(LOC_POSITION);
+	glEnableVertexAttribArray(LOC_VELOCITY);
+	glEnableVertexAttribArray(LOC_COLOR);
+	glEnableVertexAttribArray(LOC_LIFETIME);
+	glEnableVertexAttribArray(LOC_TYPE);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)0);	// Position (12 bytes)
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)12);	// Velocity (12 bytes)
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)24);	// Color (12 bytes)
-	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)36);	// Lifetime (4 bytes)
-	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)40);	// Size (4 bytes)
-	glVertexAttribPointer(5, 1, GL_INT, GL_FALSE, sizeof(Particle), (const GLvoid*)44);		// Type (4 bytes)
+	glVertexAttribPointer(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Pos));		// Position (12 bytes)
+	glVertexAttribPointer(LOC_VELOCITY,	3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Vel));		// Velocity (12 bytes)
+	glVertexAttribPointer(LOC_COLOR,	3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Col));		// Color (12 bytes)
+	glVertexAttribPointer(LOC_LIFETIME,	1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, lifeTime));	// Lifetime (4 bytes)
+	glVertexAttribPointer(LOC_TYPE,		1, GL_INT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Type));		// Type (4 bytes)
 	
 	/*
 	//OGL4.3
@@ -274,12 +265,11 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 
 	glEndTransformFeedback();
 
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
-	glDisableVertexAttribArray(3);
-	glDisableVertexAttribArray(4);
-	glDisableVertexAttribArray(5);
+	glDisableVertexAttribArray(LOC_POSITION);
+	glDisableVertexAttribArray(LOC_VELOCITY);
+	glDisableVertexAttribArray(LOC_COLOR);
+	glDisableVertexAttribArray(LOC_LIFETIME);
+	glDisableVertexAttribArray(LOC_TYPE);
 	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 }
 
@@ -306,18 +296,19 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::mat4 &model
 	// Use billboard Binding (only Position attribute)
 	glBindVertexBuffer(billboardBindingPoint, m_particleBuffer[m_currTFB], 0, sizeof(Particle));
 	*/
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)0);	// Position
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)12);	// Velocity (12 bytes)
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)24);	// Color (12 bytes)
+	glEnableVertexAttribArray(LOC_POSITION);
+	glEnableVertexAttribArray(LOC_VELOCITY);
+	glEnableVertexAttribArray(LOC_COLOR);
+
+	glVertexAttribPointer(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Pos));	// Position (12 bytes)
+	glVertexAttribPointer(LOC_VELOCITY, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Vel));	// Velocity (12 bytes)
+	glVertexAttribPointer(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Col));		// Color (12 bytes)
 
 		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
 
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
+	glDisableVertexAttribArray(LOC_POSITION);
+	glDisableVertexAttribArray(LOC_VELOCITY);
+	glDisableVertexAttribArray(LOC_COLOR);
 }
 
 bool ParticleSystem::initShaderBillboard()
@@ -335,7 +326,7 @@ bool ParticleSystem::initShaderParticleSystem()
 	particleSystemShader = DEMO->shaderManager.addShader(	DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.vert",
 															DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.frag",
 															DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.geom",
-															{"Position1", "Velocity1", "Color1", "Age1", "Size1", "Type1"});
+															{"Position1", "Velocity1", "Color1", "Age1", "Type1"});
 	if (particleSystemShader < 0)
 		return false;
 	return true;

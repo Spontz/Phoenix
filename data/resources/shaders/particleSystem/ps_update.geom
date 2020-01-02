@@ -9,7 +9,6 @@ in vec3 Position0[];
 in vec3 Velocity0[];
 in vec3 Color0[];
 in float Age0[];
-in float Size0[];
 in int Type0[];
 
 // Info sent to FS
@@ -17,7 +16,6 @@ out vec3 Position1;
 out vec3 Velocity1;
 out vec3 Color1;
 out float Age1;
-out float Size1;
 out int Type1;
 
 //uniform float gDeltaTimeMillis;
@@ -41,7 +39,6 @@ vec3 GetRandomDir(float TexCoord)
 void main()
 {
     float Age = Age0[0] + gDeltaTime; // Increment the age of the particle
-	Size1 = Size0[0];
 	
 	// If its an emitter...
 	if (Type0[0] == PARTICLE_TYPE_EMITTER) {
