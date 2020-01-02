@@ -97,6 +97,11 @@ bool sParticleScene::load() {
 	}
 
 	local->numEmitters = numEmitters;
+	if (local->numEmitters <= 0) {
+		LOG->Error("Particle Scene [%s]: No emitters found in the 3D model", this->identifier.c_str());
+		return false;
+	}
+
 	local->exprPosition->SymbolTable.add_constant("TnE", (float)local->numEmitters);
 	
 	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
@@ -104,7 +109,7 @@ bool sParticleScene::load() {
 
 	local->emissionTime = this->param[0];
 	if (local->emissionTime <= 0) {
-		LOG->Error("Particle Scene [%s]: Emission tiem should be greater than 0", this->identifier.c_str());
+		LOG->Error("Particle Scene [%s]: Emission time should be greater than 0", this->identifier.c_str());
 		return false;
 	}
 
@@ -112,7 +117,6 @@ bool sParticleScene::load() {
 	local->numMaxParticles = local->numEmitters + static_cast<unsigned int>(static_cast<float>(local->numEmitters)*local->particleLifeTime*(1.0f / local->emissionTime));
 	local->particleSize = this->param[2];
 	LOG->Info(LOG_LOW, "Particle Scene [%s]: Num max of particles will be: %d", this->identifier.c_str(), local->numMaxParticles);
-
 
 	// TODO: In theory, this is not needed because the num of particles is now calculated... but could change this
 	//if (local->numMaxParticles<(local->numEmitters + local->numEmitters*local->particleLifeTime/local->emissionTime))

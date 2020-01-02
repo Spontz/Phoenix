@@ -120,6 +120,10 @@ bool ParticleSystem::InitParticleSystem(const vector<Particle> emitter)
 		glEnableVertexAttribArray(LOC_COLOR);
 		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
 		glVertexAttribBinding(LOC_COLOR, BINDING_BILLBOARD);
+
+		glEnableVertexAttribArray(LOC_TYPE);
+		glVertexAttribFormat(LOC_TYPE, 1, GL_INT, GL_FALSE, offsetof(Particle, Type));	// Type (4 bytes)
+		glVertexAttribBinding(LOC_TYPE, BINDING_PARTICLES);
 	}
 
 
