@@ -33,9 +33,11 @@ void Resource::loadAllResources()
 }
 
 Resource::Resource() {
-	obj_quadFullscreen = 0;
-	shdr_QuadTex = -1;
-	shdr_QuadTexModel = -1;
+	obj_quadFullscreen = obj_qube = obj_skybox = 0;
+	memset(obj_quad_FBO_Debug, 0, NUM_FBO_DEBUG);
+	
+	shdr_ObjColor = shdr_QuadDepth = shdr_QuadTex = shdr_QuadTexAlpha = shdr_QuadTexModel = shdr_QuadTexVFlipModel = shdr_Skybox = -1;
+	tex_tv = 0;
 }
 
 

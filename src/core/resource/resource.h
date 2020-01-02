@@ -51,7 +51,7 @@ public:
 	
 private:
 
-	unsigned int obj_quad_FBO_Debug[NUM_FBO_DEBUG];
+	GLuint obj_quad_FBO_Debug[NUM_FBO_DEBUG];
 	Resource();
 
 	void Load_Obj_QuadFullscreen();
