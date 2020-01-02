@@ -14,12 +14,8 @@ using namespace std;
 #define LOC_LIFETIME 3
 #define LOC_TYPE 4
 
-//accessible constant declarations
-constexpr int particleBindingPoint = 0;
-constexpr int billboardBindingPoint = 1;// free to choose, must be less than the GL_MAX_VERTEX_ATTRIB_BINDINGS limit
-
-
-
+#define BINDING_PARTICLES	0
+#define BINDING_BILLBOARD	1
 
 ParticleSystem::ParticleSystem(unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime, float particleSize, int particleTexture)
 {
@@ -87,34 +83,46 @@ bool ParticleSystem::InitParticleSystem(const vector<Particle> emitter)
 		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 	}
 
-/*	// OGL 4.3
-	// Setup Vertex Attribute formats
-	// Definitions for Binding 0 (Update particles positions)
-	glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
-	glVertexAttribBinding(LOC_POSITION, particleBindingPoint);
-	glEnableVertexAttribArray(LOC_POSITION);
+	// Setup Vertex Attribute formats (opengl 4.3 format)
+	// Definitions for Binding 0 (Particles properties)
+	for (unsigned int i = 0; i < 2; i++) {
+		glBindVertexBuffer(BINDING_PARTICLES, m_particleBuffer[i], 0, sizeof(Particle));
 
-	glVertexAttribFormat(LOC_VELOCITY, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Vel));	// Velocity (12 bytes)
-	glVertexAttribBinding(LOC_VELOCITY, particleBindingPoint);
-	glEnableVertexAttribArray(LOC_VELOCITY);
+		glEnableVertexAttribArray(LOC_POSITION);
+		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
+		glVertexAttribBinding(LOC_POSITION, BINDING_PARTICLES);
 
-	glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
-	glVertexAttribBinding(LOC_COLOR, particleBindingPoint);
-	glEnableVertexAttribArray(LOC_COLOR);
+		glEnableVertexAttribArray(LOC_VELOCITY);
+		glVertexAttribFormat(LOC_VELOCITY, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Vel));	// Velocity (12 bytes)
+		glVertexAttribBinding(LOC_VELOCITY, BINDING_PARTICLES);
 
-	glVertexAttribFormat(LOC_LIFETIME, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, lifeTime));	// Lifetime (4 bytes)
-	glVertexAttribBinding(LOC_LIFETIME, particleBindingPoint);
-	glEnableVertexAttribArray(LOC_LIFETIME);
+		glEnableVertexAttribArray(LOC_COLOR);
+		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
+		glVertexAttribBinding(LOC_COLOR, BINDING_PARTICLES);
 
-	glVertexAttribFormat(LOC_TYPE, 1, GL_INT, GL_FALSE, offsetof(Particle, Type));	// Type (4 bytes)
-	glVertexAttribBinding(LOC_TYPE, particleBindingPoint);
-	glEnableVertexAttribArray(LOC_TYPE);
+		glEnableVertexAttribArray(LOC_LIFETIME);
+		glVertexAttribFormat(LOC_LIFETIME, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, lifeTime));	// Lifetime (4 bytes)
+		glVertexAttribBinding(LOC_LIFETIME, BINDING_PARTICLES);
 
-	//Definitions for Binding 1 (Render billboard)
-	glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
-	glVertexAttribBinding(LOC_POSITION, billboardBindingPoint);							// Define binding 1
-	glEnableVertexAttribArray(LOC_POSITION);
-*/
+		glEnableVertexAttribArray(LOC_TYPE);
+		glVertexAttribFormat(LOC_TYPE, 1, GL_INT, GL_FALSE, offsetof(Particle, Type));	// Type (4 bytes)
+		glVertexAttribBinding(LOC_TYPE, BINDING_PARTICLES);
+	}
+
+		// Definitions for Binding 1 (Billboard render)
+	for (unsigned int i = 0; i < 2; i++) {
+		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[i], 0, sizeof(Particle));
+
+		glEnableVertexAttribArray(LOC_POSITION);
+		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
+		glVertexAttribBinding(LOC_POSITION, BINDING_BILLBOARD);
+
+		glEnableVertexAttribArray(LOC_COLOR);
+		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
+		glVertexAttribBinding(LOC_COLOR, BINDING_BILLBOARD);
+	}
+
+
 	free(Particles);
 	// Make sure the VAO is not changed from the outside
 	glBindVertexArray(0);
@@ -224,7 +232,7 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	particleSystem_shader->setValue("gTime", this->m_time);
 	particleSystem_shader->setValue("gDeltaTime", deltaTime);
 	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-	particleSystem_shader->setValue("gLauncherLifetime", this->emissionTime); // Time between emissions
+	particleSystem_shader->setValue("gLauncherLifetime", this->emissionTime);
 	particleSystem_shader->setValue("gShellLifetime", this->particleLifeTime);
 
 
@@ -235,24 +243,9 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
 	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[m_currTFB]);
 
-	glEnableVertexAttribArray(LOC_POSITION);
-	glEnableVertexAttribArray(LOC_VELOCITY);
-	glEnableVertexAttribArray(LOC_COLOR);
-	glEnableVertexAttribArray(LOC_LIFETIME);
-	glEnableVertexAttribArray(LOC_TYPE);
-
-	glVertexAttribPointer(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Pos));		// Position (12 bytes)
-	glVertexAttribPointer(LOC_VELOCITY,	3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Vel));		// Velocity (12 bytes)
-	glVertexAttribPointer(LOC_COLOR,	3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Col));		// Color (12 bytes)
-	glVertexAttribPointer(LOC_LIFETIME,	1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, lifeTime));	// Lifetime (4 bytes)
-	glVertexAttribPointer(LOC_TYPE,		1, GL_INT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Type));		// Type (4 bytes)
+	// Use Binding for particles (all attributes)
+	glBindVertexBuffer(BINDING_PARTICLES, m_particleBuffer[m_currVB], 0, sizeof(Particle));
 	
-	/*
-	//OGL4.3
-	// Use Binding 0 (all attributes)
-	glBindVertexBuffer(particleBindingPoint, m_particleBuffer[m_currVB], 0, sizeof(Particle));
-	//glBindVertexBuffer(particleBindingPoint, m_transformFeedback[m_currTFB], 0, sizeof(Particle));
-	*/
 	glBeginTransformFeedback(GL_POINTS);
 
 	if (m_isFirst) {
@@ -265,11 +258,6 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 
 	glEndTransformFeedback();
 
-	glDisableVertexAttribArray(LOC_POSITION);
-	glDisableVertexAttribArray(LOC_VELOCITY);
-	glDisableVertexAttribArray(LOC_COLOR);
-	glDisableVertexAttribArray(LOC_LIFETIME);
-	glDisableVertexAttribArray(LOC_TYPE);
 	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 }
 
@@ -291,21 +279,11 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::mat4 &model
 
 	glDisable(GL_RASTERIZER_DISCARD);	// Start drawing on the screen
 	glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currTFB]);
-	/*
-	//OGL 4.3
-	// Use billboard Binding (only Position attribute)
-	glBindVertexBuffer(billboardBindingPoint, m_particleBuffer[m_currTFB], 0, sizeof(Particle));
-	*/
-	glEnableVertexAttribArray(LOC_POSITION);
-	glEnableVertexAttribArray(LOC_COLOR);
+	
+	// Use binding for billboard (only Position and color attributes)
+	glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[m_currTFB], 0, sizeof(Particle));
 
-	glVertexAttribPointer(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Pos));	// Position (12 bytes)
-	glVertexAttribPointer(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Particle, Col));		// Color (12 bytes)
-
-		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
-
-	glDisableVertexAttribArray(LOC_POSITION);
-	glDisableVertexAttribArray(LOC_COLOR);
+	glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
 }
 
 bool ParticleSystem::initShaderBillboard()
