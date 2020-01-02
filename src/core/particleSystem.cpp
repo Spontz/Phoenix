@@ -85,46 +85,42 @@ bool ParticleSystem::InitParticleSystem(const vector<Particle> emitter)
 
 	// Setup Vertex Attribute formats (opengl 4.3 format)
 	// Definitions for Binding 0 (Particles properties)
-	for (unsigned int i = 0; i < 2; i++) {
-		glBindVertexBuffer(BINDING_PARTICLES, m_particleBuffer[i], 0, sizeof(Particle));
+	glBindVertexBuffer(BINDING_PARTICLES, m_particleBuffer[0], 0, sizeof(Particle));
 
-		glEnableVertexAttribArray(LOC_POSITION);
-		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
-		glVertexAttribBinding(LOC_POSITION, BINDING_PARTICLES);
+	glEnableVertexAttribArray(LOC_POSITION);
+	glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
+	glVertexAttribBinding(LOC_POSITION, BINDING_PARTICLES);
 
-		glEnableVertexAttribArray(LOC_VELOCITY);
-		glVertexAttribFormat(LOC_VELOCITY, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Vel));	// Velocity (12 bytes)
-		glVertexAttribBinding(LOC_VELOCITY, BINDING_PARTICLES);
+	glEnableVertexAttribArray(LOC_VELOCITY);
+	glVertexAttribFormat(LOC_VELOCITY, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Vel));	// Velocity (12 bytes)
+	glVertexAttribBinding(LOC_VELOCITY, BINDING_PARTICLES);
 
-		glEnableVertexAttribArray(LOC_COLOR);
-		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
-		glVertexAttribBinding(LOC_COLOR, BINDING_PARTICLES);
+	glEnableVertexAttribArray(LOC_COLOR);
+	glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
+	glVertexAttribBinding(LOC_COLOR, BINDING_PARTICLES);
 
-		glEnableVertexAttribArray(LOC_LIFETIME);
-		glVertexAttribFormat(LOC_LIFETIME, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, lifeTime));	// Lifetime (4 bytes)
-		glVertexAttribBinding(LOC_LIFETIME, BINDING_PARTICLES);
+	glEnableVertexAttribArray(LOC_LIFETIME);
+	glVertexAttribFormat(LOC_LIFETIME, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, lifeTime));	// Lifetime (4 bytes)
+	glVertexAttribBinding(LOC_LIFETIME, BINDING_PARTICLES);
 
-		glEnableVertexAttribArray(LOC_TYPE);
-		glVertexAttribFormat(LOC_TYPE, 1, GL_INT, GL_FALSE, offsetof(Particle, Type));	// Type (4 bytes)
-		glVertexAttribBinding(LOC_TYPE, BINDING_PARTICLES);
-	}
+	glEnableVertexAttribArray(LOC_TYPE);
+	glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
+	glVertexAttribBinding(LOC_TYPE, BINDING_PARTICLES);
 
-		// Definitions for Binding 1 (Billboard render)
-	for (unsigned int i = 0; i < 2; i++) {
-		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[i], 0, sizeof(Particle));
+	// Definitions for Binding 1 (Billboard render)
+	glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[0], 0, sizeof(Particle));
 
-		glEnableVertexAttribArray(LOC_POSITION);
-		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
-		glVertexAttribBinding(LOC_POSITION, BINDING_BILLBOARD);
+	glEnableVertexAttribArray(LOC_POSITION);
+	glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
+	glVertexAttribBinding(LOC_POSITION, BINDING_BILLBOARD);
 
-		glEnableVertexAttribArray(LOC_COLOR);
-		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
-		glVertexAttribBinding(LOC_COLOR, BINDING_BILLBOARD);
+	glEnableVertexAttribArray(LOC_COLOR);
+	glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
+	glVertexAttribBinding(LOC_COLOR, BINDING_BILLBOARD);
 
-		glEnableVertexAttribArray(LOC_TYPE);
-		glVertexAttribFormat(LOC_TYPE, 1, GL_INT, GL_FALSE, offsetof(Particle, Type));	// Type (4 bytes)
-		glVertexAttribBinding(LOC_TYPE, BINDING_PARTICLES);
-	}
+	glEnableVertexAttribArray(LOC_TYPE);
+	glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
+	glVertexAttribBinding(LOC_TYPE, BINDING_PARTICLES);
 
 
 	free(Particles);

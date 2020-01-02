@@ -39,7 +39,7 @@ vec3 GetRandomDir(float TexCoord)
 void main()
 {
     float Age = Age0[0] + gDeltaTime; // Increment the age of the particle
-	
+
 	// If its an emitter...
 	if (Type0[0] == PARTICLE_TYPE_EMITTER) {
 		if (Age >= fEmissionTime) {	// If it's time to create a new particle...
@@ -50,7 +50,7 @@ void main()
 			Age1 = 0.0;
 			EmitVertex();
 			EndPrimitive();	// Generate a new particle from the launcher position
-			Age = 0.0;
+			Age = 0.0;		// Set the age of the emitter to 0, so it can generate new particles later
 		}
 		Type1 = PARTICLE_TYPE_EMITTER;
 		Position1 = Position0[0];

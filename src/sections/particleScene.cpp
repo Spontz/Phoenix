@@ -93,7 +93,7 @@ bool sParticleScene::load() {
 	// Load the particle generator parameters
 	int numEmitters = 0;
 	for (int i = 0; i < my_model->meshes.size(); i++) {
-		numEmitters += (int)my_model->meshes[i].vertices.size();
+		numEmitters += (int)my_model->meshes[i].unique_vertices_pos.size();// (int)my_model->meshes[i].vertices.size();
 	}
 
 	local->numEmitters = numEmitters;
@@ -117,11 +117,6 @@ bool sParticleScene::load() {
 	local->numMaxParticles = local->numEmitters + static_cast<unsigned int>(static_cast<float>(local->numEmitters)*local->particleLifeTime*(1.0f / local->emissionTime));
 	local->particleSize = this->param[2];
 	LOG->Info(LOG_LOW, "Particle Scene [%s]: Num max of particles will be: %d", this->identifier.c_str(), local->numMaxParticles);
-
-	// TODO: In theory, this is not needed because the num of particles is now calculated... but could change this
-	//if (local->numMaxParticles<(local->numEmitters + local->numEmitters*local->particleLifeTime/local->emissionTime))
-	//	LOG->Info(LOG_HIGH, "Particle Matrix [%s]: NumMaxParticles is too low! should be greater than: numEmitters + numEmitters*ParticleLifetime/EmissionTime", this->identifier.c_str());
-
 
 	vector<Particle> Emitter;
 	Emitter.resize(local->numEmitters);

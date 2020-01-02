@@ -15,8 +15,8 @@ out vec4 FragColor;
 void main()
 {
 	
-	//if (Type1 == PARTICLE_TYPE_EMITTER)
-	//	discard;
+//	if (Type1 == PARTICLE_TYPE_SHELL)
+//		discard;
 
 	FragColor = texture(gColorMap, TexCoord) * vec4(Color1.rgb, 1.0f);
 
