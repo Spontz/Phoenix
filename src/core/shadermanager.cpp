@@ -52,10 +52,15 @@ int ShaderManager::addShader(string path_vert, string path_frag, string path_geo
 			loaded = true;
 	}
 
-	if(loaded)
-		LOG->Info(LOG_MED, "Shader [id: %d, gl_id: %d]: %s, %s  loaded OK", shad_id, new_shad->ID, path_vert.c_str(), path_frag.c_str());
+	if (loaded) {
+		if (path_geom != "")
+			LOG->Info(LOG_MED, "Shader loaded OK [id: %d, gl_id: %d] files: %s, %s, %s", shad_id, new_shad->ID, path_vert.c_str(), path_geom.c_str(), path_frag.c_str());
+		else
+			LOG->Info(LOG_MED, "Shader loaded OK [id: %d, gl_id: %d] files: %s, %s", shad_id, new_shad->ID, path_vert.c_str(), path_frag.c_str());
+	}
+		
 	else
-		LOG->Error("Could not load shader: %s, %s", path_vert.c_str(), path_frag.c_str());
+		LOG->Error("Could not load shader");
 
 
 	return shad_id;

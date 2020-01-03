@@ -63,7 +63,8 @@ bool sParticleMatrix::load() {
 
 
 	local->pSystem = new ParticleSystem(local->numMaxParticles, local->numEmitters, local->emissionTime, local->particleLifeTime, local->particleSize, local->particleTexture);
-	local->pSystem->InitParticleSystem(Emitter);
+	if (!local->pSystem->InitParticleSystem(Emitter))
+		return false;
 
 	return true;
 }

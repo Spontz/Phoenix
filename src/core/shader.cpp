@@ -204,17 +204,23 @@ bool Shader::checkCompileErrors(GLuint shader, std::string type)
 {
 	GLint success;
 	GLint size;
-	GLsizei p_size = 0;
 	GLchar *infoLog;
 	bool errors = false;
 	if (type != "PROGRAM") {
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 		if (!success) {
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
-			infoLog = (GLchar*)malloc(size);
-			glGetShaderInfoLog(shader, size, &p_size, infoLog);
-			LOG->Error("Shader Compile (in %s): files %s, %s, log: %s", type.c_str(), this->vertexShader_Filename.c_str(), this->fragmentShader_Filename.c_str(), infoLog);
-			free(infoLog);
+			infoLog = new GLchar[size];
+			glGetShaderInfoLog(shader, size, NULL, infoLog);
+			string error_filename;
+			if (type == "VERTEX")
+				error_filename = this->vertexShader_Filename;
+			if (type == "FRAGMENT")
+				error_filename = this->fragmentShader_Filename;
+			if (type == "GEOMETRY")
+				error_filename = this->geometryShader_Filename;
+			LOG->Error("Shader Compile (%s - %s) log: %s", type.c_str(), error_filename.c_str(), infoLog);
+			delete[] infoLog;
 			errors = true;
 		}
 	}
@@ -223,7 +229,7 @@ bool Shader::checkCompileErrors(GLuint shader, std::string type)
 		if (!success) {
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
 			infoLog = (GLchar*)malloc(size);
-			glGetProgramInfoLog(shader, size, &p_size, infoLog);
+			glGetProgramInfoLog(shader, size, NULL, infoLog);
 			LOG->Error("Shader Linking: file %s, %s, log: %s", this->vertexShader_Filename.c_str(), this->fragmentShader_Filename.c_str(), infoLog);
 			free(infoLog);
 			errors = true;
