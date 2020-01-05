@@ -16,7 +16,7 @@ typedef struct {
 	ParticleSystem *pSystem;
 
 	// Particles positioning (for all the model)
-	glm::vec3	traslation;
+	glm::vec3	translation;
 	glm::vec3	rotation;
 	glm::vec3	scale;
 
@@ -59,9 +59,9 @@ bool sParticleScene::load() {
 	for (int i = 2; i < strings.size(); i++)
 		local->exprPosition->expression += this->strings[i];
 
-	local->exprPosition->SymbolTable.add_variable("tx", local->traslation.x);
-	local->exprPosition->SymbolTable.add_variable("ty", local->traslation.y);
-	local->exprPosition->SymbolTable.add_variable("tz", local->traslation.z);
+	local->exprPosition->SymbolTable.add_variable("tx", local->translation.x);
+	local->exprPosition->SymbolTable.add_variable("ty", local->translation.y);
+	local->exprPosition->SymbolTable.add_variable("tz", local->translation.z);
 	local->exprPosition->SymbolTable.add_variable("rx", local->rotation.x);
 	local->exprPosition->SymbolTable.add_variable("ry", local->rotation.y);
 	local->exprPosition->SymbolTable.add_variable("rz", local->rotation.z);
@@ -165,7 +165,7 @@ void sParticleScene::exec() {
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, local->traslation);
+	model = glm::translate(model, local->translation);
 	model = glm::rotate(model, glm::radians(local->rotation.x), glm::vec3(1, 0, 0));
 	model = glm::rotate(model, glm::radians(local->rotation.y), glm::vec3(0, 1, 0));
 	model = glm::rotate(model, glm::radians(local->rotation.z), glm::vec3(0, 0, 1));

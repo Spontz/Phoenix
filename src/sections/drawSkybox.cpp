@@ -10,8 +10,8 @@ typedef struct {
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
 
-	float	rx,ry,rz;// Model Rotation
-	float	sx,sy,sz;// Model Scale
+	glm::vec3	rotation;
+	glm::vec3	scale;
 	
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
 } drawSkybox_section;
@@ -55,12 +55,12 @@ bool sDrawSkybox::load() {
 	local->exprPosition = new mathDriver(this);
 	// Load positions, process constants and compile expression
 	local->exprPosition->expression = std::string(this->strings[6]) + this->strings[7]; // Concatenate the 2 positioning strings (rotation+scale)
-	local->exprPosition->SymbolTable.add_variable("rx", local->rx);
-	local->exprPosition->SymbolTable.add_variable("ry", local->ry);
-	local->exprPosition->SymbolTable.add_variable("rz", local->rz);
-	local->exprPosition->SymbolTable.add_variable("sx", local->sx);
-	local->exprPosition->SymbolTable.add_variable("sy", local->sy);
-	local->exprPosition->SymbolTable.add_variable("sz", local->sz);
+	local->exprPosition->SymbolTable.add_variable("rx", local->rotation.x);
+	local->exprPosition->SymbolTable.add_variable("ry", local->rotation.y);
+	local->exprPosition->SymbolTable.add_variable("rz", local->rotation.z);
+	local->exprPosition->SymbolTable.add_variable("sx", local->scale.x);
+	local->exprPosition->SymbolTable.add_variable("sy", local->scale.y);
+	local->exprPosition->SymbolTable.add_variable("sz", local->scale.z);
 	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
 	local->exprPosition->compileFormula();
 
@@ -100,10 +100,10 @@ void sDrawSkybox::exec() {
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, glm::radians(local->rx), glm::vec3(1, 0, 0));
-	model = glm::rotate(model, glm::radians(local->ry), glm::vec3(0, 1, 0));
-	model = glm::rotate(model, glm::radians(local->rz), glm::vec3(0, 0, 1));
-	model = glm::scale(model, glm::vec3(local->sx, local->sy, local->sz));
+	model = glm::rotate(model, glm::radians(local->rotation.x), glm::vec3(1, 0, 0));
+	model = glm::rotate(model, glm::radians(local->rotation.y), glm::vec3(0, 1, 0));
+	model = glm::rotate(model, glm::radians(local->rotation.z), glm::vec3(0, 0, 1));
+	model = glm::scale(model, local->scale);
 	my_shader->setValue("model", model);
 	
 	my_shader->setValue("skybox", 0);

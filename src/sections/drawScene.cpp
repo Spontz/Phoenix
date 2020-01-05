@@ -12,9 +12,9 @@ typedef struct {
 	int			AnimationNumber;	// Number of animation to play
 	float		AnimationTime;		// Animation time (in seconds)
 
-	float		tx,ty,tz;	// Traslation
-	float		rx,ry,rz;	// Rotation
-	float		sx,sy,sz;	// Scale
+	glm::vec3	translation;
+	glm::vec3	rotation;
+	glm::vec3	scale;
 	
 	// Previous model, projection and view matrix, for being used in effects like motion blur
 	glm::mat4	prev_model;
@@ -70,15 +70,15 @@ bool sDrawScene::load() {
 		local->exprPosition->expression += this->strings[i];
 
 	local->exprPosition->SymbolTable.add_variable("aTime", local->AnimationTime);
-	local->exprPosition->SymbolTable.add_variable("tx", local->tx);
-	local->exprPosition->SymbolTable.add_variable("ty", local->ty);
-	local->exprPosition->SymbolTable.add_variable("tz", local->tz);
-	local->exprPosition->SymbolTable.add_variable("rx", local->rx);
-	local->exprPosition->SymbolTable.add_variable("ry", local->ry);
-	local->exprPosition->SymbolTable.add_variable("rz", local->rz);
-	local->exprPosition->SymbolTable.add_variable("sx", local->sx);
-	local->exprPosition->SymbolTable.add_variable("sy", local->sy);
-	local->exprPosition->SymbolTable.add_variable("sz", local->sz);
+	local->exprPosition->SymbolTable.add_variable("tx", local->translation.x);
+	local->exprPosition->SymbolTable.add_variable("ty", local->translation.y);
+	local->exprPosition->SymbolTable.add_variable("tz", local->translation.z);
+	local->exprPosition->SymbolTable.add_variable("rx", local->rotation.x);
+	local->exprPosition->SymbolTable.add_variable("ry", local->rotation.y);
+	local->exprPosition->SymbolTable.add_variable("rz", local->rotation.z);
+	local->exprPosition->SymbolTable.add_variable("sx", local->scale.x);
+	local->exprPosition->SymbolTable.add_variable("sy", local->scale.y);
+	local->exprPosition->SymbolTable.add_variable("sz", local->scale.z);
 	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
 	local->exprPosition->compileFormula();
 
@@ -139,11 +139,11 @@ void sDrawScene::exec() {
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(local->tx, local->ty, local->tz));
-	model = glm::rotate(model, glm::radians(local->rx), glm::vec3(1, 0, 0));
-	model = glm::rotate(model, glm::radians(local->ry), glm::vec3(0, 1, 0));
-	model = glm::rotate(model, glm::radians(local->rz), glm::vec3(0, 0, 1));
-	model = glm::scale(model, glm::vec3(local->sx, local->sy, local->sz));
+	model = glm::translate(model, local->translation);
+	model = glm::rotate(model, glm::radians(local->rotation.x), glm::vec3(1, 0, 0));
+	model = glm::rotate(model, glm::radians(local->rotation.y), glm::vec3(0, 1, 0));
+	model = glm::rotate(model, glm::radians(local->rotation.z), glm::vec3(0, 0, 1));
+	model = glm::scale(model, local->scale);
 	my_model->modelTransform = model;
 
 	// For MotionBlur
