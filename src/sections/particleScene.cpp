@@ -20,7 +20,7 @@ typedef struct {
 	glm::vec3	rotation;
 	glm::vec3	scale;
 
-	glm::vec3	velocity;		// Velocity
+	glm::vec3	velocity;
 	glm::vec3	force;
 	glm::vec3	color;
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
@@ -35,10 +35,10 @@ sParticleScene::sParticleScene() {
 
 bool sParticleScene::load() {
 	// script validation
-	//if (this->param.size() != 1) {
-	//	LOG->Error("Particle Matrix [%s]: 1 param needed (particle number)", this->identifier.c_str());
-	//	return false;
-	//}
+	if ((this->param.size() != 2) || (this->strings.size() != 9)) {
+		LOG->Error("Particle Matrix [%s]: 2 param (emission time & Particle Life Time) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", this->identifier.c_str());
+		return false;
+	}
 
 	local = (particleScene_section*)malloc(sizeof(particleScene_section));
 
