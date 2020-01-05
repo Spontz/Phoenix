@@ -1,6 +1,6 @@
 #version 330
 
-uniform sampler2D gColorMap;
+uniform sampler2D partTexture;
 
 in vec2 TexCoord;
 in vec3 Color1;
@@ -18,7 +18,7 @@ void main()
 //	if (Type1 == PARTICLE_TYPE_SHELL)
 //		discard;
 
-	FragColor = texture(gColorMap, TexCoord) * vec4(Color1.rgb, 1.0f);
+	FragColor = texture(partTexture, TexCoord) * vec4(Color1.rgb, 1.0f);
 
 /*	if ((Color1.r < 0.0) &&
 		(Color1.g < 0.0) &&

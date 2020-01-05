@@ -17,20 +17,27 @@ using namespace std;
 #define BINDING_PARTICLES	0
 #define BINDING_BILLBOARD	1
 
-ParticleSystem::ParticleSystem(unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime, float particleSize, int particleTexture)
+ParticleSystem::ParticleSystem(string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime)
 {
+	force = glm::vec3(0, 0, 0);
+
 	m_currVB = 0;
 	m_currTFB = 1;
 	m_isFirst = true;
 	m_time = 0;
-	m_pTexture = NULL;
+
+	this->shaderPath = shaderPath;
+	this->pathBillboardVS = shaderPath + "/billboard.vert";
+	this->pathBillboardGS = shaderPath + "/billboard.geom";
+	this->pathBillboardFS = shaderPath + "/billboard.frag";
+	this->pathUpdateVS = shaderPath + "/update.vert";
+	this->pathUpdateGS = shaderPath + "/update.geom";
+	this->pathUpdateFS = shaderPath + "/update.frag";
 
 	this->numMaxParticles = numMaxParticles; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
 	this->numEmitters = numEmitters;
 	this->emissionTime = emissionTime;
 	this->particleLifeTime = particleLifeTime;
-	this->particleSize = particleSize;
-	this->particleTexture = particleTexture;
 
 	ZERO_MEM(m_transformFeedback);
 	ZERO_MEM(m_particleBuffer);
@@ -39,8 +46,6 @@ ParticleSystem::ParticleSystem(unsigned int	numMaxParticles, unsigned int numEmi
 
 ParticleSystem::~ParticleSystem()
 {
-	SAFE_DELETE(m_pTexture);
-
 	if (m_transformFeedback[0] != 0) {
 		glDeleteTransformFeedbacks(2, m_transformFeedback);
 	}
@@ -51,10 +56,12 @@ ParticleSystem::~ParticleSystem()
 }
 
 
-bool ParticleSystem::InitParticleSystem(const vector<Particle> emitter)
+bool ParticleSystem::InitParticleSystem(Section* sec, const vector<Particle> emitter, vector<string>	billboardShaderVars)
 {
-	Particle* Particles = (Particle*)malloc(sizeof(Particle) * numEmitters);
-	ZERO_MEM(Particles);
+	if (numEmitters == 0)
+		return false;
+
+	Particle* Particles = new Particle[numEmitters];
 
 	// Init the particle 0, the initial emitter
 	for (unsigned int i = 0; i < numEmitters; i++) {
@@ -122,11 +129,11 @@ bool ParticleSystem::InitParticleSystem(const vector<Particle> emitter)
 	glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
 	glVertexAttribBinding(LOC_TYPE, BINDING_PARTICLES);
 
-
-	free(Particles);
+	SAFE_DELETE_ARRAY(Particles);
 	// Make sure the VAO is not changed from the outside
 	glBindVertexArray(0);
 
+	// UPDATE shader
 	if (!initShaderParticleSystem()) {
 		return false;
 	}
@@ -144,20 +151,23 @@ bool ParticleSystem::InitParticleSystem(const vector<Particle> emitter)
 
 	bindRandomTexture(RANDOM_TEXTURE_UNIT);
 
+	// BILLBOARD shader
 	if (!initShaderBillboard()) {
 		return false;
 	}
 
 	//Use the billboard shader and send variables
-	Shader *my_shader;
-	my_shader = DEMO->shaderManager.shader[billboardShader];
-	my_shader->use();
-	my_shader->setValue("gColorMap", 0);			// Set color map to 0
-	my_shader->setValue("fParticleSize", this->particleSize);	// Set billboard size
+	Shader *billboard_shader;
+	billboard_shader = DEMO->shaderManager.shader[billboardShader];
+	billboard_shader->use();
+	this->varsBillboard = new ShaderVars(sec, billboard_shader);
+	// Read the shader variables
+	for (int i = 0; i < billboardShaderVars.size(); i++) {
+		this->varsBillboard->ReadString(billboardShaderVars[i].c_str());
+	}
+	// Set billboard shader variables values (texture, particle size, etc...)
+	this->varsBillboard->setValues();
 	
-	if (this->particleTexture>=0)
-		m_pTexture = DEMO->textureManager.texture[this->particleTexture];
-
 	//return GLCheckError();
 	return true; // TODO: check errors, etc etc...
 }
@@ -174,29 +184,6 @@ void ParticleSystem::Render(float deltaTime, const glm::mat4 &VP, const glm::mat
 
 	m_currVB = m_currTFB;
 	m_currTFB = (m_currTFB + 1) & 0x1;
-}
-
-// TODO
-void ParticleSystem::resetParticleSystem(const glm::vec3 &Pos)
-{
-	/*Particle Particles[MAX_PARTICLES];
-
-	ZERO_MEM(Particles);
-
-	// Init the particle 0, the initial emitter
-	Particles[0].Type = PARTICLE_TYPE_EMITTER;
-	Particles[0].Pos = Pos;
-	Particles[0].Vel = glm::vec3(0.0f, 0.01f, 0.0f);
-	Particles[0].lifeTime = 0.0f;
-
-
-	for (unsigned int i = 0; i < 2; i++) {
-		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
-		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Particles), Particles, GL_DYNAMIC_DRAW);
-		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
-	}
-	*/
 }
 
 float each_half = 0.0f;
@@ -234,6 +221,7 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
 	particleSystem_shader->setValue("gLauncherLifetime", this->emissionTime);
 	particleSystem_shader->setValue("gShellLifetime", this->particleLifeTime);
+	particleSystem_shader->setValue("force", this->force);
 
 
 	bindRandomTexture(RANDOM_TEXTURE_UNIT);
@@ -270,12 +258,7 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::mat4 &model
 	my_shader->setValue("gCameraPos", CameraPos);				// Set camera position
 	my_shader->setValue("gVP", VP);								// Set ViewProjection Matrix
 	my_shader->setValue("model", model);						// Set Model Matrix
-	my_shader->setValue("gColorMap", 0);						// Set color map to 0
-	my_shader->setValue("fParticleSize", this->particleSize);	// Set particle size (billboard size)
-
-
-	// Activate texture
-	m_pTexture->bind(0);
+	this->varsBillboard->setValues();
 
 	glDisable(GL_RASTERIZER_DISCARD);	// Start drawing on the screen
 	glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currTFB]);
@@ -288,9 +271,7 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::mat4 &model
 
 bool ParticleSystem::initShaderBillboard()
 {
-	billboardShader = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/particleSystem/billboard.vert",
-													DEMO->dataFolder + "/resources/shaders/particleSystem/billboard.frag",
-													DEMO->dataFolder + "/resources/shaders/particleSystem/billboard.geom");
+	billboardShader = DEMO->shaderManager.addShader(this->pathBillboardVS, this->pathBillboardFS, this->pathBillboardGS);
 	if (billboardShader < 0)
 		return false;
 	return true;
@@ -298,10 +279,9 @@ bool ParticleSystem::initShaderBillboard()
 
 bool ParticleSystem::initShaderParticleSystem()
 {
-	particleSystemShader = DEMO->shaderManager.addShader(	DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.vert",
-															DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.frag",
-															DEMO->dataFolder + "/resources/shaders/particleSystem/ps_update.geom",
-															{"Position1", "Velocity1", "Color1", "Age1", "Type1"});
+	particleSystemShader = DEMO->shaderManager.addShader( this->pathUpdateVS, this->pathUpdateFS, this->pathUpdateGS,
+															{ "Position1", "Velocity1", "Color1", "Age1", "Type1" });
+
 	if (particleSystemShader < 0)
 		return false;
 	return true;

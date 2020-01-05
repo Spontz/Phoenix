@@ -8,6 +8,7 @@
 //#include <glm/glm.hpp>
 
 #include "main.h"
+#include "core/shadervars.h"
 
 #define PARTICLE_TYPE_EMITTER 0
 #define PARTICLE_TYPE_SHELL 1
@@ -24,12 +25,13 @@ struct Particle
 class ParticleSystem
 {
 public:
-	ParticleSystem(unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime, float particleSize, int particleTexture);
+	ParticleSystem(string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime);
 	~ParticleSystem();
 
-	bool InitParticleSystem(const vector<Particle> emitter);
+	bool InitParticleSystem(Section* sec, const vector<Particle> emitter, vector<string>	billboardShaderVars);
 	void Render(float deltaTime, const glm::mat4 &VP, const glm::mat4 &model, const glm::vec3 &CameraPos);
-	void resetParticleSystem(const glm::vec3 &Pos);
+
+	glm::vec3 force; // Force to be applied globally
 
 private:
 
@@ -40,13 +42,15 @@ private:
 	bool initShaderBillboard();		// For drawing the quads using geometry shaders
 	bool initShaderParticleSystem();// For drawing the particles using geometry shaders
 
+	string			shaderPath;
+	string			pathBillboardVS, pathBillboardGS, pathBillboardFS;
+	ShaderVars		*varsBillboard;	// Billboard Shader variables
+
+	string			pathUpdateVS, pathUpdateGS, pathUpdateFS;
 	unsigned int	numMaxParticles;	// Number of maximum particles
 	unsigned int	numEmitters;		// Number of emmiters
 	float			emissionTime;
 	float			particleLifeTime;
-	float			particleSize;
-	int				particleTexture;
-
 
 	bool m_isFirst;
 	unsigned int m_currVB;			// Variable that indicates the current VB (The value is 0 or 1)
@@ -61,8 +65,6 @@ private:
 	void bindRandomTexture(unsigned int TextureUnit);//TODO: this should be removed once is included in the textureManager
 	unsigned int m_textureRandID; // TODO: This will be removed once is included in the textureManager
 
-	//int m_pTextureNum; // TODO: Fix this, use the Number of the Texture*, but not both
-	Texture* m_pTexture;
 	float m_time;
 };
 

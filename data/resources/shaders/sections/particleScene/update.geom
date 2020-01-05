@@ -21,6 +21,7 @@ out int Type1;
 //uniform float gDeltaTimeMillis;
 uniform float gDeltaTime;
 uniform float gTime;
+uniform vec3 force;
 uniform sampler1D gRandomTexture;
 uniform float fEmissionTime;
 uniform float fParticleLifetime;
@@ -64,7 +65,8 @@ void main()
 	// If its a normal particle...
 	else {
 		vec3 DeltaP = gDeltaTime * Velocity0[0]; // xDelta = v*t
-		vec3 DeltaV = vec3(0.0, 0, -10.981) * gDeltaTime; // vDelta = accel*tDetla
+		//vec3 DeltaV = vec3(0.0, 0, -10.981) * gDeltaTime; // vDelta = accel*tDetla
+		vec3 DeltaV = force * gDeltaTime; // vDelta = accel*tDetla
 		
 		// If the is still alive, we update the values...
 		if (Age < fParticleLifetime) {

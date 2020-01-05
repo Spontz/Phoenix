@@ -1,5 +1,6 @@
 #include "main.h"
-#include "core\particleSystem.h"
+#include "core/particleSystem.h"
+#include "core/shadervars.h"
 
 typedef struct {
 	// 3D Model
@@ -11,19 +12,17 @@ typedef struct {
 	float			currentEmitter;
 	float			emissionTime;
 	float			particleLifeTime;
-	float			particleSize;
 	float			particleSpeed;
-	int				particleTexture;
 	ParticleSystem *pSystem;
 
 	// Particles positioning (for all the model)
-	float		tx, ty, tz;	// Traslation
-	float		rx, ry, rz;	// Rotation
-	float		sx, sy, sz;	// Scale
+	glm::vec3	traslation;
+	glm::vec3	rotation;
+	glm::vec3	scale;
 
-	float		velX, velY, velZ;		// Velocity
-	float		forceX, forceY, forceZ;	// Force
-	float		colorR, colorG, colorB;	// Color
+	glm::vec3	velocity;		// Velocity
+	glm::vec3	force;
+	glm::vec3	color;
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
 
 } particleScene_section;
@@ -45,11 +44,14 @@ bool sParticleScene::load() {
 
 	this->vars = (void *)local;
 
-	// Load the model scene
-	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
-	local->particleTexture = DEMO->textureManager.addTexture(DEMO->dataFolder + this->strings[1]);
+	// Load the shaders
+	string pathShaders;
+	pathShaders = DEMO->dataFolder + this->strings[0];
 
-	if (local->model < 0 || local->particleTexture < 0)
+	// Load the model scene
+	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[1]);
+
+	if (local->model < 0)
 		return false;
 
 	local->exprPosition = new mathDriver(this);
@@ -57,34 +59,30 @@ bool sParticleScene::load() {
 	for (int i = 2; i < strings.size(); i++)
 		local->exprPosition->expression += this->strings[i];
 
-	local->exprPosition->SymbolTable.add_variable("tx", local->tx);
-	local->exprPosition->SymbolTable.add_variable("ty", local->ty);
-	local->exprPosition->SymbolTable.add_variable("tz", local->tz);
-	local->exprPosition->SymbolTable.add_variable("rx", local->rx);
-	local->exprPosition->SymbolTable.add_variable("ry", local->ry);
-	local->exprPosition->SymbolTable.add_variable("rz", local->rz);
-	local->exprPosition->SymbolTable.add_variable("sx", local->sx);
-	local->exprPosition->SymbolTable.add_variable("sy", local->sy);
-	local->exprPosition->SymbolTable.add_variable("sz", local->sz);
+	local->exprPosition->SymbolTable.add_variable("tx", local->traslation.x);
+	local->exprPosition->SymbolTable.add_variable("ty", local->traslation.y);
+	local->exprPosition->SymbolTable.add_variable("tz", local->traslation.z);
+	local->exprPosition->SymbolTable.add_variable("rx", local->rotation.x);
+	local->exprPosition->SymbolTable.add_variable("ry", local->rotation.y);
+	local->exprPosition->SymbolTable.add_variable("rz", local->rotation.z);
+	local->exprPosition->SymbolTable.add_variable("sx", local->scale.x);
+	local->exprPosition->SymbolTable.add_variable("sy", local->scale.y);
+	local->exprPosition->SymbolTable.add_variable("sz", local->scale.z);
 
 	local->exprPosition->SymbolTable.add_variable("partSpeed", local->particleSpeed);
-	local->exprPosition->SymbolTable.add_variable("velX", local->velX);
-	local->exprPosition->SymbolTable.add_variable("velY", local->velY);
-	local->exprPosition->SymbolTable.add_variable("velZ", local->velZ);
+	local->exprPosition->SymbolTable.add_variable("velX", local->velocity.x);
+	local->exprPosition->SymbolTable.add_variable("velY", local->velocity.y);
+	local->exprPosition->SymbolTable.add_variable("velZ", local->velocity.z);
 
-	local->exprPosition->SymbolTable.add_variable("forceX", local->forceX);
-	local->exprPosition->SymbolTable.add_variable("forceY", local->forceY);
-	local->exprPosition->SymbolTable.add_variable("forceZ", local->forceZ);
+	local->exprPosition->SymbolTable.add_variable("forceX", local->force.x);
+	local->exprPosition->SymbolTable.add_variable("forceY", local->force.y);
+	local->exprPosition->SymbolTable.add_variable("forceZ", local->force.z);
 
-	local->exprPosition->SymbolTable.add_variable("colorR", local->colorR);
-	local->exprPosition->SymbolTable.add_variable("colorG", local->colorG);
-	local->exprPosition->SymbolTable.add_variable("colorB", local->colorB);
+	local->exprPosition->SymbolTable.add_variable("colorR", local->color.r);
+	local->exprPosition->SymbolTable.add_variable("colorG", local->color.g);
+	local->exprPosition->SymbolTable.add_variable("colorB", local->color.b);
 
 	local->exprPosition->SymbolTable.add_variable("nE", local->currentEmitter);
-
-	//local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
-	//local->exprPosition->compileFormula();
-
 
 	// Load model properties
 	Model *my_model;
@@ -93,7 +91,7 @@ bool sParticleScene::load() {
 	// Load the particle generator parameters
 	int numEmitters = 0;
 	for (int i = 0; i < my_model->meshes.size(); i++) {
-		numEmitters += (int)my_model->meshes[i].unique_vertices_pos.size();// (int)my_model->meshes[i].vertices.size();
+		numEmitters += (int)my_model->meshes[i].unique_vertices_pos.size();
 	}
 
 	local->numEmitters = numEmitters;
@@ -115,7 +113,7 @@ bool sParticleScene::load() {
 
 	local->particleLifeTime = this->param[1];
 	local->numMaxParticles = local->numEmitters + static_cast<unsigned int>(static_cast<float>(local->numEmitters)*local->particleLifeTime*(1.0f / local->emissionTime));
-	local->particleSize = this->param[2];
+
 	LOG->Info(LOG_LOW, "Particle Scene [%s]: Num max of particles will be: %d", this->identifier.c_str(), local->numMaxParticles);
 
 	vector<Particle> Emitter;
@@ -129,8 +127,8 @@ bool sParticleScene::load() {
 			local->exprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 			Emitter[numEmitter].Type = PARTICLE_TYPE_EMITTER;
 			Emitter[numEmitter].Pos = my_model->meshes[i].unique_vertices_pos[j];
-			Emitter[numEmitter].Vel = glm::vec3(local->velX, local->velY, local->velZ);
-			Emitter[numEmitter].Col = glm::vec3(local->colorR, local->colorG, local->colorB);
+			Emitter[numEmitter].Vel = local->velocity;
+			Emitter[numEmitter].Col = local->color;
 			Emitter[numEmitter].lifeTime = 0.0f;
 			numEmitter++;
 			local->currentEmitter = static_cast<float>(numEmitter);
@@ -138,8 +136,8 @@ bool sParticleScene::load() {
 	}
 
 	// Create the particle system
-	local->pSystem = new ParticleSystem(local->numMaxParticles, local->numEmitters, local->emissionTime, local->particleLifeTime, local->particleSize, local->particleTexture);
-	if (!local->pSystem->InitParticleSystem(Emitter))
+	local->pSystem = new ParticleSystem(pathShaders, local->numMaxParticles, local->numEmitters, local->emissionTime, local->particleLifeTime);
+	if (!local->pSystem->InitParticleSystem(this, Emitter, this->uniform))
 		return false;
 
 	return true;
@@ -167,11 +165,11 @@ void sParticleScene::exec() {
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(local->tx, local->ty, local->tz));
-	model = glm::rotate(model, glm::radians(local->rx), glm::vec3(1, 0, 0));
-	model = glm::rotate(model, glm::radians(local->ry), glm::vec3(0, 1, 0));
-	model = glm::rotate(model, glm::radians(local->rz), glm::vec3(0, 0, 1));
-	model = glm::scale(model, glm::	vec3(local->sx, local->sy, local->sz));
+	model = glm::translate(model, local->traslation);
+	model = glm::rotate(model, glm::radians(local->rotation.x), glm::vec3(1, 0, 0));
+	model = glm::rotate(model, glm::radians(local->rotation.y), glm::vec3(0, 1, 0));
+	model = glm::rotate(model, glm::radians(local->rotation.z), glm::vec3(0, 0, 1));
+	model = glm::scale(model, local->scale);
 	
 	glm::mat4 vp = projection * view;	//TODO: This mutliplication should be done in the shader, by passing the 2 matrix
 	
@@ -181,9 +179,9 @@ void sParticleScene::exec() {
 	lastTime = this->runTime;
 	if (deltaTime < 0) {
 		deltaTime = -deltaTime;	// In case we rewind the demo
-		//glm::vec3 Position(0, 0, 3.8f);
-		//local->pSystem->resetParticleSystem(Position);
 	}
+	local->pSystem->force = local->force;
+	
 	local->pSystem->Render(deltaTime, vp, model, DEMO->camera->Position);
 
 
@@ -197,5 +195,11 @@ void sParticleScene::end() {
 }
 
 string sParticleScene::debug() {
-	return "[ particleScene id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	local = (particleScene_section*)this->vars;
+
+	string msg; 
+	msg += "[ particleScene id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg += " numEmitters: " + std::to_string(local->numEmitters) + "\n";
+	msg += " numMaxParticles: " + std::to_string(local->numMaxParticles) + "\n";
+	return msg;
 }
