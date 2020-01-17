@@ -30,12 +30,12 @@ public:
 
 	bool InitParticleSystem(Section* sec, const vector<Particle> emitter, vector<string>	billboardShaderVars);
 	void Render(float deltaTime, const glm::mat4 &VP, const glm::mat4 &model, const glm::vec3 &CameraPos);
+	void UpdateEmitters(float deltaTime);
 
 	glm::vec3 force; // Force to be applied globally
 
 private:
 
-	void UpdateEmitters(float deltaTime);
 	void UpdateParticles(float deltaTime);
 	void RenderParticles(const glm::mat4 &VP, const glm::mat4 &model, const glm::vec3 &CameraPos);
 

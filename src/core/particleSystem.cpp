@@ -56,7 +56,7 @@ ParticleSystem::~ParticleSystem()
 }
 
 
-bool ParticleSystem::InitParticleSystem(Section* sec, const vector<Particle> emitter, vector<string>	billboardShaderVars)
+bool ParticleSystem::InitParticleSystem(Section* sec, const vector<Particle> emitter, vector<string> billboardShaderVars)
 {
 	if (numEmitters == 0)
 		return false;
@@ -187,15 +187,37 @@ void ParticleSystem::Render(float deltaTime, const glm::mat4 &VP, const glm::mat
 }
 
 float each_half = 0.0f;
+float m_time = 0.0f;
 void ParticleSystem::UpdateEmitters(float deltaTime)
 {
+	//if (this->numEmitters != emitter.size())
+	//	return;
+
+	m_time += deltaTime;
+	glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
+	// TODO: Investigate this flags:
+	// | GL_MAP_INVALIDATE_RANGE_BIT -> Invalidates data readed
+	// | GL_MAP_UNSYNCHRONIZED_BIT
+	// | GL_MAP_INVALIDATE_BUFFER_BIT -> https://www.bfilipek.com/2015/01/persistent-mapped-buffers-in-opengl.html
+	Particle* data = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle) * numEmitters, GL_MAP_WRITE_BIT);
+	// Change data and move some random positions
+	for (unsigned int i = 0; i < numEmitters; i++) {
+		data[i].Type = PARTICLE_TYPE_EMITTER;
+		float sphere = 2 * 3.1415f * ((float)(i + 1) / ((float)numEmitters));
+		data[i].Pos = glm::vec3(sin(sphere), 3.0*sin(m_time/2.0), cos(sphere));
+		data[i].Vel = glm::vec3(0.0f, 10.0f, 0.0f);
+		data[i].Col = glm::vec3(1, 1, 1);
+		data[i].lifeTime = 1.0f; // TODO: investigate why only emmits if this is greater than 0...
+	}
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+	/*
 	// Test: move the emitter
 	each_half += deltaTime;
 	if (each_half > 1.0f) {
 		each_half = 0.0f;
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
 		// TODO: Investigate this flags:  | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT
-		Particle *data = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle)*numEmitters, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);// | GL_MAP_UNSYNCHRONIZED_BIT);
+		Particle* data = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle) * numEmitters, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);// | GL_MAP_UNSYNCHRONIZED_BIT);
 		// Change data and move some random positions
 		for (unsigned int i = 0; i < numEmitters; i++) {
 			data[i].Type = PARTICLE_TYPE_EMITTER;
@@ -207,6 +229,7 @@ void ParticleSystem::UpdateEmitters(float deltaTime)
 		}
 		glUnmapBuffer(GL_ARRAY_BUFFER);
 	}
+	*/
 }
 
 
@@ -219,8 +242,8 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	particleSystem_shader->setValue("gTime", this->m_time);
 	particleSystem_shader->setValue("gDeltaTime", deltaTime);
 	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-	particleSystem_shader->setValue("gLauncherLifetime", this->emissionTime);
-	particleSystem_shader->setValue("gShellLifetime", this->particleLifeTime);
+	particleSystem_shader->setValue("fEmissionTime", this->emissionTime);
+	particleSystem_shader->setValue("fParticleLifetime", this->particleLifeTime);
 	particleSystem_shader->setValue("force", this->force);
 
 
