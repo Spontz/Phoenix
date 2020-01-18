@@ -186,7 +186,7 @@ void ParticleSystem::Render(float deltaTime, const glm::mat4 &VP, const glm::mat
 	m_currTFB = (m_currTFB + 1) & 0x1;
 }
 
-float m_time = 0.0f;
+static float m_time = 0.0f;
 void ParticleSystem::UpdateEmitters(float deltaTime)
 {
 	m_time += deltaTime;
@@ -286,7 +286,7 @@ bool ParticleSystem::initShaderParticleSystem()
 }
 
 // TODO: Fix this guarrada
-float RandomFloat()
+static float RandomFloat()
 {
 	float Max = RAND_MAX;
 	return ((float)rand() / Max);
