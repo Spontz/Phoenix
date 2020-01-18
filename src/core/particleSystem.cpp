@@ -186,50 +186,25 @@ void ParticleSystem::Render(float deltaTime, const glm::mat4 &VP, const glm::mat
 	m_currTFB = (m_currTFB + 1) & 0x1;
 }
 
-float each_half = 0.0f;
 float m_time = 0.0f;
 void ParticleSystem::UpdateEmitters(float deltaTime)
 {
-	//if (this->numEmitters != emitter.size())
-	//	return;
-
 	m_time += deltaTime;
 	glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
-	// TODO: Investigate this flags:
-	// | GL_MAP_INVALIDATE_RANGE_BIT -> Invalidates data readed
-	// | GL_MAP_UNSYNCHRONIZED_BIT
-	// | GL_MAP_INVALIDATE_BUFFER_BIT -> https://www.bfilipek.com/2015/01/persistent-mapped-buffers-in-opengl.html
-	Particle* data = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle) * numEmitters, GL_MAP_WRITE_BIT);
+	//numMaxParticles
+	unsigned int nParts = numMaxParticles;// numEmitters;
+	m_emitterData = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle) * nParts, GL_MAP_WRITE_BIT);
+	
 	// Change data and move some random positions
-	for (unsigned int i = 0; i < numEmitters; i++) {
-		data[i].Type = PARTICLE_TYPE_EMITTER;
-		float sphere = 2 * 3.1415f * ((float)(i + 1) / ((float)numEmitters));
-		data[i].Pos = glm::vec3(sin(sphere), 3.0*sin(m_time/2.0), cos(sphere));
-		data[i].Vel = glm::vec3(0.0f, 10.0f, 0.0f);
-		data[i].Col = glm::vec3(1, 1, 1);
-		data[i].lifeTime = 1.0f; // TODO: investigate why only emmits if this is greater than 0...
+	for (unsigned int i = 0; i < nParts; i++) {
+		m_emitterData[i].Type = PARTICLE_TYPE_EMITTER;
+		float sphere = 4* 3.1415f * ((float)(i) / ((float)nParts));
+		m_emitterData[i].Pos = glm::vec3(sin(sphere), 3.0 * sin(m_time / 2.0), cos(sphere));
+		m_emitterData[i].Vel = glm::vec3(0.0f, 10.0f, 0.0f);
+		m_emitterData[i].Col = glm::vec3(1, 1, 1);
+		m_emitterData[i].lifeTime = 1.0f; // TODO: investigate why only emmits if this is greater than 0...
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
-	/*
-	// Test: move the emitter
-	each_half += deltaTime;
-	if (each_half > 1.0f) {
-		each_half = 0.0f;
-		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
-		// TODO: Investigate this flags:  | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT
-		Particle* data = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle) * numEmitters, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);// | GL_MAP_UNSYNCHRONIZED_BIT);
-		// Change data and move some random positions
-		for (unsigned int i = 0; i < numEmitters; i++) {
-			data[i].Type = PARTICLE_TYPE_EMITTER;
-			//float sphere = 2 * 3.1415f* ((float)(i + 1) / ((float)numEmitters));
-			//data[i].Pos = initPosition + glm::vec3(sin(sphere), -0.1*m_time, cos(sphere));
-			data[i].Vel = glm::vec3(1.0f, 0.01f, 0.0f);
-			data[i].lifeTime = 10.0f; // TODO: investigate why only emmits if this is greater than 0...
-			data[i].Col = glm::vec3(1, 1, 1);
-		}
-		glUnmapBuffer(GL_ARRAY_BUFFER);
-	}
-	*/
 }
 
 

@@ -58,6 +58,7 @@ private:
 	GLuint m_VAO;					// Vertex Array Object buffer
 	GLuint m_particleBuffer[2];		// Vertex Buffer: input
 	GLuint m_transformFeedback[2];	// Transform feedback buffers: output
+	Particle* m_emitterData;		// Emitter info (for updating emitters positions)
 	int particleSystemShader;
 	int billboardShader;
 
