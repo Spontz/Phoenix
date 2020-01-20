@@ -1,19 +1,18 @@
-﻿// particleSystemEvo.cpp
+﻿// particleMesh.cpp
 // Spontz Demogroup
 
 #include "main.h"
-#include "core/particleSystemEvo.h"
-#include <omp.h>
+#include "core/particleMesh.h"
+
 using namespace std;
 
-ParticleSystemEvo::ParticleSystemEvo(int numParticles, string shaderPath)
+ParticleMesh::ParticleMesh(int numParticles)
 {
     m_frameIndex = 0;
     this->m_numParticles = numParticles;
-    this->m_shaderPath = shaderPath;
 }
 
-ParticleSystemEvo::~ParticleSystemEvo()
+ParticleMesh::~ParticleMesh()
 {
     shutdown();
 }
@@ -22,7 +21,7 @@ ParticleSystemEvo::~ParticleSystemEvo()
 #define LOC_POSITION 0
 #define LOC_ID 1
 
-bool ParticleSystemEvo::startup()
+bool ParticleMesh::startup()
 {
     // Application memory particle buffers (double buffered)
     m_particles[0] = new PARTICLE[m_numParticles];
@@ -31,7 +30,6 @@ bool ParticleSystemEvo::startup()
     // Create GPU buffer
     glGenBuffers(1, &m_particleBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer);
-    //glBufferData(GL_ARRAY_BUFFER, PARTICLE_COUNT * sizeof(PARTICLE), nullptr, )
     glBufferStorage(GL_ARRAY_BUFFER, m_numParticles * sizeof(PARTICLE), NULL, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);
     m_mappedBuffer = (PARTICLE*)glMapBufferRange(GL_ARRAY_BUFFER, 0, m_numParticles * sizeof(PARTICLE), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_FLUSH_EXPLICIT_BIT);
 
@@ -39,7 +37,6 @@ bool ParticleSystemEvo::startup()
 
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray(m_vao);
-
 
     glBindVertexBuffer(BINDING, m_particleBuffer, 0, sizeof(PARTICLE));
     
@@ -51,18 +48,10 @@ bool ParticleSystemEvo::startup()
     glVertexAttribIFormat(LOC_ID, 1, GL_INT, offsetof(PARTICLE, ID));
     glVertexAttribBinding(LOC_ID, BINDING);
 
-    // Upload shader
-    m_shader = DEMO->shaderManager.addShader(m_shaderPath + "/particleSystem.vert", m_shaderPath + "/particleSystem.frag");
-    if (m_shader < 0)
-        return false;
-
-    int maxThreads = omp_get_max_threads();
-    omp_set_num_threads(maxThreads);
-
     return true;
 }
 
-void ParticleSystemEvo::initialize_particles(void)
+void ParticleMesh::initialize_particles(void)
 {
     for (int i = 0; i < m_numParticles; i++)
     {
@@ -76,7 +65,7 @@ void ParticleSystemEvo::initialize_particles(void)
 
 
 static float m_time = 0;
-void ParticleSystemEvo::update_particles(float deltaTime)
+void ParticleMesh::update_particles(float deltaTime)
 {
     m_time += deltaTime;
     // Double buffer source and destination
@@ -105,15 +94,8 @@ void ParticleSystemEvo::update_particles(float deltaTime)
     m_frameIndex++;
 }
 
-void ParticleSystemEvo::render(float currentTime, const glm::mat4& PVM)
+void ParticleMesh::render(float currentTime, const glm::mat4& PVM)
 {
-    static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    static float previousTime = 0.0;
-
-    // Calculate delta time
-    float deltaTime = (currentTime - previousTime);
-    previousTime = currentTime;
-
     // Update particle positions
     //update_particles(deltaTime);
     
@@ -125,17 +107,17 @@ void ParticleSystemEvo::render(float currentTime, const glm::mat4& PVM)
 
     glPointSize(3.0f);
 
-    // Draw!
+/*    // Draw!
     Shader* particleSystem_shader = DEMO->shaderManager.shader[m_shader];
     particleSystem_shader->use();
     particleSystem_shader->setValue("gTime", currentTime);	// Send the Time
     particleSystem_shader->setValue("gPVM", PVM);	// Set (Projection x View x Model) matrix
     particleSystem_shader->setValue("gNumParticles", (float)m_numParticles);   // Set the total number of particles
-
+	*/
     glDrawArrays(GL_POINTS, 0, m_numParticles);
 }
 
-void ParticleSystemEvo::shutdown()
+void ParticleMesh::shutdown()
 {
     glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer);
     glUnmapBuffer(GL_ARRAY_BUFFER);

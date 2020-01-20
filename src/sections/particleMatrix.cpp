@@ -1,24 +1,20 @@
 #include "main.h"
-#include "core/particleSystemEvo.h"
+#include "core/particleMesh.h"
 #include "core/shadervars.h"
 
 typedef struct {
 	// Particle engine variables
 	unsigned int	numParticles;
-	ParticleSystemEvo* pSystem;
+	ParticleMesh*	pSystem;
+	int				shader;
 
 	// Particle Matrix positioning (for all the model)
-	glm::vec3	translation;
-	glm::vec3	rotation;
-	glm::vec3	scale;
+	glm::vec3		translation;
+	glm::vec3		rotation;
+	glm::vec3		scale;
 
-	// Individual particle properties
-	float		currentParticle;
-	glm::vec3	position;
-	glm::vec3	color;
-
-	mathDriver* exprPosition;	// A equation containing the calculations to position the object
-
+	mathDriver		*exprPosition;	// A equation containing the calculations to position the object
+	ShaderVars		*vars;			// For storing any other shader variables
 } particleMatrix_section;
 
 static particleMatrix_section* local;
@@ -29,19 +25,20 @@ sParticleMatrix::sParticleMatrix() {
 
 bool sParticleMatrix::load() {
 	// script validation
-	/*if ((this->param.size() != 2) || (this->strings.size() != 9)) {
-		LOG->Error("Particle Matrix [%s]: 2 param (emission time & Particle Life Time) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", this->identifier.c_str());
+	if ((this->param.size() != 1) || (this->strings.size() != 5)) {
+		LOG->Error("Particle Matrix [%s]: 1 param (Particles number) and 5 strings needed (2 for shader files, 3 for positioning)", this->identifier.c_str());
 		return false;
 	}
-	*/
+	
 
 	local = (particleMatrix_section*)malloc(sizeof(particleMatrix_section));
 
 	this->vars = (void*)local;
 
-	// Load the shaders
-	string pathShaders;
-	pathShaders = DEMO->dataFolder + this->strings[0];
+	// Load the shader
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[1]);
+	if (local->shader < 0)
+		return false;
 
 	// Particles number
 	local->numParticles = (int)this->param[0];
@@ -49,7 +46,7 @@ bool sParticleMatrix::load() {
 	// Load particle positioning
 	local->exprPosition = new mathDriver(this);
 	// Load all the other strings
-	for (int i = 1; i < strings.size(); i++)
+	for (int i = 2; i < strings.size(); i++)
 		local->exprPosition->expression += this->strings[i];
 
 	local->exprPosition->SymbolTable.add_variable("tx", local->translation.x);
@@ -62,24 +59,27 @@ bool sParticleMatrix::load() {
 	local->exprPosition->SymbolTable.add_variable("sy", local->scale.y);
 	local->exprPosition->SymbolTable.add_variable("sz", local->scale.z);
 
-	local->exprPosition->SymbolTable.add_variable("px", local->position.x);
-	local->exprPosition->SymbolTable.add_variable("py", local->position.y);
-	local->exprPosition->SymbolTable.add_variable("pz", local->position.z);
-
-	local->exprPosition->SymbolTable.add_variable("colorR", local->color.r);
-	local->exprPosition->SymbolTable.add_variable("colorG", local->color.g);
-	local->exprPosition->SymbolTable.add_variable("colorB", local->color.b);
-
-	local->exprPosition->SymbolTable.add_variable("nE", local->currentParticle);
-	local->exprPosition->SymbolTable.add_constant("TnE", (float)local->numParticles);
-
 	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
 	local->exprPosition->compileFormula();
 
 	// Create the particle system
-	local->pSystem = new ParticleSystemEvo(local->numParticles, pathShaders);
+	local->pSystem = new ParticleMesh(local->numParticles);
 	if (!local->pSystem->startup())
 		return false;
+
+	// Create Shader variables
+	Shader* my_shader;
+	my_shader = DEMO->shaderManager.shader[local->shader];
+	my_shader->use();
+	local->vars = new ShaderVars(this, my_shader);
+
+	// Read the shader variables
+	for (int i = 0; i < this->uniform.size(); i++) {
+		local->vars->ReadString(this->uniform[i].c_str());
+	}
+
+	// Set shader variables values
+	local->vars->setValues();
 
 	return true;
 }
@@ -114,14 +114,17 @@ void sParticleMatrix::exec() {
 
 	glm::mat4 pvm = projection * view * model;
 
-	// Render particles
-	float deltaTime = this->runTime - lastTime;
-	lastTime = this->runTime;
-	if (deltaTime < 0) {
-		deltaTime = -deltaTime;	// In case we rewind the demo
-	}
-	
+	// Get the shader
+	Shader* my_shader = DEMO->shaderManager.shader[local->shader];
+	my_shader->use();
+	my_shader->setValue("gTime", this->runTime);	// Send the Time
+	my_shader->setValue("gPVM", pvm);				// Set (Projection x View x Model) matrix
+	my_shader->setValue("gNumParticles", (float)local->numParticles);	// Set the total number of particles
 
+	// Set the other shader variable values
+	local->vars->setValues();
+
+	// Render particles
 	local->pSystem->render(this->runTime, pvm);
 
 	// End evaluating blending
