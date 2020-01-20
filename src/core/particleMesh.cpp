@@ -30,7 +30,7 @@ bool ParticleMesh::startup()
     // Create GPU buffer
     glGenBuffers(1, &m_particleBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer);
-    glBufferStorage(GL_ARRAY_BUFFER, m_numParticles * sizeof(PARTICLE), NULL, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);
+	glBufferStorage(GL_ARRAY_BUFFER, m_numParticles * sizeof(PARTICLE), NULL,  GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);
     m_mappedBuffer = (PARTICLE*)glMapBufferRange(GL_ARRAY_BUFFER, 0, m_numParticles * sizeof(PARTICLE), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_FLUSH_EXPLICIT_BIT);
 
     initialize_particles();
@@ -103,7 +103,7 @@ void ParticleMesh::render(float currentTime, const glm::mat4& PVM)
     glBindVertexArray(m_vao);
 
     // Let OpenGL know we've changed the contents of the buffer
-    glFlushMappedBufferRange(GL_ARRAY_BUFFER, 0, m_numParticles * sizeof(PARTICLE));
+    //glFlushMappedBufferRange(GL_ARRAY_BUFFER, 0, m_numParticles * sizeof(PARTICLE));
 
     glPointSize(3.0f);
 
