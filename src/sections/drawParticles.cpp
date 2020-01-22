@@ -136,6 +136,9 @@ void sDrawParticles::exec() {
 }
 
 void sDrawParticles::end() {
+	local = (drawParticles_section*)this->vars;
+
+	local->pSystem->shutdown();
 }
 
 string sDrawParticles::debug() {

@@ -13,9 +13,7 @@ public:
 
 	struct PARTICLE
 	{
-		glm::vec3   position;
-		glm::vec3   velocity;
-		int         ID;
+		int		ID;	// Particle ID, for being used in the shaders
 	};
 
 	ParticleMesh(int numParticles);
@@ -29,13 +27,10 @@ public:
 
 private:
 	GLuint      m_particleBuffer;
-	PARTICLE*   m_mappedBuffer;
-	PARTICLE*   m_particles[2];
-	int         m_frameIndex;
+	PARTICLE*   m_particles;
 	GLuint      m_vao;
 
 	void initialize_particles(void);
-	void update_particles(float deltaTime);
 };
 
 #endif
