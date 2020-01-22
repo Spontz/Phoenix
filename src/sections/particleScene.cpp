@@ -30,7 +30,7 @@ typedef struct {
 static particleScene_section *local;
 
 sParticleScene::sParticleScene() {
-	type = SectionType::DrawParticles;
+	type = SectionType::ParticleScene;
 }
 
 bool sParticleScene::load() {
