@@ -9,7 +9,6 @@ uniform vec3 gCameraPos;
 uniform float fParticleSize;
 uniform float fParticlesDrawn;
 
-
 // Info from the VS
 in vec3 Color0[];
 in int ID0[];
