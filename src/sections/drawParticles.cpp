@@ -15,28 +15,29 @@ typedef struct {
 
 	mathDriver		*exprPosition;	// A equation containing the calculations to position the object
 	ShaderVars		*vars;			// For storing any other shader variables
-} particleMatrix_section;
+} drawParticles_section;
 
-static particleMatrix_section* local;
+static drawParticles_section* local;
 
-sParticleMatrix::sParticleMatrix() {
-	type = SectionType::ParticleMatrix;
+sDrawParticles::sDrawParticles() {
+	type = SectionType::DrawParticles;
 }
 
-bool sParticleMatrix::load() {
+bool sDrawParticles::load() {
 	// script validation
-	if ((this->param.size() != 1) || (this->strings.size() != 5)) {
-		LOG->Error("Particle Matrix [%s]: 1 param (Particles number) and 5 strings needed (2 for shader files, 3 for positioning)", this->identifier.c_str());
+	if ((this->param.size() != 1) || (this->strings.size() != 6)) {
+		LOG->Error("Particle Matrix [%s]: 1 param (Particles number) and 5 strings needed (3 for shader files, 3 for positioning)", this->identifier.c_str());
 		return false;
 	}
 	
 
-	local = (particleMatrix_section*)malloc(sizeof(particleMatrix_section));
+	local = (drawParticles_section*)malloc(sizeof(drawParticles_section));
 
 	this->vars = (void*)local;
 
 	// Load the shader
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[1]);
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[2], DEMO->dataFolder + this->strings[1]);
+	//local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[2]);
 	if (local->shader < 0)
 		return false;
 
@@ -46,7 +47,7 @@ bool sParticleMatrix::load() {
 	// Load particle positioning
 	local->exprPosition = new mathDriver(this);
 	// Load all the other strings
-	for (int i = 2; i < strings.size(); i++)
+	for (int i = 3; i < strings.size(); i++)
 		local->exprPosition->expression += this->strings[i];
 
 	local->exprPosition->SymbolTable.add_variable("tx", local->translation.x);
@@ -84,14 +85,14 @@ bool sParticleMatrix::load() {
 	return true;
 }
 
-void sParticleMatrix::init() {
+void sDrawParticles::init() {
 }
 
 
 static float lastTime = 0;
 
-void sParticleMatrix::exec() {
-	local = (particleMatrix_section*)this->vars;
+void sDrawParticles::exec() {
+	local = (drawParticles_section*)this->vars;
 
 	// Start evaluating blending
 	EvalBlendingStart();
@@ -112,20 +113,21 @@ void sParticleMatrix::exec() {
 	model = glm::rotate(model, glm::radians(local->rotation.z), glm::vec3(0, 0, 1));
 	model = glm::scale(model, local->scale);
 
-	glm::mat4 pvm = projection * view * model;
-
+	
 	// Get the shader
 	Shader* my_shader = DEMO->shaderManager.shader[local->shader];
 	my_shader->use();
 	my_shader->setValue("gTime", this->runTime);	// Send the Time
-	my_shader->setValue("gPVM", pvm);				// Set (Projection x View x Model) matrix
+	my_shader->setValue("gVP", projection * view);	// Set Projection x View matrix
+	my_shader->setValue("gModel", model);			// Set Model matrix
+	my_shader->setValue("gCameraPos", DEMO->camera->Position);		// Set camera position
 	my_shader->setValue("gNumParticles", (float)local->numParticles);	// Set the total number of particles
 
 	// Set the other shader variable values
 	local->vars->setValues();
 
 	// Render particles
-	local->pSystem->render(this->runTime, pvm);
+	local->pSystem->render(this->runTime);
 
 	// End evaluating blending
 	glDepthMask(GL_TRUE); // Enable depth buffer writting
@@ -133,11 +135,11 @@ void sParticleMatrix::exec() {
 
 }
 
-void sParticleMatrix::end() {
+void sDrawParticles::end() {
 }
 
-string sParticleMatrix::debug() {
-	local = (particleMatrix_section*)this->vars;
+string sDrawParticles::debug() {
+	local = (drawParticles_section*)this->vars;
 
 	string msg;
 	msg += "[ particleMatrix id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";

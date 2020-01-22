@@ -186,6 +186,7 @@ void ShaderVars::setValues()
 	varMat4*		my_mat4;
 	varSampler2D*	my_sampler2D;
 
+	// TODO: Optimize and remove the ".size()" evaluation. Replace for something more optimal
 	for (i = 0; i < vfloat.size(); i++) {
 		my_vfloat = vfloat[i];
 		my_vfloat->eva->Expression.value();

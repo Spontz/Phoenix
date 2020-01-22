@@ -94,7 +94,7 @@ void ParticleMesh::update_particles(float deltaTime)
     m_frameIndex++;
 }
 
-void ParticleMesh::render(float currentTime, const glm::mat4& PVM)
+void ParticleMesh::render(float currentTime)
 {
     // Update particle positions
     //update_particles(deltaTime);
@@ -105,16 +105,10 @@ void ParticleMesh::render(float currentTime, const glm::mat4& PVM)
     // Let OpenGL know we've changed the contents of the buffer
     //glFlushMappedBufferRange(GL_ARRAY_BUFFER, 0, m_numParticles * sizeof(PARTICLE));
 
-    glPointSize(3.0f);
-
-/*    // Draw!
-    Shader* particleSystem_shader = DEMO->shaderManager.shader[m_shader];
-    particleSystem_shader->use();
-    particleSystem_shader->setValue("gTime", currentTime);	// Send the Time
-    particleSystem_shader->setValue("gPVM", PVM);	// Set (Projection x View x Model) matrix
-    particleSystem_shader->setValue("gNumParticles", (float)m_numParticles);   // Set the total number of particles
-	*/
+    // Draw! (shader needs to be called in advance!)
     glDrawArrays(GL_POINTS, 0, m_numParticles);
+	
+	glBindVertexArray(0);
 }
 
 void ParticleMesh::shutdown()

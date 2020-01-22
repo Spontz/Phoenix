@@ -28,7 +28,7 @@ enum SectionType {
 	DrawFbo,
 	DrawScene,
 	DrawSceneMatrix,
-	ParticleMatrix,
+	DrawParticles,
 	ParticleScene,
 	Sound,
 	FboBind,

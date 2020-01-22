@@ -22,7 +22,7 @@ public:
 	~ParticleMesh();
 
 	bool startup();
-	void render(float currentTime, const glm::mat4& PVM);
+	void render(float currentTime);
 	void shutdown();
 
 	int         m_numParticles;
