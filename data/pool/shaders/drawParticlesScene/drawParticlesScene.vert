@@ -23,7 +23,7 @@ void main(void)
 	Color0 = vec3(1+sin(((sphere-PI)/2.0)+gTime), 0.0, 0.0);//0.5+0.5*sin(gTime), 1.0);
 
 	// Calculate the new position of the particle
-	vec3 new_position = vec3(0.5 * sin(sphere), 1.0 * sin(gTime), 0.5 * cos(sphere));
+	vec3 new_position = Position;
 
 
 	gl_Position = gModel * vec4(new_position, 1.0);

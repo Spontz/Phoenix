@@ -27,6 +27,7 @@ tSectionID sectionID[] = {
 	{"drawQuad",			SectionType::DrawQuad},
 	{"drawFbo",				SectionType::DrawFbo},
 	{"drawParticles",		SectionType::DrawParticles},
+	{"drawParticlesScene",	SectionType::DrawParticlesScene},
 	{"particleScene",		SectionType::ParticleScene},
 	{"sound",				SectionType::Sound},
 	{"fboBind",				SectionType::FboBind},
@@ -108,6 +109,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::DrawParticles:
 		mySection = new sDrawParticles();
+		break;
+	case SectionType::DrawParticlesScene:
+		mySection = new sDrawParticlesScene();
 		break;
 	case SectionType::ParticleScene:
 		mySection = new sParticleScene();

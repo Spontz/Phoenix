@@ -21,6 +21,7 @@ class sDrawQuad : public Section { public:	sDrawQuad();  bool load(); void init(
 class sDrawScene : public Section { public:	sDrawScene();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sDrawSceneMatrix : public Section { public:	sDrawSceneMatrix();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sDrawParticles : public Section { public:	sDrawParticles();  bool load(); void init(); void exec(); void end(); string debug(); };
+class sDrawParticlesScene : public Section { public:	sDrawParticlesScene();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sParticleScene : public Section { public:	sParticleScene();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sEfxBloom : public Section { public:	sEfxBloom();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sEfxBlur : public Section { public:	sEfxBlur();  bool load(); void init(); void exec(); void end(); string debug(); };

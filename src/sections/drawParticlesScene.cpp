@@ -3,6 +3,9 @@
 #include "core/shadervars.h"
 
 typedef struct {
+	// 3D Model
+	int				model;
+
 	// Particle engine variables
 	int				numParticles;
 	ParticleMesh*	pSystem;
@@ -15,39 +18,65 @@ typedef struct {
 
 	mathDriver		*exprPosition;	// A equation containing the calculations to position the object
 	ShaderVars		*vars;			// For storing any other shader variables
-} drawParticles_section;
+} drawParticlesScene_section;
 
-static drawParticles_section* local;
+static drawParticlesScene_section* local;
 
-sDrawParticles::sDrawParticles() {
+sDrawParticlesScene::sDrawParticlesScene() {
 	type = SectionType::DrawParticles;
 }
 
-bool sDrawParticles::load() {
+bool sDrawParticlesScene::load() {
 	// script validation
-	if ((this->param.size() != 1) || (this->strings.size() != 6)) {
-		LOG->Error("Draw Particles [%s]: 1 param (Particles number) and 6 strings needed (3 for shader files and 3 for positioning)", this->identifier.c_str());
+	if (this->strings.size() != 7) {
+		LOG->Error("Draw Particles Scene [%s]: 7 strings needed (3 for shader files, 1 for 3D model, 3 for positioning)", this->identifier.c_str());
 		return false;
 	}
 	
 
-	local = (drawParticles_section*)malloc(sizeof(drawParticles_section));
+	local = (drawParticlesScene_section*)malloc(sizeof(drawParticlesScene_section));
 
 	this->vars = (void*)local;
 
 	// Load the shader
 	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[2], DEMO->dataFolder + this->strings[1]);
 
-	if (local->shader < 0)
+	// Load the model scene
+	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[3]);
+
+	if (local->shader < 0 || local->model <0)
 		return false;
 
-	// Particles number
-	local->numParticles = (int)this->param[0];
+	// Load model properties
+	Model* my_model;
+	my_model = DEMO->modelManager.model[local->model];
+
+	// Calculate particles number
+	local->numParticles = 0;
+	for (int i = 0; i < my_model->meshes.size(); i++) {
+		local->numParticles += (int)my_model->meshes[i].unique_vertices_pos.size();
+	}
+	if (local->numParticles == 0) {
+		LOG->Error("Draw Particles Scene [%s]: No vertex found in the model", this->identifier.c_str());
+		return false;
+	}
+	// Load the particles position
+	vector<glm::vec3> Pos;
+	Pos.resize(local->numParticles);
+	int cnt = 0;
+	for (int i = 0; i < my_model->meshes.size(); i++) {
+		for (int j = 0; j < my_model->meshes[i].unique_vertices_pos.size(); j++) {
+			Pos[cnt] = my_model->meshes[i].unique_vertices_pos[j];
+			cnt++;
+		}
+	}
+
+
 
 	// Load particle positioning
 	local->exprPosition = new mathDriver(this);
 	// Load all the other strings
-	for (int i = 3; i < strings.size(); i++)
+	for (int i = 4; i < strings.size(); i++)
 		local->exprPosition->expression += this->strings[i];
 
 	local->exprPosition->SymbolTable.add_variable("tx", local->translation.x);
@@ -65,8 +94,10 @@ bool sDrawParticles::load() {
 
 	// Create the particle system
 	local->pSystem = new ParticleMesh(local->numParticles);
-	if (!local->pSystem->startup())
+	if (!local->pSystem->startup(Pos))
 		return false;
+	// Delete all temporarly elements
+	Pos.clear();
 
 	// Create Shader variables
 	Shader* my_shader;
@@ -85,14 +116,14 @@ bool sDrawParticles::load() {
 	return true;
 }
 
-void sDrawParticles::init() {
+void sDrawParticlesScene::init() {
 }
 
 
 static float lastTime = 0;
 
-void sDrawParticles::exec() {
-	local = (drawParticles_section*)this->vars;
+void sDrawParticlesScene::exec() {
+	local = (drawParticlesScene_section*)this->vars;
 
 	// Start evaluating blending
 	EvalBlendingStart();
@@ -135,17 +166,17 @@ void sDrawParticles::exec() {
 
 }
 
-void sDrawParticles::end() {
-	local = (drawParticles_section*)this->vars;
+void sDrawParticlesScene::end() {
+	local = (drawParticlesScene_section*)this->vars;
 
 	local->pSystem->shutdown();
 }
 
-string sDrawParticles::debug() {
-	local = (drawParticles_section*)this->vars;
+string sDrawParticlesScene::debug() {
+	local = (drawParticlesScene_section*)this->vars;
 
 	string msg;
-	msg += "[ drawParticles id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg += "[ drawParticlesScene id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " numParticles: " + std::to_string(local->numParticles) + "\n";
 	return msg;
 }
