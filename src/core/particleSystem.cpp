@@ -6,7 +6,7 @@
 
 using namespace std;
 
-#define RANDOM_TEXTURE_UNIT 3
+#define RANDOM_TEXTURE_UNIT 0
 
 #define LOC_POSITION 0
 #define LOC_VELOCITY 1
@@ -14,7 +14,7 @@ using namespace std;
 #define LOC_LIFETIME 3
 #define LOC_TYPE 4
 
-#define BINDING_PARTICLES	0
+#define BINDING_UPDATE	0
 #define BINDING_BILLBOARD	1
 
 ParticleSystem::ParticleSystem(string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime)
@@ -63,7 +63,7 @@ bool ParticleSystem::InitParticleSystem(Section* sec, const vector<Particle> emi
 
 	Particle* Particles = new Particle[numEmitters];
 
-	// Init the particle 0, the initial emitter
+	// Init the particle emitters
 	for (unsigned int i = 0; i < numEmitters; i++) {
 		Particles[i].Type = PARTICLE_TYPE_EMITTER;
 		Particles[i].Pos = emitter[i].Pos;
@@ -84,37 +84,36 @@ bool ParticleSystem::InitParticleSystem(Section* sec, const vector<Particle> emi
 	for (unsigned int i = 0; i < 2; i++) {
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(Particle)*numMaxParticles, Particles, GL_DYNAMIC_DRAW); // Upload the entire buffer (requires that "Particles" should have the size of all the particles [numMaxParticles])
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Particle)*numMaxParticles, NULL, GL_DYNAMIC_DRAW);	// Allocate mem, uploading an empty buffer for all the particles
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle)*numEmitters, Particles);			// Upload only the emitters to the Buffer
 		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 	}
 
-	// Setup Vertex Attribute formats (opengl 4.3 format)
-	// Definitions for Binding 0 (Particles properties)
-	glBindVertexBuffer(BINDING_PARTICLES, m_particleBuffer[0], 0, sizeof(Particle));
+	// Setup Vertex Attribute formats
+	// Definitions for Update shader Binding
+	glBindVertexBuffer(BINDING_UPDATE, m_particleBuffer[0], 0, sizeof(Particle));
 
 	glEnableVertexAttribArray(LOC_POSITION);
 	glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
-	glVertexAttribBinding(LOC_POSITION, BINDING_PARTICLES);
+	glVertexAttribBinding(LOC_POSITION, BINDING_UPDATE);
 
 	glEnableVertexAttribArray(LOC_VELOCITY);
 	glVertexAttribFormat(LOC_VELOCITY, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Vel));	// Velocity (12 bytes)
-	glVertexAttribBinding(LOC_VELOCITY, BINDING_PARTICLES);
+	glVertexAttribBinding(LOC_VELOCITY, BINDING_UPDATE);
 
 	glEnableVertexAttribArray(LOC_COLOR);
 	glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
-	glVertexAttribBinding(LOC_COLOR, BINDING_PARTICLES);
+	glVertexAttribBinding(LOC_COLOR, BINDING_UPDATE);
 
 	glEnableVertexAttribArray(LOC_LIFETIME);
 	glVertexAttribFormat(LOC_LIFETIME, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, lifeTime));	// Lifetime (4 bytes)
-	glVertexAttribBinding(LOC_LIFETIME, BINDING_PARTICLES);
+	glVertexAttribBinding(LOC_LIFETIME, BINDING_UPDATE);
 
 	glEnableVertexAttribArray(LOC_TYPE);
 	glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
-	glVertexAttribBinding(LOC_TYPE, BINDING_PARTICLES);
+	glVertexAttribBinding(LOC_TYPE, BINDING_UPDATE);
 
-	// Definitions for Binding 1 (Billboard render)
+	// Definitions for Billboard shader Binding
 	glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[0], 0, sizeof(Particle));
 
 	glEnableVertexAttribArray(LOC_POSITION);
@@ -127,7 +126,7 @@ bool ParticleSystem::InitParticleSystem(Section* sec, const vector<Particle> emi
 
 	glEnableVertexAttribArray(LOC_TYPE);
 	glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
-	glVertexAttribBinding(LOC_TYPE, BINDING_PARTICLES);
+	glVertexAttribBinding(LOC_TYPE, BINDING_UPDATE);
 
 	SAFE_DELETE_ARRAY(Particles);
 	// Make sure the VAO is not changed from the outside
@@ -141,7 +140,7 @@ bool ParticleSystem::InitParticleSystem(Section* sec, const vector<Particle> emi
 	// Send the variables to the Particle System shader
 	Shader *particleSystem_shader = DEMO->shaderManager.shader[particleSystemShader];
 	particleSystem_shader->use();
-	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
+	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT);
 	particleSystem_shader->setValue("fEmissionTime", this->emissionTime); // Time between emissions
 	particleSystem_shader->setValue("fParticleLifetime", this->particleLifeTime);
 
@@ -230,7 +229,7 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[m_currTFB]);
 
 	// Use Binding for particles (all attributes)
-	glBindVertexBuffer(BINDING_PARTICLES, m_particleBuffer[m_currVB], 0, sizeof(Particle));
+	glBindVertexBuffer(BINDING_UPDATE, m_particleBuffer[m_currVB], 0, sizeof(Particle));
 	
 	glBeginTransformFeedback(GL_POINTS);
 
@@ -285,7 +284,7 @@ bool ParticleSystem::initShaderParticleSystem()
 	return true;
 }
 
-// TODO: Fix this guarrada
+// TODO: Investigate if we should move this "Random texture 1D generator" to the TextureManager class
 static float RandomFloat()
 {
 	float Max = RAND_MAX;
