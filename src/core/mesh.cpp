@@ -138,10 +138,8 @@ void Mesh::Draw(GLuint shaderID)
 		if (material.textures[i].ID == -1) // Avoid illegal access
 			return;
 		Texture *tex = DEMO->textureManager.texture[material.textures[i].ID];
-		// active proper texture unit before binding
-		tex->active(i); // TODO: In theory, this active is not needed, because is done during the "tex->bind(i)"
+		// TODO: Remove this c_str() command could improve performance?
 		glUniform1i(glGetUniformLocation(shaderID, material.textures[i].shaderName.c_str()), i);
-		//glUniform1i(glGetUniformLocation(shaderID, tex->shaderName.c_str()), i);
 		// and finally bind the texture
 		tex->bind(i);
 	}
