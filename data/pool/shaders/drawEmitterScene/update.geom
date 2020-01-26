@@ -40,21 +40,24 @@ vec3 GetRandomDir(float TexCoord)
 void main()
 {
     float Age = Age0[0] + gDeltaTime; // Increment the age of the particle
+	vec3 DeltaP = gDeltaTime * Velocity0[0]; // Position Delta: xDelta = v*t
 
-	// If its an emitter...
+	// Draw the emitter
 	if (Type0[0] == PARTICLE_TYPE_EMITTER) {
-		if (Age >= fEmissionTime) {	// If it's time to create a new particle...
+		// If it's time to create a new particle...
+		if (Age >= fEmissionTime) {
 			Type1 = PARTICLE_TYPE_SHELL;
-			Position1 = Position0[0];
-			Velocity1 = Velocity0[0];
+			Position1 = Position0[0];// + vec3(0.5*sin(gTime), 0,0);
+			float randomNum = (Position0[0].x + Position0[0].y + Position0[0].z); 
+			Velocity1 = Velocity0[0] + GetRandomDir(gDeltaTime);
 			Color1 = Color0[0];
 			Age1 = 0.0;
 			EmitVertex();
 			EndPrimitive();	// Generate a new particle from the launcher position
 			Age = 0.0;		// Set the age of the emitter to 0, so it can generate new particles later
-		}
+		}	
 		Type1 = PARTICLE_TYPE_EMITTER;
-		Position1 = Position0[0];
+		Position1 = Position0[0];// + DeltaP;
 		Velocity1 = Velocity0[0];
 		Color1 = Color0[0];
 		Age1 = Age;
@@ -64,21 +67,14 @@ void main()
 	
 	// If its a normal particle...
 	else {
-		vec3 DeltaP = gDeltaTime * Velocity0[0]; // xDelta = v*t
-		//vec3 DeltaV = vec3(0.0, 0, -10.981) * gDeltaTime; // vDelta = accel*tDetla
 		vec3 DeltaV = force * gDeltaTime; // vDelta = accel*tDetla
 		
 		// If the is still alive, we update the values...
 		if (Age < fParticleLifetime) {
 			Type1 = PARTICLE_TYPE_SHELL;
-			Position1 = Position0[0] + DeltaP; // x = x0 + xDelta
-			//float randomNum = (Position0[0].x + Position0[0].y + Position0[0].z); 
-			//vec3 Dir = GetRandomDir(randomNum);
-			//vec3 Dir = vec3(1.0, 1.0, 1.0);
-			//Velocity1 = Velocity0[0] + DeltaV/Dir; // v = v0 + vDelta
+			Position1 = Position0[0] + DeltaP;// + DeltaP; // x = x0 + xDelta
 			Velocity1 = Velocity0[0] + DeltaV; // v = v0 + vDelta
 			Color1 = Color0[0] - vec3(1.0, 1.0, 1.0)*gDeltaTime/fParticleLifetime;
-			//Color1 = Color0[0] - Color0[0]*(gDeltaTime/fParticleLifetime);
 
 			Age1 = Age;
 

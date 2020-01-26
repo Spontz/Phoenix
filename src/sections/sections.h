@@ -22,7 +22,7 @@ class sDrawScene : public Section { public:	sDrawScene();  bool load(); void ini
 class sDrawSceneMatrix : public Section { public:	sDrawSceneMatrix();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sDrawParticles : public Section { public:	sDrawParticles();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sDrawParticlesScene : public Section { public:	sDrawParticlesScene();  bool load(); void init(); void exec(); void end(); string debug(); };
-class sParticleScene : public Section { public:	sParticleScene();  bool load(); void init(); void exec(); void end(); string debug(); };
+class sDrawEmitterScene : public Section { public:	sDrawEmitterScene();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sEfxBloom : public Section { public:	sEfxBloom();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sEfxBlur : public Section { public:	sEfxBlur();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sEfxFader : public Section { public:	sEfxFader();  bool load(); void init(); void exec(); void end(); string debug(); };

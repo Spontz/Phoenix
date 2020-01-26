@@ -13,6 +13,7 @@ typedef struct {
 	float			emissionTime;
 	float			particleLifeTime;
 	float			particleSpeed;
+	float			emitterRandomness;
 	ParticleSystem *pSystem;
 
 	// Particles positioning (for all the model)
@@ -25,22 +26,28 @@ typedef struct {
 	glm::vec3	color;
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
 
-} particleScene_section;
+} drawEmitterScene_section;
 
-static particleScene_section *local;
+static drawEmitterScene_section *local;
 
-sParticleScene::sParticleScene() {
-	type = SectionType::ParticleScene;
+sDrawEmitterScene::sDrawEmitterScene() {
+	type = SectionType::DrawEmitterScene;
 }
 
-bool sParticleScene::load() {
+static float RandomFloat()
+{
+	float Max = RAND_MAX;
+	return ((float)rand() / Max);
+}
+
+bool sDrawEmitterScene::load() {
 	// script validation
-	if ((this->param.size() != 2) || (this->strings.size() != 9)) {
-		LOG->Error("Particle Matrix [%s]: 2 param (emission time & Particle Life Time) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", this->identifier.c_str());
+	if ((this->param.size() != 3) || (this->strings.size() != 9)) {
+		LOG->Error("Particle Matrix [%s]: 3 param (emission time, Particle Life Time & Randomness) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", this->identifier.c_str());
 		return false;
 	}
 
-	local = (particleScene_section*)malloc(sizeof(particleScene_section));
+	local = (drawEmitterScene_section*)malloc(sizeof(drawEmitterScene_section));
 
 	this->vars = (void *)local;
 
@@ -113,6 +120,9 @@ bool sParticleScene::load() {
 
 	local->particleLifeTime = this->param[1];
 	local->numMaxParticles = local->numEmitters + static_cast<unsigned int>(static_cast<float>(local->numEmitters)*local->particleLifeTime*(1.0f / local->emissionTime));
+	
+	// Emitter Ramdomness
+	local->emitterRandomness = this->param[2];
 
 	LOG->Info(LOG_LOW, "Particle Scene [%s]: Num max of particles will be: %d", this->identifier.c_str(), local->numMaxParticles);
 
@@ -127,7 +137,7 @@ bool sParticleScene::load() {
 			local->exprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 			Emitter[numEmitter].Type = PARTICLE_TYPE_EMITTER;
 			Emitter[numEmitter].Pos = my_model->meshes[i].unique_vertices_pos[j];
-			Emitter[numEmitter].Vel = local->velocity;
+			Emitter[numEmitter].Vel = local->velocity + (local->emitterRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat()));
 			Emitter[numEmitter].Col = local->color;
 			Emitter[numEmitter].lifeTime = 0.0f;
 			numEmitter++;
@@ -143,14 +153,14 @@ bool sParticleScene::load() {
 	return true;
 }
 
-void sParticleScene::init() {
+void sDrawEmitterScene::init() {
 }
 
 
 static float lastTime = 0;
 
-void sParticleScene::exec() {
-	local = (particleScene_section *)this->vars;
+void sDrawEmitterScene::exec() {
+	local = (drawEmitterScene_section *)this->vars;
 	
 	// Start evaluating blending
 	EvalBlendingStart();
@@ -191,11 +201,11 @@ void sParticleScene::exec() {
 
 }
 
-void sParticleScene::end() {
+void sDrawEmitterScene::end() {
 }
 
-string sParticleScene::debug() {
-	local = (particleScene_section*)this->vars;
+string sDrawEmitterScene::debug() {
+	local = (drawEmitterScene_section*)this->vars;
 
 	string msg; 
 	msg += "[ particleScene id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
