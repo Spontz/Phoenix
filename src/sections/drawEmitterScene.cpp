@@ -208,7 +208,7 @@ string sDrawEmitterScene::debug() {
 	local = (drawEmitterScene_section*)this->vars;
 
 	string msg; 
-	msg += "[ particleScene id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg += "[ drawEmitterScene id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " numEmitters: " + std::to_string(local->numEmitters) + "\n";
 	msg += " numMaxParticles: " + std::to_string(local->numMaxParticles) + "\n";
 	return msg;
