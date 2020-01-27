@@ -43,7 +43,7 @@ static float RandomFloat()
 bool sDrawEmitterScene::load() {
 	// script validation
 	if ((this->param.size() != 3) || (this->strings.size() != 9)) {
-		LOG->Error("Particle Matrix [%s]: 3 param (emission time, Particle Life Time & Randomness) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", this->identifier.c_str());
+		LOG->Error("Draw Emitter Scene [%s]: 3 param (emission time, Particle Life Time & Randomness) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", this->identifier.c_str());
 		return false;
 	}
 
@@ -103,7 +103,7 @@ bool sDrawEmitterScene::load() {
 
 	local->numEmitters = numEmitters;
 	if (local->numEmitters <= 0) {
-		LOG->Error("Particle Scene [%s]: No emitters found in the 3D model", this->identifier.c_str());
+		LOG->Error("Draw Emitter Scene [%s]: No emitters found in the 3D model", this->identifier.c_str());
 		return false;
 	}
 
@@ -114,7 +114,7 @@ bool sDrawEmitterScene::load() {
 
 	local->emissionTime = this->param[0];
 	if (local->emissionTime <= 0) {
-		LOG->Error("Particle Scene [%s]: Emission time should be greater than 0", this->identifier.c_str());
+		LOG->Error("Draw Emitter Scene [%s]: Emission time should be greater than 0", this->identifier.c_str());
 		return false;
 	}
 
@@ -124,7 +124,7 @@ bool sDrawEmitterScene::load() {
 	// Emitter Ramdomness
 	local->emitterRandomness = this->param[2];
 
-	LOG->Info(LOG_LOW, "Particle Scene [%s]: Num max of particles will be: %d", this->identifier.c_str(), local->numMaxParticles);
+	LOG->Info(LOG_LOW, "Draw Emitter Scene [%s]: Num max of particles will be: %d", this->identifier.c_str(), local->numMaxParticles);
 
 	vector<Particle> Emitter;
 	Emitter.resize(local->numEmitters);
