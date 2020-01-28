@@ -13,7 +13,6 @@ public:
 
 	struct PARTICLE
 	{
-		int			ID;		// Particle ID, for being used in the shaders
 		glm::vec3	Pos;	// Particle initial position
 	};
 
