@@ -165,9 +165,12 @@ void key_callback(GLFWwindow* p_glfw_window, int key, int scancode, int action, 
 				DEMO->camera->Reset();
 			}
 			else if (key == KEY_MULTIPLIER) {
-				DEMO->camera->MovementSpeed = DEMO->camera->MovementSpeed + 5;
-				if (DEMO->camera->MovementSpeed > 50)
-					DEMO->camera->MovementSpeed = 5.0f; // Return to original camera speed
+				DEMO->camera->MovementSpeed *= 2.0f;
+			}
+			else if (key == KEY_DIVIDER) {
+				DEMO->camera->MovementSpeed /= 2.0f;
+				if (DEMO->camera->MovementSpeed < 1.0f)
+					DEMO->camera->MovementSpeed = 1.0f;
 			}
 
 		}
