@@ -21,7 +21,6 @@
 * Move camera backwards: S
 * Move camera left: A
 * Move camera right: D
-
 * Increase Camera Speed: PAGE UP
 * Decrease Camera Speed: PAGE DOWN
 * Reset camera position: R
