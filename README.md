@@ -17,11 +17,13 @@
 
 ## Camera keys
 * Capture camera position: SPACE
-* Move camera forward: UP
-* Move camera backwards: DOWN
-* Move camera left: LEFT
-* Move camera right: RIGHT
-* Change Camera Speed: RIGHT ALT
+* Move camera forward: W
+* Move camera backwards: S
+* Move camera left: A
+* Move camera right: D
+
+* Increase Camera Speed: PAGE UP
+* Decrease Camera Speed: PAGE DOWN
 * Reset camera position: R
 
 # Engine formulas and variables
@@ -42,7 +44,7 @@ Or, if using formulas in shaders, like this:
 
 * Equal (=) is written like this: `:=`, for example: `uniform float scale v1:=10*beat;`
 * At the end of any formula, we should write a semicolon `;`, for example: `uniform float scale v1:=10*beat;`
-* If you want to write multiple formulas, split them also with semicolon, for example: `uniform float rotation v1:=90*sin(t); v2:=0; v3:=180*cos(t);`
+* If you want to write multiple formulas, split them also with semicolon, for example: `uniform vec3 rotation v1:=90*sin(t); v2:=0; v3:=180*cos(t);`
 * A complete description of the formulas you can make can be found here: https://archive.codeplex.com/?p=fastmathparser
 
 ## Variables
@@ -66,7 +68,7 @@ Camera data:
 
 Lights data:
 
-N = Light number (form 0 to 3)
+N = Light number (from 0 to 3)
 * lightN_pos[X/Y/Z]: Light Position (X/Y/Z)
 * lightN_dir[X/Y/Z]: Light Direction (X/Y/Z)
 * lightN_colAmb[R/G/B]: Light Ambient Color (R/G/B)
