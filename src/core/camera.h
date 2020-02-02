@@ -27,12 +27,13 @@ class Camera
 	static const float DEFAULT_CAM_VFOV;
 
 public:
+	string		Name;
 	// Camera Attributes
-	glm::vec3 Position;
-	glm::vec3 Front;
-	glm::vec3 Up;
-	glm::vec3 Right;
-	glm::vec3 WorldUp;
+	glm::vec3	Position;
+	glm::vec3	Front;
+	glm::vec3	Up;
+	glm::vec3	Right;
+	glm::vec3	WorldUp;
 
 	// Euler Angles
 	float Yaw;
@@ -50,9 +51,6 @@ public:
 		float yaw = DEFAULT_CAM_YAW,
 		float pitch = DEFAULT_CAM_PITCH
 	);
-
-	// Constructor with scalar values
-	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 
 	void		Reset();
 	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix

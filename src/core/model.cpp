@@ -98,8 +98,34 @@ bool Model::Load(string const &path)
 
 	// Count total number of meshes
 	m_NumMeshes = static_cast<unsigned int>(meshes.size());
+
+	// Get the cameras
+	processCameras(m_pScene);
+	
 	return true;
 }
+
+// processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
+void Model::processCameras(const aiScene* scene)
+{
+	for (int i = 0; i < m_pScene->mNumCameras; i++)
+	{
+		aiCamera* aiCam = m_pScene->mCameras[i];
+
+		glm::vec3 cam_pos = glm::vec3(aiCam->mPosition.x, aiCam->mPosition.y, aiCam->mPosition.z);
+		glm::vec3 cam_lookAt = glm::vec3(aiCam->mLookAt.x, aiCam->mLookAt.y, aiCam->mLookAt.z);
+		glm::vec3 cam_up = glm::vec3(aiCam->mUp.x, aiCam->mUp.y, aiCam->mUp.z);
+		// TODO: Read FOV, YAW and PITCH
+		// lookAt = position + Vec3(cos(pitch)*sin(yaw), sin(pitch), cos(pitch)*cos(yaw))
+		// pitch = asin(lookAt.y - position.y)
+
+		Camera *cam = new Camera(cam_pos, cam_up);
+		cam->Name = aiCam->mName.C_Str();
+
+		m_camera.push_back(*cam);
+	}
+}
+
 
 // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
 void Model::processNode(aiNode *node, const aiScene *scene)

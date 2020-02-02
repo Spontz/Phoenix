@@ -13,6 +13,7 @@ const float Camera::DEFAULT_CAM_VFOV = 45.0f;
 
 Camera::Camera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float pitch)
 {
+	Name = "Default";
 	Front = glm::vec3(0.0f, 0.0f, -1.0f);
 	MovementSpeed = DEFAULT_CAM_SPEED;
 	MouseSensitivity = DEFAULT_CAM_SENSITIVITY;
@@ -20,20 +21,6 @@ Camera::Camera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float 
 
 	Position = position;
 	WorldUp = up;
-	Yaw = yaw;
-	Pitch = pitch;
-	updateCameraVectors();
-}
-
-Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch)
-{
-	Front = glm::vec3(0.0f, 0.0f, -1.0f);
-	MovementSpeed = DEFAULT_CAM_SPEED;
-	MouseSensitivity = DEFAULT_CAM_SENSITIVITY;
-	Zoom = DEFAULT_CAM_VFOV;
-
-	Position = glm::vec3(posX, posY, posZ);
-	WorldUp = glm::vec3(upX, upY, upZ);
 	Yaw = yaw;
 	Pitch = pitch;
 	updateCameraVectors();

@@ -21,6 +21,7 @@
 #include "core/demokernel.h"
 #include "core/mesh.h"
 #include "core/shader.h"
+#include "core/camera.h"
 #include "main.h"
 
 #include <string>
@@ -42,6 +43,8 @@ public:
 	bool			playAnimation;	// Do we want to compute the transofrmations for playing animations?
 	glm::mat4		modelTransform;	// Model initial matrix
 
+	vector<Camera>	m_camera;
+
 	// constructor, expects a filepath to a 3D model.
 	Model(bool gamma = false);
 	virtual ~Model();
@@ -57,6 +60,7 @@ private:
 	const aiScene*		m_pScene;
 	glm::mat4			m_GlobalInverseTransform; // Global transformation matrix for nodes (vertices relative to bones)
 	unsigned int		m_NumMeshes;
+	unsigned int		m_NumCameras;
 	// Bones info
 	std::map<std::string, unsigned int> m_BoneMapping; // maps a bone name to its index
 	unsigned int			m_NumBones;
@@ -67,6 +71,9 @@ private:
 	// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
 	void processNode(aiNode *node, const aiScene *scene);
 	Mesh processMesh(string nodeName, aiMesh *mesh, const aiScene *scene);
+
+	// Process the scene cameras
+	void processCameras(const aiScene* scene);
 
 	// Set mesh transformations
 	void setMeshesModelTransform(glm::mat4 &modelTransform);
