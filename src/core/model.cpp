@@ -18,19 +18,26 @@ using namespace std;
 
 // For converting between ASSIMP and glm
 static inline glm::vec3 vec3_cast(const aiVector3D &v) { return glm::vec3(v.x, v.y, v.z); }
-static inline glm::vec2 vec2_cast(const aiVector3D &v) { return glm::vec2(v.x, v.y); } // it's aiVector3D because assimp's texture coordinates use that
+static inline glm::vec2 vec2_cast(const aiVector3D &v) { return glm::vec2(v.x, v.y); }
 static inline glm::quat quat_cast(const aiQuaternion &q) { return glm::quat(q.w, q.x, q.y, q.z); }
 static inline glm::mat4 mat4_cast(const aiMatrix4x4 &m) { return glm::transpose(glm::make_mat4(&m.a1)); }
 static inline glm::mat4 mat4_cast(const aiMatrix3x3 &m) { return glm::transpose(glm::make_mat3(&m.a1)); }
 
-Model::Model(bool gamma)
+Model::Model()
 {
-	gammaCorrection = gamma;
-	m_NumMeshes = 0; 
-	m_NumBones = 0;
 	playAnimation = false;			// By default, animations are disabled
-	currentAnimation = 0;
+	useCamera = false;				// By default, we don't use the model camera
 	modelTransform = glm::mat4(1.0f);	// Load Identity matrix by default
+	prev_view = glm::mat4(1.0f);	// Load Identity matrix by default
+
+	m_NumMeshes = 0;
+	m_NumBones = 0;
+	m_NumCameras = 0;
+	m_currentAnimation = 0;
+	m_currentCamera = 0;
+	m_animDuration = 0;
+	m_pScene = NULL;
+	m_GlobalInverseTransform = glm::mat4(1.0f);
 }
 
 Model::~Model()
@@ -50,6 +57,15 @@ void Model::Draw(GLuint shaderID, float currentTime)
 	if (this->playAnimation)
 		setBoneTransformations(shaderID, currentTime);
 
+	if (this->useCamera) {
+		if ((m_currentCamera >= 0) && (m_currentCamera < m_camera.size())) {
+			glm::mat4 cam = m_camera[m_currentCamera]->GetMatrix();
+			glUniformMatrix4fv(glGetUniformLocation(shaderID, "view"), 1, GL_FALSE, &cam[0][0]);
+			glUniformMatrix4fv(glGetUniformLocation(shaderID, "prev_view"), 1, GL_FALSE, &prev_view[0][0]);
+			prev_view = cam;
+		}
+	}
+
 	// Then, draw the meshes
 	for (unsigned int i = 0; i < meshes.size(); i++) {
 		glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, &(meshes[i].meshTransform[0][0]));
@@ -57,15 +73,25 @@ void Model::Draw(GLuint shaderID, float currentTime)
 	}
 }
 
-unsigned int Model::getNumAnimations()
-{
-	return m_pScene->mNumAnimations;
-}
-
 void Model::setAnimation(unsigned int a)
 {
-	if (a >= 0 && a < getNumAnimations()) {
-		currentAnimation = a;
+	if (a < m_NumAnimations) {
+		m_currentAnimation = a;
+	}
+	else
+		LOG->Error("The animation number specified [%i] is not supported in the file [%s]", a, filename.c_str());
+}
+
+void Model::setCamera(unsigned int c)
+{
+	if (c < m_NumCameras) {
+		useCamera = true;
+		m_currentCamera = c;
+	}
+	else {
+		useCamera = false;
+		m_currentCamera = 0;
+		LOG->Error("The camera number specified [%i] is not available in the file [%s]", c, filename.c_str());
 	}
 }
 
@@ -99,35 +125,40 @@ bool Model::Load(string const &path)
 	// Count total number of meshes
 	m_NumMeshes = static_cast<unsigned int>(meshes.size());
 
+	// Count total number of animations
+	m_NumAnimations = m_pScene->mNumAnimations;
+
 	// Get the cameras
 	processCameras(m_pScene);
 	
 	return true;
 }
 
-// processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
+// Processes scene cameras
 void Model::processCameras(const aiScene* scene)
 {
-	for (int i = 0; i < m_pScene->mNumCameras; i++)
+	m_NumCameras = m_pScene->mNumCameras;
+	for (unsigned int i = 0; i < m_pScene->mNumCameras; i++)
 	{
 		aiCamera* aiCam = m_pScene->mCameras[i];
 
-		glm::vec3 cam_pos = glm::vec3(aiCam->mPosition.x, aiCam->mPosition.y, aiCam->mPosition.z);
-		glm::vec3 cam_lookAt = glm::vec3(aiCam->mLookAt.x, aiCam->mLookAt.y, aiCam->mLookAt.z);
-		glm::vec3 cam_up = glm::vec3(aiCam->mUp.x, aiCam->mUp.y, aiCam->mUp.z);
+		//glm::vec3 cam_pos = glm::vec3(aiCam->mPosition.x, aiCam->mPosition.y, aiCam->mPosition.z);
+		//glm::vec3 cam_lookAt = glm::vec3(aiCam->mLookAt.x, aiCam->mLookAt.y, aiCam->mLookAt.z);
+		//glm::vec3 cam_up = glm::vec3(aiCam->mUp.x, aiCam->mUp.y, aiCam->mUp.z);
 		// TODO: Read FOV, YAW and PITCH
-		// lookAt = position + Vec3(cos(pitch)*sin(yaw), sin(pitch), cos(pitch)*cos(yaw))
-		// pitch = asin(lookAt.y - position.y)
 
-		Camera *cam = new Camera(cam_pos, cam_up);
+		Camera *cam = new Camera();
 		cam->Name = aiCam->mName.C_Str();
+		aiMatrix4x4 mat;
+		aiCam->GetCameraMatrix(mat);
+		cam->Matrix = mat4_cast(mat);
 
-		m_camera.push_back(*cam);
+		m_camera.push_back(cam);
 	}
 }
 
 
-// processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
+// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any)
 void Model::processNode(aiNode *node, const aiScene *scene)
 {
 	// process each mesh located at the current node
@@ -290,7 +321,6 @@ void Model::setBoneTransformations(GLuint shaderProgram, float currentTime)
 		boneTransform(currentTime, Transforms);
 		if (Transforms.size() > 0)
 			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, &Transforms[0][0][0]);
-		
 	}
 }
 
@@ -298,14 +328,14 @@ void Model::setBoneTransformations(GLuint shaderProgram, float currentTime)
 void Model::boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transforms)
 {
 	//TODO: I think that this line does not make any sense... because its overwritten later
-	m_animDuration = (float)m_pScene->mAnimations[currentAnimation]->mDuration;
+	m_animDuration = (float)m_pScene->mAnimations[m_currentAnimation]->mDuration;
 
 	// Calc animation duration
-	unsigned int numPosKeys = m_pScene->mAnimations[currentAnimation]->mChannels[0]->mNumPositionKeys;
-	m_animDuration = m_pScene->mAnimations[currentAnimation]->mChannels[0]->mPositionKeys[numPosKeys - 1].mTime;
+	unsigned int numPosKeys = m_pScene->mAnimations[m_currentAnimation]->mChannels[0]->mNumPositionKeys;
+	m_animDuration = m_pScene->mAnimations[m_currentAnimation]->mChannels[0]->mPositionKeys[numPosKeys - 1].mTime;
 
-	float TicksPerSecond = (float)(m_pScene->mAnimations[currentAnimation]->mTicksPerSecond != 0 ?
-									m_pScene->mAnimations[currentAnimation]->mTicksPerSecond : 25.0f);
+	float TicksPerSecond = (float)(m_pScene->mAnimations[m_currentAnimation]->mTicksPerSecond != 0 ?
+									m_pScene->mAnimations[m_currentAnimation]->mTicksPerSecond : 25.0f);
 	float TimeInTicks = timeInSeconds * TicksPerSecond;
 	float AnimationTime = (float)fmod(TimeInTicks, m_animDuration);
 
@@ -322,12 +352,10 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 {
 	std::string NodeName(pNode->mName.data);
 
-	const aiAnimation* pAnimation = m_pScene->mAnimations[currentAnimation];
+	const aiAnimation* pAnimation = m_pScene->mAnimations[m_currentAnimation];
 
 	glm::mat4 NodeTransformation = mat4_cast(pNode->mTransformation);
 
-	if (AnimationTime > 0)
-		int kk = 0;
 	const aiNodeAnim* pNodeAnim = FindNodeAnim(pAnimation, NodeName);
 
 	if (pNodeAnim) {
@@ -362,6 +390,9 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 	// Combine with node Transformation with Parent Transformation
 	glm::mat4 GlobalTransformation = ParentTransform * NodeTransformation;
 	
+
+	// Now we need to apply the Matrix to the corresponding object
+
 	// TODO: Guarrada, mirar de hacerlo mejor y no usar el size()
 	for (int i = 0; i < this->meshes.size(); i++) {
 		if (NodeName == this->meshes[i].nodeName) {
@@ -374,6 +405,12 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 				M[2][0], M[2][1], M[2][2], M[2][3], 
 				M[3][0], M[3][1], M[3][2], M[3][3]);
 				*/
+		}
+	}
+
+	for (int i = 0; i < this->m_camera.size(); i++) {
+		if (NodeName == this->m_camera[i]->Name) {
+			this->m_camera[i]->Matrix =  glm::inverse(GlobalTransformation);
 		}
 	}
 

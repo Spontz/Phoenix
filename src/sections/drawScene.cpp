@@ -8,7 +8,8 @@ typedef struct {
 	int			shader;
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
-	int			playAnimation;		// Do we want to play the animation?
+	int			CameraNumber;		// Number of the camera to use (-1 = means to not use camera)
+	bool		playAnimation;		// Do we want to play the animation?
 	int			AnimationNumber;	// Number of animation to play
 	float		AnimationTime;		// Animation time (in seconds)
 
@@ -34,8 +35,8 @@ sDrawScene::sDrawScene() {
 }
 
 bool sDrawScene::load() {
-	if ((this->param.size() != 4) || (this->strings.size() != 7)) {
-		LOG->Error("DrawScene [%s]: 4 param and 7 strings needed", this->identifier.c_str());
+	if ((this->param.size() != 5) || (this->strings.size() != 7)) {
+		LOG->Error("DrawScene [%s]: 5 param and 7 strings needed", this->identifier.c_str());
 		return false;
 	}
 
@@ -47,9 +48,12 @@ bool sDrawScene::load() {
 	local->enableDepthBufferClearing = (int)this->param[0];
 	local->drawWireframe= (int)this->param[1];
 
+	// Camera parameters
+	local->CameraNumber = (int)this->param[2];
+
 	// Animation parameters
-	local->playAnimation = (int)this->param[2];
-	local->AnimationNumber = (int)this->param[3];
+	local->playAnimation = (int)this->param[3];
+	local->AnimationNumber = (int)this->param[4];
 	
 	// Load model and shader
 	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
@@ -61,8 +65,12 @@ bool sDrawScene::load() {
 	Model *my_model;
 	my_model = DEMO->modelManager.model[local->model];
 	my_model->playAnimation = local->playAnimation;
-	my_model->setAnimation(local->AnimationNumber);
-
+	if (my_model->playAnimation)
+		my_model->setAnimation(local->AnimationNumber);
+	if (local->CameraNumber < 0)
+		my_model->useCamera = false;
+	else
+		my_model->setCamera(local->CameraNumber);
 
 	local->exprPosition = new mathDriver(this);
 	// Load all the other strings
@@ -119,6 +127,17 @@ void sDrawScene::exec() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	if (local->enableDepthBufferClearing == 1)
 		glClear(GL_DEPTH_BUFFER_BIT);
+
+	// Set model properties
+	my_model->playAnimation = local->playAnimation;
+	if (my_model->playAnimation)
+		my_model->setAnimation(local->AnimationNumber);
+	if (local->CameraNumber < 0)
+		my_model->useCamera = false;
+	else
+		my_model->setCamera(local->CameraNumber);
+
+	// Load shader
 	my_shader->use();
 
 	// For ShadowMapping
@@ -128,13 +147,17 @@ void sDrawScene::exec() {
 	// view/projection transformations
 	glm::mat4 projection = glm::perspective(
 		glm::radians(DEMO->camera->Zoom),
-		//GLDRV->GetCurrentViewport().GetAspectRatio(),
 		GLDRV->GetFramebufferViewport().GetAspectRatio(),
 		0.1f, 10000.0f
 	);
-	glm::mat4 view = DEMO->camera->GetViewMatrix();
+
 	my_shader->setValue("projection", projection);
-	my_shader->setValue("view", view);
+
+	glm::mat4 view = DEMO->camera->GetViewMatrix();
+	//if (local->CameraNumber < 0)
+		my_shader->setValue("view", view);
+
+	
 
 
 	// render the loaded model
@@ -148,11 +171,13 @@ void sDrawScene::exec() {
 
 	// For MotionBlur
 	my_shader->setValue("prev_projection", local->prev_projection);
-	my_shader->setValue("prev_view", local->prev_view);
+	//if (local->CameraNumber < 0)
+		my_shader->setValue("prev_view", local->prev_view);
 	my_shader->setValue("prev_model", local->prev_model);
 
 	local->prev_projection = projection;
-	local->prev_view = view;
+	//if (local->CameraNumber < 0)
+		local->prev_view = view;
 	local->prev_model = model;
 	// End MotionBlur
 

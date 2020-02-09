@@ -75,7 +75,8 @@ bool sDrawSceneMatrix::load() {
 	Model *my_model;
 	my_model = DEMO->modelManager.model[local->model];
 	my_model->playAnimation = local->playAnimation;
-	my_model->setAnimation(local->AnimationNumber);
+	if (my_model->playAnimation)
+		my_model->setAnimation(local->AnimationNumber);
 
 
 	local->exprPosition = new mathDriver(this);
@@ -132,6 +133,13 @@ void sDrawSceneMatrix::exec() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	if (local->enableDepthBufferClearing == 1)
 		glClear(GL_DEPTH_BUFFER_BIT);
+
+	// Set model properties
+	my_model->playAnimation = local->playAnimation;
+	if (my_model->playAnimation)
+		my_model->setAnimation(local->AnimationNumber);
+
+	// Load shader
 	my_shader->use();
 
 	// For ShadowMapping

@@ -39,21 +39,22 @@ public:
 	string			directory;	// Path of the model file
 	string			filename;	// Name of the model file
 	string			filepath;	// Full path of the model file
-	bool			gammaCorrection;
 	bool			playAnimation;	// Do we want to compute the transofrmations for playing animations?
+	bool			useCamera;		// Do we want to use the camera of the model?
 	glm::mat4		modelTransform;	// Model initial matrix
+	glm::mat4		prev_view;		// Previous view model matrix, used for effects like motion blur
 
-	vector<Camera>	m_camera;
+	vector<Camera*>	m_camera;
 
-	// constructor, expects a filepath to a 3D model.
-	Model(bool gamma = false);
+	Model();
 	virtual ~Model();
+
 	// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
 	bool Load(string const &path);
 	// draws the model, and thus all its meshes
 	void Draw(GLuint shaderID, float currentTime);
-	unsigned int getNumAnimations();
 	void setAnimation(unsigned int a);
+	void setCamera(unsigned int c);
 
 private:
 	Assimp::Importer	m_Importer;
@@ -61,11 +62,13 @@ private:
 	glm::mat4			m_GlobalInverseTransform; // Global transformation matrix for nodes (vertices relative to bones)
 	unsigned int		m_NumMeshes;
 	unsigned int		m_NumCameras;
+	unsigned int		m_NumAnimations;
 	// Bones info
-	std::map<std::string, unsigned int> m_BoneMapping; // maps a bone name to its index
+	std::map<std::string, unsigned int> m_BoneMapping;	// maps a bone name to its index
 	unsigned int			m_NumBones;
 	std::vector<BoneInfo>	m_BoneInfo;
-	unsigned int			currentAnimation;			// Current Animation
+	unsigned int			m_currentCamera;			// Current Camera
+	unsigned int			m_currentAnimation;			// Current Animation
 	double					m_animDuration;				// Animation duration in seconds
 
 	// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
