@@ -110,7 +110,8 @@ bool sDrawEmitters::load() {
 	local->exprPosition->SymbolTable.add_constant("TnE", (float)local->numEmitters);
 	
 	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
-	local->exprPosition->compileFormula();
+	if (!local->exprPosition->compileFormula())
+		return false;
 
 	local->emissionTime = this->param[0];
 	if (local->emissionTime <= 0) {

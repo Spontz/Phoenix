@@ -14,7 +14,7 @@ public:
 	exprtk::parser<float> Parser;
 
 	mathDriver(Section *sec);
-	void compileFormula();
+	bool compileFormula();
 
 private:
 

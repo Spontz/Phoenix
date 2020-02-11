@@ -31,6 +31,7 @@ tSectionID sectionID[] = {
 	{"drawEmitters",		SectionType::DrawEmitters},
 	{"drawEmitterScene",	SectionType::DrawEmitterScene},
 	{"sound",				SectionType::Sound},
+	{"setVariable",			SectionType::SetVariable},
 	{"fboBind",				SectionType::FboBind},
 	{"fboUnbind",			SectionType::FboUnbind},
 	{"efxBloom",			SectionType::EfxBloom},
@@ -71,6 +72,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::Sound:
 		mySection = new sSound();
+		break;
+	case SectionType::SetVariable:
+		mySection = new sSetVariable();
 		break;
 	case SectionType::CameraSec:
 		mySection = new sCamera();

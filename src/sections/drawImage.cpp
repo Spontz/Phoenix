@@ -63,7 +63,8 @@ bool sDrawImage::load() {
 	local->exprPosition->SymbolTable.add_variable("sy", local->scale.y);
 	local->exprPosition->SymbolTable.add_variable("sz", local->scale.z);
 	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
-	local->exprPosition->compileFormula();
+	if (!local->exprPosition->compileFormula())
+		return false;
 
 	// Create shader variables
 	Shader *my_shad;

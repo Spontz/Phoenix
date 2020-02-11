@@ -56,7 +56,8 @@ bool sLight::load() {
 	expr = Util::replaceString(expr, "light_", "light" + std::to_string(local->lightNum) + "_");	// Adds the name of the light that we want to modify
 	local->exprLight->expression = expr;															// Loads the expression, properly composed
 	local->exprLight->Expression.register_symbol_table(local->exprLight->SymbolTable);
-	local->exprLight->compileFormula();
+	if (!local->exprLight->compileFormula())
+		return false;
 	return true;
 }
 

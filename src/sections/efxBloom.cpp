@@ -54,7 +54,8 @@ bool sEfxBloom::load() {
 	local->exprBloom->expression = this->strings[0]; // The first string should contain the blur amount
 	local->exprBloom->SymbolTable.add_variable("blurAmount", local->blurAmount);
 	local->exprBloom->Expression.register_symbol_table(local->exprBloom->SymbolTable);
-	local->exprBloom->compileFormula();
+	if (!local->exprBloom->compileFormula())
+		return false;
 
 	// Load Blur shader
 	local->shaderBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2]);

@@ -14,6 +14,12 @@ mathDriver::mathDriver(Section *sec) {
 	SymbolTable.add_variable("beat", DEMO->beat);
 	SymbolTable.add_variable("fps", DEMO->fps);
 
+	// Multi-purpose variables
+	for (int i = 0; i < MULTIPURPOSE_VARS; i++) {
+		string varNum = "var" + std::to_string(i);
+		SymbolTable.add_variable(varNum, DEMO->var[i]);
+	}
+
 	// Camera values
 	if (DEMO->camera != NULL) {
 		SymbolTable.add_variable("cam_posX", DEMO->camera->Position.x);
@@ -139,11 +145,14 @@ mathDriver::mathDriver(Section *sec) {
 	SymbolTable.add_constant("fbo24Height", GLDRV->fbo[24].height);
 }
 
-void mathDriver::compileFormula()
+bool mathDriver::compileFormula()
 {
 	Expression.register_symbol_table(SymbolTable);
-	if (!Parser.compile(expression, Expression))
+	if (!Parser.compile(expression, Expression)) {
 		LOG->Error("Error in formula, please check expression: %s", expression.c_str());
+		return false;
+	}
+	return true;
 }
 
 

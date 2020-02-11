@@ -30,6 +30,7 @@
 #define RENDERING_BUFFERS		10
 #define FBO_BUFFERS				25
 #define EFXBLOOM_FBO_BUFFERS	2
+#define MULTIPURPOSE_VARS		10
 
 // Warning! 'FBO_BUFFERS' should not be less than 25, if you want to set less than 25,
 // please check the variable 'scriptCommand' contents in 'demokernel.cpp' file.
@@ -109,7 +110,6 @@ public:
 	char mouseButton;							// left mouse button status
 	char exitDemo;								// exits demo at next loop if true
 
-	//camera_t *camera;							// the actual camera (set by genCamera)
 	int rtt, backup;							// render to texture shared texture index (RGB8 format)
 
 	// Beat and beat detection parameters
@@ -122,7 +122,7 @@ public:
 	char mouseButtons;							// Mouse buttons state
 
 	// network slave mode
-	int slaveMode; // 1 = network slave; 0 = standalone mode;
+	int slaveMode;								// 1 = network slave; 0 = standalone mode;
 
 	// Drawing states
 	char drawTiming;							// Draw time of the demo
@@ -132,6 +132,9 @@ public:
 	// Drawing
 	char drawFbo;								// Draw FBO's
 	char drawFboAttachment;						// FBO Attachment to draw
+
+	// Multi-purpose variables, shared in for the sections
+	float var[MULTIPURPOSE_VARS];
 
 	// ******************************************************************
 	// MEMBERS

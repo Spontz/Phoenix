@@ -32,6 +32,7 @@ enum SectionType {
 	DrawParticlesScene,
 	DrawEmitters,
 	DrawEmitterScene,
+	SetVariable,
 	Sound,
 	FboBind,
 	FboUnbind,

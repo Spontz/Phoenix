@@ -28,6 +28,7 @@ class sEfxBloom : public Section { public:	sEfxBloom();  bool load(); void init(
 class sEfxBlur : public Section { public:	sEfxBlur();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sEfxFader : public Section { public:	sEfxFader();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sEfxMotionBlur : public Section { public:	sEfxMotionBlur();  bool load(); void init(); void exec(); void end(); string debug(); };
+class sSetVariable : public Section { public:	sSetVariable();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sTest : public Section { public:	sTest();  bool load(); void init(); void exec(); void end(); string debug(); };
 
 namespace sections {
