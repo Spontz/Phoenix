@@ -49,5 +49,6 @@ string sSetVariable::debug() {
 
 	string msg;
 	msg = "[ setVariable id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg += " " + local->expr->expression + "\n";
 	return msg;
 }
