@@ -51,7 +51,7 @@ Model::~Model()
 void Model::Draw(GLuint shaderID, float currentTime)
 {
 	// Load the model transformation on all sub-meshes
-	setMeshesModelTransform(this->modelTransform);
+	setMeshesModelTransform();
 
 	// Set the Bones transformations and send the Bones info to the Shader (gBones uniform)
 	if (this->playAnimation)
@@ -304,10 +304,10 @@ vector<int> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, str
 	return textures;
 }
 
-void Model::setMeshesModelTransform(glm::mat4 &modelTransform)
+void Model::setMeshesModelTransform()
 {
 	for (int i = 0; i < meshes.size(); i++)
-		meshes[i].meshTransform = modelTransform;
+		meshes[i].meshTransform = this->modelTransform;
 }
 
 /////////////// Bones calculations
@@ -339,7 +339,7 @@ void Model::boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transform
 	float TimeInTicks = timeInSeconds * TicksPerSecond;
 	float AnimationTime = (float)fmod(TimeInTicks, m_animDuration);
 
-	ReadNodeHeirarchy(AnimationTime, m_pScene->mRootNode, this->modelTransform);
+	ReadNodeHeirarchy(AnimationTime, m_pScene->mRootNode, glm::mat4(1.0f));
 
 	Transforms.resize(m_NumBones);
 
@@ -396,7 +396,9 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 	// TODO: Guarrada, mirar de hacerlo mejor y no usar el size()
 	for (int i = 0; i < this->meshes.size(); i++) {
 		if (NodeName == this->meshes[i].nodeName) {
-			this->meshes[i].meshTransform = m_GlobalInverseTransform * GlobalTransformation;
+			// TODO: Bug here! It seems that this breaks the bones animation support.
+			// We need to be able to support bones animation AND Keyframe animation at the same time
+			//this->meshes[i].meshTransform = m_GlobalInverseTransform * GlobalTransformation;
 			/*LOG->Info(LOG_LOW, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %i [time: %.3f]", NodeName.c_str(), i, AnimationTime);
 			glm::mat4 M = GlobalTransformation;
 			LOG->Info(LOG_LOW, "M: [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f]",
@@ -410,7 +412,7 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 
 	for (int i = 0; i < this->m_camera.size(); i++) {
 		if (NodeName == this->m_camera[i]->Name) {
-			this->m_camera[i]->Matrix =  glm::inverse(GlobalTransformation);
+			this->m_camera[i]->Matrix = glm::inverse(GlobalTransformation);
 		}
 	}
 

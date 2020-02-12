@@ -8,7 +8,7 @@ typedef struct {
 	int			shader;
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
-	int			CameraNumber;		// Number of the camera to use (-1 = means to not use camera)
+	float		CameraNumber;		// Number of the camera to use (-1 = means to not use camera)
 	bool		playAnimation;		// Do we want to play the animation?
 	int			AnimationNumber;	// Number of animation to play
 	float		AnimationTime;		// Animation time (in seconds)
@@ -35,8 +35,8 @@ sDrawScene::sDrawScene() {
 }
 
 bool sDrawScene::load() {
-	if ((this->param.size() != 5) || (this->strings.size() != 7)) {
-		LOG->Error("DrawScene [%s]: 5 param and 7 strings needed", this->identifier.c_str());
+	if ((this->param.size() != 4) || (this->strings.size() < 7)) {
+		LOG->Error("DrawScene [%s]: 4 param (Enable Depth buffer, enable wireframe, enable animation) and 7 strings needed", this->identifier.c_str());
 		return false;
 	}
 
@@ -48,12 +48,9 @@ bool sDrawScene::load() {
 	local->enableDepthBufferClearing = (int)this->param[0];
 	local->drawWireframe= (int)this->param[1];
 
-	// Camera parameters
-	local->CameraNumber = (int)this->param[2];
-
 	// Animation parameters
-	local->playAnimation = (int)this->param[3];
-	local->AnimationNumber = (int)this->param[4];
+	local->playAnimation = (int)this->param[2];
+	local->AnimationNumber = (int)this->param[3];
 	
 	// Load model and shader
 	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
@@ -77,6 +74,7 @@ bool sDrawScene::load() {
 	for (int i = 3; i < strings.size(); i++)
 		local->exprPosition->expression += this->strings[i];
 
+	local->exprPosition->SymbolTable.add_variable("CameraNumber", local->CameraNumber);
 	local->exprPosition->SymbolTable.add_variable("aTime", local->AnimationTime);
 	local->exprPosition->SymbolTable.add_variable("tx", local->translation.x);
 	local->exprPosition->SymbolTable.add_variable("ty", local->translation.y);
@@ -136,7 +134,7 @@ void sDrawScene::exec() {
 	if (local->CameraNumber < 0)
 		my_model->useCamera = false;
 	else
-		my_model->setCamera(local->CameraNumber);
+		my_model->setCamera((unsigned int)local->CameraNumber);
 
 	// Load shader
 	my_shader->use();

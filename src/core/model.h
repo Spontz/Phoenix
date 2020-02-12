@@ -79,7 +79,7 @@ private:
 	void processCameras(const aiScene* scene);
 
 	// Set mesh transformations
-	void setMeshesModelTransform(glm::mat4 &modelTransform);
+	void setMeshesModelTransform();
 
 	// Bones Calculations
 	void setBoneTransformations(GLuint shaderProgram, float currentTime);
