@@ -394,11 +394,9 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 	// Now we need to apply the Matrix to the corresponding object
 
 	// TODO: Guarrada, mirar de hacerlo mejor y no usar el size()
-	for (int i = 0; i < this->meshes.size(); i++) {
+	for (int i = 0; i < this->m_NumMeshes; i++) {
 		if (NodeName == this->meshes[i].nodeName) {
-			// TODO: Bug here! It seems that this breaks the bones animation support.
-			// We need to be able to support bones animation AND Keyframe animation at the same time
-			//this->meshes[i].meshTransform = m_GlobalInverseTransform * GlobalTransformation;
+			this->meshes[i].meshTransform *= m_GlobalInverseTransform * GlobalTransformation;
 			/*LOG->Info(LOG_LOW, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %i [time: %.3f]", NodeName.c_str(), i, AnimationTime);
 			glm::mat4 M = GlobalTransformation;
 			LOG->Info(LOG_LOW, "M: [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f]",
@@ -410,7 +408,7 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 		}
 	}
 
-	for (int i = 0; i < this->m_camera.size(); i++) {
+	for (int i = 0; i < this->m_NumCameras; i++) {
 		if (NodeName == this->m_camera[i]->Name) {
 			this->m_camera[i]->Matrix = glm::inverse(GlobalTransformation);
 		}
