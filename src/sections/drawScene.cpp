@@ -67,7 +67,7 @@ bool sDrawScene::load() {
 	if (local->CameraNumber < 0)
 		my_model->useCamera = false;
 	else
-		my_model->setCamera(local->CameraNumber);
+		my_model->setCamera((unsigned int)local->CameraNumber);
 
 	local->exprPosition = new mathDriver(this);
 	// Load all the other strings
