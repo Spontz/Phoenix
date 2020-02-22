@@ -34,7 +34,6 @@ class glDriver {
 
 public:
 	int				fullScreen;
-	int				saveInfo;
 
 private:
 	// hack: create script_vars struct and pass to glDriver on construction
@@ -58,6 +57,7 @@ public:
 	int				stencil;
 	int				accum;
 	int				multisampling;
+	int				vsync;
 	float			gamma;
 	float			TimeCurrentFrame;
 	float			TimeLastFrame;

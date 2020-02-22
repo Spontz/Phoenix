@@ -10,10 +10,7 @@ TextureManager::TextureManager() {
 	texture.clear();
 	cubemap.clear();
 	mem = 0;
-	forceLoad = true;	// We force the texture to be reloaded, even if its already loaded, this should be only be true when the engine is in slave mode
-#ifdef _DEBUG
-	forceLoad = false;	// When debugging, forceLoad disabled, for faster loading!
-#endif
+	forceLoad = false;
 }
 
 TextureManager::~TextureManager()

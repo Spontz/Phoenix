@@ -31,6 +31,8 @@ int main(int argc, char* argv[]) {
 	log.Info(LOG_HIGH, "Phoenix Visuals Engine starting up: Let's make some noise!");
 
 	log.Info(LOG_MED, "Loading Scripts...");
+	if (!demo.load_config())
+		return 0;
 	demo.load_spos();
 
 	log.Info(LOG_HIGH, "Initializing demo...");

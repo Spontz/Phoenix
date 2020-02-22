@@ -229,10 +229,10 @@ glDriver::glDriver()
 	mouse_lastxpos(0),
 	mouse_lastypos(0),
 	fullScreen(0),
-	saveInfo(0),
 	stencil(0),
 	accum(0),
 	multisampling(0),
+	vsync(0),
 	gamma(1.0f)
 {
 	// hack:
@@ -341,7 +341,7 @@ void glDriver::initStates() {
 
 void glDriver::initRender(int clear) {
 	// Vsync Management
-	glfwSwapInterval(0); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
+	glfwSwapInterval(vsync); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
 
 	// reset the default gl state
 	this->initStates();

@@ -66,13 +66,11 @@ public:
 	string dataFolder;	// Path to "data" folder
 	char* demoName;
 	int debug;
+	int log_detail;
+
 	// misc
-	int record;
-	float recordFps;
-	int compressTga;
 	int loop;
 	int sound;
-	int bench;
 
 	int state;									// state of the demo (play, pause, loading, etc.)
 	float startTime;							// first demo second
@@ -151,6 +149,7 @@ public:
 	string getFolder(string path);
 
 	// Scripts (SPO files) management
+	bool load_config();
 	void load_spos();
 	bool load_scriptFromNetwork(string sScript);
 	

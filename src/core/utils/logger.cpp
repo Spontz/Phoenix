@@ -13,12 +13,7 @@ Logger & Logger::GetInstance() {
 
 Logger::Logger() {
 	if (DEMO->debug)
-		log_ofstream_.open(output_file_.c_str(), ios::out | ios::trunc);
-}
-
-void Logger::CloseLogFile() const {
-	if (DEMO->debug)
-		log_ofstream_.close();
+		OpenLogFile();
 }
 
 void Logger::Info(char level, const char* message, ...) const {
@@ -59,4 +54,15 @@ void Logger::Error(const char* message, ...) const {
 		}
 
 	}
+}
+
+void Logger::OpenLogFile() const
+{
+	if (!log_ofstream_.is_open())
+		log_ofstream_.open(output_file_.c_str(), ios::out | ios::trunc);
+}
+
+void Logger::CloseLogFile() const {
+	if (log_ofstream_.is_open())
+		log_ofstream_.close();
 }

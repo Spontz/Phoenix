@@ -34,24 +34,20 @@ struct InitScriptCommands {
 
 			{"demo_name",				VTYPE_STRING,		&DEMO->demoName			},
 			{"debug",					VTYPE_INT,			&DEMO->debug			},
-			{"record",					VTYPE_INT,			&DEMO->record			},
-			{"record_fps",				VTYPE_FLOAT,		&DEMO->recordFps		},
-			{"compress_tga",			VTYPE_INT,			&DEMO->compressTga		},
 			{"loop",					VTYPE_INT,			&DEMO->loop				},
 			{"sound",					VTYPE_INT,			&DEMO->sound			},
-			{"bench",					VTYPE_INT,			&DEMO->bench			},
 			{"demo_start",				VTYPE_FLOAT,		&DEMO->startTime		},
 			{"demo_end",				VTYPE_FLOAT,		&DEMO->endTime			},
 			{"slave",					VTYPE_INT,			&DEMO->slaveMode		},
+			{"log_detail",				VTYPE_INT,			&DEMO->log_detail		},
 
 			{"gl_fullscreen",			VTYPE_INT,			&GLDRV->fullScreen		},
-			{"gl_info",					VTYPE_INT,			&GLDRV->saveInfo		},
 			{"gl_width",				VTYPE_INT,			&GLDRV->script__gl_width__framebuffer_width_		},
 			{"gl_height",				VTYPE_INT,			&GLDRV->script__gl_height__framebuffer_height_		},
 			{"gl_aspect",				VTYPE_FLOAT,		&GLDRV->script__gl_aspect__framebuffer_viewport_aspect_ratio_	},
 			{"gl_stencil",				VTYPE_INT,			&GLDRV->stencil			},
 			{"gl_accum",				VTYPE_INT,			&GLDRV->accum			},
-			{"gl_multisampling",		VTYPE_INT,			&GLDRV->multisampling	},
+			{"gl_vsync",				VTYPE_INT,			&GLDRV->vsync			},
 
 			{"gl_gamma",				VTYPE_FLOAT,		&GLDRV->gamma			},
 
@@ -229,15 +225,14 @@ demokernel& demokernel::GetInstance() {
 demokernel::demokernel() {
 	// initialize global kernel variables
 	this->demoName = "Phoneix Spontz Demoengine";
-//	this->debug = FALSE;
-//#ifdef _DEBUG
+	this->debug = FALSE;
+	this->log_detail = LOG_HIGH;
+#ifdef _DEBUG
 	this->debug = TRUE;
-//#endif
-	this->record = FALSE;
-	this->recordFps = 60.0f;
+	this->log_detail = LOG_LOW;
+#endif
 	this->loop = TRUE;
 	this->sound = TRUE;
-	this->bench = FALSE;
 	this->startTime = 0.0f;
 	this->endTime = 20.0f;
 	this->slaveMode = FALSE;
@@ -470,6 +465,41 @@ string demokernel::getFolder(string path)
 	return (this->dataFolder+path);
 }
 
+bool demokernel::load_config()
+{
+	struct _finddata_t FindData;
+	intptr_t hFile;
+	string fullpath;
+	string ScriptRelativePath;
+	fullpath = dataFolder + "/config/*.spo";
+	LOG->Info(LOG_MED, "Scanning config folder: %s", fullpath.c_str());
+	if ((hFile = _findfirst(fullpath.c_str(), &FindData)) != -1L) {
+		do {
+			ScriptRelativePath = dataFolder + "/config/" + FindData.name;
+			LOG->Info(LOG_LOW, "Reading file: %s", ScriptRelativePath.c_str());
+			load_spo(ScriptRelativePath);
+			LOG->Info(LOG_LOW, "Finished loading file!");
+		} while (_findnext(hFile, &FindData) == 0);
+	}
+	else {
+		LOG->Error("Config files not found in 'config' folder");
+		return false;
+	}
+	LOG->Info(LOG_MED, "Finished loading all config files.");
+
+	// Log file
+	if (DEMO->debug)
+		LOG->OpenLogFile();
+	LOG->log_level_ = DEMO->log_detail;
+
+	if (DEMO->slaveMode) {
+		LOG->Info(LOG_MED, "Engine is in slave mode, therefore, enabling force loads for shaders and textures!");
+		DEMO->textureManager.forceLoad = true;
+		DEMO->shaderManager.forceLoad = true;
+	}
+	return true;		
+}
+
 void demokernel::load_spos() {
 	struct _finddata_t FindData;
 	intptr_t hFile;
@@ -524,16 +554,10 @@ void demokernel::calculateFPS(float frameTime)
 void demokernel::processTimer()
 {
 	// frame time calculation
-	if (this->record) {
-		this->realFrameTime = 1.0f / this->recordFps;
-
-	}
-	else {
-		this->afterFrameTime = static_cast<float>(glfwGetTime());
-		this->realFrameTime = this->afterFrameTime - this->beforeFrameTime;
-		this->beforeFrameTime = this->afterFrameTime;
-	}
-
+	this->afterFrameTime = static_cast<float>(glfwGetTime());
+	this->realFrameTime = this->afterFrameTime - this->beforeFrameTime;
+	this->beforeFrameTime = this->afterFrameTime;
+	
 	// advance sections and demo time
 	this->frameTime = this->realFrameTime;
 	this->runTime += this->frameTime;

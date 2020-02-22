@@ -8,7 +8,7 @@
 // Init vars
 ShaderManager::ShaderManager() {
 	shader.clear();
-	forceLoad = true;	// We force the shader to be reloaded, even if its already loaded, this should be only be true when the engine is in slave mode
+	forceLoad = false;
 }
 
 ShaderManager::~ShaderManager()
@@ -48,8 +48,11 @@ int ShaderManager::addShader(string path_vert, string path_frag, string path_geo
 			new_shad = shader[shad_id];
 			loaded = new_shad->load(path_vert, path_frag, path_geom, feedbackVaryings);
 		}
-		else
+		else {
+			new_shad = shad;
 			loaded = true;
+		}
+			
 	}
 
 	if (loaded) {

@@ -9,18 +9,16 @@
 
 enum class LoggerLevels : char {
 	NONE = 0,
-	ERROR_ONLY = 1,
-	HIGH = 2,
-	MED = 3,
-	LOW = 4
+	HIGH = 1,
+	MED = 2,
+	LOW = 3
 };
 
 // todo: remove, use enum class
 char const LOG_NONE = 0;
-char const LOG_ERROR_ONLY = 1;
-char const LOG_HIGH = 2;
-char const LOG_MED = 3;
-char const LOG_LOW = 4;
+char const LOG_HIGH = 1;
+char const LOG_MED = 2;
+char const LOG_LOW = 3;
 
 class Logger {
 public:
@@ -36,6 +34,7 @@ public:
 public:
 	void Info(char level, const char* format, ...) const;
 	void Error(const char* format, ...) const;
+	void OpenLogFile() const;
 	void CloseLogFile() const;
 
 private:

@@ -64,10 +64,6 @@ bool sDrawScene::load() {
 	my_model->playAnimation = local->playAnimation;
 	if (my_model->playAnimation)
 		my_model->setAnimation(local->AnimationNumber);
-	if (local->CameraNumber < 0)
-		my_model->useCamera = false;
-	else
-		my_model->setCamera((unsigned int)local->CameraNumber);
 
 	local->exprPosition = new mathDriver(this);
 	// Load all the other strings
@@ -88,6 +84,13 @@ bool sDrawScene::load() {
 	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
 	if (!local->exprPosition->compileFormula())
 		return false;
+	local->exprPosition->Expression.value();
+	// Set the camera number
+	if (local->CameraNumber < 0)
+		my_model->useCamera = false;
+	else
+		my_model->setCamera((unsigned int)local->CameraNumber);
+
 
 	// Create Shader variables
 	Shader *my_shader;
