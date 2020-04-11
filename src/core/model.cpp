@@ -188,6 +188,9 @@ Mesh Model::processMesh(string nodeName, aiMesh *mesh, const aiScene *scene)
 
 	LOG->Info(LOG_LOW, "Loading mesh: %s", mesh->mName.C_Str());
 
+	if (mesh->HasNormals() == false)
+		LOG->Error("The loaded mesh has no Normal info.");
+
 	if (mesh->HasTangentsAndBitangents() == false)
 		LOG->Info(LOG_MED, "Warning, the loaded mesh has no Tangents and BiTangents! Normal will be copied there.");
 
@@ -202,10 +205,15 @@ Mesh Model::processMesh(string nodeName, aiMesh *mesh, const aiScene *scene)
 		vector.z = mesh->mVertices[i].z;
 		vertex.Position = vector;
 		// normals
-		vector.x = mesh->mNormals[i].x;
-		vector.y = mesh->mNormals[i].y;
-		vector.z = mesh->mNormals[i].z;
-		vertex.Normal = vector;
+		if (mesh->HasNormals()) {
+			vector.x = mesh->mNormals[i].x;
+			vector.y = mesh->mNormals[i].y;
+			vector.z = mesh->mNormals[i].z;
+			vertex.Normal = vector;
+		}
+		else
+			vertex.Normal = glm::vec3(0,0,0);
+		
 		// texture coordinates
 		if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
 		{
@@ -217,7 +225,7 @@ Mesh Model::processMesh(string nodeName, aiMesh *mesh, const aiScene *scene)
 			vertex.TexCoords = vec;
 		}
 		else
-			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+			vertex.TexCoords = glm::vec2(0,0);
 		if (mesh->HasTangentsAndBitangents()) {
 			// tangent
 			vector.x = mesh->mTangents[i].x;
