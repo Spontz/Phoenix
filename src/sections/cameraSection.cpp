@@ -26,7 +26,10 @@ bool sCamera::load() {
 
 	// Load the camera splines
 	for (int i = 0; i < this->spline.size(); i++) {
-		this->spline[i]->load();
+		if (this->spline[i]->load() == false) {
+			LOG->Error("CameraSection [%s]: Spline not loaded", this->identifier.c_str());
+			return false;
+		}
 	}
 	
 	return true;
