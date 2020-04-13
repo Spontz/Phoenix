@@ -1,7 +1,12 @@
 #include "main.h"
+#include "core/shadervars.h"
 
 typedef struct {
-	int		freeCam;
+	int			freeCam;
+	glm::vec3	cam_pos;
+	glm::vec3	cam_other; // Other modifiers: Yaw, Pitch and Zoom
+
+	mathDriver* exprCamera;	// A equation containing the calculations of the camera
 } camera_section;
 
 static camera_section *local;
@@ -25,13 +30,39 @@ bool sCamera::load() {
 
 
 	// Load the camera splines
-	for (int i = 0; i < this->spline.size(); i++) {
+	for (int i=0; i < this->spline.size(); i++) {
 		if (this->spline[i]->load() == false) {
 			LOG->Error("CameraSection [%s]: Spline not loaded", this->identifier.c_str());
 			return false;
 		}
 	}
-	
+
+	// init cam modifiers
+	local->cam_pos = glm::vec3(0);
+	local->cam_other = glm::vec3(0);
+
+	// Load the camera modifiers (based in formulas)
+	local->exprCamera = new mathDriver(this);
+	local->exprCamera->expression += "var zzz:=0;"; // Hack: We set up a basic string, just in case no string is given
+
+	for (int i = 0; i < this->strings.size(); i++) {
+		local->exprCamera->expression += this->strings[i];
+	}
+
+	local->exprCamera->SymbolTable.add_variable("PosX", local->cam_pos.x);
+	local->exprCamera->SymbolTable.add_variable("PosY", local->cam_pos.y);
+	local->exprCamera->SymbolTable.add_variable("PosZ", local->cam_pos.z);
+
+	local->exprCamera->SymbolTable.add_variable("Yaw", local->cam_other.x);
+	local->exprCamera->SymbolTable.add_variable("Pitch", local->cam_other.y);
+	local->exprCamera->SymbolTable.add_variable("Zoom", local->cam_other.z);
+
+
+	if (!local->exprCamera->compileFormula())
+		return false;
+	local->exprCamera->Expression.value();
+
+
 	return true;
 }
 
@@ -40,9 +71,6 @@ void sCamera::init() {
 
 void sCamera::exec() {
 	local = (camera_section *)this->vars;
-
-	// TODO: We could load several splines and use one or another spline, depending on one variable,
-	// so, we could be able to change the camera depending on a variable
 
 	// If freeCam is active, we do nothing
 	if (local->freeCam)
@@ -53,10 +81,13 @@ void sCamera::exec() {
 
 		// Calculate the motion step of the first spline and set it to "new_pos"
 		this->spline[0]->MotionCalcStep(new_pos, this->runTime);
-		
-		DEMO->camera->setCamera(glm::vec3(new_pos[0], new_pos[1], new_pos[2]),
+
+		// apply formula modifications
+		local->exprCamera->Expression.value();
+
+		DEMO->camera->setCamera(glm::vec3(new_pos[0], new_pos[1], new_pos[2]) + local->cam_pos,
 			glm::vec3(new_pos[3], new_pos[4], new_pos[5]),
-			new_pos[6], new_pos[7], new_pos[8]);
+			new_pos[6] + local->cam_other.x, new_pos[7] + local->cam_other.y, new_pos[8] + local->cam_other.z);
 	}
 	
 	
