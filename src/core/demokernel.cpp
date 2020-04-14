@@ -244,6 +244,10 @@ demokernel::demokernel() {
 	this->drawFbo = 0;
 	this->drawFboAttachment = 0;
 
+	// Other variables
+	this->accumFrameTime = 0;
+	this->accumFrameCount = 0;
+
 }
 
 void demokernel::getArguments(int argc, char *argv[]) {

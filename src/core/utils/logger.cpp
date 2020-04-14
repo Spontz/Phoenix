@@ -32,6 +32,30 @@ void Logger::Info(char level, const char* message, ...) const {
 	}
 }
 
+void Logger::SendEditor(const char* message, ...) const {
+	va_list argptr;
+	char Text_[HACK_LOGGER_STR_MAX_SIZE];	// Formatted text
+	char Chain_[HACK_LOGGER_STR_MAX_SIZE];	// Text chain to be written to file
+
+	// write down the trace to the standard output
+	if (DEMO->debug) {
+		va_start(argptr, message);
+		vsnprintf(Text_, HACK_LOGGER_STR_MAX_SIZE, message, argptr);
+		va_end(argptr);
+		snprintf(Chain_, HACK_LOGGER_STR_MAX_SIZE, "Message [%.4f] %s\n", Util::CurrentTime(), Text_);
+		log_ofstream_ << Chain_;
+#ifdef _DEBUG
+		OutputDebugStringA(Chain_);
+#endif
+		if (DEMO->slaveMode == 1) {
+			string message = "INFO::";
+			message += Chain_;
+			NETDRV->sendMessage(message);
+		}
+	}
+}
+
+
 void Logger::Error(const char* message, ...) const {
 	va_list argptr;
 	char Text_[HACK_LOGGER_STR_MAX_SIZE];	// Formatted text

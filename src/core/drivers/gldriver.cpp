@@ -80,6 +80,7 @@ void mouse_callback(GLFWwindow* p_glfw_window, double xpos, double ypos)
 		float x = (float)xpos;
 		float y = (float)ypos;
 
+		// Move camera with Left click
 		if (glfwGetMouseButton(p_glfw_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 
 			float xoffset = x - GLDRV->mouse_lastxpos;
@@ -94,7 +95,20 @@ void mouse_callback(GLFWwindow* p_glfw_window, double xpos, double ypos)
 			GLDRV->mouse_lastxpos = x;
 			GLDRV->mouse_lastypos = y;
 		}
+		// Capture mouse position with Right click
+		if (glfwGetMouseButton(p_glfw_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+			Viewport vp = GLDRV->GetCurrentViewport();
+			if ((xpos >= vp.x) && (xpos <= (vp.width + vp.x)) &&	// Validate we are inside the valid zone of X
+				(ypos >= vp.y) && (ypos <= (vp.height + vp.y))) {	// Validate we are inside the valid zone of Y
+				
+				float x_coord = (xpos-(float)vp.x) / (float)vp.width;
+				float y_coord = (ypos- (float)vp.y) / (float)vp.height;
+				x_coord -= 0.5f;	// Change scale from -0.5 to 0.5
+				y_coord -= 0.5f;
+				LOG->SendEditor("Mouse: [%.3f, %3f]", x_coord, y_coord);
+			}
 
+		}
 	}
 
 }

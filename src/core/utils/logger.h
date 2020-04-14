@@ -33,6 +33,7 @@ public:
 
 public:
 	void Info(char level, const char* format, ...) const;
+	void SendEditor(const char* format, ...) const;
 	void Error(const char* format, ...) const;
 	void OpenLogFile() const;
 	void CloseLogFile() const;
