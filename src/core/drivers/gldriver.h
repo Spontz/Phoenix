@@ -64,6 +64,7 @@ public:
 	float			TimeDelta;
 	tGLFboFormat	fbo[FBO_BUFFERS];
 	float			mouse_lastxpos, mouse_lastypos;
+	float			mouse_x, mouse_y;
 
 private:
 	glDriver();
@@ -94,6 +95,8 @@ public:
 
 	Viewport const& GetCurrentViewport() const;
 	void SetCurrentViewport(Viewport const& viewport);
+	
+	void	calcMousePos(float x, float y);
 
 	void swapBuffers();
 	void ProcessInput();

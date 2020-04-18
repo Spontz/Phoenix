@@ -97,21 +97,23 @@ void mouse_callback(GLFWwindow* p_glfw_window, double xpos, double ypos)
 		}
 		// Capture mouse position with Right click
 		if (glfwGetMouseButton(p_glfw_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-			Viewport vp = GLDRV->GetCurrentViewport();
-			if ((x >= vp.x) && (x <= static_cast<float>(vp.width + vp.x)) &&	// Validate we are inside the valid zone of X
-				(y >= vp.y) && (y <= static_cast<float>((vp.height + vp.y)))) {	// Validate we are inside the valid zone of Y
-				
-				float x_coord = (x - static_cast<float>(vp.x)) / static_cast<float>(vp.width);
-				float y_coord = (y - static_cast<float>(vp.y)) / static_cast<float>(vp.height);
-				x_coord -= 0.5f;	// Change scale from -0.5 to 0.5
-				y_coord -= 0.5f;
-				LOG->SendEditor("Mouse: [%.3f, %3f]", x_coord, y_coord);
-			}
-
+			GLDRV->calcMousePos(x, y);
 		}
-	}
+		
 
+	}
 }
+
+void mouseButton_callback(GLFWwindow* p_glfw_window, int button, int action, int mods)
+{
+	if (DEMO->debug) {
+		if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
+			GLDRV->calcMousePos(GLDRV->mouse_lastxpos, GLDRV->mouse_lastypos);
+			LOG->SendEditor("Mouse pos [%.4f, %.4f]", GLDRV->mouse_x, GLDRV->mouse_y);
+		}
+				}
+}
+
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is
 // called
@@ -242,6 +244,8 @@ glDriver::glDriver()
 
 	mouse_lastxpos(0),
 	mouse_lastypos(0),
+	mouse_x(0),
+	mouse_y(0),
 	fullScreen(0),
 	stencil(0),
 	accum(0),
@@ -302,6 +306,8 @@ void glDriver::initGraphics() {
 	glfwSetWindowSizeCallback(p_glfw_window_, GLFWWindowSizeCallback);
 	glfwSetKeyCallback(p_glfw_window_, key_callback);
 	glfwSetCursorPosCallback(p_glfw_window_, mouse_callback);
+	glfwSetMouseButtonCallback(p_glfw_window_, mouseButton_callback);
+
 	glfwSetScrollCallback(p_glfw_window_, scroll_callback);
 
 	// Initialize glad
@@ -641,4 +647,19 @@ int glDriver::getTextureComponentsByName(char* name) {
 		}
 	}
 	return -1;
+}
+
+void glDriver::calcMousePos(float x, float y) {
+	Viewport vp = this->GetCurrentViewport();
+	if ((x >= vp.x) && (x <= static_cast<float>(vp.width + vp.x)) &&	// Validate we are inside the valid zone of X
+		(y >= vp.y) && (y <= static_cast<float>((vp.height + vp.y)))) {	// Validate we are inside the valid zone of Y
+
+		float x_coord = (x - static_cast<float>(vp.x)) / static_cast<float>(vp.width);
+		float y_coord = (y - static_cast<float>(vp.y)) / static_cast<float>(vp.height);
+		x_coord -= 0.5f;	// Change scale from -0.5 to 0.5
+		y_coord -= 0.5f;
+		y_coord *= -1.0f;
+		this->mouse_x = x_coord;
+		this->mouse_y = y_coord;
+	}
 }
