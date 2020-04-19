@@ -9,6 +9,7 @@
 class sLoading : public Section { public:	sLoading();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sSound : public Section { public:	sSound();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sCamera : public Section { public:	sCamera();  bool load(); void init(); void exec(); void end(); string debug(); };
+class sCameraAbs : public Section { public:	sCameraAbs();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sLight : public Section { public:	sLight();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sBackground : public Section { public:	sBackground();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sFboBind : public Section { public:	sFboBind();  bool load(); void init(); void exec(); void end(); string debug(); };

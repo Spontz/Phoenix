@@ -18,6 +18,7 @@ tSectionID sectionID[] = {
 	// built-in sections
 	{"background",			SectionType::Background},
 	{"camera",				SectionType::CameraSec},
+	{"cameraAbs",			SectionType::CameraAbsSec},
 	{"light",				SectionType::LightSec},
 	{"drawScene",			SectionType::DrawScene},
 	{"drawSceneMatrix",		SectionType::DrawSceneMatrix},
@@ -78,6 +79,9 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		break;
 	case SectionType::CameraSec:
 		mySection = new sCamera();
+		break;
+	case SectionType::CameraAbsSec:
+		mySection = new sCameraAbs();
 		break;
 	case SectionType::LightSec:
 		mySection = new sLight();

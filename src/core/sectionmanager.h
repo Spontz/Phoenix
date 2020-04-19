@@ -18,6 +18,7 @@ enum SectionType {
 	Background,
 	VideoSec,
 	CameraSec,
+	CameraAbsSec,
 	LightSec, 
 	ObjectShader,
 	ObjectAnimShader,
