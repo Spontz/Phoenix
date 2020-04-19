@@ -219,6 +219,10 @@ void glDriver::ProcessInput()
 			DEMO->camera->ProcessKeyboard(CameraMovement::LEFT, GLDRV->TimeDelta);
 		if (glfwGetKey(p_glfw_window_, KEY_STRAFERIGHT) == GLFW_PRESS)
 			DEMO->camera->ProcessKeyboard(CameraMovement::RIGHT, GLDRV->TimeDelta);
+		if (glfwGetKey(p_glfw_window_, KEY_ROLLRIGHT) == GLFW_PRESS)
+			DEMO->camera->ProcessKeyboard(CameraMovement::ROLL_RIGHT, GLDRV->TimeDelta);
+		if (glfwGetKey(p_glfw_window_, KEY_ROLLLEFT) == GLFW_PRESS)
+			DEMO->camera->ProcessKeyboard(CameraMovement::ROLL_LEFT, GLDRV->TimeDelta);
 	}
 
 }
@@ -593,7 +597,7 @@ void glDriver::drawTiming() {
 	DEMO->text->glPrintf(-1, 0.5f, "Cam Speed: %.0f", DEMO->camera->MovementSpeed);
 	DEMO->text->glPrintf(-1, 0.4f, "Cam Pos: %.1f,%.1f,%.1f", DEMO->camera->Position.x, DEMO->camera->Position.y, DEMO->camera->Position.z);
 	DEMO->text->glPrintf(-1, 0.3f, "Cam Front: %.1f,%.1f,%.1f", DEMO->camera->Front.x, DEMO->camera->Front.y, DEMO->camera->Front.z);
-	DEMO->text->glPrintf(-1, 0.2f, "Cam Yaw: %.1f, Pitch: %.1f, Zoom: %.1f", DEMO->camera->Yaw, DEMO->camera->Pitch, DEMO->camera->Zoom);
+	DEMO->text->glPrintf(-1, 0.2f, "Cam Yaw: %.1f, Pitch: %.1f, Roll: %.1f, Zoom: %.1f", DEMO->camera->Yaw, DEMO->camera->Pitch, DEMO->camera->Roll, DEMO->camera->Zoom);
 	DEMO->text->glPrintf(-1, 0.1f, state);
 }
 

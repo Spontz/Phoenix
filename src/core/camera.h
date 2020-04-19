@@ -13,7 +13,9 @@ enum class CameraMovement : int {
 	FORWARD = 0,
 	BACKWARD = 1,
 	LEFT = 2,
-	RIGHT = 3
+	RIGHT = 3,
+	ROLL_LEFT = 4,
+	ROLL_RIGHT = 5
 };
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
@@ -25,6 +27,7 @@ class Camera
 	static const float DEFAULT_CAM_SPEED;
 	static const float DEFAULT_CAM_SENSITIVITY;
 	static const float DEFAULT_CAM_VFOV;
+	static const float DEFAULT_CAM_ROLL;
 
 public:
 	string		Name;
@@ -39,6 +42,7 @@ public:
 	// Euler Angles
 	float Yaw;
 	float Pitch;
+	float Roll;
 
 	// Camera options
 	float MovementSpeed;
@@ -50,7 +54,8 @@ public:
 		glm::vec3 const& position = glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3 const& up = glm::vec3(0.0f, 1.0f, 0.0f),
 		float yaw = DEFAULT_CAM_YAW,
-		float pitch = DEFAULT_CAM_PITCH
+		float pitch = DEFAULT_CAM_PITCH,
+		float roll = DEFAULT_CAM_ROLL
 	);
 
 	void		Reset();
@@ -65,12 +70,13 @@ public:
 	// Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
 	void		ProcessMouseScroll(float yoffset);
 	void		CapturePos();
-	void		setCamera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float pitch, float zoom);
+	void		setCamera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float pitch, float roll, float zoom);
 	glm::mat4	getOrthoMatrix_Projection() const;
 	glm::mat4	getOrthoMatrix_View() const;
 
 private:
 	// Calculates the front vector from the Camera's (updated) Euler Angles
+	void		setRollMatrix(glm::mat3x3& m, glm::vec3 f);
 	void		updateCameraVectors();
 };
 

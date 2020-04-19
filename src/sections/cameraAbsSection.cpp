@@ -8,12 +8,14 @@ typedef struct {
 	glm::vec3	cam_pos;
 	float	cam_yaw;
 	float	cam_pitch;
+	float	cam_roll;
 	float	cam_zoom;
 
 	// Final cam position variables
 	glm::vec3	finalCam_pos;
 	float	finalCam_yaw;
 	float	finalCam_pitch;
+	float	finalCam_roll;
 	float	finalCam_zoom;
 
 
@@ -50,10 +52,10 @@ bool sCameraAbs::load() {
 
 	// init cam modifiers
 	local->cam_pos = glm::vec3(0);
-	local->cam_yaw = local->cam_pitch = local->cam_zoom = 0.0f;
+	local->cam_yaw = local->cam_pitch = local->cam_zoom = local->cam_roll =  0.0f;
 
 	local->finalCam_pos = glm::vec3(0);
-	local->finalCam_yaw = local->finalCam_pitch = local->finalCam_zoom = 0.0f;
+	local->finalCam_yaw = local->finalCam_pitch = local->finalCam_zoom = local->finalCam_roll = 0.0f;
 
 
 	// Load the camera modifiers (based in formulas)
@@ -69,6 +71,7 @@ bool sCameraAbs::load() {
 
 	local->exprCamera->SymbolTable.add_variable("c_yaw", local->cam_yaw);
 	local->exprCamera->SymbolTable.add_variable("c_pitch", local->cam_pitch);
+	local->exprCamera->SymbolTable.add_variable("c_roll", local->cam_roll);
 	local->exprCamera->SymbolTable.add_variable("c_zoom", local->cam_zoom);
 
 	local->exprCamera->SymbolTable.add_variable("PosX", local->finalCam_pos.x);
@@ -77,6 +80,7 @@ bool sCameraAbs::load() {
 
 	local->exprCamera->SymbolTable.add_variable("Yaw", local->finalCam_yaw);
 	local->exprCamera->SymbolTable.add_variable("Pitch", local->finalCam_pitch);
+	local->exprCamera->SymbolTable.add_variable("Roll", local->finalCam_roll);
 	local->exprCamera->SymbolTable.add_variable("Zoom", local->finalCam_zoom);
 
 	if (!local->exprCamera->compileFormula())
@@ -106,14 +110,15 @@ void sCameraAbs::exec() {
 		local->cam_pos = glm::vec3(new_pos[0], new_pos[1], new_pos[2]);
 		local->cam_yaw = new_pos[6];
 		local->cam_pitch = new_pos[7];
-		local->cam_zoom = new_pos[8];
+		local->cam_roll = new_pos[8];
+		local->cam_zoom = new_pos[9];
 
 		// apply formula modifications
 		local->exprCamera->Expression.value();
 		
 		DEMO->camera->setCamera(local->finalCam_pos,
 			glm::vec3(new_pos[3], new_pos[4], new_pos[5]),
-			local->finalCam_yaw, local->finalCam_pitch, local->finalCam_zoom);
+			local->finalCam_yaw, local->finalCam_pitch, local->finalCam_roll, local->finalCam_zoom);
 	}
 	
 	

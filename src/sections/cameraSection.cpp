@@ -4,7 +4,10 @@
 typedef struct {
 	int			freeCam;
 	glm::vec3	cam_pos;
-	glm::vec3	cam_other; // Other modifiers: Yaw, Pitch and Zoom
+	float		cam_yaw;
+	float		cam_pitch;
+	float		cam_roll;
+	float		cam_zoom;
 
 	mathDriver* exprCamera;	// A equation containing the calculations of the camera
 } camera_section;
@@ -39,7 +42,7 @@ bool sCamera::load() {
 
 	// init cam modifiers
 	local->cam_pos = glm::vec3(0);
-	local->cam_other = glm::vec3(0);
+	local->cam_yaw = local->cam_pitch = local->cam_zoom = local->cam_roll = 0.0f;
 
 	// Load the camera modifiers (based in formulas)
 	local->exprCamera = new mathDriver(this);
@@ -53,9 +56,10 @@ bool sCamera::load() {
 	local->exprCamera->SymbolTable.add_variable("PosY", local->cam_pos.y);
 	local->exprCamera->SymbolTable.add_variable("PosZ", local->cam_pos.z);
 
-	local->exprCamera->SymbolTable.add_variable("Yaw", local->cam_other.x);
-	local->exprCamera->SymbolTable.add_variable("Pitch", local->cam_other.y);
-	local->exprCamera->SymbolTable.add_variable("Zoom", local->cam_other.z);
+	local->exprCamera->SymbolTable.add_variable("Yaw", local->cam_yaw);
+	local->exprCamera->SymbolTable.add_variable("Pitch", local->cam_pitch);
+	local->exprCamera->SymbolTable.add_variable("Roll", local->cam_roll);
+	local->exprCamera->SymbolTable.add_variable("Zoom", local->cam_zoom);
 
 
 	if (!local->exprCamera->compileFormula())
@@ -87,7 +91,7 @@ void sCamera::exec() {
 
 		DEMO->camera->setCamera(glm::vec3(new_pos[0], new_pos[1], new_pos[2]) + local->cam_pos,
 			glm::vec3(new_pos[3], new_pos[4], new_pos[5]),
-			new_pos[6] + local->cam_other.x, new_pos[7] + local->cam_other.y, new_pos[8] + local->cam_other.z);
+			new_pos[6] + local->cam_yaw, new_pos[7] + local->cam_pitch, new_pos[8] + local->cam_roll, new_pos[9] + local->cam_zoom);
 	}
 	
 	

@@ -7,11 +7,12 @@
 // Default camera values
 const float Camera::DEFAULT_CAM_YAW = -90.0f;
 const float Camera::DEFAULT_CAM_PITCH = 0.0f;
+const float Camera::DEFAULT_CAM_ROLL = 0.0f;
 const float Camera::DEFAULT_CAM_SPEED = 15.0f;
 const float Camera::DEFAULT_CAM_SENSITIVITY = 0.1f;
 const float Camera::DEFAULT_CAM_VFOV = 45.0f;
 
-Camera::Camera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float pitch)
+Camera::Camera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float pitch, float roll)
 {
 	Name = "Default";
 	Front = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -23,6 +24,7 @@ Camera::Camera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float 
 	WorldUp = up;
 	Yaw = yaw;
 	Pitch = pitch;
+	Roll = roll;
 	updateCameraVectors();
 }
 
@@ -37,6 +39,7 @@ void Camera::Reset()
 	WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	Yaw = DEFAULT_CAM_YAW;
 	Pitch = DEFAULT_CAM_PITCH;
+	Roll = DEFAULT_CAM_ROLL;
 	updateCameraVectors();
 }
 
@@ -67,7 +70,14 @@ void Camera::ProcessKeyboard(CameraMovement direction, float deltaTime)
 	case CameraMovement::RIGHT:
 		Position += Right * velocity;
 		break;
+	case CameraMovement::ROLL_LEFT:
+		Roll += 0.5f;
+		break;
+	case CameraMovement::ROLL_RIGHT:
+		Roll -= 0.5f;
+		break;
 	}
+	updateCameraVectors();
 }
 
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
@@ -108,20 +118,21 @@ void Camera::CapturePos()
 	//string message;
 	char message[1024];
 	camFile.open("camera.cam", ios::out | ios::app);
-	sprintf_s(message, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
+	sprintf_s(message, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
 		DEMO->camera->Position.x, DEMO->camera->Position.y, DEMO->camera->Position.z,
 		DEMO->camera->Up.x, DEMO->camera->Up.y, DEMO->camera->Up.z,
-		DEMO->camera->Yaw, DEMO->camera->Pitch, DEMO->camera->Zoom);
+		DEMO->camera->Yaw, DEMO->camera->Pitch, DEMO->camera->Zoom, DEMO->camera->Roll);
 	camFile << message << "\n";
 	camFile.close();
 }
 
-void Camera::setCamera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float pitch, float zoom)
+void Camera::setCamera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float pitch, float roll, float zoom)
 {
 	Position = position;
 	WorldUp = up;
 	Yaw = yaw;
 	Pitch = pitch;
+	Roll = roll;
 	Zoom = zoom;
 	updateCameraVectors();
 }
@@ -136,6 +147,24 @@ glm::mat4 Camera::getOrthoMatrix_View() const
 	return glm::lookAt(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 }
 
+// Calculates the front vector from the Camera's (updated) Euler Angles
+void Camera::setRollMatrix(glm::mat3x3& m, glm::vec3 f) {
+	float rcos = cos(glm::radians(Roll));
+	float rsin = sin(glm::radians(Roll));
+
+	m[0][0] = rcos + (1 - rcos) * f.x * f.x;
+	m[0][1] = (1 - rcos) * f.x * f.y + rsin * f.z;
+	m[0][2] = (1 - rcos) * f.z * f.x - rsin * f.y;
+
+	m[1][0] = (1 - rcos) * f.x * f.y - rsin * f.z;
+	m[1][1] = rcos + (1 - rcos) * f.y * f.y;
+	m[1][2] = (1 - rcos) * f.z * f.y + rsin * f.x;
+
+	m[2][0] = (1 - rcos) * f.x * f.z + rsin * f.y;
+	m[2][1] = (1 - rcos) * f.y * f.z - rsin * f.x;
+	m[2][2] = rcos + (1 - rcos) * f.z * f.z;
+}
+
 void Camera::updateCameraVectors()
 {
 	// Calculate the new Front vector
@@ -144,7 +173,12 @@ void Camera::updateCameraVectors()
 	front.y = sin(glm::radians(Pitch));
 	front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
 	Front = glm::normalize(front);
+
+	//	control the rotate view
+	glm::mat3x3 rollMatrix;
+	setRollMatrix(rollMatrix, front);
+
 	// Also re-calculate the Right and Up vector
-	Right = glm::normalize(glm::cross(Front, WorldUp));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+	Right = glm::normalize(glm::cross(Front, rollMatrix * WorldUp));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 	Up = glm::normalize(glm::cross(Right, Front));
 }
