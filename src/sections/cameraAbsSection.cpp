@@ -28,8 +28,8 @@ sCameraAbs::sCameraAbs() {
 
 bool sCameraAbs::load() {
 	// script validation
-	if ((this->spline.size() != 1) || (this->param.size() != 1)) {
-		LOG->Error("Camera [%s]: 1 spline and 1 param needed", this->identifier.c_str());
+	if ((this->spline.size() != 1) || (this->param.size() != 1) || (this->strings.size() < 2)) {
+		LOG->Error("Camera [%s]: 1 spline, 1 param and 2 strings needed", this->identifier.c_str());
 		return false;
 	}
 
