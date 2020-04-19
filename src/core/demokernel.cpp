@@ -484,6 +484,7 @@ bool demokernel::load_config()
 			load_spo(ScriptRelativePath);
 			LOG->Info(LOG_LOW, "Finished loading file!");
 		} while (_findnext(hFile, &FindData) == 0);
+		_findclose(hFile);
 	}
 	else {
 		LOG->Error("Config files not found in 'config' folder");
@@ -518,6 +519,7 @@ void demokernel::load_spos() {
 			load_spo(ScriptRelativePath);
 			LOG->Info(LOG_LOW, "Finished loading file!");
 		} while (_findnext(hFile, &FindData) == 0);
+		_findclose(hFile);
 	}
 	LOG->Info(LOG_MED,"Finished loading all files.");
 }
