@@ -9,6 +9,7 @@ const float Camera::DEFAULT_CAM_YAW = -90.0f;
 const float Camera::DEFAULT_CAM_PITCH = 0.0f;
 const float Camera::DEFAULT_CAM_ROLL = 0.0f;
 const float Camera::DEFAULT_CAM_SPEED = 15.0f;
+const float Camera::DEFAULT_CAM_ROLL_SPEED = 40.0f;
 const float Camera::DEFAULT_CAM_SENSITIVITY = 0.1f;
 const float Camera::DEFAULT_CAM_VFOV = 45.0f;
 
@@ -17,6 +18,7 @@ Camera::Camera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float 
 	Name = "Default";
 	Front = glm::vec3(0.0f, 0.0f, -1.0f);
 	MovementSpeed = DEFAULT_CAM_SPEED;
+	RollSpeed = DEFAULT_CAM_ROLL_SPEED;
 	MouseSensitivity = DEFAULT_CAM_SENSITIVITY;
 	Zoom = DEFAULT_CAM_VFOV;
 
@@ -56,6 +58,8 @@ glm::mat4 Camera::GetMatrix() const
 void Camera::ProcessKeyboard(CameraMovement direction, float deltaTime)
 {
 	const float velocity = MovementSpeed * deltaTime;
+	const float velocity_roll = RollSpeed * deltaTime;
+
 
 	switch (direction) {
 	case CameraMovement::FORWARD:
@@ -71,10 +75,10 @@ void Camera::ProcessKeyboard(CameraMovement direction, float deltaTime)
 		Position += Right * velocity;
 		break;
 	case CameraMovement::ROLL_LEFT:
-		Roll += 0.5f;
+		Roll += velocity_roll;
 		break;
 	case CameraMovement::ROLL_RIGHT:
-		Roll -= 0.5f;
+		Roll -= velocity_roll;
 		break;
 	}
 	updateCameraVectors();

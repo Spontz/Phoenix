@@ -25,6 +25,7 @@ class Camera
 	static const float DEFAULT_CAM_YAW;
 	static const float DEFAULT_CAM_PITCH;
 	static const float DEFAULT_CAM_SPEED;
+	static const float DEFAULT_CAM_ROLL_SPEED;
 	static const float DEFAULT_CAM_SENSITIVITY;
 	static const float DEFAULT_CAM_VFOV;
 	static const float DEFAULT_CAM_ROLL;
@@ -46,6 +47,7 @@ public:
 
 	// Camera options
 	float MovementSpeed;
+	float RollSpeed;
 	float MouseSensitivity;
 	float Zoom;
 
