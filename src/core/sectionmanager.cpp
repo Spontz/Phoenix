@@ -157,30 +157,53 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 	return sec_id;
 }
 
+Section* SectionManager::getSection(string id) {
+	int sec_size = (int)this->section.size();
+	Section* ds;
+	for (int i = 0; i < sec_size; i++) {
+		ds = this->section[i];
+		if (ds->identifier == id) {
+			return ds;
+		}
+	}
+	return NULL;
+}
+
 void SectionManager::toggleSection(string identifier)
 {
+	vector<string> ids = splitIdentifiers(identifier);
+
 	Section *ds;
-	int size = (int)this->section.size();
-	for (int i = 0; i < size; i++) {
-		ds = this->section[i];
-		if (ds->identifier == identifier) {
+	int id_size = (int)ids.size();
+	
+	for (int i = 0; i < id_size; i++) {
+		ds = getSection(ids[i]);
+		if (ds) {
 			ds->enabled = !ds->enabled;
-			return;
+			//LOG->SendEditor("Section toggled: %s", ids[i].c_str());
+		}
+		else {
+			LOG->Error("Section NOT toggled: %s", ids[i].c_str());
 		}
 	}
 }
 
 void SectionManager::deleteSection(string identifier)
 {
-	Section *ds;
-	int size = (int)this->section.size();
-	for (int i = 0; i < size; i++) {
-		ds = this->section[i];
-		if (ds->identifier == identifier) {
-			LOG->Info(LOG_LOW, "  Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
+	vector<string> ids = splitIdentifiers(identifier);
+
+	Section* ds;
+	int id_size = (int)ids.size();
+
+	for (int i = 0; i < id_size; i++) {
+		ds = getSection(ids[i]);
+		if (ds) {
 			ds->end();
 			this->section.erase(this->section.begin() + i);
-			return;
+			//LOG->SendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
+		}
+		else {
+			LOG->Error("Section NOT deleted: %s", ids[i].c_str());
 		}
 	}
 }
@@ -192,82 +215,67 @@ void SectionManager::updateSection(string identifier, string sScript)
 	DEMO->load_scriptFromNetwork(sScript);
 }
 
+std::vector<string> SectionManager::splitIdentifiers(string identifiers) {
+	std::stringstream ss(identifiers);
+	vector<string> result;
+
+	while (ss.good())
+	{
+		string substr;
+		getline(ss, substr, ',');
+		result.push_back(substr);
+	}
+	return result;
+}
+
 void SectionManager::setSectionsStartTime(string amount, string identifiers)
 {
-	std::vector<string> identifier;
-	std::stringstream ss(identifiers);
-	string ident;
-
-	// TODO: Seems that this is not needed, sections are always sent one by one... Ask Ivan if the editor is sending the secitons one bye one or splitted by comas
-
-	// Split the identifiers, separated by coma, and put it into "identifier" vector
-	while (ss >> ident)
-	{
-		identifier.push_back(ident);
-
-		if (ss.peek() == ',')
-			ss.ignore();
-	}
-
-	// Get the new startTime
-	Section *ds;
-	int sec_size = (int)this->section.size();
-	int ident_size = (int)identifier.size();
+	vector<string> ids = splitIdentifiers(identifiers);
 	float startTime = (float)atof(amount.c_str());
 
+	Section* ds;
+	int id_size = (int)ids.size();
 
-	for (int i = 0; i < sec_size; i++) {
-		ds = this->section[i];
-		for (int j = 0; j < ident_size; j++) {
-			if (ds->identifier == identifier[j]) {
-				ds->startTime = startTime;
-				ds->duration = ds->endTime - ds->startTime;
-				// Reload the splines. This way they are recalculated
-				for (int k = 0; k < ds->spline.size(); k++) {
-					ds->spline[k]->duration = ds->duration;
-					ds->spline[k]->load();
-				}
-				LOG->Info(LOG_LOW, "Section [%s] changed StartTime: %.3f", ds->identifier.c_str(), ds->startTime);
-
+	for (int i = 0; i < id_size; i++) {
+		ds = getSection(ids[i]);
+		if (ds) {
+			ds->startTime = startTime;
+			ds->duration = ds->endTime - ds->startTime;
+			// Reload the splines. This way they are recalculated
+			for (int k = 0; k < ds->spline.size(); k++) {
+				ds->spline[k]->duration = ds->duration;
+				ds->spline[k]->load();
 			}
+			//LOG->SendEditor("Section [%s] changed StartTime: %.3f", ds->identifier.c_str(), ds->startTime);
+		}
+		else {
+			LOG->Error("Section NOT modified (StartTime): %s", ids[i].c_str());
 		}
 	}
 }
 
 void SectionManager::setSectionsEndTime(string amount, string identifiers)
 {
-	std::vector<string> identifier;
-	std::stringstream ss(identifiers);
-	string ident;
-
-	// Split the identifiers, separated by coma, and put it into "identifier" vector
-	while (ss >> ident)
-	{
-		identifier.push_back(ident);
-
-		if (ss.peek() == ',')
-			ss.ignore();
-	}
-
-	// Get the new startTime
-	Section *ds;
-	int sec_size = (int)this->section.size();
-	int ident_size = (int)identifier.size();
+	vector<string> ids = splitIdentifiers(identifiers);
 	float endTime = (float)atof(amount.c_str());
 
-	for (int i = 0; i < sec_size; i++) {
-		ds = this->section[i];
-		for (int j = 0; j < ident_size; j++) {
-			if (ds->identifier == identifier[j]) {
-				ds->endTime = endTime;
-				ds->duration = ds->endTime - ds->startTime;
-				// Reload the splines. This way they are recalculated
-				for (int k = 0; k < ds->spline.size(); k++) {
-					ds->spline[k]->duration = ds->duration;
-					ds->spline[k]->load();
-				}
-				LOG->Info(LOG_LOW, "Section [%s] changed EndTime: %.3f", ds->identifier.c_str(), ds->endTime);
+	Section* ds;
+	int id_size = (int)ids.size();
+
+	for (int i = 0; i < id_size; i++) {
+		ds = getSection(ids[i]);
+		if (ds) {
+			ds->endTime = endTime;
+			ds->duration = ds->endTime - ds->startTime;
+			// Reload the splines. This way they are recalculated
+			for (int k = 0; k < ds->spline.size(); k++) {
+				ds->spline[k]->duration = ds->duration;
+				ds->spline[k]->load();
 			}
+			//LOG->SendEditor("Section [%s] changed EndTime: %.3f", ds->identifier.c_str(), ds->endTime);
+		}
+		else {
+			LOG->Error("Section NOT modified (EndTime): %s", ids[i].c_str());
 		}
 	}
 }
@@ -276,14 +284,14 @@ void SectionManager::setSectionLayer(string layer, string identifier)
 {
 	Section *ds;
 	int new_layer = atoi(layer.c_str());
-	int size = (int)this->section.size();
-	for (int i = 0; i < size; i++) {
-		ds = this->section[i];
-		if (ds->identifier == identifier) {
-			LOG->Info(LOG_LOW, "Section [%s] changed Layer from %d to %d", ds->identifier.c_str(), ds->layer, new_layer);
-			ds->layer = new_layer;
-			return;
-		}
+
+	ds = getSection(identifier);
+	if (ds) {
+		//LOG->SendEditor("Section [%s] changed Layer from %d to %d", ds->identifier.c_str(), ds->layer, new_layer);
+		ds->layer = new_layer;
+	}
+	else {
+		LOG->Error("Section NOT modified (setSectionLayer): %s", identifier.c_str());
 	}
 }
 

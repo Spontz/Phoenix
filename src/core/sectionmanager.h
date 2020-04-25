@@ -65,8 +65,8 @@ public:
 
 private:
 	SectionType getSectionType(string key);
-
-	
+	std::vector<string> splitIdentifiers(string identifiers);
+	Section* getSection(string id);
 };
 
 #endif
