@@ -47,11 +47,7 @@ void sFboBind::exec() {
 	if (local->fbo == -1)
 		return;
 	// Enable the buffer in which we are going to paint
-	DEMO->fboManager.bind(local->fbo);
-
-	// Clear the screen and depth buffers depending of the parameters passed by the user
-	if (local->clearScreen)	glClear(GL_COLOR_BUFFER_BIT);
-	if (local->clearDepth)	glClear(GL_DEPTH_BUFFER_BIT);
+	DEMO->fboManager.bind(local->fbo, local->clearScreen, local->clearDepth);
 }
 
 void sFboBind::end() {

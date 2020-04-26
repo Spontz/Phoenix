@@ -9,6 +9,9 @@
 FboManager::FboManager() {
 	fbo.clear();
 	mem = 0;
+	currentFbo = -1;
+	clearColor = false;
+	clearDepth = false;
 }
 
 void FboManager::active(int index) const
@@ -16,18 +19,34 @@ void FboManager::active(int index) const
 	glActiveTexture(GL_TEXTURE0 + index);
 }
 
-void FboManager::bind(int fbo_num) {
+void FboManager::bind(int fbo_num, bool clearColor, bool clearDepth)
+{
 	if (fbo_num < fbo.size()) {
+		this->currentFbo = fbo_num;
+		this->clearColor = clearColor;
+		this->clearDepth = clearDepth;
 		Fbo* my_fbo = fbo[fbo_num];
 		// Adjust the viewport to the fbo size
-		//GLDRV->setViewport(0, 0, my_fbo->width, my_fbo->height);
-		GLDRV->SetCurrentViewport({
-			0,
-			0,
-			static_cast<unsigned int>(my_fbo->width),
-			static_cast<unsigned int>(my_fbo->height)
-			});
+		GLDRV->SetCurrentViewport({0,0,static_cast<unsigned int>(my_fbo->width),static_cast<unsigned int>(my_fbo->height)});
 		my_fbo->bind();
+		if (clearColor)	glClear(GL_COLOR_BUFFER_BIT);
+		if (clearDepth)	glClear(GL_DEPTH_BUFFER_BIT);
+	}
+}
+
+// Bind the current fbo: useful for some efects that need to change the framebuffer (like Boom or blur)
+void FboManager::bindCurrent()
+{
+	if (this->currentFbo>=0) {
+		Fbo* my_fbo = fbo[this->currentFbo];
+		// Adjust the viewport to the fbo size
+		GLDRV->SetCurrentViewport({ 0,0,static_cast<unsigned int>(my_fbo->width),static_cast<unsigned int>(my_fbo->height) });
+		my_fbo->bind();
+		if (clearColor)	glClear(GL_COLOR_BUFFER_BIT);
+		if (clearDepth)	glClear(GL_DEPTH_BUFFER_BIT);
+	}
+	else{
+		DEMO->fboManager.unbind(clearColor, clearDepth);
 	}
 }
 
@@ -39,18 +58,16 @@ void FboManager::bind_tex(int fbo_num, GLuint attachment)
 	}
 }
 
-void FboManager::unbind() {
+void FboManager::unbind(bool clearColor, bool clearDepth)
+{
+	currentFbo = -1;
+	this->clearColor = clearColor;
+	this->clearDepth = clearDepth;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	// Restore the driver viewport
 	GLDRV->SetCurrentViewport(GLDRV->GetFramebufferViewport());
-	/*
-	GLDRV->setViewport(
-		GLDRV->vpXOffset,
-		GLDRV->vpYOffset,
-		static_cast<int>(GLDRV->vpWidth),
-		static_cast<int>(GLDRV->vpHeight)
-	);
-	*/
+	if (clearColor)	glClear(GL_COLOR_BUFFER_BIT);
+	if (clearDepth)	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 // Adds a Fbo into the queue, returns the ID of the texture added

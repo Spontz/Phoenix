@@ -111,7 +111,7 @@ void sEfxBlur::exec() {
 			my_shaderBlur->setValue("horizontal", horizontal);
 			
 			// We always draw the First pass in the efxBloom FBO
-			DEMO->efxBloomFbo.bind(horizontal);
+			DEMO->efxBloomFbo.bind(horizontal, false, false);
 			
 			// If it's the first iteration, we pick the fbo
 			// if not, we pick the fbo of our efxBloom
@@ -126,8 +126,11 @@ void sEfxBlur::exec() {
 			if (first_iteration)
 				first_iteration = false;
 		}
-		DEMO->efxBloomFbo.unbind(); // Unbind drawing into an Fbo
 
+		DEMO->efxBloomFbo.unbind(false, false); // Unbind drawing into an Fbo
+		
+		// Adjust back the current fbo
+		DEMO->fboManager.bindCurrent();
 		// Second step: Draw the Blurred image
 		RES->Draw_QuadEfxFBOFS(!horizontal);
 	}		

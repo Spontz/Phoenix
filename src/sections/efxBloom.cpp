@@ -126,7 +126,7 @@ void sEfxBloom::exec() {
 			my_shaderBlur->setValue("horizontal", horizontal);
 			
 			// We always draw the First pass in the efxBloom FBO
-			DEMO->efxBloomFbo.bind(horizontal);
+			DEMO->efxBloomFbo.bind(horizontal, false, false);
 			
 			// If it's the first iteration, we pick the second attachment of our fbo
 			// if not, we pick the fbo of our efxBloom
@@ -141,13 +141,13 @@ void sEfxBloom::exec() {
 			if (first_iteration)
 				first_iteration = false;
 		}
-		DEMO->efxBloomFbo.unbind(); // Unbind drawing into an Fbo
-		
+		DEMO->efxBloomFbo.unbind(false, false); // Unbind drawing into an Fbo
+
 		// Second step: Merge the blurred image with the color image (fbo attachment 0)
 		my_shaderBloom->use();
 		// Set new shader variables values
 		local->shaderVars->setValues();
-		
+
 		// Tex unit 0: scene
 		DEMO->fboManager.fbo[local->FboNum]->active(0);
 		DEMO->fboManager.fbo[local->FboNum]->bind_tex();
@@ -156,6 +156,8 @@ void sEfxBloom::exec() {
 		DEMO->efxBloomFbo.fbo[!horizontal]->active(1);
 		DEMO->efxBloomFbo.fbo[!horizontal]->bind_tex();
 
+		// Adjust back the current fbo
+		DEMO->fboManager.bindCurrent();
 		RES->Draw_QuadFS();
 	}		
 	glEnable(GL_DEPTH_TEST);

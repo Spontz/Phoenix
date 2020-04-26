@@ -358,7 +358,7 @@ void glDriver::initStates() {
 
 	// Init lights colors, fbo's, shader ID's and texture States
 	DEMO->lightManager.initAllLightsColors();
-	DEMO->fboManager.unbind();
+	DEMO->fboManager.unbind(true, true);
 	DEMO->shaderManager.unbindShaders();
 	DEMO->textureManager.initTextureStates();
 }
@@ -452,10 +452,10 @@ void glDriver::SetCurrentViewport(Viewport const& viewport) {
 }
 
 void glDriver::SetFramebuffer() {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	DEMO->fboManager.unbind(false, false);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	// Restore the driver viewport
-	SetCurrentViewport(GetFramebufferViewport());
-	//SetCurrentViewport(vpXOffset, vpYOffset, static_cast<int>(vpWidth), static_cast<int>(vpHeight));
+	//SetCurrentViewport(GetFramebufferViewport());
 }
 
 void glDriver::initFbos() {
@@ -465,12 +465,14 @@ void glDriver::initFbos() {
 		LOG->Info(LOG_LOW, "Ooops! we need to regenerate the Bloom efx FBO's! clearing efx FBO's first!");
 		DEMO->efxBloomFbo.clearFbos();
 	}
+
 	// init fbo's for Bloom
 	tGLFboFormat bloomFbo;
 	bloomFbo.format = "RGB_16F";
 	bloomFbo.numColorAttachments = 1;
-	bloomFbo.width = static_cast<float>(script__gl_width__framebuffer_width_);
-	bloomFbo.height = static_cast<float>(script__gl_height__framebuffer_height_);
+	bloomFbo.ratio = 4;
+	bloomFbo.width = static_cast<float>(script__gl_width__framebuffer_width_) / static_cast <float>(bloomFbo.ratio);
+	bloomFbo.height = static_cast<float>(script__gl_height__framebuffer_height_) / static_cast <float>(bloomFbo.ratio);
 	bloomFbo.tex_iformat = getTextureInternalFormatByName(bloomFbo.format);
 	bloomFbo.tex_format = getTextureFormatByName(bloomFbo.format);
 	bloomFbo.tex_type = getTextureTypeByName(bloomFbo.format);
