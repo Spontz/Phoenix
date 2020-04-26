@@ -879,7 +879,7 @@ int demokernel::load_scriptData(string sScript, string sFile) {
 		//LOG->Info("  Parsing line %i", lineNum);
 
 		// Ignore comments or empty line
-		if ((line[0] == ';') || (line[0] == '\n') || (line[0] == '\r')) {
+		if ((line[0] == ';') || (line[0] == '\n') || (line[0] == '\r') || (line[0] == ' ') || (line[0] == '\t')) {
 			LOG->Info(LOG_LOW,"  Comments found or empty in line %i, ignoring this line.", lineNum);
 			continue;
 		}
