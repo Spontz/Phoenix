@@ -9,6 +9,7 @@ project(Phoenix)
 set(CMAKE_CXX_STANDARD 17)
 
 if (MSVC)
+	add_compile_options(/MP)
 	add_compile_options(-bigobj)
 	add_compile_options(
 	    "$<$<CONFIG:Debug>:/MTd>"
