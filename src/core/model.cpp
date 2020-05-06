@@ -30,6 +30,7 @@ Model::Model()
 	modelTransform = glm::mat4(1.0f);	// Load Identity matrix by default
 	prev_view = glm::mat4(1.0f);	// Load Identity matrix by default
 
+	m_NumAnimations = 0;
 	m_NumMeshes = 0;
 	m_NumBones = 0;
 	m_NumCameras = 0;

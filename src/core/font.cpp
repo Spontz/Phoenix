@@ -6,6 +6,8 @@
 #define MAX_FONT_WIDTH 20000
 
 Font::Font(int size, string font_path, string vshader_path, string fshader_path)
+	:
+	textureID(0)
 {
 	// Load the shader
 	Shader *myShad;

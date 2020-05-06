@@ -39,19 +39,21 @@ float netDriver::getParamFloat(char *message, int requestedParameter) {
 	theStringResult = getParamString(message, requestedParameter);
 
 	// Search for the parameter and transform it in a float
-	sscanf(theStringResult, "%f", &theFloatResult);
+	if (sscanf(theStringResult, "%f", &theFloatResult) != 1)
+		throw std::exception();
 
 	// Return the result
 	return theFloatResult;
 }
 
 void onData_SendResponse(dyad_Event *e) {
-	char *theResponse;
-	
-	theResponse = NETDRV->processMessage(e->data);
+	auto theResponse = NETDRV->processMessage(e->data);
+
 	// Send the response and close the connection
-	dyad_write(e->stream, theResponse, (int)strlen(theResponse));
+	dyad_write(e->stream, theResponse, int(strlen(theResponse)));
 	dyad_end(e->stream);
+
+	delete[] theResponse;
 }
 
 void onAccept(dyad_Event *e) {
@@ -143,15 +145,15 @@ char * netDriver::processMessage(char * message)
 	char *identifier, *type, *action;
 
 	// Outcoming information
-	static char theResponse[4096];
-	char *theResult, *theInformation;
+	auto theResponse = new char[4096];
+	char *theResult;
 
 	identifier = getParamString(message, 1);
 	type = getParamString(message, 2);
 	action = getParamString(message, 3);
 
 	theResult = "OK";
-	theInformation = (char *) calloc(1024, sizeof(char));
+	char theInformation[1024];
 
 	LOG->Info(LOG_LOW, "Message received: [identifier: %s] [type: %s] [action: %s]", identifier, type, action);
 
@@ -212,9 +214,6 @@ char * netDriver::processMessage(char * message)
 	
 	//LOG->Info(LOG_LOW, "Sending response: [%s]", theResponse);
 		
-	// Free memory
-	free(theInformation);
-
 	// and return the response (will be freed later)
 	return theResponse;
 }

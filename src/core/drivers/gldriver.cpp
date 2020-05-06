@@ -255,7 +255,8 @@ glDriver::glDriver()
 	accum(0),
 	multisampling(0),
 	vsync(0),
-	gamma(1.0f)
+	gamma(1.0f),
+	fbo{ tGLFboFormat{0.0f,0.0f,0,0,0,0,0,nullptr,0} }
 {
 	// hack:
 	for (auto i = 0; i < FBO_BUFFERS; ++i) {
@@ -595,7 +596,7 @@ void glDriver::drawTiming() {
 	}
 	DEMO->text->glPrintf(-1, 0.8f, "%d - %.1f/%.1f", DEMO->frameCount, DEMO->runTime, DEMO->endTime);
 	DEMO->text->glPrintf(-1, 0.7f, "sound: %0.1f", BASSDRV->sound_cpu());
-	DEMO->text->glPrintf(-1, 0.6f, "texmem: %.2fmb", (DEMO->textureManager.mem + DEMO->fboManager.mem));
+	DEMO->text->glPrintf(-1, 0.6f, "texmem: %.2fmb", float(DEMO->textureManager.mem + DEMO->fboManager.mem));
 	DEMO->text->glPrintf(-1, 0.5f, "Cam Speed: %.0f", DEMO->camera->MovementSpeed);
 	DEMO->text->glPrintf(-1, 0.4f, "Cam Pos: %.1f,%.1f,%.1f", DEMO->camera->Position.x, DEMO->camera->Position.y, DEMO->camera->Position.z);
 	DEMO->text->glPrintf(-1, 0.3f, "Cam Front: %.1f,%.1f,%.1f", DEMO->camera->Front.x, DEMO->camera->Front.y, DEMO->camera->Front.z);

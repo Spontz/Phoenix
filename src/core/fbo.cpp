@@ -17,11 +17,11 @@ Fbo::Fbo(): use_linear(true), colorBufferID(0)
 
 Fbo::~Fbo()
 {
-	if (colorBufferID != 0) {
+	if (colorBufferID != nullptr) {
 		glDeleteFramebuffers(1, &frameBufferID);
 		glDeleteRenderbuffers(1, &renderBufferID);
 		glDeleteTextures(this->numAttachments, colorBufferID);
-		colorBufferID = 0;
+		delete[] colorBufferID;
 	}
 }
 
@@ -54,7 +54,7 @@ bool Fbo::upload(string EngineFormat, int index, int Width, int Height, int iFor
 	if (EngineFormat != "DEPTH") { // If its not a depth texture, means it's a color texture! :)
 		glBindFramebuffer(GL_FRAMEBUFFER, this->frameBufferID);
 		// Create the color attachment(s) texture(s)
-		this->colorBufferID = (GLuint*)malloc(sizeof(GLuint) * this->numAttachments);
+		this->colorBufferID = new GLuint[this->numAttachments];
 		glGenTextures(this->numAttachments, this->colorBufferID);
 		for (unsigned int i = 0; i < this->numAttachments; i++) {
 			glBindTexture(GL_TEXTURE_2D, this->colorBufferID[i]);
@@ -79,7 +79,7 @@ bool Fbo::upload(string EngineFormat, int index, int Width, int Height, int iFor
 	}
 	else {	// If it's a Depth texture...
 		// create depth texture
-		this->colorBufferID = (unsigned int*)malloc(sizeof(unsigned int) * this->numAttachments);
+		this->colorBufferID = new GLuint[this->numAttachments];
 		glGenTextures(1, this->colorBufferID);
 		for (unsigned int i = 0; i < this->numAttachments; i++) {
 			glBindTexture(GL_TEXTURE_2D, this->colorBufferID[i]);

@@ -11,9 +11,10 @@
 #include <vector>
 
 
-enum LightType {
-	SpotLight,			// A spotlight is a light source that is located somewhere in the environment that, instead of shooting light rays in all directions, only shoots them in a specific direction
-	PointLight			// A point light is a light source with a given position somewhere in a world that illuminates in all directions where the light rays fade out over distance
+enum class LightType : unsigned int {
+	Undefined = 0,
+	SpotLight = 1,			// A spotlight is a light source that is located somewhere in the environment that, instead of shooting light rays in all directions, only shoots them in a specific direction
+	PointLight = 2			// A point light is a light source with a given position somewhere in a world that illuminates in all directions where the light rays fade out over distance
 };
 
 class Light
