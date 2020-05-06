@@ -187,7 +187,7 @@ private:
 	// Scripts (SPO files) management
 	void load_spo(string sFile);
 	int load_scriptData(string sScript, string sFile);
-	static std::string load_file(std::string const& sFile);
+	static std::string load_ascii_file(std::string const& sFile);
 	int getCodeByName(char *name, glTable_t *table, int size);
 	int getBlendCodeByName(char *name);
 	int getBlendEquationCodeByName(char *name);

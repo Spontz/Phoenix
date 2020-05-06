@@ -510,7 +510,8 @@ bool demokernel::load_config()
 	return true;
 }
 
-void demokernel::load_spos() {
+void demokernel::load_spos()
+{
 	struct _finddata_t FindData;
 	intptr_t hFile;
 	string fullpath;
@@ -532,9 +533,10 @@ void demokernel::load_spos() {
 bool demokernel::load_scriptFromNetwork(string sScript)
 {
 	const int sec_id = this->load_scriptData(sScript, "Network");
-	if (sec_id < 0)
+	if (sec_id < 0) {
 		LOG->Error("Invalid sec_id.");
-		throw std::exception();
+		return false;
+	}
 
 	auto my_sec = this->sectionManager.section[sec_id];
 
@@ -814,11 +816,11 @@ void demokernel::processSectionQueues() {
 
 void demokernel::load_spo(string sFile) {
 	string pScript;
-	pScript = load_file(sFile);
+	pScript = load_ascii_file(sFile);
 	load_scriptData(pScript, sFile);
 }
 
-std::string demokernel::load_file(std::string const& sFile) {
+std::string demokernel::load_ascii_file(std::string const& sFile) {
 	return { std::istreambuf_iterator<char>(std::ifstream(sFile)), std::istreambuf_iterator<char>() };
 }
 
