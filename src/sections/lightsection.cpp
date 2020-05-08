@@ -8,6 +8,7 @@ typedef struct {
 	float		far_plane;			// shadowMapping: Far plane used in Orthographic view
 	float		size;				// shadowMapping: Size of the plane used in Orthographic view
 	int			draw;				// Draw a cube representing the light: usefult for debugging
+	float		draw_size;			// Size of our debug cube
 	mathDriver	*exprLight;			// A equation containing the calculations of the light
 
 } light_section;
@@ -22,8 +23,8 @@ sLight::sLight() {
 
 bool sLight::load() {
 	// script validation
-	if ((this->param.size() != 7)) {
-		LOG->Error("Light [%s]: 7 params needed (light Number, link to camera position, shadowMapping, near&far planes, size and DebugDraw)", this->identifier.c_str());
+	if ((this->param.size() != 8)) {
+		LOG->Error("Light [%s]: 8 params needed (light Number, link to camera position, shadowMapping, near&far planes, size, DebugDraw & DebugDraw size)", this->identifier.c_str());
 		return false;
 	}
 
@@ -45,6 +46,7 @@ bool sLight::load() {
 	local->far_plane = this->param[4];
 	local->size = this->param[5];
 	local->draw = (int)this->param[6];
+	local->draw_size = this->param[7];
 
 	Light* my_light = DEMO->lightManager.light[local->lightNum];
 
@@ -84,7 +86,7 @@ void sLight::exec() {
 	}
 
 	if (local->draw) {
-		my_light->draw(0.1f);
+		my_light->draw(local->draw_size);
 	}		
 }
 
