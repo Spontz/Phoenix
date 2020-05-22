@@ -169,6 +169,18 @@ Section* SectionManager::getSection(string id) {
 	return NULL;
 }
 
+int SectionManager::getSectionPosition(string id) {
+	int sec_size = (int)this->section.size();
+	Section* ds;
+	for (int i = 0; i < sec_size; i++) {
+		ds = this->section[i];
+		if (ds->identifier == id) {
+			return i;
+		}
+	}
+	return NULL;
+}
+
 void SectionManager::toggleSection(string identifier)
 {
 	vector<string> ids = splitIdentifiers(identifier);
@@ -192,14 +204,16 @@ void SectionManager::deleteSection(string identifier)
 {
 	vector<string> ids = splitIdentifiers(identifier);
 
-	Section* ds;
+	Section*	ds;
+	int			ds_number;
 	int id_size = (int)ids.size();
 
 	for (int i = 0; i < id_size; i++) {
 		ds = getSection(ids[i]);
+		ds_number = getSectionPosition(ids[i]);
 		if (ds) {
 			ds->end();
-			this->section.erase(this->section.begin() + i);
+			this->section.erase(this->section.begin() + ds_number);
 			//LOG->SendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 		}
 		else {
