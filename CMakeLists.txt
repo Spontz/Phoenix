@@ -1,4 +1,4 @@
-# 2018-2019, Spontz
+# 2018-2020, Spontz
 
 cmake_minimum_required(VERSION 3.8)
 
@@ -45,22 +45,26 @@ find_package(glad CONFIG REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
-
-find_package(assimp REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 find_package(ffmpeg REQUIRED)
-# find_package(stb REQUIRED)
 
 add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} ${RESOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OPENGL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE glm)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${ASSIMP_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${FFMPEG_LIBRARIES})
-# target_link_libraries(${PROJECT_NAME} PRIVATE stb_image)
 target_link_libraries(${PROJECT_NAME} PRIVATE glad::glad)
 target_link_libraries(${PROJECT_NAME} PRIVATE Freetype::Freetype)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32)
+target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
+
+message($CMAKE_BUILD_TYPE)
+
+# TODO: Remove in the future. Workaround for broken vcpkg assimp 5 port.
+if(MSVC)
+	target_link_libraries(Phoenix PRIVATE ../vcpkg/installed/x64-windows-static/$<$<CONFIG:Debug>:debug/lib/irrxmld>$<$<CONFIG:Release>:lib/irrxml>)
+endif()
 
 include_directories("${CMAKE_SOURCE_DIR}/third_party/bass24/bass24/c")
 
