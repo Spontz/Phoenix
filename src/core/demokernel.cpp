@@ -294,7 +294,7 @@ void demokernel::initDemo() {
 		LOG->Info(LOG_HIGH, "Running in standalone mode");
 
 	// Show Assimp library version
-	LOG->Info(LOG_MED, "Assimp Library vesion is: %d.%d.%d", aiGetVersionMajor(), aiGetVersionMinor(), aiGetVersionRevision());
+	LOG->Info(LOG_MED, "Assimp Library version is: %d.%d.%d", aiGetVersionMajor(), aiGetVersionMinor(), aiGetVersionRevision());
 
 	// initialize global control variables
 	this->initControlVars();

@@ -30,6 +30,7 @@
 #define RENDERING_BUFFERS		10
 #define FBO_BUFFERS				25
 #define EFXBLOOM_FBO_BUFFERS	2
+#define EFXACCUM_FBO_BUFFERS	2
 #define MULTIPURPOSE_VARS		10
 
 // Warning! 'FBO_BUFFERS' should not be less than 25, if you want to set less than 25,
@@ -82,6 +83,7 @@ public:
 	VideoManager	videoManager;
 	FboManager		fboManager;					// Generic Fbo Manager (FBO's free to be used by the demo maker)
 	FboManager		efxBloomFbo;				// Bloom efx Fbo Manager (internal FBO's used by the engine)
+	FboManager		efxAccumFbo;				// Accumulation efx Fbo Manager (internal FBO's used by the engine)
 	ModelManager	modelManager;
 	ShaderManager	shaderManager;
 	LightManager	lightManager;

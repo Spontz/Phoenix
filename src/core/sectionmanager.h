@@ -37,6 +37,7 @@ enum SectionType {
 	Sound,
 	FboBind,
 	FboUnbind,
+	EfxAccum,
 	EfxBloom,
 	EfxBlur,
 	EfxFader,
