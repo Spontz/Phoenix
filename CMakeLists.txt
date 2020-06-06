@@ -40,7 +40,7 @@ file(GLOB_RECURSE RESOURCE_FILES ${CMAKE_SOURCE_DIR}/res/*.rc)
 
 # Dependencies
 
-find_package(opengl REQUIRED)
+find_package(OpenGL REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(glm CONFIG REQUIRED)
@@ -58,12 +58,15 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Freetype::Freetype)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32)
 target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
+# target_link_libraries(${PROJECT_NAME} PRIVATE imgui) # TODO: Enable in the future. Workaround for broken imgui vcpkg port.
 
 message($CMAKE_BUILD_TYPE)
 
-# TODO: Remove in the future. Workaround for broken vcpkg assimp 5 port.
 if(MSVC)
+	# TODO: Remove in the future. Workaround for broken vcpkg assimp 5 vcpkg port.
 	target_link_libraries(Phoenix PRIVATE ../vcpkg/installed/x64-windows-static/$<$<CONFIG:Debug>:debug/lib/irrxmld>$<$<CONFIG:Release>:lib/irrxml>)
+	# TODO: Remove in the future. Workaround for broken imgui vcpkg port.
+	target_link_libraries(Phoenix PRIVATE ../vcpkg/installed/x64-windows-static/$<$<CONFIG:Debug>:debug/lib/imguid>$<$<CONFIG:Release>:lib/imgui>)
 endif()
 
 include_directories("${CMAKE_SOURCE_DIR}/third_party/bass24/bass24/c")
