@@ -460,34 +460,68 @@ void glDriver::SetFramebuffer() {
 }
 
 void glDriver::initFbos() {
-	////////////// efx FBO Manager: internal FBO's that are being used by the engine effects
-	// Clear Fbo's, if there is any
-	if (DEMO->efxBloomFbo.fbo.size() > 0) {
-		LOG->Info(LOG_LOW, "Ooops! we need to regenerate the Bloom efx FBO's! clearing efx FBO's first!");
-		DEMO->efxBloomFbo.clearFbos();
+	////////////// efxBloom FBO Manager: internal FBO's that are being used by the engine effects
+	{
+		// Clear Fbo's, if there is any
+		if (DEMO->efxBloomFbo.fbo.size() > 0) {
+			LOG->Info(LOG_LOW, "Ooops! we need to regenerate the Bloom efx FBO's! clearing efx FBO's first!");
+			DEMO->efxBloomFbo.clearFbos();
+		}
+
+		// init fbo's for Bloom
+		tGLFboFormat bloomFbo;
+		bloomFbo.format = "RGB_16F";
+		bloomFbo.numColorAttachments = 1;
+		bloomFbo.ratio = 4;
+		bloomFbo.width = static_cast<float>(script__gl_width__framebuffer_width_) / static_cast <float>(bloomFbo.ratio);
+		bloomFbo.height = static_cast<float>(script__gl_height__framebuffer_height_) / static_cast <float>(bloomFbo.ratio);
+		bloomFbo.tex_iformat = getTextureInternalFormatByName(bloomFbo.format);
+		bloomFbo.tex_format = getTextureFormatByName(bloomFbo.format);
+		bloomFbo.tex_type = getTextureTypeByName(bloomFbo.format);
+		bloomFbo.tex_components = getTextureComponentsByName(bloomFbo.format);
+
+		int res = 0;
+		for (int i = 0; i < EFXBLOOM_FBO_BUFFERS; i++) {
+			res = DEMO->efxBloomFbo.addFbo(bloomFbo.format, (int)bloomFbo.width, (int)bloomFbo.height, bloomFbo.tex_iformat, bloomFbo.tex_format, bloomFbo.tex_type, bloomFbo.tex_components, bloomFbo.numColorAttachments);
+			if (res >= 0)
+				LOG->Info(LOG_LOW, "EfxBloom Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, bloomFbo.width, bloomFbo.height, bloomFbo.format, bloomFbo.tex_components, bloomFbo.tex_format, bloomFbo.tex_iformat, bloomFbo.tex_type);
+			else
+				LOG->Error("Error in efxBloom Fbo definition: Efx_Fbo number %i has a non recongised format: '%s', please blame the coder.", i, bloomFbo.format);
+		}
+
 	}
 
-	// init fbo's for Bloom
-	tGLFboFormat bloomFbo;
-	bloomFbo.format = "RGB_16F";
-	bloomFbo.numColorAttachments = 1;
-	bloomFbo.ratio = 4;
-	bloomFbo.width = static_cast<float>(script__gl_width__framebuffer_width_) / static_cast <float>(bloomFbo.ratio);
-	bloomFbo.height = static_cast<float>(script__gl_height__framebuffer_height_) / static_cast <float>(bloomFbo.ratio);
-	bloomFbo.tex_iformat = getTextureInternalFormatByName(bloomFbo.format);
-	bloomFbo.tex_format = getTextureFormatByName(bloomFbo.format);
-	bloomFbo.tex_type = getTextureTypeByName(bloomFbo.format);
-	bloomFbo.tex_components = getTextureComponentsByName(bloomFbo.format);
+	////////////// efxAccum FBO Manager: internal FBO's that are being used by the engine effects
+	// TODO: Que pasa si varios efectos de Accum se lanzan a la vez? no pueden usar la misma textura, asi que se mezclarán! deberíamos tener una fbo por cada efecto? es un LOCURON!!
+	{
+		// Clear Fbo's, if there is any
+		if (DEMO->efxAccumFbo.fbo.size() > 0) {
+			LOG->Info(LOG_LOW, "Ooops! we need to regenerate the Accum efx FBO's! clearing efx FBO's first!");
+			DEMO->efxAccumFbo.clearFbos();
+		}
 
-	int res = 0;
-	for (int i = 0; i < EFXBLOOM_FBO_BUFFERS; i++) {
-		res = DEMO->efxBloomFbo.addFbo(bloomFbo.format, (int)bloomFbo.width, (int)bloomFbo.height, bloomFbo.tex_iformat, bloomFbo.tex_format, bloomFbo.tex_type, bloomFbo.tex_components, bloomFbo.numColorAttachments);
-		if (res >= 0)
-			LOG->Info(LOG_LOW, "EfxBloom Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, bloomFbo.width, bloomFbo.height, bloomFbo.format, bloomFbo.tex_components, bloomFbo.tex_format, bloomFbo.tex_iformat, bloomFbo.tex_type);
-		else
-			LOG->Error("Error in efxBloom Fbo definition: Efx_Fbo number %i has a non recongised format: '%s', please blame the coder.", i, bloomFbo.format);
+		// init fbo's for Accum
+		tGLFboFormat accumFbo;
+		accumFbo.format = "RGBA_16F";
+		accumFbo.numColorAttachments = 1;
+		accumFbo.ratio = 1;
+		accumFbo.width = static_cast<float>(script__gl_width__framebuffer_width_) / static_cast <float>(accumFbo.ratio);
+		accumFbo.height = static_cast<float>(script__gl_height__framebuffer_height_) / static_cast <float>(accumFbo.ratio);
+		accumFbo.tex_iformat = getTextureInternalFormatByName(accumFbo.format);
+		accumFbo.tex_format = getTextureFormatByName(accumFbo.format);
+		accumFbo.tex_type = getTextureTypeByName(accumFbo.format);
+		accumFbo.tex_components = getTextureComponentsByName(accumFbo.format);
+
+		int res = 0;
+		for (int i = 0; i < EFXACCUM_FBO_BUFFERS; i++) {
+			res = DEMO->efxAccumFbo.addFbo(accumFbo.format, (int)accumFbo.width, (int)accumFbo.height, accumFbo.tex_iformat, accumFbo.tex_format, accumFbo.tex_type, accumFbo.tex_components, accumFbo.numColorAttachments);
+			if (res >= 0)
+				LOG->Info(LOG_LOW, "EfxAccum Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, accumFbo.width, accumFbo.height, accumFbo.format, accumFbo.tex_components, accumFbo.tex_format, accumFbo.tex_iformat, accumFbo.tex_type);
+			else
+				LOG->Error("Error in efxAccum Fbo definition: Efx_Fbo number %i has a non recongised format: '%s', please blame the coder.", i, accumFbo.format);
+		}
+
 	}
-
 
 	////////////// FBO Manager: Generic FBO's that can be used by the user
 	// Clear Fbo's, if there is any
