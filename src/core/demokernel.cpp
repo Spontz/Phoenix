@@ -783,6 +783,7 @@ void demokernel::processSectionQueues() {
 
 	// prepare engine for render
 	GLDRV->initRender(true);
+	GLDRV->startDrawImgGUI();
 
 	// Run Exec sections
 	LOG->Info(LOG_LOW, "  Running Exec Sections...");
@@ -799,6 +800,8 @@ void demokernel::processSectionQueues() {
 	// Set back to the frambuffer and restore the viewport
 	GLDRV->SetFramebuffer();
 
+
+	// Show debug info
 	if (this->debug) {
 		if (this->drawSceneInfo)
 			GLDRV->drawSceneInfo();
@@ -809,6 +812,8 @@ void demokernel::processSectionQueues() {
 		if (this->drawFbo)
 			GLDRV->drawFbo();
 	}
+
+	GLDRV->endDrawImgGUI();
 
 	// swap buffer
 	GLDRV->swapBuffers();

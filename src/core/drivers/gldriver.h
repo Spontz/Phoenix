@@ -5,8 +5,11 @@
 #define GLDRIVER_H
 
 #include <GLFW/glfw3.h>
+#include "imgui.h"
 
 #include "core/viewport.h"
+
+
 
 // HACK: get rid of macros
 #define GLDRV (&glDriver::GetInstance())
@@ -51,6 +54,7 @@ private:
 	GLFWwindow*		p_glfw_window_;
 	Viewport		current_viewport_;
 	GLsizei			current_rt_width_, current_rt_height_;
+	ImGuiIO*		io_;
 
 public:
 	// TODO: make private
@@ -101,6 +105,9 @@ public:
 	void swapBuffers();
 	void ProcessInput();
 	int WindowShouldClose();
+
+	void startDrawImgGUI();
+	void endDrawImgGUI();
 
 private:
 	void initFbos();
