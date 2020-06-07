@@ -1,49 +1,63 @@
 #include "main.h"
 
-typedef enum
-{
-	background_drawing_mode__fit_to_viewport = 0,	// adjust the image to fit all the viewport, but it may break the image aspect ratio
-	background_drawing_mode__fit_to_content = 1		// adjust the image in order to be seen completelly, but keeping the image aspect ratio
-} enum_background_drawing_mode;
+enum class e_background_drawing_mode : unsigned int {
+	// adjust the image to fit all the viewport, but it may break the image aspect ratio
+	fit_to_viewport = 0,
+	// adjust the image in order to be seen completelly, but keeping the image aspect ratio
+	fit_to_content = 1
+};
 
-typedef struct {
-	int								texture;
-	int								shader;
-	enum_background_drawing_mode	mode;
-} background_section;
+struct sBackground : public Section {
+	public:
+	sBackground();
+	bool load();
+	void init();
+	void exec();
+	void end();
+	string debug();
 
-static background_section *local;
+	private:
+	int texture_id_;
+	int shader_id_;
+	e_background_drawing_mode mode_;
+};
 
-sBackground::sBackground() {
+Section* instance_background() {
+	return new sBackground();
+}
+
+sBackground::sBackground(){
 	type = SectionType::Background;
 }
 
 bool sBackground::load() {
 	// script validation
-	if ((this->strings.size() != 1) || (this->param.size() != 1)) {
-		LOG->Error("Background [%s]: 1 string and 1 param needed", this->identifier.c_str());
+	if ((strings.size() != 1) || (param.size() != 1)) {
+		LOG->Error("Background [%s]: 1 string and 1 param needed", identifier.c_str());
 		return false;
 	}
 
-	local = (background_section*)malloc(sizeof(background_section));
-	this->vars = (void *)local;
+	mode_ = static_cast<e_background_drawing_mode>(param[0]);
 
-	switch ((unsigned int)this->param[0]) {
-	case background_drawing_mode__fit_to_viewport:
-		local->mode = background_drawing_mode__fit_to_viewport;
+	// vars = this;
+
+	switch (mode_) {
+	case e_background_drawing_mode::fit_to_viewport:
+	case e_background_drawing_mode::fit_to_content:
 		break;
-	case background_drawing_mode__fit_to_content:
-		local->mode = background_drawing_mode__fit_to_content;
-		break;
+
 	default:
-		LOG->Error("Background [%s]: Invalid value for param[0]", this->identifier.c_str());
+		LOG->Error("Background [%s]: Invalid value for param[0]", identifier.c_str());
 	}
 
 	// Load the shader for drawing the quad
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/sections/background_texquad.vert", DEMO->dataFolder + "/resources/shaders/sections/background_texquad.frag");
+	shader_id_ = DEMO->shaderManager.addShader(
+		DEMO->dataFolder + "/resources/shaders/sections/background_texquad.vert",
+		DEMO->dataFolder + "/resources/shaders/sections/background_texquad.frag"
+	);
 	// Background texture load
-	local->texture = DEMO->textureManager.addTexture(DEMO->dataFolder + this->strings[0]);
-	if (local->texture == -1)
+	texture_id_ = DEMO->textureManager.addTexture(DEMO->dataFolder + strings[0]);
+	if (texture_id_ == -1)
 		return false;
 	return true;
 }
@@ -52,34 +66,29 @@ void sBackground::init() {
 }
 
 void sBackground::exec() {
-	local = (background_section *)this->vars;
-	
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
 		// Load the background texture
-		Texture *my_tex = DEMO->textureManager.texture[local->texture];
+		const Texture* const p_texture = DEMO->textureManager.texture[texture_id_];
 		// Texture and View aspect ratio, stored for Keeping image proportions
-		float tex_aspect = (float)my_tex->width / (float)my_tex->height;
-		float view_aspect = GLDRV->GetCurrentViewport().GetAspectRatio();
+		const float tex_aspect = static_cast<float>(p_texture->width) / static_cast<float>(p_texture->height);
+		const float viewport_aspect = GLDRV->GetCurrentViewport().GetAspectRatio();
 
 		// Put orthogonal mode
-		glm::mat4 model = glm::mat4(1.0f);
 
 		// Change the model matrix, in order to scale the image and keep proportions of the image
 		float new_tex_width_scaled = 1;
 		float new_tex_height_scaled = 1;
-		if (local->mode == background_drawing_mode__fit_to_content) {
-			if (tex_aspect > view_aspect) {
-				new_tex_height_scaled = view_aspect / tex_aspect;
-			}
-			else {
-				new_tex_width_scaled = tex_aspect / view_aspect;
-			}
+		if (mode_ == e_background_drawing_mode::fit_to_content) {
+			if (tex_aspect > viewport_aspect)
+				new_tex_height_scaled = viewport_aspect / tex_aspect;
+			else
+				new_tex_width_scaled = tex_aspect / viewport_aspect;
 		}
-		model = glm::scale(model, glm::vec3(new_tex_width_scaled, new_tex_height_scaled, 0.0f));
-		
-		RES->Draw_Obj_QuadTex(local->texture, &model);
+		const glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(new_tex_width_scaled, new_tex_height_scaled, 0.0f));
+
+		RES->Draw_Obj_QuadTex(texture_id_, &model);
 	}
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();
@@ -89,12 +98,11 @@ void sBackground::end() {
 }
 
 string sBackground::debug() {
-	local = (background_section *)this->vars;
-	Texture *my_tex;
-	my_tex = DEMO->textureManager.texture[local->texture];
+	Texture* my_tex;
+	my_tex = DEMO->textureManager.texture[texture_id_];
 
 	string msg;
-	msg = "[ background id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg = "[ background id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
 	msg += " filename: " + my_tex->filename + "\n";
 	return msg;
 }

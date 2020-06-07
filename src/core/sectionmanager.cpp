@@ -88,7 +88,7 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 		mySection = new sLight();
 		break;
 	case SectionType::Background:
-		mySection = new sBackground();
+		mySection = instance_background();
 		break;
 	case SectionType::FboBind:
 		mySection = new sFboBind();

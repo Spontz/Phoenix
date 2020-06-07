@@ -11,7 +11,7 @@ class sSound : public Section { public:	sSound();  bool load(); void init(); voi
 class sCamera : public Section { public:	sCamera();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sCameraAbs : public Section { public:	sCameraAbs();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sLight : public Section { public:	sLight();  bool load(); void init(); void exec(); void end(); string debug(); };
-class sBackground : public Section { public:	sBackground();  bool load(); void init(); void exec(); void end(); string debug(); };
+Section* instance_background();
 class sFboBind : public Section { public:	sFboBind();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sFboUnbind : public Section { public:	sFboUnbind();  bool load(); void init(); void exec(); void end(); string debug(); };
 class sDrawImage : public Section { public:	sDrawImage();  bool load(); void init(); void exec(); void end(); string debug(); };

@@ -302,7 +302,7 @@ void Resource::Draw_QuadEfxFBOFS(int efxFboNum, GLuint attachment)
 }
 
 // Draw a Quad in full screen. A texture can be specified and a model matrix
-void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *model)
+void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 const* model)
 {
 	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTexModel];
 	my_shad->use();
