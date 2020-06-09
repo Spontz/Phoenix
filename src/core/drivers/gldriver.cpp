@@ -79,7 +79,7 @@ void glDriver::OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int hei
 
 void mouse_callback(GLFWwindow* p_glfw_window, double xpos, double ypos)
 {
-	if (DEMO->debug) {
+	if (DEMO->debug && !(ImGui::GetIO().WantCaptureMouse)) {
 		float x = static_cast<float>(xpos);
 		float y = static_cast<float>(ypos);
 
@@ -109,7 +109,7 @@ void mouse_callback(GLFWwindow* p_glfw_window, double xpos, double ypos)
 
 void mouseButton_callback(GLFWwindow* p_glfw_window, int button, int action, int mods)
 {
-	if (DEMO->debug) {
+	if (DEMO->debug && !(ImGui::GetIO().WantCaptureMouse)) {
 		if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
 			GLDRV->calcMousePos(GLDRV->mouse_lastxpos, GLDRV->mouse_lastypos);
 			LOG->SendEditor("Mouse pos [%.4f, %.4f]", GLDRV->mouse_x, GLDRV->mouse_y);
@@ -337,8 +337,8 @@ void glDriver::initGraphics() {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	io_ = &(ImGui::GetIO()); (void)io_;
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	//io_.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	//io_.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
