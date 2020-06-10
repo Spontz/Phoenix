@@ -58,10 +58,8 @@ private:
 public:
 	// TODO: make private
 	int				stencil;
-	int				accum;
 	int				multisampling;
 	int				vsync;
-	float			gamma;
 	float			TimeCurrentFrame;
 	float			TimeLastFrame;
 	float			TimeDelta;

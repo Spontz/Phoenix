@@ -243,10 +243,8 @@ glDriver::glDriver()
 	mouse_y(0),
 	fullScreen(0),
 	stencil(0),
-	accum(0),
 	multisampling(0),
 	vsync(0),
-	gamma(1.0f),
 	fbo{ tGLFboFormat{0.0f,0.0f,0,0,0,0,0,nullptr,0} }
 {
 	// hack:

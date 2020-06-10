@@ -46,10 +46,7 @@ struct InitScriptCommands {
 			{"gl_height",				VTYPE_INT,			&GLDRV->script__gl_height__framebuffer_height_		},
 			{"gl_aspect",				VTYPE_FLOAT,		&GLDRV->script__gl_aspect__framebuffer_viewport_aspect_ratio_	},
 			{"gl_stencil",				VTYPE_INT,			&GLDRV->stencil			},
-			{"gl_accum",				VTYPE_INT,			&GLDRV->accum			},
 			{"gl_vsync",				VTYPE_INT,			&GLDRV->vsync			},
-
-			{"gl_gamma",				VTYPE_FLOAT,		&GLDRV->gamma			},
 
 			{"fbo_0_ratio",				VTYPE_INT,			&GLDRV->fbo[0].ratio	},
 			{"fbo_0_format",			VTYPE_STRING,		&GLDRV->fbo[0].format	},
