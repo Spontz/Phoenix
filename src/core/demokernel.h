@@ -124,15 +124,6 @@ public:
 	// network slave mode
 	int slaveMode;								// 1 = network slave; 0 = standalone mode;
 
-	// Drawing states
-	char drawTiming;							// Draw time of the demo
-	char drawFps;								// Draw FPS's of the demo
-	char drawSceneInfo;							// Draw debug Info from teh sections
-
-	// Drawing
-	char drawFbo;								// Draw FBO's
-	char drawFboAttachment;						// FBO Attachment to draw
-
 	// Multi-purpose variables, shared in for the sections
 	float var[MULTIPURPOSE_VARS];
 

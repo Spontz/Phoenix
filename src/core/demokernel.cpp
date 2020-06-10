@@ -242,14 +242,9 @@ demokernel::demokernel() {
 	this->beat_ratio = 1.4f;
 	this->beat_fadeout = 4.0f;
 
-	// Demo states
-	this->drawFbo = 0;
-	this->drawFboAttachment = 0;
-
 	// Other variables
 	this->accumFrameTime = 0;
 	this->accumFrameCount = 0;
-
 }
 
 void demokernel::getArguments(int argc, char* argv[]) {
@@ -644,13 +639,6 @@ void demokernel::initSectionQueues() {
 		else
 			ds_loading = (sLoading*)this->sectionManager.section[sec_id];
 	}
-	// Demo states
-	this->drawFps = 1;
-	this->drawTiming = 1;
-	this->drawSceneInfo = 0;
-	this->drawFbo = 0;
-	this->drawFboAttachment = 0;
-
 
 	// preload, load and init loading section
 	ds_loading->load();
@@ -800,7 +788,7 @@ void demokernel::processSectionQueues() {
 
 	// Show debug info
 	if (this->debug) {
-		GLDRV->drawGui(drawFps, drawTiming, drawSceneInfo, drawFbo);
+		GLDRV->drawGui();
 	}
 
 	// swap buffer

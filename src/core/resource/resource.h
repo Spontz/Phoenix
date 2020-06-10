@@ -12,8 +12,6 @@
 
 #include "main.h"
 
-#define NUM_FBO_DEBUG 4
-
 using namespace std;
 #define RES Resource::GetResource()
 
@@ -51,11 +49,9 @@ public:
 	
 private:
 
-	GLuint obj_quad_FBO_Debug[NUM_FBO_DEBUG];
 	Resource();
 
 	void Load_Obj_QuadFullscreen();
-	void Load_Obj_Quad_FBO_Debug();// Load debugging Quads for FBO
 	void Load_Obj_Skybox();
 	void Load_Obj_Qube();
 	void Load_Shaders();

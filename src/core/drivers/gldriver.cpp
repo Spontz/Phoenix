@@ -148,31 +148,22 @@ void key_callback(GLFWwindow* p_glfw_window, int key, int scancode, int action, 
 			else if (key == KEY_RESTART)
 				DEMO->restartDemo();
 			else if (key == KEY_SHOWTIME)
-				DEMO->drawTiming = !DEMO->drawTiming;
+				GLDRV->guiDrawTiming();
 			else if (key == KEY_SHOWFPS)
-				DEMO->drawFps = !DEMO->drawFps;
-			else if (key == KEY_SHOWSCENEINFO)
-				DEMO->drawSceneInfo = !DEMO->drawSceneInfo;
-			else if (key == KEY_SHOWFBO) {
-				DEMO->drawFbo++;
-				if (DEMO->drawFbo >= 7)
-					DEMO->drawFbo = 0;
-			}
-			else if (key == KEY_CHANGEATTACH) {
-				DEMO->drawFboAttachment++;
-				if (DEMO->drawFboAttachment >= GLDRV_MAX_COLOR_ATTACHMENTS)
-					DEMO->drawFboAttachment = 0;
-			}
+				GLDRV->guiDrawFps();
+			else if (key == KEY_SHOWSECTIONINFO)
+				GLDRV->guiDrawSections();
+			else if (key == KEY_SHOWFBO)
+				GLDRV->guiDrawFbo();
+			else if (key == KEY_CHANGEATTACH)
+				GLDRV->guiChangeAttachment();
 
-			else if (key == KEY_CAPTURE) {
+			else if (key == KEY_CAPTURE)
 				DEMO->camera->CapturePos();
-			}
-			else if (key == KEY_CAMRESET) {
+			else if (key == KEY_CAMRESET)
 				DEMO->camera->Reset();
-			}
-			else if (key == KEY_MULTIPLIER) {
+			else if (key == KEY_MULTIPLIER) 
 				DEMO->camera->MovementSpeed *= 2.0f;
-			}
 			else if (key == KEY_DIVIDER) {
 				DEMO->camera->MovementSpeed /= 2.0f;
 				if (DEMO->camera->MovementSpeed < 1.0f)
@@ -389,9 +380,42 @@ void glDriver::initRender(int clear) {
 	}
 }
 
-void glDriver::drawGui(bool fps, bool timing, bool sceneInfo, bool fbo)
+void glDriver::drawGui()
 {
-	imGui_->drawGui(fps, timing, sceneInfo, fbo);
+	imGui_->drawGui();
+}
+
+void glDriver::guiDrawTiming()
+{
+	GLDRV->imGui_->show_timing = !GLDRV->imGui_->show_timing;
+}
+
+void glDriver::guiDrawFps()
+{
+	GLDRV->imGui_->show_fps = !GLDRV->imGui_->show_fps;
+}
+
+void glDriver::guiDrawSections()
+{
+	GLDRV->imGui_->show_sesctionInfo = !GLDRV->imGui_->show_sesctionInfo;
+}
+
+void glDriver::guiDrawFbo()
+{
+	imGui_->num_fboSetToDraw++;
+	imGui_->show_fbo = true;
+	if (imGui_->num_fboSetToDraw > (ceil((float)FBO_BUFFERS / (float)imGui_->num_fboPerPage)))
+	{
+		imGui_->num_fboSetToDraw = 0;
+		imGui_->show_fbo = false;
+	}		
+}
+
+void glDriver::guiChangeAttachment()
+{
+	GLDRV->imGui_->num_fboAttachmentToDraw++;
+	if (GLDRV->imGui_->num_fboAttachmentToDraw >= GLDRV_MAX_COLOR_ATTACHMENTS)
+		GLDRV->imGui_->num_fboAttachmentToDraw = 0;
 }
 
 Viewport glDriver::GetFramebufferViewport() const {

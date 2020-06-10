@@ -23,19 +23,27 @@ public:
 	imGuiDriver();
 	virtual ~imGuiDriver();
 
+	bool	show_fps;
+	bool	show_timing;
+	bool	show_sesctionInfo;
+	bool	show_fbo;
+
+	int				num_fboSetToDraw;
+	unsigned int	num_fboAttachmentToDraw;
+	int				num_fboPerPage;
+
 	void init(GLFWwindow *window);
-
-	void drawGui(bool fps, bool timing, bool sceneInfo, bool fbo);
-
+	void drawGui();
 	void close();
 
 private:
 
 	void startDraw();
 	void endDraw();
-	void drawSceneInfo();
+	void drawMenu();
 	void drawFps();
 	void drawTiming();
+	void drawSesctionInfo();
 	void drawFbo();
 
 };

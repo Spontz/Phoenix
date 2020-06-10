@@ -81,7 +81,12 @@ public:
 	void	initFramework();
 	void	initGraphics();
 	void	initRender(int clear);
-	void	drawGui(bool fps, bool timing, bool sceneInfo, bool fbo);	// TODO: put all this info in a single int with flags
+	void	drawGui();
+	void	guiDrawTiming();
+	void	guiDrawFps();
+	void	guiDrawSections();
+	void	guiDrawFbo();
+	void	guiChangeAttachment();
 
 	void	close();
 
