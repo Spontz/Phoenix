@@ -197,7 +197,7 @@ void imGuiDriver::drawFbo() {
 	}
 		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fbo_num_min, fbo_num_max, num_fboAttachmentToDraw);
 		for (int i = 0; i < num_fboPerPage; i++) {
-			int fbo_num = (0 + i) + ((num_fboSetToDraw - 1) * num_fboPerPage);
+			int fbo_num = (i) + ((num_fboSetToDraw - 1) * num_fboPerPage);
 			if (fbo_num < DEMO->fboManager.fbo.size())
 			{
 				float aspect = (float)DEMO->fboManager.fbo[fbo_num]->width / (float)DEMO->fboManager.fbo[fbo_num]->height;
