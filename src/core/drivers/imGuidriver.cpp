@@ -172,6 +172,9 @@ void imGuiDriver::drawTiming() {
 void imGuiDriver::drawFbo() {
 	float offsetY = 10; // small offset
 
+	if (num_fboSetToDraw == 0)
+		num_fboSetToDraw = 1;
+
 	int fbo_num_min = ((num_fboSetToDraw - 1) * num_fboPerPage);
 	int fbo_num_max = (num_fboPerPage - 1) + ((num_fboSetToDraw - 1) * num_fboPerPage);
 
