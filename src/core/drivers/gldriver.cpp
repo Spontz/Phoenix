@@ -3,20 +3,7 @@
 
 #include "main.h"
 #include "core/drivers/events.h"
-#include "imgui.h"
-#include "core/drivers/imGui/imgui_impl_glfw.h"
-#include "core/drivers/imGui/imgui_impl_opengl3.h"
-
-// Demo states to show in the drawTiming information ****************
-
-char* stateStr[] = {
-	"play",
-	"play - RW",
-	"play - FF",
-	"paused",
-	"paused - RW",
-	"paused - FF"
-};
+#include "core/drivers/imGuidriver.h"
 
 // ******************************************************************
 
@@ -238,7 +225,7 @@ glDriver::glDriver()
 	TimeDelta(0.0f),
 	TimeLastFrame(0.0f),
 	p_glfw_window_(nullptr),
-	io_(nullptr),
+	imGui_(nullptr),
 
 	script__gl_width__framebuffer_width_(640),
 	script__gl_height__framebuffer_height_(480),
@@ -334,19 +321,11 @@ void glDriver::initGraphics() {
 	initRender(true);
 
 	// imGUI init
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	io_ = &(ImGui::GetIO()); (void)io_;
-	//io_.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	//io_.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-	// Setup Dear ImGui style
-	ImGui::StyleColorsDark();
-	//ImGui::StyleColorsClassic();
-
-	// Setup Platform/Renderer bindings
-	ImGui_ImplGlfw_InitForOpenGL(p_glfw_window_, true);
-	ImGui_ImplOpenGL3_Init("#version 130");
+	if (p_glfw_window_) {
+		imGui_ = new imGuiDriver();
+		imGui_->init(p_glfw_window_);
+	}
+	
 
 	// During init, enable debug output
 	if (DEMO->debug) {
@@ -412,38 +391,10 @@ void glDriver::initRender(int clear) {
 	}
 }
 
-
-/*
-Moved to Viewport::FromRenderTargetAndAspectRatio
-
-// Calculate the viewport size according the given Width, Height and Aspect Ratio
-this->vpWidth = (float)this->width;
-this->vpHeight = (float)this->height;
-this->vpXOffset = 0; // Width offset (X)
-this->vpYOffset = 0; // Height offset (Y)
-
-// Si la anchura que necesitamos es demasiado grande, hya q recalcular una nueva anchura y poner unos bordes a los lados
-if (((float)this->width / this->AspectRatio) > (float)this->height) {
-	vpWidth = (float)this->height * this->AspectRatio;
-	this->vpXOffset = (int)(((float)this->width - this->vpWidth) / 2.0);
+void glDriver::drawGui(bool fps, bool timing, bool sceneInfo, bool fbo)
+{
+	imGui_->drawGui(fps, timing, sceneInfo, fbo);
 }
-
-// Si la altura que necesitamos es demasiado grande, hya q recalcular una nueva altura y poner unos bordes arriba y abajo
-if (((float)this->height * this->AspectRatio) > (float)this->width) {
-	this->vpHeight = (float)this->width / this->AspectRatio;
-	this->vpYOffset = (int)(((float)this->height - this->vpHeight) / 2.0);
-}
-
-// Prevent zero division
-if (vpWidth < 1.0)
-	vpWidth = 1.0;
-if (vpHeight < 1.0)
-	vpHeight = 1.0;
-
-LOG->Info(LOG_LOW, "Requested resolution (W,H): %d,%d. Aspect ratio: %.4f", this->width, this->height, this->AspectRatio);
-LOG->Info(LOG_LOW, "The viewport will be placed at pos (X,Y): %d,%d with size (W,H): %d,%d", this->vpXOffset, this->vpYOffset, (int)this->vpWidth, (int)this->vpHeight);
-*/
-
 
 Viewport glDriver::GetFramebufferViewport() const {
 	return Viewport::FromRenderTargetAndAspectRatio(
@@ -578,23 +529,6 @@ int glDriver::WindowShouldClose() {
 	return glfwWindowShouldClose(p_glfw_window_);
 }
 
-
-
-void glDriver::startDrawImgGUI()
-{
-	// Start the Dear ImGui frame
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
-}
-
-void glDriver::endDrawImgGUI()
-{
-	// Rendering
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-}
 bool glDriver::checkGLError(char* pOut) {
 	GLenum err = glGetError();
 	if (err == GL_NO_ERROR)
@@ -621,93 +555,13 @@ void glDriver::swapBuffers() {
 
 void glDriver::close() {
 	// Close ImGui
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-
+	imGui_->close();
+	
 	// Close GLFW
 	glfwSetWindowShouldClose(p_glfw_window_, GL_TRUE);
 	glfwTerminate();
 }
 
-// Draws the information of all the scenes that are being drawn
-void glDriver::drawSceneInfo()
-{
-	Section* ds;
-	int sec_id;
-	
-	ImGui::SetNextWindowPos(ImVec2(2.0f*(float)this->script__gl_width__framebuffer_width_/3.0f, 0.0f), ImGuiCond_Once);
-	ImGui::SetNextWindowSize(ImVec2((float)this->script__gl_width__framebuffer_width_ / 3.0f, (float)this->script__gl_height__framebuffer_height_), ImGuiCond_Once);
-
-	ImGui::Begin("Drawing Stack");
-	for (int i = 0; i < DEMO->sectionManager.execSection.size(); i++) {
-		sec_id = DEMO->sectionManager.execSection[i].second;	// The second value is the ID of the section
-		ds = DEMO->sectionManager.section[sec_id];
-		ImGui::Text(ds->debug().c_str());
-		ImGui::Separator();
-	}
-	ImGui::End();
-}
-
-void glDriver::drawFps() {
-	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
-	ImGui::Begin("Demo Info");
-		ImGui::Text("Fps: %.0f", DEMO->fps);
-	ImGui::End();
-}
-
-void glDriver::drawTiming() {
-	char* state;
-	if (DEMO->state & DEMO_PAUSE) {
-		if (DEMO->state & DEMO_REWIND) state = stateStr[4];
-		else if (DEMO->state & DEMO_FASTFORWARD) state = stateStr[5];
-		else state = stateStr[3];
-
-	}
-	else {
-		if (DEMO->state & DEMO_REWIND) state = stateStr[1];
-		else if (DEMO->state & DEMO_FASTFORWARD) state = stateStr[2];
-		else state = stateStr[0];
-	}
-
-	ImGui::Begin("Demo Info");
-		ImGui::Text("Demo status: %s", state);
-		ImGui::Text("Time: %.2f/%.2f", DEMO->runTime, DEMO->endTime);
-		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->sound_cpu());
-		ImGui::Text("Texture mem used: %.2fmb", float(DEMO->textureManager.mem + DEMO->fboManager.mem + DEMO->efxBloomFbo.mem + DEMO->efxAccumFbo.mem));
-		ImGui::Text("Cam Speed: %.0f", DEMO->camera->MovementSpeed);
-		ImGui::Text("Cam Pos: %.1f,%.1f,%.1f", DEMO->camera->Position.x, DEMO->camera->Position.y, DEMO->camera->Position.z);
-		ImGui::Text("Cam Front: %.1f,%.1f,%.1f", DEMO->camera->Front.x, DEMO->camera->Front.y, DEMO->camera->Front.z);
-		ImGui::Text("Cam Yaw: %.1f, Pitch: %.1f, Roll: %.1f, Zoom: %.1f", DEMO->camera->Yaw, DEMO->camera->Pitch, DEMO->camera->Roll, DEMO->camera->Zoom);
-	ImGui::End();
-}
-
-// Draw the Fbo output
-void glDriver::drawFbo() {
-
-	int fbo_num_min = ((DEMO->drawFbo - 1) * NUM_FBO_DEBUG);
-	int fbo_num_max = (NUM_FBO_DEBUG - 1) + ((DEMO->drawFbo - 1) * NUM_FBO_DEBUG);
-	unsigned int fbo_attachment = DEMO->drawFboAttachment;
-
-	ImGui::SetNextWindowPos(ImVec2(0, 2.0f*((float)this->script__gl_height__framebuffer_height_/3.0f)), ImGuiCond_Once);
-	ImGui::SetNextWindowSize(ImVec2((float)this->script__gl_width__framebuffer_width_, (float)this->script__gl_height__framebuffer_height_/3.0f), ImGuiCond_Once);
-	float fbo_w_size = (float)this->script__gl_width__framebuffer_width_ / 5.0f; // 4 fbo's per row
-	float fbo_h_size = (float)this->script__gl_height__framebuffer_height_ / 5.0f; // height is 1/3 screensize
-
-	ImGui::Begin("Fbo info");
-		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fbo_num_min, fbo_num_max, fbo_attachment);
-		for (int i = 0; i < NUM_FBO_DEBUG; i++) {
-			int fbo_num = (0 + i) + ((DEMO->drawFbo - 1) * NUM_FBO_DEBUG);
-			float aspect = (float)DEMO->fboManager.fbo[fbo_num]->width / (float)DEMO->fboManager.fbo[fbo_num]->height;
-			if (fbo_attachment < DEMO->fboManager.fbo[fbo_num]->numAttachments)
-				ImGui::Image((void*)(intptr_t)DEMO->fboManager.fbo[fbo_num]->colorBufferID[fbo_attachment], ImVec2(fbo_w_size, fbo_h_size),ImVec2(0,1), ImVec2(1,0));
-			else
-				ImGui::Image((void*)(intptr_t)NULL, ImVec2(fbo_w_size, fbo_h_size));
-		
-			ImGui::SameLine();
-		}
-	ImGui::End();
-}
 int glDriver::getTextureFormatByName(char* name) {
 	for (int i = 0; i < TEXTURE_MODE; i++) {
 		if (_strcmpi(name, textureModes[i].name) == 0) {

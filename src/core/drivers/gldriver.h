@@ -5,8 +5,7 @@
 #define GLDRIVER_H
 
 #include <GLFW/glfw3.h>
-#include "imgui.h"
-
+#include "core/drivers/imGuidriver.h"
 #include "core/viewport.h"
 
 
@@ -54,7 +53,7 @@ private:
 	GLFWwindow*		p_glfw_window_;
 	Viewport		current_viewport_;
 	GLsizei			current_rt_width_, current_rt_height_;
-	ImGuiIO*		io_;
+	imGuiDriver*	imGui_;
 
 public:
 	// TODO: make private
@@ -81,44 +80,36 @@ private:
 	void OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int height);
 
 public:
-	void initFramework();
-	void initGraphics();
-	void initRender(int clear);
+	void	initFramework();
+	void	initGraphics();
+	void	initRender(int clear);
+	void	drawGui(bool fps, bool timing, bool sceneInfo, bool fbo);	// TODO: put all this info in a single int with flags
 
-	void drawSceneInfo();
-	void drawFps();
-	void drawTiming();
-	void drawFbo();
+	void	close();
 
-
-	void close();
-
-	Viewport GetFramebufferViewport() const;
-	float GetFramebufferAspectRatio() const;
-	void SetFramebuffer(); // Unbinds any framebuffer and sets default viewport
+	Viewport		GetFramebufferViewport() const;
+	float			GetFramebufferAspectRatio() const;
+	void			SetFramebuffer(); // Unbinds any framebuffer and sets default viewport
 
 	Viewport const& GetCurrentViewport() const;
-	void SetCurrentViewport(Viewport const& viewport);
+	void			SetCurrentViewport(Viewport const& viewport);
 	
 	void	calcMousePos(float x, float y);
 
-	void swapBuffers();
-	void ProcessInput();
-	int WindowShouldClose();
-
-	void startDrawImgGUI();
-	void endDrawImgGUI();
+	void	swapBuffers();
+	void	ProcessInput();
+	int		WindowShouldClose();
 
 private:
-	void initFbos();
-	void initStates();
+	void	initFbos();
+	void	initStates();
 	
-	bool checkGLError(char* pOut);
+	bool	checkGLError(char* pOut);
 
-	int getTextureFormatByName(char* name);
-	int getTextureInternalFormatByName(char* name);
-	int getTextureTypeByName(char* name);
-	int getTextureComponentsByName(char* name);
+	int		getTextureFormatByName(char* name);
+	int		getTextureInternalFormatByName(char* name);
+	int		getTextureTypeByName(char* name);
+	int		getTextureComponentsByName(char* name);
 };
 
 #endif

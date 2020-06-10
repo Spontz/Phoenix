@@ -175,7 +175,7 @@ private:
 	void doExec();
 
 	// Timing controls
-	void calculateFPS(float frameRate); 
+	void calculateFPS(float const frameRate); 
 	void initTimer();
 	void processTimer();
 	void pauseTimer();

@@ -555,7 +555,7 @@ void demokernel::initTimer()
 	this->beforeFrameTime = static_cast<float>(glfwGetTime());
 }
 
-void demokernel::calculateFPS(float frameTime)
+void demokernel::calculateFPS(float const frameTime)
 {
 	this->accumFrameTime += frameTime;
 	this->accumFrameCount++;
@@ -783,7 +783,7 @@ void demokernel::processSectionQueues() {
 
 	// prepare engine for render
 	GLDRV->initRender(true);
-	GLDRV->startDrawImgGUI();
+	//GLDRV->startDrawImgGUI();
 
 	// Run Exec sections
 	LOG->Info(LOG_LOW, "  Running Exec Sections...");
@@ -803,17 +803,8 @@ void demokernel::processSectionQueues() {
 
 	// Show debug info
 	if (this->debug) {
-		if (this->drawSceneInfo)
-			GLDRV->drawSceneInfo();
-		if (this->drawFps)
-			GLDRV->drawFps();
-		if (this->drawTiming)
-			GLDRV->drawTiming();
-		if (this->drawFbo)
-			GLDRV->drawFbo();
+		GLDRV->drawGui(drawFps, drawTiming, drawSceneInfo, drawFbo);
 	}
-
-	GLDRV->endDrawImgGUI();
 
 	// swap buffer
 	GLDRV->swapBuffers();
