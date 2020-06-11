@@ -8,7 +8,7 @@
 #include "imgui.h"
 #include "core/viewport.h"
 
-
+#define RENDERTIME_SAMPLES 256
 
 // ******************************************************************
 
@@ -24,9 +24,11 @@ public:
 	virtual ~imGuiDriver();
 
 	bool	show_fps;
+	bool	show_fpsHistogram;
 	bool	show_timing;
 	bool	show_sesctionInfo;
 	bool	show_fbo;
+
 
 	int				num_fboSetToDraw;
 	unsigned int	num_fboAttachmentToDraw;
@@ -37,6 +39,11 @@ public:
 	void close();
 
 private:
+	float		renderTimes_[RENDERTIME_SAMPLES];
+	int			maxRenderFPSScale_;
+	int			currentRenderTime_;
+	Viewport	vp_;
+
 
 	void startDraw();
 	void endDraw();
@@ -44,6 +51,7 @@ private:
 	void drawFps();
 	void drawTiming();
 	void drawSesctionInfo();
+	void drawFPSHistogram();
 	void drawFbo();
 
 };

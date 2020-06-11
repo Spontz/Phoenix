@@ -25,13 +25,18 @@ imGuiDriver::imGuiDriver()
 	p_glfw_window_(nullptr),
 	io_(nullptr),
 	show_fps(true),
+	show_fpsHistogram(false),
 	show_timing(true),
 	show_sesctionInfo(false),
 	show_fbo(false),
 	num_fboSetToDraw(0),
 	num_fboAttachmentToDraw(0),
-	num_fboPerPage(4)
+	num_fboPerPage(4),
+	maxRenderFPSScale_(60),
+	currentRenderTime_(0)
 {
+	for (int i = 0; i < RENDERTIME_SAMPLES; i++)
+		renderTimes_[i] = 0.0f;
 }
 
 imGuiDriver::~imGuiDriver()
@@ -57,6 +62,8 @@ void imGuiDriver::init(GLFWwindow *window) {
 
 void imGuiDriver::drawGui()
 {
+	vp_ = GLDRV->GetFramebufferViewport();
+
 	startDraw();
 	{
 		drawMenu();
@@ -68,6 +75,8 @@ void imGuiDriver::drawGui()
 			drawTiming();
 		if (show_fbo)
 			drawFbo();
+		if (show_fpsHistogram)
+			drawFPSHistogram();
 	}
 	endDraw();
 }
@@ -116,6 +125,7 @@ void imGuiDriver::drawMenu() {
 		if (ImGui::BeginMenu("Demo"))
 		{
 			ImGui::MenuItem("Show FPS", "Y", &show_fps);
+			ImGui::MenuItem("Show FPS Histogram", "", &show_fpsHistogram);
 			ImGui::MenuItem("Show other Info", "T", &show_timing);
 			ImGui::MenuItem("Show FBO's", "F", &show_fbo);
 			ImGui::MenuItem("Show section stack", "U", &show_sesctionInfo);
@@ -181,14 +191,12 @@ void imGuiDriver::drawFbo() {
 	if (fbo_num_max >= DEMO->fboManager.fbo.size())
 		fbo_num_max = static_cast<int>(DEMO->fboManager.fbo.size()) - 1;
 
-	Viewport vp = GLDRV->GetFramebufferViewport();
+	ImGui::SetNextWindowPos(ImVec2(0, (2.0f* static_cast<float>(vp_.y) - offsetY +2.0f* static_cast<float>(vp_.height)/3.0f)), ImGuiCond_Once);
+	ImGui::SetNextWindowSize(ImVec2(static_cast<float>(vp_.width), static_cast<float>(vp_.height)/3.0f + offsetY), ImGuiCond_Once);
+	float fbo_w_size = static_cast<float>(vp_.width) / 5.0f; // 4 fbo's per row
+	float fbo_h_size = static_cast<float>(vp_.height) / 5.0f; // height is 1/3 screensize
 
-	ImGui::SetNextWindowPos(ImVec2(0, (2.0f*(float)(vp.y) - offsetY +2.0f*(float)vp.height/3.0f)), ImGuiCond_Once);
-	ImGui::SetNextWindowSize(ImVec2((float)(vp.width), (float)vp.height/3.0f + offsetY), ImGuiCond_Once);
-	float fbo_w_size = (float)vp.width / 5.0f; // 4 fbo's per row
-	float fbo_h_size = (float)vp.height / 5.0f; // height is 1/3 screensize
-
-	if(!ImGui::Begin("Fbo info (press 'G' to change attachment)"))
+	if(!ImGui::Begin("Fbo info (press 'G' to change attachment)", &show_fbo))
 	{
 		// Early out if the window is collapsed, as an optimization.
 		ImGui::End();
@@ -215,12 +223,10 @@ void imGuiDriver::drawSesctionInfo()
 	Section* ds;
 	int sec_id;
 
-	Viewport vp = GLDRV->GetFramebufferViewport();
+	ImGui::SetNextWindowPos(ImVec2(2.0f * static_cast<float>(vp_.width) / 3.0f, 0.0f), ImGuiCond_Once);
+	ImGui::SetNextWindowSize(ImVec2(static_cast<float>(vp_.width) / 3.0f, static_cast<float>(vp_.height + (vp_.y * 2))), ImGuiCond_Once);
 
-	ImGui::SetNextWindowPos(ImVec2(2.0f * (float)vp.width / 3.0f, 0.0f), ImGuiCond_Once);
-	ImGui::SetNextWindowSize(ImVec2((float)vp.width / 3.0f, (float)(vp.height + (vp.y * 2))), ImGuiCond_Once);
-
-	if (!ImGui::Begin("Section Stack"))
+	if (!ImGui::Begin("Section Stack", &show_sesctionInfo))
 	{
 		// Early out if the window is collapsed, as an optimization.
 		ImGui::End();
@@ -233,4 +239,30 @@ void imGuiDriver::drawSesctionInfo()
 		ImGui::Separator();
 	}
 	ImGui::End();
+}
+
+void imGuiDriver::drawFPSHistogram()
+{
+	renderTimes_[currentRenderTime_] = DEMO->realFrameTime*1000.f; // Render times in ms
+
+	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
+	ImGui::SetNextWindowSize(ImVec2(static_cast<float>(vp_.width), 140.0f), ImGuiCond_Once);
+
+	if (!ImGui::Begin("Render time histogram", &show_fpsHistogram))
+	{
+		ImGui::End();
+		return;
+	}
+		ImVec2 win = ImGui::GetWindowSize();
+		ImGui::DragInt("FPS Scale", &maxRenderFPSScale_, 10, 10, 1000, "%d");
+		float max = 1000.0f / static_cast<float>(maxRenderFPSScale_);
+		ImGui::SameLine();
+		ImGui::Text("max (ms): %.2f", max);
+		ImGui::PlotLines("", renderTimes_, RENDERTIME_SAMPLES, currentRenderTime_, "render time", 0, max, ImVec2(win.x-10, win.y-60));
+	ImGui::End();
+
+	currentRenderTime_++;
+	if (currentRenderTime_ >= RENDERTIME_SAMPLES) {
+		currentRenderTime_ = 0;
+	}
 }
