@@ -179,10 +179,9 @@ void imGuiDriver::drawFbo() {
 	int fbo_num_max = (num_fboPerPage - 1) + ((num_fboSetToDraw - 1) * num_fboPerPage);
 
 	if (fbo_num_max >= DEMO->fboManager.fbo.size())
-		fbo_num_max = DEMO->fboManager.fbo.size() - 1;
+		fbo_num_max = static_cast<int>(DEMO->fboManager.fbo.size()) - 1;
 
 	Viewport vp = GLDRV->GetFramebufferViewport();
-
 
 	ImGui::SetNextWindowPos(ImVec2(0, (2.0f*(float)(vp.y) - offsetY +2.0f*(float)vp.height/3.0f)), ImGuiCond_Once);
 	ImGui::SetNextWindowSize(ImVec2((float)(vp.width), (float)vp.height/3.0f + offsetY), ImGuiCond_Once);
@@ -196,13 +195,12 @@ void imGuiDriver::drawFbo() {
 		return;
 	}
 		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fbo_num_min, fbo_num_max, num_fboAttachmentToDraw);
-		for (int i = 0; i < num_fboPerPage; i++) {
-			int fbo_num = (i) + ((num_fboSetToDraw - 1) * num_fboPerPage);
-			if (fbo_num < DEMO->fboManager.fbo.size())
+		for (int i = fbo_num_min; i <= fbo_num_max; i++) {
+			if (i < DEMO->fboManager.fbo.size())
 			{
-				float aspect = (float)DEMO->fboManager.fbo[fbo_num]->width / (float)DEMO->fboManager.fbo[fbo_num]->height;
-				if (num_fboAttachmentToDraw < DEMO->fboManager.fbo[fbo_num]->numAttachments)
-					ImGui::Image((void*)(intptr_t)DEMO->fboManager.fbo[fbo_num]->colorBufferID[num_fboAttachmentToDraw], ImVec2(fbo_w_size, fbo_h_size), ImVec2(0, 1), ImVec2(1, 0));
+				Fbo* my_fbo = DEMO->fboManager.fbo[i];
+				if (num_fboAttachmentToDraw < my_fbo->numAttachments)
+					ImGui::Image((void*)(intptr_t)my_fbo->colorBufferID[num_fboAttachmentToDraw], ImVec2(fbo_w_size, fbo_h_size), ImVec2(0, 1), ImVec2(1, 0));
 				else
 					ImGui::Image((void*)(intptr_t)NULL, ImVec2(fbo_w_size, fbo_h_size));
 			}
