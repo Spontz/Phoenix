@@ -193,7 +193,8 @@ Mesh Model::processMesh(std::string nodeName, aiMesh *mesh, const aiScene *scene
 
 	if (mesh->HasTangentsAndBitangents() == false)
 		LOG->Info(LOG_MED, "Warning, the loaded mesh has no Tangents and BiTangents! Normal will be copied there.");
-
+	
+	vertices.reserve(mesh->mNumVertices);			// Allocate memory so we avoid resizing the vector each time
 	// Walk through each of the mesh's vertices
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
@@ -249,6 +250,8 @@ Mesh Model::processMesh(std::string nodeName, aiMesh *mesh, const aiScene *scene
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
 		aiFace face = mesh->mFaces[i];
+		
+		indices.reserve(face.mNumIndices);	// Allocate memory so we avoid resizing the vector each time
 		// retrieve all indices of the face and store them in the indices vector
 		for (unsigned int j = 0; j < face.mNumIndices; j++)
 			indices.push_back(face.mIndices[j]);
