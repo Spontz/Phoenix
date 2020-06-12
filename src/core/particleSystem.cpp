@@ -4,8 +4,6 @@
 #include "main.h"
 #include "core/particleSystem.h"
 
-using namespace std;
-
 #define RANDOM_TEXTURE_UNIT 0
 
 #define LOC_POSITION 0
@@ -17,7 +15,7 @@ using namespace std;
 #define BINDING_UPDATE	0
 #define BINDING_BILLBOARD	1
 
-ParticleSystem::ParticleSystem(string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime)
+ParticleSystem::ParticleSystem(std::string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime)
 {
 	force = glm::vec3(0, 0, 0);
 
@@ -56,7 +54,7 @@ ParticleSystem::~ParticleSystem()
 }
 
 
-bool ParticleSystem::InitParticleSystem(Section* sec, const vector<Particle> emitter, vector<string> billboardShaderVars)
+bool ParticleSystem::InitParticleSystem(Section* sec, const std::vector<Particle> emitter, std::vector<std::string> billboardShaderVars)
 {
 	if (numEmitters == 0)
 		return false;

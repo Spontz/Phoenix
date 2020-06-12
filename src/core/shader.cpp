@@ -24,7 +24,7 @@ Shader::Shader()
 	ID = 0;
 }
 
-int Shader::load(const std::string & vertexPath, const std::string & fragmentPath, const std::string & geometryPath, vector<string> feedbackVaryings)
+int Shader::load(const std::string & vertexPath, const std::string & fragmentPath, const std::string & geometryPath, std::vector<std::string> feedbackVaryings)
 {
 	// If we already have loaded this shader, we unload it first
 	if (ID > 0) {
@@ -212,7 +212,7 @@ bool Shader::checkCompileErrors(GLuint shader, std::string type)
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
 			infoLog = new GLchar[size];
 			glGetShaderInfoLog(shader, size, NULL, infoLog);
-			string error_filename;
+			std::string error_filename;
 			if (type == "VERTEX")
 				error_filename = this->vertexShader_Filename;
 			if (type == "FRAGMENT")

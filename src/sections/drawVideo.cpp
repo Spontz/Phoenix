@@ -115,11 +115,11 @@ void sDrawVideo::end() {
 	
 }
 
-string sDrawVideo::debug() {
+std::string sDrawVideo::debug() {
 	local = (drawVideo_section *)this->vars;
 	Video *my_video = DEMO->videoManager.video[local->videoNum];
 
-	string msg;
+	std::string msg;
 	msg = "[ drawVideo id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " filename: " + my_video->fileName + "\n";
 	return msg;

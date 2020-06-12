@@ -30,27 +30,26 @@
 #include <iostream>
 #include <map>
 #include <vector>
-using namespace std;
 
 class Model
 {
 public:
-	vector<Mesh>	meshes;
-	string			directory;	// Path of the model file
-	string			filename;	// Name of the model file
-	string			filepath;	// Full path of the model file
-	bool			playAnimation;	// Do we want to compute the transofrmations for playing animations?
-	bool			useCamera;		// Do we want to use the camera of the model?
-	glm::mat4		modelTransform;	// Model initial matrix
-	glm::mat4		prev_view;		// Previous view model matrix, used for effects like motion blur
+	std::vector<Mesh>	meshes;
+	std::string			directory;	// Path of the model file
+	std::string			filename;	// Name of the model file
+	std::string			filepath;	// Full path of the model file
+	bool				playAnimation;	// Do we want to compute the transofrmations for playing animations?
+	bool				useCamera;		// Do we want to use the camera of the model?
+	glm::mat4			modelTransform;	// Model initial matrix
+	glm::mat4			prev_view;		// Previous view model matrix, used for effects like motion blur
 
-	vector<Camera*>	m_camera;
+	std::vector<Camera*>	m_camera;
 
 	Model();
 	virtual ~Model();
 
 	// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
-	bool Load(string const &path);
+	bool Load(std::string const &path);
 	// draws the model, and thus all its meshes
 	void Draw(GLuint shaderID, float currentTime);
 	void setAnimation(unsigned int a);
@@ -73,7 +72,7 @@ private:
 
 	// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
 	void processNode(aiNode *node, const aiScene *scene);
-	Mesh processMesh(string nodeName, aiMesh *mesh, const aiScene *scene);
+	Mesh processMesh(std::string nodeName, aiMesh *mesh, const aiScene *scene);
 
 	// Process the scene cameras
 	void processCameras(const aiScene* scene);
@@ -96,7 +95,7 @@ private:
 
 	// Checks all material textures of a given type and loads the textures if they're not loaded yet.
 	// the required info is returned as a Texture array (from texture manager).
-	vector<int> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
+	std::vector<int> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
 };
 
 

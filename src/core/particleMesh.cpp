@@ -4,7 +4,6 @@
 #include "main.h"
 #include "core/particleMesh.h"
 
-using namespace std;
 
 ParticleMesh::ParticleMesh(int numParticles)
 {
@@ -19,7 +18,7 @@ ParticleMesh::~ParticleMesh()
 #define BINDING			0
 #define LOC_POSITION	0
 
-bool ParticleMesh::startup(vector<glm::vec3> Pos)
+bool ParticleMesh::startup(std::vector<glm::vec3> Pos)
 {
     // Application memory particle buffers (double buffered)
     m_particles = new PARTICLE[m_numParticles];
@@ -44,7 +43,7 @@ bool ParticleMesh::startup(vector<glm::vec3> Pos)
     return true;
 }
 
-void ParticleMesh::initialize_particles(vector<glm::vec3> Pos)
+void ParticleMesh::initialize_particles(std::vector<glm::vec3> Pos)
 {
 	if (Pos.empty()) {
 		for (int i = 0; i < m_numParticles; i++)

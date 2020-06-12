@@ -64,18 +64,18 @@ private:
 public:
 	// ******************************************************************
 	// VARIABLES
-	string dataFolder;	// Path to "data" folder
-	char* demoName;
-	int debug;
-	int log_detail;
+	std::string dataFolder;	// Path to "data" folder
+	char*		demoName;
+	int			debug;
+	int			log_detail;
 
 	// misc
-	int loop;
-	int sound;
+	int			loop;
+	int			sound;
 
-	int state;									// state of the demo (play, pause, loading, etc.)
-	float startTime;							// first demo second
-	float endTime;								// last demo second (0 = unlimited)
+	int			state;				// state of the demo (play, pause, loading, etc.)
+	float		startTime;			// first demo second
+	float		endTime;			// last demo second (0 = unlimited)
 
 	// Managers
 	SectionManager	sectionManager;
@@ -139,12 +139,12 @@ public:
 
 	// Data folder operations
 	bool checkDataFolder();
-	string getFolder(string path);
+	std::string getFolder(std::string path);
 
 	// Scripts (SPO files) management
 	bool load_config();
 	void load_spos();
-	bool load_scriptFromNetwork(string sScript);
+	bool load_scriptFromNetwork(std::string sScript);
 	
 
 	// Demo control
@@ -178,8 +178,8 @@ private:
 	void processSectionQueues();	// Process Section Queues
 
 	// Scripts (SPO files) management
-	void load_spo(string sFile);
-	int load_scriptData(string sScript, string sFile);
+	void load_spo(std::string sFile);
+	int load_scriptData(std::string sScript, std::string sFile);
 	static std::string load_ascii_file(std::string const& sFile);
 	int getCodeByName(char *name, glTable_t *table, int size);
 	int getBlendCodeByName(char *name);

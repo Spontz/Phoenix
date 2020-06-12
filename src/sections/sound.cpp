@@ -57,7 +57,7 @@ bool sSound::load() {
 	local->intensity = 0;
 	local->position = 1;
 
-	string file = DEMO->dataFolder + this->strings[0];
+	std::string file = DEMO->dataFolder + this->strings[0];
 	local->str = BASS_StreamCreateFile(FALSE, file.c_str(), 0, 0, BASS_STREAM_PRESCAN);
 	if (local->str == 0) {
 		LOG->Error("Sound [%s]: Cannot read file: %s - Error Code: %i", this->identifier.c_str(), file.c_str(), BASS_ErrorGetCode());
@@ -175,6 +175,6 @@ void sSound::end() {
 		LOG->Error("Sound [%s]: BASS_ChannelStop returned error: %i", this->identifier.c_str(), BASS_ErrorGetCode());
 }
 
-string sSound::debug() {
-	return string();
+std::string sSound::debug() {
+	return "[ sound id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";;
 }

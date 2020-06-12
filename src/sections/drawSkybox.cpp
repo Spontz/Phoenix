@@ -44,8 +44,8 @@ bool sDrawSkybox::load() {
 	local->drawWireframe = (int)this->param[1];
 	
 	// Load the 6 textures of our cubemap
-	vector<std::string> faces { DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2],
-								DEMO->dataFolder + this->strings[3], DEMO->dataFolder + this->strings[4], DEMO->dataFolder + this->strings[5]};
+	std::vector<std::string> faces {	DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2],
+										DEMO->dataFolder + this->strings[3], DEMO->dataFolder + this->strings[4], DEMO->dataFolder + this->strings[5]};
 
 	local->cubemap = DEMO->textureManager.addCubemap(faces, false);
 	if (local->cubemap < 0)
@@ -122,6 +122,6 @@ void sDrawSkybox::end() {
 	
 }
 
-string sDrawSkybox::debug() {
+std::string sDrawSkybox::debug() {
 	return "[ drawSkybox id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 }

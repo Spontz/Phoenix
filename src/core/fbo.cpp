@@ -25,7 +25,7 @@ Fbo::~Fbo()
 	}
 }
 
-bool Fbo::upload(string EngineFormat, int index, int Width, int Height, int iFormat, int Format, int Type, unsigned int numColorAttachments)
+bool Fbo::upload(std::string EngineFormat, int index, int Width, int Height, int iFormat, int Format, int Type, unsigned int numColorAttachments)
 {
 	if ((Width == 0) || (Height == 0)) {
 		LOG->Error("Fbo error: Size is zero!");

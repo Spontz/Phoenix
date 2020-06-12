@@ -18,13 +18,13 @@ class Shader
 {
 public:
 	unsigned int ID;
-	string vertexShader_Filename;
-	string fragmentShader_Filename;
-	string geometryShader_Filename;
+	std::string vertexShader_Filename;
+	std::string fragmentShader_Filename;
+	std::string geometryShader_Filename;
 	// constructor generates the shader on the fly
 	Shader();
 
-	int load(const std::string &vertexPath, const std::string &fragmentPath, const std::string & geometryPath = "", vector<string> feedbackVaryings = { });
+	int load(const std::string &vertexPath, const std::string &fragmentPath, const std::string & geometryPath = "", std::vector<std::string> feedbackVaryings = { });
 	// activate the shader
 	void use();
 	// utility uniform functions

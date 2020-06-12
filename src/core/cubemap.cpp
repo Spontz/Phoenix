@@ -20,7 +20,7 @@ Cubemap::~Cubemap()
 	}
 }
 
-bool Cubemap::load(vector<std::string> faces_file_name, bool flip)
+bool Cubemap::load(std::vector<std::string> faces_file_name, bool flip)
 {
 	// If we already have loaded this cubemap, we unload it first
 	if (cubemapID > 0) {

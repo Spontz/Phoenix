@@ -13,7 +13,6 @@
 #include <iostream>
 #include <map>
 #include <vector>
-using namespace std;
 
 
 // For converting between ASSIMP and glm
@@ -97,7 +96,7 @@ void Model::setCamera(unsigned int c)
 }
 
 // Returns false if model has not been properly loaded
-bool Model::Load(string const &path)
+bool Model::Load(std::string const &path)
 {
 	filepath = path;
 	// read file via ASSIMP
@@ -179,12 +178,12 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 }
 
 
-Mesh Model::processMesh(string nodeName, aiMesh *mesh, const aiScene *scene)
+Mesh Model::processMesh(std::string nodeName, aiMesh *mesh, const aiScene *scene)
 {
 	// data to fill
-	vector<Vertex> vertices;
-	vector<unsigned int> indices;
-	vector<int> textures;
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+	std::vector<int> textures;
 
 
 	LOG->Info(LOG_LOW, "Loading mesh: %s", mesh->mName.C_Str());
@@ -260,7 +259,7 @@ Mesh Model::processMesh(string nodeName, aiMesh *mesh, const aiScene *scene)
 	for (unsigned int i = 0; i < mesh->mNumBones; ++i)
 	{
 		unsigned int BoneIndex = 0;
-		string boneName(mesh->mBones[i]->mName.data);
+		std::string boneName(mesh->mBones[i]->mName.data);
 
 		if (m_BoneMapping.find(boneName) == m_BoneMapping.end())
 		{
@@ -296,13 +295,13 @@ Mesh Model::processMesh(string nodeName, aiMesh *mesh, const aiScene *scene)
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.
 // the required info is returned as a Texture struct.
-vector<int> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName)
+std::vector<int> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName)
 {
-	vector<int> textures;
+	std::vector<int> textures;
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
 		aiString filepath;
-		string fullpath;
+		std::string fullpath;
 		mat->GetTexture(type, i, &filepath);
 		if (0 == strcmp(filepath.C_Str(), "$texture_dummy.bmp"))				// Prevent a bug in assimp: In some cases, the texture by default is named "$texture_dummy.bmp"
 			filepath = filename.substr(0, filename.find_last_of('.')) + ".jpg";	// In that case, we change this to "<model_name.jpg>"

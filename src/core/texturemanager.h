@@ -8,8 +8,6 @@
 #include "core/texture.h"
 #include "core/cubemap.h"
 
-using namespace std;
-
 class TextureManager {
 public:
 	std::vector<Texture*>	texture;	// Texture list
@@ -19,8 +17,8 @@ public:
 
 	TextureManager();
 	virtual ~TextureManager();
-	int addTexture(string path, bool flip = true, string type = "texture_diffuse");
-	int addCubemap(vector<std::string> path, bool flip);
+	int addTexture(std::string path, bool flip = true, std::string type = "texture_diffuse");
+	int addCubemap(std::vector<std::string> path, bool flip);
 	int	getOpenGLTextureID(int index);
 	void initTextureStates();
 

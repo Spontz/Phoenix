@@ -94,10 +94,10 @@ void sEfxMotionBlur::exec() {
 void sEfxMotionBlur::end() {
 }
 
-string sEfxMotionBlur::debug() {
+std::string sEfxMotionBlur::debug() {
 	local = (efxMotionBlur_section*)this->vars;
 
-	string msg;
+	std::string msg;
 	msg = "[ efxMotionBlur id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " fbo: " + std::to_string(local->FboNum) + " fps Scale: " + std::to_string(local->FPSScale) + "\n";
 	return msg;

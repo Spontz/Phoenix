@@ -20,7 +20,7 @@ TextureManager::~TextureManager()
 	mem = 0;
 }
 
-int TextureManager::addTexture(string path, bool flip, string type) {
+int TextureManager::addTexture(std::string path, bool flip, std::string type) {
 	unsigned int i;
 	int tex_num = -1;
 
@@ -61,7 +61,7 @@ int TextureManager::addTexture(string path, bool flip, string type) {
 }
 
 // Adds a Cubemap into the queue, returns the Number of the cubemap added
-int TextureManager::addCubemap(vector<std::string> path, bool flip)
+int TextureManager::addCubemap(std::vector<std::string> path, bool flip)
 {
 	unsigned int i;
 	int cubemap_num = -1;

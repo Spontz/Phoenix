@@ -7,7 +7,6 @@
 #include <vector>
 #include "core/light.h"
 
-using namespace std;
 
 class LightManager {
 public:

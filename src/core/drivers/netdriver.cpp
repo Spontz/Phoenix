@@ -5,14 +5,9 @@
 #include "core/drivers/net/dyad.h"
 
 #include "main.h"
-//#include "core/drivers/netdriver.h"
-//#include "core/drivers/net/dyad.h"
-
 
 #define DELIMITER '\x1f'
 #define DELIMITER_SEND "\x1f"
-
-using namespace std;
 
 // ***********************************
 
@@ -218,7 +213,7 @@ char * netDriver::processMessage(char * message)
 	return theResponse;
 }
 
-void netDriver::sendMessage(string message)
+void netDriver::sendMessage(std::string message)
 {
 	if (this->connectedToEditor) {
 		dyad_write(serv_connect, message.c_str(), (int)message.length());

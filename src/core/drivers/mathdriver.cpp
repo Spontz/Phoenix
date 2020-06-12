@@ -18,7 +18,7 @@ mathDriver::mathDriver(Section *sec) {
 
 	// Multi-purpose variables
 	for (int i = 0; i < MULTIPURPOSE_VARS; i++) {
-		string varNum = "var" + std::to_string(i);
+		std::string varNum = "var" + std::to_string(i);
 		SymbolTable.add_variable(varNum, DEMO->var[i]);
 	}
 
@@ -52,7 +52,7 @@ mathDriver::mathDriver(Section *sec) {
 
 	// Light values
 	for (int i=0; i<DEMO->lightManager.light.size(); i++) {
-		string lightNum = "light" + std::to_string(i);
+		std::string lightNum = "light" + std::to_string(i);
 		SymbolTable.add_variable(lightNum + "_posX", DEMO->lightManager.light[i]->position.x);
 		SymbolTable.add_variable(lightNum + "_posY", DEMO->lightManager.light[i]->position.y);
 		SymbolTable.add_variable(lightNum + "_posZ", DEMO->lightManager.light[i]->position.z);

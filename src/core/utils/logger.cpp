@@ -48,7 +48,7 @@ void Logger::SendEditor(const char* message, ...) const {
 		OutputDebugStringA(Chain_);
 #endif
 		if (DEMO->slaveMode == 1) {
-			string message = "INFO::";
+			std::string message = "INFO::";
 			message += Chain_;
 			NETDRV->sendMessage(message);
 		}
@@ -72,7 +72,7 @@ void Logger::Error(const char* message, ...) const {
 		OutputDebugStringA(Chain_);
 #endif
 		if (DEMO->slaveMode == 1) {
-			string message = "ERROR::";
+			std::string message = "ERROR::";
 			message += Chain_;
 			NETDRV->sendMessage(message);
 		}
@@ -83,7 +83,7 @@ void Logger::Error(const char* message, ...) const {
 void Logger::OpenLogFile() const
 {
 	if (!log_ofstream_.is_open())
-		log_ofstream_.open(output_file_.c_str(), ios::out | ios::trunc);
+		log_ofstream_.open(output_file_.c_str(), std::ios::out | std::ios::trunc);
 }
 
 void Logger::CloseLogFile() const {

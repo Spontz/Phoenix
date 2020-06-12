@@ -163,8 +163,8 @@ void sEfxAccum::end() {
 	
 }
 
-string sEfxAccum::debug() {
-	string msg;
+std::string sEfxAccum::debug() {
+	std::string msg;
 	msg = "[ efxAccum id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " fbo: " + std::to_string(local->FboNum) + " Source Influence: " + std::to_string(local->sourceInfluence) + "\n";
 	return msg;

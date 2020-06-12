@@ -71,7 +71,7 @@ void FboManager::unbind(bool clearColor, bool clearDepth)
 }
 
 // Adds a Fbo into the queue, returns the ID of the texture added
-int FboManager::addFbo(string engine_format, int width, int height, int iformat, int format, int type, int components, unsigned int numColorAttachments) {
+int FboManager::addFbo(std::string engine_format, int width, int height, int iformat, int format, int type, int components, unsigned int numColorAttachments) {
 	int fbo_id = -1;
 	Fbo* new_fbo = new Fbo();
 	if (new_fbo->upload(engine_format, (int)fbo.size(), width, height, iformat, format, type, numColorAttachments)) {

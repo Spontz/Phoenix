@@ -19,7 +19,7 @@ public:
 	ParticleMesh(int numParticles);
 	~ParticleMesh();
 
-	bool startup(vector<glm::vec3> Pos = { });
+	bool startup(std::vector<glm::vec3> Pos = { });
 	void render(float currentTime);
 	void shutdown();
 
@@ -30,7 +30,7 @@ private:
 	PARTICLE*   m_particles;
 	GLuint      m_vao;
 
-	void initialize_particles(vector<glm::vec3> Pos = { });
+	void initialize_particles(std::vector<glm::vec3> Pos = { });
 };
 
 #endif

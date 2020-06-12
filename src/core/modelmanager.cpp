@@ -16,7 +16,7 @@ ModelManager::~ModelManager()
 }
 
 // Adds a Model into the queue, returns the ID of the model added
-int ModelManager::addModel(string path) {
+int ModelManager::addModel(std::string path) {
 	int i;
 	int model_id = -1;
 

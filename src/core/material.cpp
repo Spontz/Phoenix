@@ -20,7 +20,7 @@ Material::Material()
 	this->strenghtSpecular = 1.0;
 }
 
-void Material::Load(const aiMaterial *pMaterial, string modelDirectory, string modelFilename)
+void Material::Load(const aiMaterial *pMaterial, std::string modelDirectory, std::string modelFilename)
 {
 	this->m_pMaterial = pMaterial;
 	this->m_ModelDirectory = modelDirectory;
@@ -33,11 +33,11 @@ void Material::Load(const aiMaterial *pMaterial, string modelDirectory, string m
 	// specular: texture_specularN
 	// normal: texture_normalN
 	// 1. diffuse maps
-	vector<textureStack> diffuseMaps = loadTextures(pMaterial, aiTextureType_DIFFUSE, "texture_diffuse");
+	std::vector<textureStack> diffuseMaps = loadTextures(pMaterial, aiTextureType_DIFFUSE, "texture_diffuse");
 	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 	LOG->Info(LOG_LOW, "  The mesh has %d diffuseMaps", diffuseMaps.size());
 	// 2. specular maps
-	vector<textureStack> specularMaps = loadTextures(pMaterial, aiTextureType_SPECULAR, "texture_specular");
+	std::vector<textureStack> specularMaps = loadTextures(pMaterial, aiTextureType_SPECULAR, "texture_specular");
 	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	LOG->Info(LOG_LOW, "  The mesh has %d specularMaps", specularMaps.size());
 	// 3. ambient maps
@@ -75,13 +75,13 @@ void Material::Load(const aiMaterial *pMaterial, string modelDirectory, string m
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.
 // the required info is returned as a Texture struct.
-vector<textureStack> Material::loadTextures(const aiMaterial * mat, aiTextureType type, string typeName)
+std::vector<textureStack> Material::loadTextures(const aiMaterial * mat, aiTextureType type, std::string typeName)
 {
-	vector<textureStack> textures;
+	std::vector<textureStack> textures;
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
 		aiString filepath;
-		string fullpath;
+		std::string fullpath;
 		ai_real blendFactor;
 		aiTextureOp operation;
 		mat->GetTexture(type, i, &filepath, NULL, NULL, &blendFactor, &operation);

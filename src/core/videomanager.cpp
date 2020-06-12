@@ -16,7 +16,7 @@ VideoManager::~VideoManager()
 }
 
 // Adds a Texture into the queue, returns the Number of the texture added
-int VideoManager::addVideo(string path) {
+int VideoManager::addVideo(std::string path) {
 	
 	unsigned int i;
 	int video_num = -1;

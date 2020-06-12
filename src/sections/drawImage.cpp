@@ -136,12 +136,12 @@ void sDrawImage::end() {
 	
 }
 
-string sDrawImage::debug() {
+std::string sDrawImage::debug() {
 	local = (drawImage_section *)this->vars;
 	Texture *my_tex;
 	my_tex = DEMO->textureManager.texture[local->texture];
 
-	string msg;
+	std::string msg;
 	msg = "[ drawImage id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " filename: " + my_tex->filename + "\n";
 	return msg;

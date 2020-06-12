@@ -18,7 +18,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
 #define NUM_BONES_PER_VERTEX	4 // Number of Bones per Vertex
 
 struct BoneInfo
@@ -63,16 +62,16 @@ struct Vertex {
 
 class Mesh {
 public:
-	vector<Vertex>			vertices;
-	vector<unsigned int>	indices;
-	vector<glm::vec3>		unique_vertices_pos; // Unique vertices positions
-	Material				material;
-	GLuint					VAO;
-	string					nodeName;
-	glm::mat4				meshTransform; // Transformation Matrix for positioning the mesh
+	std::vector<Vertex>			vertices;
+	std::vector<unsigned int>	indices;
+	std::vector<glm::vec3>		unique_vertices_pos; // Unique vertices positions
+	Material					material;
+	GLuint						VAO;
+	std::string					nodeName;
+	glm::mat4					meshTransform; // Transformation Matrix for positioning the mesh
 	
 
-	Mesh(string nodeName, const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, const aiMaterial *pMaterial, string directory, string filename);
+	Mesh(std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial *pMaterial, std::string directory, std::string filename);
 	// render the mesh
 	void Draw(GLuint shaderID);
 	

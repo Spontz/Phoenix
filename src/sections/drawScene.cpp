@@ -200,13 +200,13 @@ void sDrawScene::end() {
 	
 }
 
-string sDrawScene::debug()
+std::string sDrawScene::debug()
 {
 	local = (drawScene_section *)this->vars;
 
 	Model *my_model = DEMO->modelManager.model[local->model];
 
-	string msg;
+	std::string msg;
 	msg = "[ drawScene id: " + this-> identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " file: " + my_model->filename + "\n";
 	msg += " meshes: " + std::to_string(my_model->meshes.size()) + "\n";

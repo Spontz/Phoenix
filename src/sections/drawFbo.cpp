@@ -73,10 +73,10 @@ void sDrawFbo::end() {
 	
 }
 
-string sDrawFbo::debug() {
+std::string sDrawFbo::debug() {
 	local = (drawFbo_section *)this->vars;
 
-	string msg;
+	std::string msg;
 	msg = "[ drawFbo id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " fbo: " + std::to_string(local->fbo) + "\n";
 	return msg;

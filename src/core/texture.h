@@ -5,7 +5,6 @@
 #define TEXTURE_H
 #include <string>
 #include <glad/glad.h>
-using namespace std;
 
 // flags for texture properties
 #define NO_MIPMAP 1
@@ -16,12 +15,12 @@ using namespace std;
 
 class Texture {
 public:
-	string filename;
-	string type;					// texture_diffuse / texture_specular / texture_normal / texture_height
-	int width, height, components;
-	float mem;						// Size in Mb
-	bool use_linear;
-	GLuint textureID;
+	std::string	filename;
+	std::string type;					// texture_diffuse / texture_specular / texture_normal / texture_height
+	int			width, height, components;
+	float		mem;						// Size in Mb
+	bool		use_linear;
+	GLuint		textureID;
 
 	Texture();
 	virtual ~Texture();

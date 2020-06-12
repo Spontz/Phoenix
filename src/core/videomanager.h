@@ -7,8 +7,6 @@
 #include <vector>
 #include "core/video.h"
 
-using namespace std;
-
 class VideoManager {
 public:
 	std::vector<Video*> video;	// Video list
@@ -16,7 +14,7 @@ public:
 	VideoManager();
 	virtual ~VideoManager();
 
-	int addVideo(string path);
+	int addVideo(std::string path);
 	int	getOpenGLTextureID(int index);
 
 private:

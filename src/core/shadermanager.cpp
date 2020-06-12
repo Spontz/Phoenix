@@ -17,7 +17,7 @@ ShaderManager::~ShaderManager()
 }
 
 // Adds a Texture into the queue, returns the ID of the texture added
-int ShaderManager::addShader(string path_vert, string path_frag, string path_geom, vector<string> feedbackVaryings) {
+int ShaderManager::addShader(std::string path_vert, std::string path_frag, std::string path_geom, std::vector<std::string> feedbackVaryings) {
 	unsigned int i;
 	int shad_id = -1;
 	Shader *shad;

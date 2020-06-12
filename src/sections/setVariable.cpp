@@ -20,7 +20,7 @@ bool sSetVariable::load() {
 
 	// Register the variables
 	local->expr = new mathDriver(this);
-	string expr;
+	std::string expr;
 	for (int i = 0; i < this->strings.size(); i++)
 		expr += this->strings[i];
 	local->expr->expression = expr;															// Loads the expression, properly composed
@@ -44,10 +44,10 @@ void sSetVariable::exec() {
 void sSetVariable::end() {
 }
 
-string sSetVariable::debug() {
+std::string sSetVariable::debug() {
 	local = (setVariable_section*)this->vars;
 
-	string msg;
+	std::string msg;
 	msg = "[ setVariable id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " " + local->expr->expression + "\n";
 	return msg;

@@ -127,6 +127,6 @@ void sCameraAbs::exec() {
 void sCameraAbs::end() {
 }
 
-string sCameraAbs::debug() {
+std::string sCameraAbs::debug() {
 	return "[ cameraAbsSection id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 }

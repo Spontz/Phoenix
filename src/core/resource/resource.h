@@ -4,15 +4,8 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 #include <string>
-/*
-#include <glm/glm.hpp>
-#include <glad/glad.h>
-*/
-//#include <glm/gtc/matrix_transform.hpp>
-
 #include "main.h"
 
-using namespace std;
 #define RES Resource::GetResource()
 
 class Resource {

@@ -18,7 +18,7 @@ bool ShaderVars::ReadString(const char * string_var)
 	char	var_value[MAXSIZE_VAR_EVAL];
 	int		var_UnitId;	// Useful for sampler2D
 
-	std::vector<string>	vars;
+	std::vector<std::string>	vars;
 	
 	splitString(string_var, vars, ' ');	// Split the main string by spaces
 

@@ -52,7 +52,7 @@ bool sDrawEmitterScene::load() {
 	this->vars = (void *)local;
 
 	// Load the shaders
-	string pathShaders;
+	std::string pathShaders;
 	pathShaders = DEMO->dataFolder + this->strings[0];
 
 	// Load the model scene
@@ -127,7 +127,7 @@ bool sDrawEmitterScene::load() {
 
 	LOG->Info(LOG_LOW, "Draw Emitter Scene [%s]: Num max of particles will be: %d", this->identifier.c_str(), local->numMaxParticles);
 
-	vector<Particle> Emitter;
+	std::vector<Particle> Emitter;
 	Emitter.resize(local->numEmitters);
 
 	// Load the emitters, based in our model vertexes
@@ -205,10 +205,10 @@ void sDrawEmitterScene::exec() {
 void sDrawEmitterScene::end() {
 }
 
-string sDrawEmitterScene::debug() {
+std::string sDrawEmitterScene::debug() {
 	local = (drawEmitterScene_section*)this->vars;
 
-	string msg; 
+	std::string msg;
 	msg += "[ drawEmitterScene id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " numEmitters: " + std::to_string(local->numEmitters) + "\n";
 	msg += " numMaxParticles: " + std::to_string(local->numMaxParticles) + "\n";

@@ -6,8 +6,6 @@
 
 #define NETDRV netDriver::getInstance()
 
-using namespace std;
-
 class netDriver {
 	
 public:
@@ -15,7 +13,7 @@ public:
 	int		port_send;
 	bool	inited;
 	bool	connectedToEditor;
-	string	messageToSend;
+	std::string	messageToSend;
 	
 	static netDriver* getInstance();
 
@@ -27,7 +25,7 @@ public:
 
 	const char *getVersion();
 	char * processMessage(char *message);
-	void sendMessage(string message);
+	void sendMessage(std::string message);
 
 private:
 	char * getParamString(char *message, int requestedParameter);

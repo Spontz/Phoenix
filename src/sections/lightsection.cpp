@@ -52,7 +52,7 @@ bool sLight::load() {
 
 	// Register the variables
 	local->exprLight = new mathDriver(this);
-	string expr;
+	std::string expr;
 	for (int i = 0; i < this->strings.size(); i++)
 		expr += this->strings[i];
 	expr = Util::replaceString(expr, "light_", "light" + std::to_string(local->lightNum) + "_");	// Adds the name of the light that we want to modify
@@ -93,10 +93,10 @@ void sLight::exec() {
 void sLight::end() {
 }
 
-string sLight::debug() {
+std::string sLight::debug() {
 	local = (light_section *)this->vars;
 
-	string msg;
+	std::string msg;
 	msg = "[ lightsection id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " light: " + std::to_string(local->lightNum) + "\n";
 	return msg;

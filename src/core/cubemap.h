@@ -5,20 +5,19 @@
 #define CUBEMAP_H
 #include <string>
 #include <glad/glad.h>
-using namespace std;
 
 class Cubemap {
 public:
-	vector<string> filename;
-	vector<int> width;
-	vector<int> height;
+	std::vector<std::string> filename;
+	std::vector<int> width;
+	std::vector<int> height;
 	float mem;
 	GLuint cubemapID;
 
 	Cubemap();
 	virtual ~Cubemap();
 
-	bool load(vector<std::string> faces, bool flip);
+	bool load(std::vector<std::string> faces, bool flip);
 	void bind() const;
 	void active(int index = 0) const;
 

@@ -20,7 +20,7 @@ enum class LightType : unsigned int {
 class Light
 {
 public:
-	string		name;				// Light name, used for shaders
+	std::string	name;				// Light name, used for shaders
 	LightType	lightType;			// Light type
 	
 	glm::vec3	position;			// Spot and Point Lights: Position of the light
@@ -40,7 +40,7 @@ public:
 	float		quadratic;
 
 	// Constructor with vectors
-	Light(string name, LightType lightType, glm::vec3 position);
+	Light(std::string name, LightType lightType, glm::vec3 position);
 	// Calculate the Space Matrix (useful for ShadowMapping): it retrieves the ortogonal view form the light point of view
 	void CalcSpaceMatrix(float left, float right, float bottom, float top, float near_plane, float far_plane);
 

@@ -5,7 +5,6 @@
 #define SPLINE_H
 #include <vector>
 #include <string>
-using namespace std;
 
 // ******************************************************************
 
@@ -37,7 +36,7 @@ public:
 	float					steps;		// total steps of the spline
 	int						channels;	// Columns
 
-	string					filename;	// Filename
+	std::string				filename;	// Filename
 	float					duration;	// Spline duration in seconds
 
 	Spline();

@@ -461,7 +461,7 @@ bool demokernel::checkDataFolder()
 	return true;
 }
 
-string demokernel::getFolder(string path)
+std::string demokernel::getFolder(std::string path)
 {
 	return (this->dataFolder + path);
 }
@@ -470,8 +470,8 @@ bool demokernel::load_config()
 {
 	struct _finddata_t FindData;
 	intptr_t hFile;
-	string fullpath;
-	string ScriptRelativePath;
+	std::string fullpath;
+	std::string ScriptRelativePath;
 	fullpath = dataFolder + "/config/*.spo";
 	LOG->Info(LOG_MED, "Scanning config folder: %s", fullpath.c_str());
 	if ((hFile = _findfirst(fullpath.c_str(), &FindData)) != -1L) {
@@ -506,8 +506,8 @@ void demokernel::load_spos()
 {
 	struct _finddata_t FindData;
 	intptr_t hFile;
-	string fullpath;
-	string ScriptRelativePath;
+	std::string fullpath;
+	std::string ScriptRelativePath;
 	fullpath = dataFolder + "/*.spo";
 	LOG->Info(LOG_MED, "Scanning folder: %s", fullpath.c_str());
 	if ((hFile = _findfirst(fullpath.c_str(), &FindData)) != -1L) {
@@ -522,7 +522,7 @@ void demokernel::load_spos()
 	LOG->Info(LOG_MED, "Finished loading all files.");
 }
 
-bool demokernel::load_scriptFromNetwork(string sScript)
+bool demokernel::load_scriptFromNetwork(std::string sScript)
 {
 	const int sec_id = this->load_scriptData(sScript, "Network");
 	if (sec_id < 0) {
@@ -720,7 +720,7 @@ void demokernel::processSectionQueues() {
 	Section* ds;
 	int i;
 	int sec_id;
-	vector<Section*>::iterator it;
+	std::vector<Section*>::iterator it;
 
 
 	LOG->Info(LOG_MED, "Start queue processing (end, init and exec) for second: %.4f", this->runTime);
@@ -745,7 +745,7 @@ void demokernel::processSectionQueues() {
 		ds = this->sectionManager.section[i];
 		if ((ds->startTime <= this->runTime) && (ds->endTime >= this->runTime) &&		// If time is OK
 			(ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {		// If its enabled, loaded and is not hte Loading section
-			this->sectionManager.execSection.push_back(make_pair(ds->layer, i));		// Load the section: first the layer and then the ID
+			this->sectionManager.execSection.push_back(std::make_pair(ds->layer, i));		// Load the section: first the layer and then the ID
 		}
 	}
 	sort(this->sectionManager.execSection.begin(), this->sectionManager.execSection.end());	// Sort sections by Layer
@@ -795,8 +795,8 @@ void demokernel::processSectionQueues() {
 	GLDRV->swapBuffers();
 }
 
-void demokernel::load_spo(string sFile) {
-	string pScript;
+void demokernel::load_spo(std::string sFile) {
+	std::string pScript;
 	pScript = load_ascii_file(sFile);
 	load_scriptData(pScript, sFile);
 }
@@ -805,7 +805,7 @@ std::string demokernel::load_ascii_file(std::string const& sFile) {
 	return { std::istreambuf_iterator<char>(std::ifstream(sFile)), std::istreambuf_iterator<char>() };
 }
 
-int demokernel::load_scriptData(string sScript, string sFile) {
+int demokernel::load_scriptData(std::string sScript, std::string sFile) {
 	const char* name = "";
 	char			line[256], key[512], value[512], tmp[512], tmp2[512];
 	int				lineNum, com, i, values;

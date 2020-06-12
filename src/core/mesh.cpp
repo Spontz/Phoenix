@@ -21,8 +21,6 @@
 #define BONE_ID_LOCATION		5
 #define BONE_WEIGHT_LOCATION	6
 
-using namespace std;
-
 void VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
 {
 	for (unsigned int i = 0; i < NUM_BONES_PER_VERTEX; ++i) {
@@ -38,7 +36,7 @@ void VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
 	assert(0);
 }
 
-Mesh::Mesh(string nodeName, const aiMesh *pMesh, vector<Vertex> vertices, vector<unsigned int> indices, const aiMaterial *pMaterial, string directory, string filename)
+Mesh::Mesh(std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial *pMaterial, std::string directory, std::string filename)
 {
 	this->meshTransform = glm::mat4(1.0); // Load identity matrix by default
 	this->nodeName = nodeName;

@@ -8,7 +8,7 @@ class mathDriver {
 	
 public:
 	
-	string expression;
+	std::string expression;
 	exprtk::symbol_table<float> SymbolTable;
 	exprtk::expression<float>	Expression;
 	exprtk::parser<float> Parser;

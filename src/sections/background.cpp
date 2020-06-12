@@ -10,11 +10,11 @@ enum class e_background_drawing_mode : unsigned int {
 struct sBackground : public Section {
 	public:
 	sBackground();
-	bool load();
-	void init();
-	void exec();
-	void end();
-	string debug();
+	bool		load();
+	void		init();
+	void		exec();
+	void		end();
+	std::string debug();
 
 	private:
 	int texture_id_;
@@ -97,11 +97,11 @@ void sBackground::exec() {
 void sBackground::end() {
 }
 
-string sBackground::debug() {
+std::string sBackground::debug() {
 	Texture* my_tex;
 	my_tex = DEMO->textureManager.texture[texture_id_];
 
-	string msg;
+	std::string msg;
 	msg = "[ background id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
 	msg += " filename: " + my_tex->filename + "\n";
 	return msg;

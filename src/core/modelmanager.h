@@ -7,7 +7,6 @@
 #include <vector>
 #include "core/model.h"
 
-using namespace std;
 
 class ModelManager {
 public:
@@ -15,7 +14,7 @@ public:
 
 	ModelManager();
 	virtual ~ModelManager();
-	int addModel(string path);
+	int addModel(std::string path);
 private:
 
 

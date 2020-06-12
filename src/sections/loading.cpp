@@ -103,6 +103,6 @@ void sLoading::end() {
 	
 }
 
-string sLoading::debug() {
-	return string();
+std::string sLoading::debug() {
+	return std::string();
 }

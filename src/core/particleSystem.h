@@ -25,10 +25,10 @@ struct Particle
 class ParticleSystem
 {
 public:
-	ParticleSystem(string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime);
+	ParticleSystem(std::string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime);
 	~ParticleSystem();
 
-	bool InitParticleSystem(Section* sec, const vector<Particle> emitter, vector<string>	billboardShaderVars);
+	bool InitParticleSystem(Section* sec, const std::vector<Particle> emitter, std::vector<std::string>	billboardShaderVars);
 	void Render(float deltaTime, const glm::mat4 &VP, const glm::mat4 &model, const glm::vec3 &CameraPos);
 	void UpdateEmitters(float deltaTime);
 
@@ -42,11 +42,11 @@ private:
 	bool initShaderBillboard();		// For drawing the quads using geometry shaders
 	bool initShaderParticleSystem();// For drawing the particles using geometry shaders
 
-	string			shaderPath;
-	string			pathBillboardVS, pathBillboardGS, pathBillboardFS;
+	std::string		shaderPath;
+	std::string		pathBillboardVS, pathBillboardGS, pathBillboardFS;
 	ShaderVars		*varsBillboard;	// Billboard Shader variables
 
-	string			pathUpdateVS, pathUpdateGS, pathUpdateFS;
+	std::string		pathUpdateVS, pathUpdateGS, pathUpdateFS;
 	unsigned int	numMaxParticles;	// Number of maximum particles
 	unsigned int	numEmitters;		// Number of emmiters
 	float			emissionTime;

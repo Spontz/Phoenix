@@ -5,7 +5,7 @@
 #include "font.h"
 #define MAX_FONT_WIDTH 20000
 
-Font::Font(int size, string font_path, string vshader_path, string fshader_path)
+Font::Font(int size, std::string font_path, std::string vshader_path, std::string fshader_path)
 	:
 	textureID(0)
 {
@@ -139,7 +139,7 @@ void Font::glPrintf(float x, float y, const char *message, ...) {
 	RenderText(text, x, y, 0.2f, glm::vec3(1, 1, 1));
 }
 
-void Font::RenderText(string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
+void Font::RenderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
 {
 	float stretch = 0.7f;
 	// Prevent rendering text if shader has not been properly loaded

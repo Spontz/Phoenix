@@ -85,6 +85,6 @@ void sDrawQuad::end() {
 	
 }
 
-string sDrawQuad::debug() {
+std::string sDrawQuad::debug() {
 	return "[ drawQuad id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 }

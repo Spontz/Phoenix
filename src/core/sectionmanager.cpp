@@ -63,7 +63,7 @@ SectionManager::~SectionManager()
 
 // Adds a Section into the queue
 // Returns the section ID or -1 if the section could not be added
-int SectionManager::addSection(string key, string DataSource, int enabled) {
+int SectionManager::addSection(std::string key, std::string DataSource, int enabled) {
 	
 	Section *mySection = NULL;
 	int sec_id = -1;
@@ -161,7 +161,7 @@ int SectionManager::addSection(string key, string DataSource, int enabled) {
 	return sec_id;
 }
 
-Section* SectionManager::getSection(string id) {
+Section* SectionManager::getSection(std::string id) {
 	int sec_size = (int)this->section.size();
 	Section* ds;
 	for (int i = 0; i < sec_size; i++) {
@@ -173,7 +173,7 @@ Section* SectionManager::getSection(string id) {
 	return NULL;
 }
 
-int SectionManager::getSectionPosition(string id) {
+int SectionManager::getSectionPosition(std::string id) {
 	int sec_size = (int)this->section.size();
 	Section* ds;
 	for (int i = 0; i < sec_size; i++) {
@@ -185,9 +185,9 @@ int SectionManager::getSectionPosition(string id) {
 	return NULL;
 }
 
-void SectionManager::toggleSection(string identifier)
+void SectionManager::toggleSection(std::string identifier)
 {
-	vector<string> ids = splitIdentifiers(identifier);
+	std::vector<std::string> ids = splitIdentifiers(identifier);
 
 	Section *ds;
 	int id_size = (int)ids.size();
@@ -204,9 +204,9 @@ void SectionManager::toggleSection(string identifier)
 	}
 }
 
-void SectionManager::deleteSection(string identifier)
+void SectionManager::deleteSection(std::string identifier)
 {
-	vector<string> ids = splitIdentifiers(identifier);
+	std::vector<std::string> ids = splitIdentifiers(identifier);
 
 	Section*	ds;
 	int			ds_number;
@@ -227,28 +227,28 @@ void SectionManager::deleteSection(string identifier)
 }
 
 // Delete the old section and create a new one with the new parameters
-void SectionManager::updateSection(string identifier, string sScript)
+void SectionManager::updateSection(std::string identifier, std::string sScript)
 {
 	this->deleteSection(identifier);
 	DEMO->load_scriptFromNetwork(sScript);
 }
 
-std::vector<string> SectionManager::splitIdentifiers(string identifiers) {
+std::vector<std::string> SectionManager::splitIdentifiers(std::string identifiers) {
 	std::stringstream ss(identifiers);
-	vector<string> result;
+	std::vector<std::string> result;
 
 	while (ss.good())
 	{
-		string substr;
+		std::string substr;
 		getline(ss, substr, ',');
 		result.push_back(substr);
 	}
 	return result;
 }
 
-void SectionManager::setSectionsStartTime(string amount, string identifiers)
+void SectionManager::setSectionsStartTime(std::string amount, std::string identifiers)
 {
-	vector<string> ids = splitIdentifiers(identifiers);
+	std::vector<std::string> ids = splitIdentifiers(identifiers);
 	float startTime = (float)atof(amount.c_str());
 
 	Section* ds;
@@ -272,9 +272,9 @@ void SectionManager::setSectionsStartTime(string amount, string identifiers)
 	}
 }
 
-void SectionManager::setSectionsEndTime(string amount, string identifiers)
+void SectionManager::setSectionsEndTime(std::string amount, std::string identifiers)
 {
-	vector<string> ids = splitIdentifiers(identifiers);
+	std::vector<std::string> ids = splitIdentifiers(identifiers);
 	float endTime = (float)atof(amount.c_str());
 
 	Section* ds;
@@ -298,7 +298,7 @@ void SectionManager::setSectionsEndTime(string amount, string identifiers)
 	}
 }
 
-void SectionManager::setSectionLayer(string layer, string identifier)
+void SectionManager::setSectionLayer(std::string layer, std::string identifier)
 {
 	Section *ds;
 	int new_layer = atoi(layer.c_str());
@@ -313,7 +313,7 @@ void SectionManager::setSectionLayer(string layer, string identifier)
 	}
 }
 
-SectionType SectionManager::getSectionType(string key)
+SectionType SectionManager::getSectionType(std::string key)
 {
 	int i;
 

@@ -17,7 +17,7 @@ LightManager::~LightManager()
 
 // Adds a Light into the queue
 void LightManager::addLight(LightType lightType, glm::vec3 position) {
-	string lightName = "light[" + std::to_string(this->light.size()) + "]";
+	std::string lightName = "light[" + std::to_string(this->light.size()) + "]";
 
 	Light *new_light = new Light(lightName, lightType, position);
 	light.push_back(new_light);

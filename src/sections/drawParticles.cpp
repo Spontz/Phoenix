@@ -142,10 +142,10 @@ void sDrawParticles::end() {
 	local->pSystem->shutdown();
 }
 
-string sDrawParticles::debug() {
+std::string sDrawParticles::debug() {
 	local = (drawParticles_section*)this->vars;
 
-	string msg;
+	std::string msg;
 	msg += "[ drawParticles id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " numParticles: " + std::to_string(local->numParticles) + "\n";
 	return msg;

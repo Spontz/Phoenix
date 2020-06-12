@@ -4,7 +4,7 @@
 #include "main.h"
 #include "core/light.h"
 
-Light::Light(string name, LightType lightType, glm::vec3 position) {
+Light::Light(std::string name, LightType lightType, glm::vec3 position) {
 	this->name = name;
 	this->lightType = lightType;
 	this->position = position;

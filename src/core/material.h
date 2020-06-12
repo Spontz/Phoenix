@@ -21,7 +21,7 @@
 struct textureStack
 {
 	int		ID;				// ID form the texture manager
-	string	shaderName;		// Name that receives the texture in the shader
+	std::string	shaderName;		// Name that receives the texture in the shader
 	int		blendOperation;	// Blend operation with the base color
 	float	strength;		// Strength factor
 
@@ -37,22 +37,22 @@ struct textureStack
 // Specs: http://assimp.sourceforge.net/lib_html/materials.html
 class Material {
 public:
-	string		name;
-	vector<textureStack> textures;
-	glm::vec3	colDiffuse;
-	glm::vec3	colSpecular;
-	glm::vec3	colAmbient;
-	float		strenghtSpecular;
+	std::string					name;
+	std::vector<textureStack>	textures;
+	glm::vec3					colDiffuse;
+	glm::vec3					colSpecular;
+	glm::vec3					colAmbient;
+	float						strenghtSpecular;
 
 	Material();
-	void Load(const aiMaterial *pMaterial, string modelDirectory, string modelFilename);
+	void Load(const aiMaterial *pMaterial, std::string modelDirectory, std::string modelFilename);
 	
 private:
-	vector<textureStack> loadTextures(const aiMaterial *mat, aiTextureType type, string typeName);
+	std::vector<textureStack> loadTextures(const aiMaterial *mat, aiTextureType type, std::string typeName);
 
 	const aiMaterial	*m_pMaterial;
-	string				m_ModelDirectory;	// Path of the model file
-	string				m_ModelFilename;	// Name of the model file
+	std::string			m_ModelDirectory;	// Path of the model file
+	std::string			m_ModelFilename;	// Name of the model file
 
 
 };

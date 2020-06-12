@@ -61,7 +61,7 @@ bool sDrawParticlesScene::load() {
 		return false;
 	}
 	// Load the particles position
-	vector<glm::vec3> Pos;
+	std::vector<glm::vec3> Pos;
 	Pos.resize(local->numParticles);
 	int cnt = 0;
 	for (int i = 0; i < my_model->meshes.size(); i++) {
@@ -173,10 +173,10 @@ void sDrawParticlesScene::end() {
 	local->pSystem->shutdown();
 }
 
-string sDrawParticlesScene::debug() {
+std::string sDrawParticlesScene::debug() {
 	local = (drawParticlesScene_section*)this->vars;
 
-	string msg;
+	std::string msg;
 	msg += "[ drawParticlesScene id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " numParticles: " + std::to_string(local->numParticles) + "\n";
 	return msg;

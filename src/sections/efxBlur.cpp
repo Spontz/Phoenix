@@ -143,10 +143,10 @@ void sEfxBlur::end() {
 	
 }
 
-string sEfxBlur::debug() {
+std::string sEfxBlur::debug() {
 	local = (efxBlur_section*)this->vars;
 
-	string msg;
+	std::string msg;
 	msg = "[ efxBlur id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " fbo: " + std::to_string(local->FboNum) + " Blur Amount: " + std::to_string(local->blurAmount) + "\n";
 	return msg;

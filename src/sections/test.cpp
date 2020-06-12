@@ -28,6 +28,6 @@ void sTest::exec() {
 void sTest::end() {
 }
 
-string sTest::debug() {
+std::string sTest::debug() {
 	return "[ testSection id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 }

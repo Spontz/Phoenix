@@ -45,6 +45,6 @@ void sFboUnbind::end() {
 	
 }
 
-string sFboUnbind::debug() {
+std::string sFboUnbind::debug() {
 	return "[ fboUnbind id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 }

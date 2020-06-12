@@ -10,15 +10,14 @@ extern "C" {
 #include <libswscale/swscale.h>
 #include <libavutil/imgutils.h>
 }
-using namespace std;
 
 class Video {
 public:
-	string	fileName;	// Video filename
-	float	framerate;	// Video framerate
-	int		width;		// Video width
-	int		height;		// Video height
-	GLuint	texID;		// OpenGL texture ID where is displayed the video
+	std::string	fileName;	// Video filename
+	float		framerate;	// Video framerate
+	int			width;		// Video width
+	int			height;		// Video height
+	GLuint		texID;		// OpenGL texture ID where is displayed the video
 
 	Video();
 	virtual ~Video();

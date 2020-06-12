@@ -19,9 +19,9 @@ typedef struct {
 	glm::vec3	scale;
 
 	// Previous model, projection and view matrix, for being used in effects like motion blur
-	vector<glm::mat4>	*prev_model;		// The model needs to be stored on a vector because we need to store the previous model matrix of each object
-	glm::mat4			prev_projection;
-	glm::mat4			prev_view;
+	std::vector<glm::mat4>	*prev_model;		// The model needs to be stored on a vector because we need to store the previous model matrix of each object
+	glm::mat4				prev_projection;
+	glm::mat4				prev_view;
 
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
 	ShaderVars	*vars;			// For storing any other shader variables
@@ -68,7 +68,7 @@ bool sDrawSceneMatrix::load() {
 	{
 		num_matrices += (int)my_model_ref->meshes[i].unique_vertices_pos.size();
 	}
-	local->prev_model = new vector<glm::mat4>;
+	local->prev_model = new std::vector<glm::mat4>;
 	local->prev_model->resize(num_matrices);
 
 	// Load model properties
@@ -214,14 +214,14 @@ void sDrawSceneMatrix::end() {
 	
 }
 
-string sDrawSceneMatrix::debug()
+std::string sDrawSceneMatrix::debug()
 {
 	local = (drawSceneMatrix_section *)this->vars;
 
 	Model *my_model_ref = DEMO->modelManager.model[local->model_ref];
 	Model *my_model = DEMO->modelManager.model[local->model];
 
-	string msg;
+	std::string msg;
 	msg = "[ drawSceneMatrix id: " + this-> identifier + " layer:" + std::to_string(this->layer) + " ]\n";
 	msg += " Matrix file: " + my_model_ref->filename + "\n";
 	msg += " file: " + my_model->filename + "\n";
