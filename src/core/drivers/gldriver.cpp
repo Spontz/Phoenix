@@ -109,7 +109,8 @@ void mouseButton_callback(GLFWwindow* p_glfw_window, int button, int action, int
 // called
 void scroll_callback(GLFWwindow* p_glfw_window, double xoffset, double yoffset)
 {
-	DEMO->camera->ProcessMouseScroll((float)yoffset);
+	if (DEMO->debug && !(ImGui::GetIO().WantCaptureMouse))
+		DEMO->camera->ProcessMouseScroll((float)yoffset);
 }
 
 void APIENTRY glErrorCallback(GLenum source, GLenum type,
