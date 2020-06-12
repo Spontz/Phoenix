@@ -170,5 +170,10 @@ void sEfxBloom::end() {
 }
 
 string sEfxBloom::debug() {
-	return "[ efxBloom id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	local = (efxBloom_section*)this->vars;
+
+	string msg;
+	msg = "[ efxBloom id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg += " fbo: " + std::to_string(local->FboNum) + " Blur Amount: " + std::to_string(local->blurAmount) + "\n";
+	return msg;
 }
