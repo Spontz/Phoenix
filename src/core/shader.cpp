@@ -24,7 +24,7 @@ Shader::Shader()
 	ID = 0;
 }
 
-int Shader::load(const std::string & vertexPath, const std::string & fragmentPath, const std::string & geometryPath, std::vector<std::string> feedbackVaryings)
+int Shader::load(const std::string& vertexPath, const std::string& fragmentPath, const std::string& geometryPath, std::vector<std::string> feedbackVaryings)
 {
 	// If we already have loaded this shader, we unload it first
 	if (ID > 0) {

@@ -54,19 +54,19 @@ public:
 	SectionManager();
 	virtual ~SectionManager();
 
-	int addSection(std::string key, std::string DataSource, int enabled);		// Adds a Section of a given type
-	void	toggleSection(std::string identifier);
-	void	deleteSection(std::string identifier);
-	void	updateSection(std::string identifier, std::string sScript);
-	void	setSectionsStartTime(std::string amount, std::string identifiers);
-	void	setSectionsEndTime(std::string amount, std::string identifiers);
-	void	setSectionLayer(std::string layer, std::string identifier);
+	int addSection(const std::string& key, const std::string& DataSource, int enabled);		// Adds a Section of a given type
+	void	toggleSection(const std::string& identifier);
+	void	deleteSection(const std::string& identifier);
+	void	updateSection(const std::string& identifier, const std::string& sScript);
+	void	setSectionsStartTime(const std::string& amount, const std::string& identifiers);
+	void	setSectionsEndTime(const std::string& amount, const std::string& identifiers);
+	void	setSectionLayer(const std::string& layer, const std::string& identifier);
 
 private:
-	SectionType getSectionType(std::string key);
-	std::vector<std::string> splitIdentifiers(std::string identifiers);
-	Section* getSection(std::string id);
-	int getSectionPosition(std::string id);
+	SectionType getSectionType(const std::string& key);
+	std::vector<std::string> splitIdentifiers(const std::string& identifiers);
+	Section* getSection(const std::string& id);
+	int getSectionPosition(const std::string& id);
 };
 
 #endif

@@ -49,7 +49,7 @@ public:
 	virtual ~Model();
 
 	// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
-	bool Load(std::string const &path);
+	bool Load(const std::string& path);
 	// draws the model, and thus all its meshes
 	void Draw(GLuint shaderID, float currentTime);
 	void setAnimation(unsigned int a);

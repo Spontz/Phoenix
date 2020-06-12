@@ -96,7 +96,7 @@ void Model::setCamera(unsigned int c)
 }
 
 // Returns false if model has not been properly loaded
-bool Model::Load(std::string const &path)
+bool Model::Load(const std::string& path)
 {
 	filepath = path;
 	// read file via ASSIMP
