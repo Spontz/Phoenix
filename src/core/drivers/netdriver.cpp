@@ -14,7 +14,7 @@
 #define SPZ_STL(a) _##a
 
 // Returns the requested parameter from the passed message (first parameter is 1) as a string
-char * netDriver::getParamString(char *message, int requestedParameter) {
+char * netDriver::getParamString(const char *message, int requestedParameter) {
 	char *theParameter;
 	int counter = 1;
 
@@ -27,7 +27,7 @@ char * netDriver::getParamString(char *message, int requestedParameter) {
 }
 
 // Returns the requested parameter from the passed message (first parameter is 1) as a floating point number
-float netDriver::getParamFloat(char *message, int requestedParameter) {
+float netDriver::getParamFloat(const char *message, int requestedParameter) {
 	float theFloatResult;
 	char *theStringResult;
 
@@ -134,7 +134,7 @@ const char * netDriver::getVersion()
 	return dyad_getVersion();
 }
 
-char * netDriver::processMessage(char * message)
+char * netDriver::processMessage(const char * message)
 {
 	// Incoming information
 	char *identifier, *type, *action;

@@ -24,12 +24,12 @@ public:
 	virtual ~netDriver();
 
 	const char *getVersion();
-	char * processMessage(char *message);
+	char * processMessage(const char *message);
 	void sendMessage(std::string message);
 
 private:
-	char * getParamString(char *message, int requestedParameter);
-	float getParamFloat(char *message, int requestedParameter);
+	char * getParamString(const char *message, int requestedParameter);
+	float getParamFloat(const char *message, int requestedParameter);
 	static netDriver* m_pThis;
 };
 
