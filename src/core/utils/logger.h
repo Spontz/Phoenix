@@ -32,9 +32,9 @@ public:
 	char log_level_ = LOG_HIGH; // Log Level: LOG_HIGH, LOG_MED, LOG_LOW
 
 public:
-	void Info(char level, const char* format, ...) const;
-	void SendEditor(const char* format, ...) const;
-	void Error(const char* format, ...) const;
+	void Info(char level, const char* message, ...) const;
+	void SendEditor(const char* message, ...) const;
+	void Error(const char* message, ...) const;
 	void OpenLogFile() const;
 	void CloseLogFile() const;
 
