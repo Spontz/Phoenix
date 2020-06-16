@@ -30,6 +30,7 @@ public:
 	void active(int TexUnit = 0) const;
 			
 private:
+	GLsizei m_mipmapLevels;
 
 };
 
