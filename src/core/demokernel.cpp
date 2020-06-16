@@ -137,39 +137,17 @@ struct InitScriptCommands {
 
 static auto const& scriptCommand = InitScriptCommands::F();
 
-// HACK, TODO: improve this
-#define COMMANDS_NUMBER (scriptCommand.size())
-
 // ******************************************************************
 
-// defined section commands
-#define SECTION_IDENTIFIER		0
-#define SECTION_START			1
-#define SECTION_END				2
-#define SECTION_LAYER			3
-#define SECTION_BLEND			4
-#define SECTION_BLEND_EQUATION	5
-#define SECTION_ALPHA			6
-#define SECTION_PARAM			7
-#define SECTION_STRING			8
-#define SECTION_UNIFORM			9
-#define SECTION_SPLINE			10
-#define SECTION_MODIFIER		11
-#define SECTION_ENABLED			12
-
-// defined section reserved keys
-#define SECTION_COMMANDS_NUMBER 13
-
-static char* scriptSectionCommand[SECTION_COMMANDS_NUMBER] = {
+// TODO: Improve this by uing a "std::vector<map>" or something like this
+static char* scriptSectionCommand[SectionCommand::COMMANDS_NUMBER] = {
 	"id", "start", "end", "layer", "blend", "blendequation",
 	"alpha", "param", "string", "uniform", "spline", "modify", "enabled"
 };
 
 // ******************************************************************
 
-#define BLEND_FUNC 15
-
-glTable_t blendFunc[BLEND_FUNC] = {
+glTable_t blendFunc[] = {
 	{ "ZERO",						GL_ZERO							},
 	{ "ONE",						GL_ONE							},
 	{ "DST_COLOR",					GL_DST_COLOR					},
@@ -187,6 +165,8 @@ glTable_t blendFunc[BLEND_FUNC] = {
 	{ "ONE_MINUS_SRC_COLOR",		GL_ONE_MINUS_SRC_COLOR			},
 };
 
+#define BLEND_FUNC (sizeof(blendFunc) / sizeof(glTable_t))
+
 // ******************************************************************
 
 glTable_t blendEquationFunc[] = {
@@ -197,12 +177,9 @@ glTable_t blendEquationFunc[] = {
 
 #define BLEND_EQUATION_FUNC (sizeof(blendEquationFunc) / sizeof(glTable_t))
 
-
 // ******************************************************************
 
-#define ALPHA_FUNC 8
-
-glTable_t alphaFunc[ALPHA_FUNC] = {
+glTable_t alphaFunc[] = {
 	{ "NEVER",		GL_NEVER	},
 	{ "LESS",		GL_LESS		},
 	{ "EQUAL",		GL_EQUAL	},
@@ -213,6 +190,9 @@ glTable_t alphaFunc[ALPHA_FUNC] = {
 	{ "ALWAYS",		GL_ALWAYS	}
 };
 
+#define ALPHA_FUNC (sizeof(alphaFunc) / sizeof(glTable_t))
+
+// ******************************************************************
 
 demokernel& demokernel::GetInstance() {
 	static demokernel r;
@@ -870,7 +850,7 @@ int demokernel::load_scriptData(std::string sScript, std::string sFile) {
 			Util::getKeyValue(line, key, value);
 			// Select local variable
 			com = -1;
-			for (i = 0; i < SECTION_COMMANDS_NUMBER; i++) {
+			for (i = 0; i < SectionCommand::COMMANDS_NUMBER; i++) {
 				if (_strcmpi(key, scriptSectionCommand[i]) == 0) {
 					com = i;
 					break;
@@ -881,43 +861,43 @@ int demokernel::load_scriptData(std::string sScript, std::string sFile) {
 			if (com == -1) {
 				switch (key[0]) {
 				case 'f':
-					com = SECTION_PARAM;
+					com = SectionCommand::PARAM;
 					break;
 				case 's':
-					com = SECTION_STRING;
+					com = SectionCommand::STRING;
 					break;
 				case 'u':
-					com = SECTION_UNIFORM;
+					com = SectionCommand::UNIFORM;
 					break;
 				case 'c':
-					com = SECTION_SPLINE;
+					com = SectionCommand::SPLINE;
 					break;
 				case 'm':
-					com = SECTION_MODIFIER;
+					com = SectionCommand::MODIFIER;
 					break;
 				}
 			}
 			// If the command is correct, load the corresponding variable
 			switch (com) {
 
-			case SECTION_IDENTIFIER:
+			case SectionCommand::IDENTIFIER:
 				values = sscanf(value, "%s", tmp);
 				new_sec->identifier = tmp;
 				LOG->Info(LogLevel::LOW, "  Section id: %s", new_sec->identifier.c_str());
 				break;
 
-			case SECTION_ENABLED:
+			case SectionCommand::ENABLED:
 				values = sscanf(value, "%i", &new_sec->enabled);
 				LOG->Info(LogLevel::LOW, "  Section enabled state: %i", new_sec->enabled);
 				break;
 
-			case SECTION_START:
+			case SectionCommand::START:
 				values = sscanf(value, "%f", &new_sec->startTime);
 				if (values != 1) LOG->Error("Invalid Start time in file %s, line: %s", sFile.c_str(), line);
 				LOG->Info(LogLevel::LOW, "  Section Start time: %f", new_sec->startTime);
 				break;
 
-			case SECTION_END:
+			case SectionCommand::END:
 				values = sscanf(value, "%f", &new_sec->endTime);
 				if (values != 1) LOG->Error("Invalid End time in file %s, line: %s", sFile.c_str(), line);
 				LOG->Info(LogLevel::LOW, "  Section End time: %f", new_sec->endTime);
@@ -926,13 +906,13 @@ int demokernel::load_scriptData(std::string sScript, std::string sFile) {
 					LOG->Error("Section End time is less or equal than Start timeStart time!");
 				break;
 
-			case SECTION_LAYER:
+			case SectionCommand::LAYER:
 				values = sscanf(value, "%i", &new_sec->layer);
 				if (values != 1) LOG->Error("Invalid layer in file %s, line: %s", sFile.c_str(), line);
 				LOG->Info(LogLevel::LOW, "  Section layer: %i", new_sec->layer);
 				break;
 
-			case SECTION_BLEND:
+			case SectionCommand::BLEND:
 				values = sscanf(value, "%s %s", tmp, tmp2);
 				if (values != 2) LOG->Error("Invalid blend format in file %s, line: %s", sFile.c_str(), line);
 
@@ -946,14 +926,14 @@ int demokernel::load_scriptData(std::string sScript, std::string sFile) {
 				LOG->Info(LogLevel::LOW, "  Section blend mode: source %i and destination %i", new_sec->sfactor, new_sec->dfactor);
 				break;
 
-			case SECTION_BLEND_EQUATION:
+			case SectionCommand::BLEND_EQUATION:
 				values = sscanf(value, "%s", tmp);
 				if (values != 1) LOG->Error("Invalid blend equation in file %s, line: %s", sFile.c_str(), line);
 				new_sec->blendEquation = getBlendEquationCodeByName(tmp);
 				LOG->Info(LogLevel::LOW, "  Section blend equation: %i", new_sec->blendEquation);
 				break;
 
-			case SECTION_ALPHA:
+			case SectionCommand::ALPHA:
 				values = sscanf(value, "%s %f %f", tmp, &new_sec->alpha1, &new_sec->alpha2);
 				switch (values) {
 				case 2:
@@ -972,23 +952,23 @@ int demokernel::load_scriptData(std::string sScript, std::string sFile) {
 				LOG->Info(LogLevel::LOW, "  Section alpha: from %f to %f", new_sec->alpha1, new_sec->alpha2);
 				break;
 
-			case SECTION_PARAM:
+			case SectionCommand::PARAM:
 				fvalue = Util::getFloat(value);
 				new_sec->param.push_back(fvalue);
 				LOG->Info(LogLevel::LOW, "  Section parameter: %s = %f", key, fvalue);
 				break;
 
-			case SECTION_STRING:
+			case SectionCommand::STRING:
 				new_sec->strings.push_back(value);
 				LOG->Info(LogLevel::LOW, "  Loaded string: \"%s\"", value);
 				break;
 
-			case SECTION_UNIFORM:
+			case SectionCommand::UNIFORM:
 				new_sec->uniform.push_back(value);
 				LOG->Info(LogLevel::LOW, "  Loaded uniform: \"%s\"", value);
 				break;
 
-			case SECTION_SPLINE:
+			case SectionCommand::SPLINE:
 				values = sscanf(value, "%s %f", tmp, &fvalue);
 
 				switch (values) {

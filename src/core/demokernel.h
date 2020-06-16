@@ -58,6 +58,25 @@ typedef struct {
 
 // ******************************************************************
 
+// defined section commands
+enum SectionCommand : char const {
+	IDENTIFIER = 0,
+	START,
+	END,
+	LAYER,
+	BLEND,
+	BLEND_EQUATION,
+	ALPHA,
+	PARAM,
+	STRING,
+	UNIFORM,
+	SPLINE,
+	MODIFIER,
+	ENABLED,
+	COMMANDS_NUMBER // defined section reserved keys
+};
+
+// ******************************************************************
 class demokernel {
 private:
 	demokernel();
