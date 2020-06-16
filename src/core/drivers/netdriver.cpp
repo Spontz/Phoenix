@@ -56,7 +56,7 @@ void onAccept(dyad_Event *e) {
 }
 
 void onListen(dyad_Event *e) {
-	LOG->Info(LOG_MED, "Network listener started in port: %d", dyad_getPort(e->stream));
+	LOG->Info(LogLevel::MED, "Network listener started in port: %d", dyad_getPort(e->stream));
 }
 
 void onError(dyad_Event *e) {
@@ -64,7 +64,7 @@ void onError(dyad_Event *e) {
 }
 
 void onConnectToEngine(dyad_Event *e) {
-	LOG->Info(LOG_MED, "Network: Connected to editor through port: %d", dyad_getPort(e->stream));
+	LOG->Info(LogLevel::MED, "Network: Connected to editor through port: %d", dyad_getPort(e->stream));
 	NETDRV->connectedToEditor = true;
 }
 
@@ -113,7 +113,7 @@ dyad_Stream *serv_connect;
 void netDriver::connectToEditor()
 {
 	// Listener for sending messages to the editor
-	LOG->Info(LOG_MED, "Network: outgoing messages will be done through port: %d", this->port_send);
+	LOG->Info(LogLevel::MED, "Network: outgoing messages will be done through port: %d", this->port_send);
 	serv_connect = dyad_newStream();
 	dyad_addListener(serv_connect, DYAD_EVENT_CONNECT, onConnectToEngine, NULL);
 	dyad_connect(serv_connect, "127.0.0.1", port_send);
@@ -150,7 +150,7 @@ char * netDriver::processMessage(const char * message)
 	theResult = "OK";
 	char theInformation[1024];
 
-	LOG->Info(LOG_LOW, "Message received: [identifier: %s] [type: %s] [action: %s]", identifier, type, action);
+	LOG->Info(LogLevel::LOW, "Message received: [identifier: %s] [type: %s] [action: %s]", identifier, type, action);
 
 	// Commands processing
 	if (strcmp(type, "command") == 0) {
@@ -207,7 +207,7 @@ char * netDriver::processMessage(const char * message)
 															DEMO->runTime, DELIMITER,
 															(char *)theInformation);
 	
-	//LOG->Info(LOG_LOW, "Sending response: [%s]", theResponse);
+	//LOG->Info(LogLevel::LOW, "Sending response: [%s]", theResponse);
 		
 	// and return the response (will be freed later)
 	return theResponse;

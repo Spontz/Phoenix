@@ -78,7 +78,7 @@ int FboManager::addFbo(std::string engine_format, int width, int height, int ifo
 		fbo.push_back(new_fbo);
 		mem += (float)(new_fbo->width * new_fbo->height * components) / 1048576.0f;		// increase the texture mem
 		fbo_id = (int)fbo.size() - 1;
-		LOG->Info(LOG_MED, "Fbo Color %d loaded OK. Overall fbo Memory: %.3fMb", fbo_id, mem);
+		LOG->Info(LogLevel::MED, "Fbo Color %d loaded OK. Overall fbo Memory: %.3fMb", fbo_id, mem);
 	}
 	else {
 		LOG->Error("Could not load fbo with the current format: Width: %d, Height: %d, iformat: %d, format: %d, type: %d", width, height, iformat, format, type);

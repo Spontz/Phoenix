@@ -16,7 +16,7 @@ Resource* Resource::GetResource() {
 
 void Resource::loadAllResources()
 {
-	LOG->Info(LOG_LOW, "Start Loading Engine Internal Resources");
+	LOG->Info(LogLevel::LOW, "Start Loading Engine Internal Resources");
 	// Load Objects
 	Load_Obj_QuadFullscreen();
 	Load_Obj_Skybox();

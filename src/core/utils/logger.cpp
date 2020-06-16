@@ -10,11 +10,18 @@ Logger & Logger::GetInstance() {
 }
 
 Logger::Logger() {
+	log_level_ = LogLevel::HIGH;
 	if (DEMO->debug)
 		OpenLogFile();
 }
 
-void Logger::Info(char level, const char* message, ...) const {
+void Logger::setLogLevel(const LogLevel level)
+{
+	if (level <= LogLevel::LOW)
+		log_level_ = level;
+}
+
+void Logger::Info(const LogLevel level, const char* message, ...) const {
 	// write down the trace to the standard output
 	if (DEMO->debug && this->log_level_ >= level) {
 		va_list argptr;
@@ -108,12 +115,10 @@ void Logger::Error(const char* message, ...) const {
 		}
 		delete[] Text_;
 		delete[] Chain_;
-
 	}
 }
 
-void Logger::OpenLogFile() const
-{
+void Logger::OpenLogFile() const {
 	if (!log_ofstream_.is_open())
 		log_ofstream_.open(output_file_.c_str(), std::ios::out | std::ios::trunc);
 }

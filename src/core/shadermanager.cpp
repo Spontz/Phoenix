@@ -57,9 +57,9 @@ int ShaderManager::addShader(std::string path_vert, std::string path_frag, std::
 
 	if (loaded) {
 		if (path_geom != "")
-			LOG->Info(LOG_MED, "Shader loaded OK [id: %d, gl_id: %d] files: %s, %s, %s", shad_id, new_shad->ID, path_vert.c_str(), path_geom.c_str(), path_frag.c_str());
+			LOG->Info(LogLevel::MED, "Shader loaded OK [id: %d, gl_id: %d] files: %s, %s, %s", shad_id, new_shad->ID, path_vert.c_str(), path_geom.c_str(), path_frag.c_str());
 		else
-			LOG->Info(LOG_MED, "Shader loaded OK [id: %d, gl_id: %d] files: %s, %s", shad_id, new_shad->ID, path_vert.c_str(), path_frag.c_str());
+			LOG->Info(LogLevel::MED, "Shader loaded OK [id: %d, gl_id: %d] files: %s, %s", shad_id, new_shad->ID, path_vert.c_str(), path_frag.c_str());
 	}
 		
 	else

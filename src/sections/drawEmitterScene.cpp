@@ -125,7 +125,7 @@ bool sDrawEmitterScene::load() {
 	// Emitter Ramdomness
 	local->emitterRandomness = this->param[2];
 
-	LOG->Info(LOG_LOW, "Draw Emitter Scene [%s]: Num max of particles will be: %d", this->identifier.c_str(), local->numMaxParticles);
+	LOG->Info(LogLevel::LOW, "Draw Emitter Scene [%s]: Num max of particles will be: %d", this->identifier.c_str(), local->numMaxParticles);
 
 	std::vector<Particle> Emitter;
 	Emitter.resize(local->numEmitters);

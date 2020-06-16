@@ -15,8 +15,8 @@ void bassDriver::init() {
 		LOG->Error("bassDriver: Sound cannot be initialized, error in BASS_Init()");
 		return;
 	}
-	LOG->Info(LOG_HIGH, "BASS library inited");
-	LOG->Info(LOG_MED, "BASS library version is: %s", BASSVERSIONTEXT);
+	LOG->Info(LogLevel::HIGH, "BASS library inited");
+	LOG->Info(LogLevel::MED, "BASS library version is: %s", BASSVERSIONTEXT);
 }
 
 void bassDriver::play() {

@@ -35,27 +35,27 @@ void Material::Load(const aiMaterial *pMaterial, std::string modelDirectory, std
 	// 1. diffuse maps
 	std::vector<textureStack> diffuseMaps = loadTextures(pMaterial, aiTextureType_DIFFUSE, "texture_diffuse");
 	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-	LOG->Info(LOG_LOW, "  The mesh has %d diffuseMaps", diffuseMaps.size());
+	LOG->Info(LogLevel::LOW, "  The mesh has %d diffuseMaps", diffuseMaps.size());
 	// 2. specular maps
 	std::vector<textureStack> specularMaps = loadTextures(pMaterial, aiTextureType_SPECULAR, "texture_specular");
 	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-	LOG->Info(LOG_LOW, "  The mesh has %d specularMaps", specularMaps.size());
+	LOG->Info(LogLevel::LOW, "  The mesh has %d specularMaps", specularMaps.size());
 	// 3. ambient maps
 	std::vector<textureStack> ambientMaps = loadTextures(pMaterial, aiTextureType_AMBIENT, "texture_ambient");
 	textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
-	LOG->Info(LOG_LOW, "  The mesh has %d ambientMaps", ambientMaps.size());
+	LOG->Info(LogLevel::LOW, "  The mesh has %d ambientMaps", ambientMaps.size());
 	// 4. height maps
 	std::vector<textureStack> heightMaps = loadTextures(pMaterial, aiTextureType_HEIGHT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-	LOG->Info(LOG_LOW, "  The mesh has %d heightMaps", heightMaps.size());
+	LOG->Info(LogLevel::LOW, "  The mesh has %d heightMaps", heightMaps.size());
 	// 5. normal maps
 	std::vector<textureStack> normalMaps = loadTextures(pMaterial, aiTextureType_NORMALS, "texture_normal");
 	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-	LOG->Info(LOG_LOW, "  The mesh has %d normalMaps", normalMaps.size());
+	LOG->Info(LogLevel::LOW, "  The mesh has %d normalMaps", normalMaps.size());
 	// Unknown
 	std::vector<textureStack> unknownMaps = loadTextures(pMaterial, aiTextureType_NONE, "texture_unknown");
 	textures.insert(textures.end(), unknownMaps.begin(), unknownMaps.end());
-	LOG->Info(LOG_LOW, "  The mesh has %d unknownMaps", unknownMaps.size());
+	LOG->Info(LogLevel::LOW, "  The mesh has %d unknownMaps", unknownMaps.size());
 
 
 	aiColor3D color;

@@ -67,7 +67,7 @@ public:
 	std::string dataFolder;	// Path to "data" folder
 	char*		demoName;
 	int			debug;
-	int			log_detail;
+	char		log_detail;
 
 	// misc
 	int			loop;

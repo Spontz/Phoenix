@@ -34,7 +34,7 @@ bool ShaderVars::ReadString(const char * string_var)
 			vars[2] += " " + vars[i];
 		strcpy(var_value, vars[2].c_str());
 
-		LOG->Info(LOG_MED, "Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_value);
+		LOG->Info(LogLevel::MED, "Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_value);
 	}
 	else {	// If its a sampler, we need also the ID
 		strcpy(var_type, vars[0].c_str());
@@ -45,7 +45,7 @@ bool ShaderVars::ReadString(const char * string_var)
 			return false;
 		}
 		strcpy(var_value, vars[3].c_str());
-		LOG->Info(LOG_MED, "Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], id [%d], value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_UnitId, var_value);
+		LOG->Info(LogLevel::MED, "Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], id [%d], value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_UnitId, var_value);
 	}
 
 	if (strcmp(var_type, "float") == 0)	// FLOAT detected

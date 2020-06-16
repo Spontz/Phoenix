@@ -57,7 +57,7 @@ bool Video::load(const std::string & filename)
 		return false;
 	}
 
-	//LOG->Info(LOG_LOW, "Video: Opening the input file (%s) and loading format (container) header", fileName.c_str());
+	//LOG->Info(LogLevel::LOW, "Video: Opening the input file (%s) and loading format (container) header", fileName.c_str());
 	// Open the file and read its header. The codecs are not opened: http://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga31d601155e9035d5b0e7efedc894ee49
 	if (avformat_open_input(&pFormatContext, fileName.c_str(), NULL, NULL) != 0) {
 		LOG->Error("Video: could not open the file %s", fileName.c_str());
@@ -65,9 +65,9 @@ bool Video::load(const std::string & filename)
 	}
 
 	// Show info file
-	LOG->Info(LOG_LOW, "Video: Format %s, duration %lld us, bit_rate %lld", pFormatContext->iformat->name, pFormatContext->duration, pFormatContext->bit_rate);
+	LOG->Info(LogLevel::LOW, "Video: Format %s, duration %lld us, bit_rate %lld", pFormatContext->iformat->name, pFormatContext->duration, pFormatContext->bit_rate);
 
-	//LOG->Info(LOG_LOW, "Video: Finding stream info from format");
+	//LOG->Info(LogLevel::LOW, "Video: Finding stream info from format");
 	// Read Packets from the Format to get stream information
 	// this function populates pFormatContext->streams (of size equals to pFormatContext->nb_streams)
 	// https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gad42172e27cddafb81096939783b157bb
@@ -80,11 +80,11 @@ bool Video::load(const std::string & filename)
 	for (unsigned int i = 0; i < pFormatContext->nb_streams; i++) {
 		AVCodecParameters *pLocalCodecParameters = NULL;
 		pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
-		//LOG->Info(LOG_LOW, "Video: AVStream->time_base before open coded %d/%d", pFormatContext->streams[i]->time_base.num, pFormatContext->streams[i]->time_base.den);
-		//LOG->Info(LOG_LOW, "Video: AVStream->r_frame_rate before open coded %d/%d", pFormatContext->streams[i]->r_frame_rate.num, pFormatContext->streams[i]->r_frame_rate.den);
-		//LOG->Info(LOG_LOW, "Video: AVStream->start_time %" PRId64, pFormatContext->streams[i]->start_time);
-		//LOG->Info(LOG_LOW, "Video: AVStream->duration %" PRId64, pFormatContext->streams[i]->duration);
-		//LOG->Info(LOG_LOW, "Video: finding the proper decoder (CODEC)");
+		//LOG->Info(LogLevel::LOW, "Video: AVStream->time_base before open coded %d/%d", pFormatContext->streams[i]->time_base.num, pFormatContext->streams[i]->time_base.den);
+		//LOG->Info(LogLevel::LOW, "Video: AVStream->r_frame_rate before open coded %d/%d", pFormatContext->streams[i]->r_frame_rate.num, pFormatContext->streams[i]->r_frame_rate.den);
+		//LOG->Info(LogLevel::LOW, "Video: AVStream->start_time %" PRId64, pFormatContext->streams[i]->start_time);
+		//LOG->Info(LogLevel::LOW, "Video: AVStream->duration %" PRId64, pFormatContext->streams[i]->duration);
+		//LOG->Info(LogLevel::LOW, "Video: finding the proper decoder (CODEC)");
 
 		AVCodec *pLocalCodec = NULL;
 
@@ -108,15 +108,15 @@ bool Video::load(const std::string & filename)
 				width = pLocalCodecParameters->width;
 				height = pLocalCodecParameters->height;
 			}
-			LOG->Info(LOG_LOW, "Video Codec: resolution %d x %d", pLocalCodecParameters->width, pLocalCodecParameters->height);
+			LOG->Info(LogLevel::LOW, "Video Codec: resolution %d x %d", pLocalCodecParameters->width, pLocalCodecParameters->height);
 		}
 		// There is no need to play audio
 		//else if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_AUDIO) {
-		//	LOG->Info(LOG_LOW, "Audio Codec: %d channels, sample rate %d", pLocalCodecParameters->channels, pLocalCodecParameters->sample_rate);
+		//	LOG->Info(LogLevel::LOW, "Audio Codec: %d channels, sample rate %d", pLocalCodecParameters->channels, pLocalCodecParameters->sample_rate);
 		//}
 
 		// print its name, id and bitrate
-		LOG->Info(LOG_LOW, "Video: Codec %s ID %d bit_rate %lld", pLocalCodec->name, pLocalCodec->id, pCodecParameters->bit_rate);
+		LOG->Info(LogLevel::LOW, "Video: Codec %s ID %d bit_rate %lld", pLocalCodec->name, pLocalCodec->id, pCodecParameters->bit_rate);
 	}
 	// https://ffmpeg.org/doxygen/trunk/structAVCodecContext.html
 	pCodecContext = avcodec_alloc_context3(pCodec);
@@ -195,10 +195,10 @@ void Video::renderVideo(float time)
 
 		// If a new frame needs to be rendered... we capture de frame
 		if (time >= (lastRenderTime + intervalFrame)) {
-			//LOG->Info(LOG_LOW, "Render time: %.4f, Last Render: %.4f, next Render will be: %.4f", time, lastRenderTime, time + intervalFrame);
+			//LOG->Info(LogLevel::LOW, "Render time: %.4f, Last Render: %.4f, next Render will be: %.4f", time, lastRenderTime, time + intervalFrame);
 			// Check if frameskip is detected... in that case, we seek for the right frame
 			if (time >= (lastRenderTime + (intervalFrame * 2.0f))) {
-				LOG->Info(LOG_LOW, "Seek needed!");
+				LOG->Info(LogLevel::LOW, "Seek needed!");
 				seekTime(time);
 			}
 			lastRenderTime = time;
@@ -270,7 +270,7 @@ int Video::decodePacket()
 
 		if (response >= 0) {
 			/*
-			LOG->Info(LOG_LOW,
+			LOG->Info(LogLevel::LOW,
 				"Frame %d (type=%c, size=%d bytes) pts %d key_frame %d [DTS %d]",
 				pCodecContext->frame_number, av_get_picture_type_char(pFrame->pict_type), pFrame->pkt_size,
 				pFrame->pts, pFrame->key_frame, pFrame->coded_picture_number );

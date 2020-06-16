@@ -38,7 +38,7 @@ int TextureManager::addTexture(std::string path, bool flip, std::string type) {
 			texture.push_back(new_tex);
 			mem += new_tex->mem;
 			tex_num = (int)texture.size() - 1;
-			LOG->Info(LOG_MED, "Texture %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path.c_str(), tex_num, mem);
+			LOG->Info(LogLevel::MED, "Texture %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path.c_str(), tex_num, mem);
 		}
 		else
 			LOG->Error("Could not load texture: %s", path.c_str());
@@ -50,7 +50,7 @@ int TextureManager::addTexture(std::string path, bool flip, std::string type) {
 			if (tex->load(path, flip)) {
 				tex->type = type;
 				mem += tex->mem;
-				LOG->Info(LOG_MED, "Texture %s [id: %d] force reload OK. Overall texture Memory: %.3fMb", path.c_str(), tex_num, mem);
+				LOG->Info(LogLevel::MED, "Texture %s [id: %d] force reload OK. Overall texture Memory: %.3fMb", path.c_str(), tex_num, mem);
 			}
 			else
 				LOG->Error("Could not load texture: %s", path.c_str());
@@ -81,7 +81,7 @@ int TextureManager::addCubemap(std::vector<std::string> path, bool flip)
 			cubemap.push_back(new_cubemap);
 			cubemap_num = (int)cubemap.size() - 1;
 			mem += new_cubemap->mem;
-			LOG->Info(LOG_MED, "Cubemap %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path[0].c_str(), cubemap_num, mem);
+			LOG->Info(LogLevel::MED, "Cubemap %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path[0].c_str(), cubemap_num, mem);
 		}
 		else {
 			for (i = 0; i < path.size(); i++)
@@ -94,7 +94,7 @@ int TextureManager::addCubemap(std::vector<std::string> path, bool flip)
 			mem -= cube->mem; // Decrease the overall texture memory
 			if (cube->load(path, flip)) {
 				mem += cube->mem;
-				LOG->Info(LOG_MED, "Cubemap %s[id:%d] force reload OK. Overall texture Memory : %.3fMb", path[0].c_str(), cubemap_num, mem);
+				LOG->Info(LogLevel::MED, "Cubemap %s[id:%d] force reload OK. Overall texture Memory : %.3fMb", path[0].c_str(), cubemap_num, mem);
 			}
 			else {
 				for (i = 0; i < path.size(); i++)

@@ -120,7 +120,7 @@ void APIENTRY glErrorCallback(GLenum source, GLenum type,
 	const GLchar* message,
 	const void* userParam)
 {
-	LOG->Info(LOG_LOW, "Error GL callback: %s type = 0x%x, severity = 0x%x, message = %s",
+	LOG->Info(LogLevel::LOW, "Error GL callback: %s type = 0x%x, severity = 0x%x, message = %s",
 		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
 		type, severity, message);
 }
@@ -139,7 +139,7 @@ void key_callback(GLFWwindow* p_glfw_window, int key, int scancode, int action, 
 			else if (key == KEY_REWIND)
 				DEMO->rewindDemo();
 			else if (key == KEY_TIME)
-				LOG->Info(LOG_HIGH, "Demo time: %.4f", DEMO->runTime);
+				LOG->Info(LogLevel::HIGH, "Demo time: %.4f", DEMO->runTime);
 			else if (key == KEY_PLAY_PAUSE) {
 				if (DEMO->state == DEMO_PLAY)
 					DEMO->pauseDemo();
@@ -254,7 +254,7 @@ void glDriver::initFramework() {
 		return;
 	}
 	else {
-		LOG->Info(LOG_MED, "GLFW library version is: %s", glfwGetVersionString());
+		LOG->Info(LogLevel::MED, "GLFW library version is: %s", glfwGetVersionString());
 		glfwSetErrorCallback(error_callback);
 	}
 }
@@ -457,7 +457,7 @@ void glDriver::initFbos() {
 	{
 		// Clear Fbo's, if there is any
 		if (DEMO->efxBloomFbo.fbo.size() > 0) {
-			LOG->Info(LOG_LOW, "Ooops! we need to regenerate the Bloom efx FBO's! clearing efx FBO's first!");
+			LOG->Info(LogLevel::LOW, "Ooops! we need to regenerate the Bloom efx FBO's! clearing efx FBO's first!");
 			DEMO->efxBloomFbo.clearFbos();
 		}
 
@@ -477,7 +477,7 @@ void glDriver::initFbos() {
 		for (int i = 0; i < EFXBLOOM_FBO_BUFFERS; i++) {
 			res = DEMO->efxBloomFbo.addFbo(bloomFbo.format, (int)bloomFbo.width, (int)bloomFbo.height, bloomFbo.tex_iformat, bloomFbo.tex_format, bloomFbo.tex_type, bloomFbo.tex_components, bloomFbo.numColorAttachments);
 			if (res >= 0)
-				LOG->Info(LOG_LOW, "EfxBloom Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, bloomFbo.width, bloomFbo.height, bloomFbo.format, bloomFbo.tex_components, bloomFbo.tex_format, bloomFbo.tex_iformat, bloomFbo.tex_type);
+				LOG->Info(LogLevel::LOW, "EfxBloom Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, bloomFbo.width, bloomFbo.height, bloomFbo.format, bloomFbo.tex_components, bloomFbo.tex_format, bloomFbo.tex_iformat, bloomFbo.tex_type);
 			else
 				LOG->Error("Error in efxBloom Fbo definition: Efx_Fbo number %i has a non recongised format: '%s', please blame the coder.", i, bloomFbo.format);
 		}
@@ -489,7 +489,7 @@ void glDriver::initFbos() {
 	{
 		// Clear Fbo's, if there is any
 		if (DEMO->efxAccumFbo.fbo.size() > 0) {
-			LOG->Info(LOG_LOW, "Ooops! we need to regenerate the Accum efx FBO's! clearing efx FBO's first!");
+			LOG->Info(LogLevel::LOW, "Ooops! we need to regenerate the Accum efx FBO's! clearing efx FBO's first!");
 			DEMO->efxAccumFbo.clearFbos();
 		}
 
@@ -509,7 +509,7 @@ void glDriver::initFbos() {
 		for (int i = 0; i < EFXACCUM_FBO_BUFFERS; i++) {
 			res = DEMO->efxAccumFbo.addFbo(accumFbo.format, (int)accumFbo.width, (int)accumFbo.height, accumFbo.tex_iformat, accumFbo.tex_format, accumFbo.tex_type, accumFbo.tex_components, accumFbo.numColorAttachments);
 			if (res >= 0)
-				LOG->Info(LOG_LOW, "EfxAccum Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, accumFbo.width, accumFbo.height, accumFbo.format, accumFbo.tex_components, accumFbo.tex_format, accumFbo.tex_iformat, accumFbo.tex_type);
+				LOG->Info(LogLevel::LOW, "EfxAccum Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, accumFbo.width, accumFbo.height, accumFbo.format, accumFbo.tex_components, accumFbo.tex_format, accumFbo.tex_iformat, accumFbo.tex_type);
 			else
 				LOG->Error("Error in efxAccum Fbo definition: Efx_Fbo number %i has a non recongised format: '%s', please blame the coder.", i, accumFbo.format);
 		}
@@ -519,7 +519,7 @@ void glDriver::initFbos() {
 	////////////// FBO Manager: Generic FBO's that can be used by the user
 	// Clear Fbo's, if there is any
 	if (DEMO->fboManager.fbo.size() > 0) {
-		LOG->Info(LOG_LOW, "Ooops! we need to regenerate the FBO's! clearing generic FBO's first!");
+		LOG->Info(LogLevel::LOW, "Ooops! we need to regenerate the FBO's! clearing generic FBO's first!");
 		DEMO->fboManager.clearFbos();
 	}
 
@@ -538,7 +538,7 @@ void glDriver::initFbos() {
 			// Check if the format is valid
 			if (this->fbo[i].tex_format > 0) {
 				DEMO->fboManager.addFbo(this->fbo[i].format, (int)this->fbo[i].width, (int)this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type, this->fbo[i].tex_components, this->fbo[i].numColorAttachments);
-				LOG->Info(LOG_LOW, "Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_components, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
+				LOG->Info(LogLevel::LOW, "Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_components, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
 			}
 			else {
 				LOG->Error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, this->fbo[i].format);

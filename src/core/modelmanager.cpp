@@ -33,7 +33,7 @@ int ModelManager::addModel(std::string path) {
 	if (loaded == true) {
 		model.push_back(new_model);
 		model_id = (int)model.size() - 1;
-		LOG->Info(LOG_MED, "Model %s [id: %d] loaded OK", path.c_str(), model_id);
+		LOG->Info(LogLevel::MED, "Model %s [id: %d] loaded OK", path.c_str(), model_id);
 	}
 	else
 		LOG->Error("Could not load model: %s", path.c_str());

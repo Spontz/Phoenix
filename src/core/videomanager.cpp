@@ -32,7 +32,7 @@ int VideoManager::addVideo(std::string path) {
 	if (new_vid->load(path)) {
 		video.push_back(new_vid);
 		video_num = (int)video.size() - 1;
-		LOG->Info(LOG_MED, "Video %s [id: %d] loaded OK.", path.c_str(), video_num);
+		LOG->Info(LogLevel::MED, "Video %s [id: %d] loaded OK.", path.c_str(), video_num);
 	}
 	else
 		LOG->Error("Could not load vido: %s", path.c_str());
