@@ -109,7 +109,7 @@ int TextureManager::addCubemap(std::vector<std::string> path, bool flip)
 int TextureManager::getOpenGLTextureID(int index)
 {
 	if (index < texture.size())
-		return texture[index]->textureID;
+		return texture[index]->m_textureID;
 	return -1;
 }
 

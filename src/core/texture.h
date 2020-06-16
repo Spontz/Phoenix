@@ -20,7 +20,7 @@ public:
 	int			width, height, components;
 	float		mem;						// Size in Mb
 	bool		use_linear;
-	GLuint		textureID;
+	GLuint		m_textureID;
 
 	Texture();
 	virtual ~Texture();

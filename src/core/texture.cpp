@@ -9,16 +9,16 @@ Texture::Texture()
 {
 	type = "texture_diffuse"; // default is set to diffuse texture
 	use_linear = true;
-	textureID = 0;
+	m_textureID = 0;
 	mem = 0;
 
 }
 
 Texture::~Texture()
 {
-	if (textureID != 0) {
-		glDeleteTextures(1, &textureID);
-		textureID = 0;
+	if (m_textureID != 0) {
+		glDeleteTextures(1, &m_textureID);
+		m_textureID = 0;
 		mem = 0;
 	}
 }
@@ -26,9 +26,9 @@ Texture::~Texture()
 bool Texture::load(const std::string & file_name, bool flip)
 {
 	// If we already have loaded this texture, we unload it first
-	if (textureID > 0) {
-		glDeleteTextures(1, &textureID);
-		textureID = 0;
+	if (m_textureID > 0) {
+		glDeleteTextures(1, &m_textureID);
+		m_textureID = 0;
 		mem = 0;
 	}
 
@@ -53,8 +53,8 @@ bool Texture::load(const std::string & file_name, bool flip)
 		else if (components == 4)
 			format = GL_RGBA;
 
-		glGenTextures(1, &textureID);
-		glBindTexture(GL_TEXTURE_2D, textureID);
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_textureID);
+		glBindTexture(GL_TEXTURE_2D, m_textureID);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -87,5 +87,5 @@ void Texture::active(int TexUnit) const
 void Texture::bind(int TexUnit) const
 {
 	glActiveTexture(GL_TEXTURE0 + TexUnit);
-	glBindTexture(GL_TEXTURE_2D, textureID);
+	glBindTexture(GL_TEXTURE_2D, m_textureID);
 }
