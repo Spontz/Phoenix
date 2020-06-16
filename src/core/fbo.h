@@ -20,10 +20,10 @@ public:
 	int				iformat, format, ttype, components;
 	unsigned int	numAttachments;
 	bool			use_linear;
-	std::string		engineFormat;		// format of the FBO, by a name given by the engine
-	GLuint			frameBufferID;		// Our handle to the Frame Buffer
-	GLuint			renderBufferID;		// Our handle to the Render Buffer
-	GLuint			*colorBufferID;		// Our handle to the Color buffer(s) attachment(s)
+	std::string		engineFormat;			// format of the FBO, by a name given by the engine
+	GLuint			m_frameBuffer;			// Our handle to the Frame Buffer
+	GLuint			m_depthAttachment;		// Our handle to the Render Buffer
+	GLuint			*m_colorAttachment;		// Our handle to the Color buffer(s) attachment(s)
 
 	Fbo();
 	virtual ~Fbo();

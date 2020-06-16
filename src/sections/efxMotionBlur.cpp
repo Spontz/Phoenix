@@ -55,8 +55,8 @@ bool sEfxMotionBlur::load() {
 	my_shaderMotionBlur->setValue("velocity", 1);	// The velocity is in the Tex unit 1
 
 	// Store the buffers of our FBO (we assume that in Attachment 0 we have the color and in Attachment 1 we have the brights)
-	local->bufferColor = DEMO->fboManager.fbo[local->FboNum]->colorBufferID[0];
-	local->bufferVelocity = DEMO->fboManager.fbo[local->FboNum]->colorBufferID[1];
+	local->bufferColor = DEMO->fboManager.fbo[local->FboNum]->m_colorAttachment[0];
+	local->bufferVelocity = DEMO->fboManager.fbo[local->FboNum]->m_colorAttachment[1];
 
 	return true;
 }

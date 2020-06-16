@@ -100,7 +100,7 @@ int FboManager::getOpenGLTextureID(unsigned int index, unsigned int attachment)
 {
 	if (index < fbo.size()) {
 		if (attachment < fbo[index]->numAttachments) {
-			return fbo[index]->colorBufferID[attachment];
+			return fbo[index]->m_colorAttachment[attachment];
 		}
 		else
 			return -1;

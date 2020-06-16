@@ -208,7 +208,7 @@ void imGuiDriver::drawFbo() {
 			{
 				Fbo* my_fbo = DEMO->fboManager.fbo[i];
 				if (num_fboAttachmentToDraw < my_fbo->numAttachments)
-					ImGui::Image((void*)(intptr_t)my_fbo->colorBufferID[num_fboAttachmentToDraw], ImVec2(fbo_w_size, fbo_h_size), ImVec2(0, 1), ImVec2(1, 0));
+					ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[num_fboAttachmentToDraw], ImVec2(fbo_w_size, fbo_h_size), ImVec2(0, 1), ImVec2(1, 0));
 				else
 					ImGui::Image((void*)(intptr_t)NULL, ImVec2(fbo_w_size, fbo_h_size));
 			}
