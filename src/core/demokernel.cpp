@@ -1002,7 +1002,7 @@ int demokernel::load_scriptData(std::string sScript, std::string sFile) {
 			float* fptr;
 			char** sptr;
 
-			for (i = 0; i < COMMANDS_NUMBER; ++i) {
+			for (i = 0; i < scriptCommand.size(); ++i) {
 				if (_strcmpi(key, scriptCommand[i].cName) == 0) {
 					switch (scriptCommand[i].vType) {
 					case VTYPE_INT:
@@ -1030,7 +1030,7 @@ int demokernel::load_scriptData(std::string sScript, std::string sFile) {
 				}
 			}
 
-			if (i >= COMMANDS_NUMBER)
+			if (i > scriptCommand.size())
 				LOG->Error("%s is not a valid SPO Script variable.", key);
 
 		}
