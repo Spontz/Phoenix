@@ -101,7 +101,7 @@ void mouseButton_callback(GLFWwindow* p_glfw_window, int button, int action, int
 			GLDRV->calcMousePos(GLDRV->mouse_lastxpos, GLDRV->mouse_lastypos);
 			LOG->SendEditor("Mouse pos [%.4f, %.4f]", GLDRV->mouse_x, GLDRV->mouse_y);
 		}
-				}
+	}
 }
 
 
