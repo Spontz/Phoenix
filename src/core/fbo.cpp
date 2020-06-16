@@ -83,10 +83,10 @@ bool Fbo::upload(std::string EngineFormat, int index, int Width, int Height, int
 	else {	// If it's a Depth texture...
 		// create depth texture
 		this->m_colorAttachment = new GLuint[this->numAttachments];
-		glGenTextures(1, this->m_colorAttachment);
-		for (unsigned int i = 0; i < this->numAttachments; i++) {
-			glBindTexture(GL_TEXTURE_2D, this->m_colorAttachment[i]);
-			glTexImage2D(GL_TEXTURE_2D, 0, this->iformat, this->width, this->height, 0, this->format, this->ttype, NULL);
+		glCreateTextures(GL_TEXTURE_2D, 1, m_colorAttachment);
+		for (unsigned int i = 0; i < numAttachments; i++) {
+			glBindTexture(GL_TEXTURE_2D, m_colorAttachment[i]);
+			glTexImage2D(GL_TEXTURE_2D, 0, iformat, width, height, 0, format, ttype, NULL);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); //LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
