@@ -81,10 +81,8 @@ void sEfxMotionBlur::exec() {
 		my_shaderMotionBlur->setValue("uVelocityScale", DEMO->fps/local->FPSScale); //uVelocityScale = currentFps / targetFps;
 		local->shaderVars->setValues();
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, local->bufferColor);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, local->bufferVelocity);
+		glBindTextureUnit(0, local->bufferColor);
+		glBindTextureUnit(1, local->bufferVelocity);
 		RES->Draw_QuadFS();
 	}
 	glEnable(GL_DEPTH_TEST);

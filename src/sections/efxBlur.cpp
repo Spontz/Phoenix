@@ -100,7 +100,6 @@ void sEfxBlur::exec() {
 		bool horizontal = true;
 		bool first_iteration = true;
 		my_shaderBlur->use();
-		DEMO->efxBloomFbo.active(0);
 
 		// Prevent negative Blurs
 		if (local->blurAmount < 0)

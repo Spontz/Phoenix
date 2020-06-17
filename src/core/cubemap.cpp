@@ -71,12 +71,7 @@ bool Cubemap::load(std::vector<std::string> faces_file_name, bool flip)
 	return is_loaded;
 }
 
-void Cubemap::active(int index) const
+void Cubemap::bind(GLuint TexUnit) const
 {
-	glActiveTexture(GL_TEXTURE0 + index);
-}
-
-void Cubemap::bind() const
-{
-	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapID);
+	glBindTextureUnit(TexUnit, cubemapID);
 }

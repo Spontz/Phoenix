@@ -19,11 +19,10 @@ public:
 	void Draw_QuadFBOFS(int fbo_num, GLuint attachment=0);		// Draws a quad in fullscreen (the fbo number from the fbo manager should be specified)
 	void Draw_QuadEfxFBOFS(int efxFboNum, GLuint attachment=0);	// Draws a quad in fullscreen (the fbo number from the efx fbo manager should be specified)
 	void Draw_Obj_QuadTex(int textureNum, glm::mat4 const* model);
-	void Draw_Obj_QuadTex(int textureNum, glm::mat4 *view, glm::mat4 *projection, glm::mat4 *model);
+	void Draw_Obj_QuadTex(int textureNum, glm::mat4 *projection, glm::mat4* view, glm::mat4 *model);
 	void Draw_Skybox(int cubemap);								// Draws a skybox for a given cubemap texture
 	void Draw_Cube();											// Draws a cube
 
-	void Draw_Obj_QuadFBO_Debug(int quad, int fbo_num, int fbo_attachment);
 	int tex_tv; // Default texture (tv)
 
 	// Shaders
@@ -31,6 +30,7 @@ public:
 	int shdr_QuadDepth;			// Draws a depth texture quad
 	int shdr_QuadTexAlpha;		// Draws a textured quad with alpha
 	int shdr_QuadTexModel;		// Draws a textured quad with model matrix
+	int shdr_QuadTexPVM;		// Draws a textured quad with projection, view and model matrixes
 	int shdr_QuadTexVFlipModel;	// Draws a textured quad with model matrix, and with the texture flipped vertically
 	int shdr_Skybox;			// Draws a skybox
 	int shdr_ObjColor;			// Draws an object with a color

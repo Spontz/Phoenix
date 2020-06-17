@@ -121,15 +121,13 @@ void sEfxAccum::exec() {
 			local->shaderVars->setValues();
 
 			// Set the screen fbo in texture unit 0
-			glActiveTexture(GL_TEXTURE0);//DEMO->fboManager.active(0);
-			DEMO->fboManager.bind_tex(local->FboNum);
+			DEMO->fboManager.bind_tex(local->FboNum, 0);
 			
 			// Set the accumulation fbo in texture unit 1
-			glActiveTexture(GL_TEXTURE1);
 			if (firstIteration)
 				firstIteration = false;
 			local->accumBuffer = !local->accumBuffer; 
-			DEMO->efxAccumFbo.bind_tex(local->accumBuffer);
+			DEMO->efxAccumFbo.bind_tex(local->accumBuffer, 1);
 
 			// Render a quad using the Accum shader (combining the 2 Images)
 			RES->Draw_QuadFS();
@@ -146,11 +144,10 @@ void sEfxAccum::exec() {
 
 		my_shad->use();
 		my_shad->setValue("screenTexture", 0);
-		glActiveTexture(GL_TEXTURE0);
 		if (firstIteration)
-			DEMO->fboManager.bind_tex(local->FboNum);
+			DEMO->fboManager.bind_tex(local->FboNum, 0);
 		else
-			DEMO->efxAccumFbo.bind_tex(!local->accumBuffer);
+			DEMO->efxAccumFbo.bind_tex(!local->accumBuffer, 0);
 		RES->Draw_QuadFS();
 
 	}		

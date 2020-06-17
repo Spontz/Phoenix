@@ -228,8 +228,7 @@ void Video::renderVideo(float time)
 
 void Video::bind(int texUnit) const
 {
-	glActiveTexture(GL_TEXTURE0 + texUnit);
-	glBindTexture(GL_TEXTURE_2D, texID);
+	glBindTextureUnit(texUnit, texID);
 }
 
 void Video::seekTime(float time)
@@ -278,8 +277,7 @@ int Video::decodePacket()
 			// Scale the image (pFrame) to the OpenGL image (glFrame), using the Convertex cotext
 			sws_scale(conv_ctx, pFrame->data, pFrame->linesize, 0, pCodecContext->height, glFrame->data, glFrame->linesize);
 
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, texID);
+			glBindTextureUnit(0, texID);
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pCodecContext->width, pCodecContext->height, GL_RGB, GL_UNSIGNED_BYTE, glFrame->data[0]);
 
 			//av_frame_unref(pFrame);

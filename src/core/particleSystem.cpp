@@ -310,8 +310,7 @@ bool ParticleSystem::initRandomTexture(unsigned int Size)
 	return true;
 }
 
-void ParticleSystem::bindRandomTexture(unsigned int TextureUnit)
+void ParticleSystem::bindRandomTexture(GLuint TexUnit)
 {
-	glActiveTexture(GL_TEXTURE0 + TextureUnit);
-	glBindTexture(GL_TEXTURE_1D, m_textureRandID);
+	glBindTextureUnit(TexUnit, m_textureRandID);
 }

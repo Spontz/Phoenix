@@ -148,8 +148,7 @@ void Mesh::Draw(GLuint shaderID)
 	glBindVertexArray(0);
 
 	// always good practice to set everything back to defaults once configured.
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTextureUnit(0, 0);
 }
 
 

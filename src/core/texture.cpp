@@ -107,13 +107,7 @@ bool Texture::load(const std::string & file_name, bool flip)
 	return is_loaded;
 }
 
-void Texture::active(int TexUnit) const
+void Texture::bind(GLuint TexUnit) const
 {
-	glActiveTexture(GL_TEXTURE0 + TexUnit);
-}
-
-void Texture::bind(int TexUnit) const
-{
-	glActiveTexture(GL_TEXTURE0 + TexUnit);
-	glBindTexture(GL_TEXTURE_2D, m_textureID);
+	glBindTextureUnit(TexUnit, m_textureID);
 }

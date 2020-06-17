@@ -14,11 +14,6 @@ FboManager::FboManager() {
 	clearDepth = false;
 }
 
-void FboManager::active(int index) const
-{
-	glActiveTexture(GL_TEXTURE0 + index);
-}
-
 void FboManager::bind(int fbo_num, bool clearColor, bool clearDepth)
 {
 	if (fbo_num < fbo.size()) {
@@ -50,11 +45,11 @@ void FboManager::bindCurrent()
 	}
 }
 
-void FboManager::bind_tex(int fbo_num, GLuint attachment)
+void FboManager::bind_tex(int fbo_num, GLuint texUnit, GLuint attachment)
 {
 	if (fbo_num < fbo.size()) {
 		Fbo* my_fbo = fbo[fbo_num];
-		my_fbo->bind_tex(attachment);
+		my_fbo->bind_tex(texUnit, attachment);
 	}
 }
 

@@ -195,6 +195,7 @@ void Resource::Load_Shaders()
 	shdr_QuadDepth = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadDepth.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadDepth.frag");
 	shdr_QuadTexAlpha = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexAlpha.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTexAlpha.frag");
 	shdr_QuadTexModel = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexModel.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTexModel.frag");
+	shdr_QuadTexPVM = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexPVM.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTexPVM.frag");
 	shdr_QuadTexVFlipModel = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.frag");
 	shdr_Skybox = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/skybox/skybox.vert", DEMO->dataFolder + "/resources/shaders/skybox/skybox.frag");
 	shdr_ObjColor = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/ObjColor.vert", DEMO->dataFolder + "/resources/shaders/basic/ObjColor.frag");
@@ -250,8 +251,7 @@ void Resource::Draw_QuadFBOFS(int fboNum, GLuint attachment)
 
 	my_shad->use();
 	my_shad->setValue("screenTexture", 0);
-	DEMO->fboManager.active();
-	DEMO->fboManager.bind_tex(fboNum, attachment);
+	DEMO->fboManager.bind_tex(fboNum, 0, attachment);
 	
 	Draw_QuadFS();
 }
@@ -263,8 +263,7 @@ void Resource::Draw_QuadEfxFBOFS(int efxFboNum, GLuint attachment)
 
 	my_shad->use();
 	my_shad->setValue("screenTexture", 0);
-	DEMO->efxBloomFbo.active();
-	DEMO->efxBloomFbo.bind_tex(efxFboNum, attachment);
+	DEMO->efxBloomFbo.bind_tex(efxFboNum, 0, attachment);
 
 	Draw_QuadFS();
 }
@@ -282,9 +281,16 @@ void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 const* model)
 }
 
 // Draw a Quad in full screen. A texture can be specified and the 3 matrix
-void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *view, glm::mat4 *projection, glm::mat4 *model)
+void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *projection, glm::mat4* view, glm::mat4 *model)
 {
-
+	// TODO: We need to prepare the shader for this method
+	Shader* my_shad = DEMO->shaderManager.shader[shdr_QuadTexPVM];
+	my_shad->use();
+	my_shad->setValue("projection", *projection);
+	my_shad->setValue("view", *view);
+	my_shad->setValue("model", *model);
+	my_shad->setValue("screenTexture", 0);
+	DEMO->textureManager.texture[textureNum]->bind();
 
 	Draw_QuadFS();
 }

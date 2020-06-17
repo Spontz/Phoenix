@@ -56,8 +56,8 @@ typedef struct {
 	char			name[MAXSIZE_VAR_NAME];
 	GLint			loc;
 	int				texture;	// Engine internal texture ID
-	int				texGLid;	// Texture ID (for binding it)
-	int				texUnitID;	// Texture unit ID (for glActiveTexture)
+	int				texGLid;	// Texture ID
+	int				texUnitID;	// Texture unit ID
 } varSampler2D;				// Structure for a evaluation Sampler2D (TEXTURE)
 
 

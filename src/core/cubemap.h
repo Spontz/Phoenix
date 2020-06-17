@@ -18,8 +18,7 @@ public:
 	virtual ~Cubemap();
 
 	bool load(std::vector<std::string> faces, bool flip);
-	void bind() const;
-	void active(int index = 0) const;
+	void bind(GLuint TexUnit = 0) const;
 
 private:
 

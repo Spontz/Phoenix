@@ -126,14 +126,9 @@ void Fbo::bind() const
 	glBindFramebuffer(GL_FRAMEBUFFER, this->m_frameBuffer);
 }
 
-void Fbo::bind_tex(GLuint attachment) const
+void Fbo::bind_tex(GLuint TexUnit, GLuint attachment) const
 {
 	if (attachment < this->numAttachments)
-		glBindTexture(GL_TEXTURE_2D, this->m_colorAttachment[attachment]);
-}
-
-void Fbo::active(int index) const
-{
-	glActiveTexture(GL_TEXTURE0 + index);
+		glBindTextureUnit(TexUnit, this->m_colorAttachment[attachment]);
 }
 

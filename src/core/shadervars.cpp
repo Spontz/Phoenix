@@ -225,8 +225,7 @@ void ShaderVars::setValues()
 	for (i = 0; i < sampler2D.size(); i++) {
 		my_sampler2D = sampler2D[i];
 		my_shader->setValue(my_sampler2D->name, my_sampler2D->texUnitID);
-		glActiveTexture(GL_TEXTURE0 + my_sampler2D->texUnitID);
-		glBindTexture(GL_TEXTURE_2D, my_sampler2D->texGLid);
+		glBindTextureUnit(my_sampler2D->texUnitID, my_sampler2D->texGLid);
 	}
 }
 

@@ -30,8 +30,7 @@ public:
 
 	bool upload(std::string EngineFormat, int index, int Width, int Height, int iFormat, int Format, int Type, unsigned int numColorAttachments);
 	void bind() const;
-	void bind_tex(GLuint attachment = 0) const;
-	void active(int index = 0) const;
+	void bind_tex(GLuint texUnit = 0, GLuint attachment = 0) const;
 				
 private:
 

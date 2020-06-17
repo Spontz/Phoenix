@@ -115,7 +115,6 @@ void sEfxBloom::exec() {
 		bool horizontal = true;
 		bool first_iteration = true;
 		my_shaderBlur->use();
-		DEMO->efxBloomFbo.active(0);
 
 		// Prevent negative Blurs
 		if (local->blurAmount < 0)
@@ -131,9 +130,9 @@ void sEfxBloom::exec() {
 			// If it's the first iteration, we pick the second attachment of our fbo
 			// if not, we pick the fbo of our efxBloom
 			if (first_iteration)
-				DEMO->fboManager.bind_tex(local->FboNum, 1);
+				DEMO->fboManager.bind_tex(local->FboNum, 0, 1); //Use the second attachment of the fbo
 			else
-				DEMO->efxBloomFbo.bind_tex(!horizontal);
+				DEMO->efxBloomFbo.bind_tex(!horizontal, 0, 0);	// Use the texture from our efxBloom
 			
 			// Render scene
 			RES->Draw_QuadFS();
@@ -149,12 +148,10 @@ void sEfxBloom::exec() {
 		local->shaderVars->setValues();
 
 		// Tex unit 0: scene
-		DEMO->fboManager.fbo[local->FboNum]->active(0);
-		DEMO->fboManager.fbo[local->FboNum]->bind_tex();
+		DEMO->fboManager.fbo[local->FboNum]->bind_tex(0);
 		// Tex unit 1: Bloom blur
 		auto tmp = DEMO->efxBloomFbo.fbo;
-		DEMO->efxBloomFbo.fbo[!horizontal]->active(1);
-		DEMO->efxBloomFbo.fbo[!horizontal]->bind_tex();
+		DEMO->efxBloomFbo.fbo[!horizontal]->bind_tex(1);
 
 		// Adjust back the current fbo
 		DEMO->fboManager.bindCurrent();

@@ -26,8 +26,7 @@ public:
 	virtual ~Texture();
 
 	bool load(const std::string & file_name, bool flip);
-	void bind(int TexUnit = 0) const;
-	void active(int TexUnit = 0) const;
+	void bind(GLuint TexUnit = 0) const;
 			
 private:
 	GLsizei m_mipmapLevels;

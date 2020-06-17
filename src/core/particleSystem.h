@@ -63,7 +63,7 @@ private:
 	int billboardShader;
 
 	bool initRandomTexture(unsigned int Size); //TODO: Add it into the textureManager
-	void bindRandomTexture(unsigned int TextureUnit);//TODO: this should be removed once is included in the textureManager
+	void bindRandomTexture(GLuint TexUnit = 0);//TODO: this should be removed once is included in the textureManager
 	unsigned int m_textureRandID; // TODO: This will be removed once is included in the textureManager
 
 	float m_time;
