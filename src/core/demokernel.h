@@ -151,7 +151,7 @@ public:
 	static demokernel& GetInstance();
 
 	void getArguments(int argc, char *argv[]);
-	void initDemo();
+	bool initDemo();
 	void mainLoop();
 	void closeDemo();
 

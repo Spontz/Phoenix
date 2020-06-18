@@ -31,12 +31,12 @@ glTexTable_t textureModes[] = {
 
 // GLFW CALLBACKS ***************************************************
 
-void error_callback(int, const char* err_str)
+void glDriver::glfwError_callback(int, const char* err_str)
 {
 	LOG->Error("GLFW Error: %s", err_str);
 }
 
-void glDriver::GLFWWindowSizeCallback(GLFWwindow* p_glfw_window, int width, int height) {
+void glDriver::glfwWindowSize_callback(GLFWwindow* p_glfw_window, int width, int height) {
 	GLDRV->OnWindowSizeChanged(p_glfw_window, width, height);
 }
 
@@ -64,7 +64,7 @@ void glDriver::OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int hei
 	initRender(true);
 }
 
-void mouse_callback(GLFWwindow* p_glfw_window, double xpos, double ypos)
+void glDriver::mouseMove_callback(GLFWwindow* p_glfw_window, double xpos, double ypos)
 {
 	if (DEMO->debug && !(ImGui::GetIO().WantCaptureMouse)) {
 		float x = static_cast<float>(xpos);
@@ -94,7 +94,7 @@ void mouse_callback(GLFWwindow* p_glfw_window, double xpos, double ypos)
 	}
 }
 
-void mouseButton_callback(GLFWwindow* p_glfw_window, int button, int action, int mods)
+void glDriver::mouseButton_callback(GLFWwindow* p_glfw_window, int button, int action, int mods)
 {
 	if (DEMO->debug && !(ImGui::GetIO().WantCaptureMouse)) {
 		if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
@@ -105,27 +105,21 @@ void mouseButton_callback(GLFWwindow* p_glfw_window, int button, int action, int
 }
 
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is
-// called
-void scroll_callback(GLFWwindow* p_glfw_window, double xoffset, double yoffset)
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+void glDriver::mouseScroll_callback(GLFWwindow* p_glfw_window, double xoffset, double yoffset)
 {
 	if (DEMO->debug && !(ImGui::GetIO().WantCaptureMouse))
 		DEMO->camera->ProcessMouseScroll((float)yoffset);
 }
 
-void APIENTRY glErrorCallback(GLenum source, GLenum type,
-	GLuint id,
-	GLenum severity,
-	GLsizei length,
-	const GLchar* message,
-	const void* userParam)
+void glDriver::glDebugMessage_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
 	LOG->Info(LogLevel::LOW, "Error GL callback: %s type = 0x%x, severity = 0x%x, message = %s",
 		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
 		type, severity, message);
 }
 
-void key_callback(GLFWwindow* p_glfw_window, int key, int scancode, int action, int mods) {
+void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, int action, int mods) {
 
 	if (action == GLFW_PRESS) {
 		if (key == KEY_EXIT)
@@ -255,11 +249,11 @@ void glDriver::initFramework() {
 	}
 	else {
 		LOG->Info(LogLevel::MED, "GLFW library version is: %s", glfwGetVersionString());
-		glfwSetErrorCallback(error_callback);
+		glfwSetErrorCallback(glfwError_callback);
 	}
 }
 
-void glDriver::initGraphics() {
+bool glDriver::initGraphics() {
 	mouse_lastxpos = script__gl_width__framebuffer_width_ / 2.0f;
 	mouse_lastypos = script__gl_height__framebuffer_height_ / 2.0f;
 
@@ -278,9 +272,12 @@ void glDriver::initGraphics() {
 		nullptr
 	);
 
-	if (!p_glfw_window_)
+	if (!p_glfw_window_) {
 		glfwTerminate();
-
+		//LOG->Error("Window was not created. OpenGL version not supported?");
+		return false;
+	}
+		
 	// Enable multisampling (aka anti-aliasing)
 	if (this->multisampling)
 		glfwWindowHint(GLFW_SAMPLES, 4); // This does mean that the size of all the buffers is increased by 4
@@ -289,17 +286,20 @@ void glDriver::initGraphics() {
 	glfwMakeContextCurrent(p_glfw_window_);
 
 	// Configure GLFW callbacks
-	glfwSetWindowSizeCallback(p_glfw_window_, GLFWWindowSizeCallback);
+	glfwSetWindowSizeCallback(p_glfw_window_, glfwWindowSize_callback);
 	glfwSetKeyCallback(p_glfw_window_, key_callback);
-	glfwSetCursorPosCallback(p_glfw_window_, mouse_callback);
+	glfwSetCursorPosCallback(p_glfw_window_, mouseMove_callback);
 	glfwSetMouseButtonCallback(p_glfw_window_, mouseButton_callback);
 
-	glfwSetScrollCallback(p_glfw_window_, scroll_callback);
+	glfwSetScrollCallback(p_glfw_window_, mouseScroll_callback);
 
 	// Initialize glad
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		glfwTerminate();
 		LOG->Error("Failed to initialize GLAD");
-
+		return false;
+	}
+	
 	// Enable multisampling state (aka anti-aliasing)
 	if (this->multisampling)
 		glEnable(GL_MULTISAMPLE);
@@ -321,7 +321,7 @@ void glDriver::initGraphics() {
 	if (DEMO->debug) {
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		glDebugMessageCallback(glErrorCallback, 0);
+		glDebugMessageCallback(glDebugMessage_callback, 0);
 		// If you want to disable all error messages, except the API error messages, then you have to disable all messages first and the enable explicitly the API error messages:
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
 		glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, NULL, GL_TRUE);
@@ -332,6 +332,8 @@ void glDriver::initGraphics() {
 
 	// Init internal timer
 	TimeCurrentFrame = static_cast<float>(glfwGetTime());
+
+	return true;
 }
 
 void glDriver::initStates() {

@@ -36,7 +36,10 @@ int main(int argc, char* argv[]) {
 	demo.load_spos();
 
 	log.Info(LogLevel::HIGH, "Initializing demo...");
-	demo.initDemo();
+	if (!demo.initDemo()) {
+		log.CloseLogFile();
+		return 0;
+	}
 
 	log.Info(LogLevel::HIGH, "Initializing main loop...");
 	demo.mainLoop();

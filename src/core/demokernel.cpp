@@ -237,13 +237,14 @@ void demokernel::getArguments(int argc, char* argv[]) {
 	}
 }
 
-void demokernel::initDemo() {
+bool demokernel::initDemo() {
 
 	// Show Phoenix version
 	LOG->Info(LogLevel::HIGH, "Spontz visuals engine 'Phoenix' version: %d.%d", PHOENIX_MAJOR_VERSION, PHOENIX_MINOR_VERSION);
 
 	// initialize graphics driver
-	GLDRV->initGraphics();
+	if (!GLDRV->initGraphics())
+		return false;
 	LOG->Info(LogLevel::HIGH, "OpenGL environment created");
 	LOG->Info(LogLevel::MED, "OpenGL library version is: %s", glGetString(GL_VERSION));
 
@@ -276,6 +277,8 @@ void demokernel::initDemo() {
 
 	// get initial sync timer values
 	this->initTimer();
+
+	return true;
 }
 
 void demokernel::mainLoop() {
