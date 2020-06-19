@@ -20,10 +20,10 @@
 
 struct textureStack
 {
-	int		ID;				// ID form the texture manager
+	int			ID;				// ID form the texture manager
 	std::string	shaderName;		// Name that receives the texture in the shader
-	int		blendOperation;	// Blend operation with the base color
-	float	strength;		// Strength factor
+	int			blendOperation;	// Blend operation with the base color
+	float		strength;		// Strength factor
 
 	textureStack()
 	{ 
@@ -53,7 +53,5 @@ private:
 	const aiMaterial	*m_pMaterial;
 	std::string			m_ModelDirectory;	// Path of the model file
 	std::string			m_ModelFilename;	// Name of the model file
-
-
 };
 #endif

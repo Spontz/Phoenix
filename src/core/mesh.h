@@ -62,22 +62,23 @@ struct Vertex {
 
 class Mesh {
 public:
-	std::vector<Vertex>			vertices;
-	std::vector<unsigned int>	indices;
-	std::vector<glm::vec3>		unique_vertices_pos; // Unique vertices positions
-	Material					material;
-	GLuint						VAO;
+	std::vector<glm::vec3>		unique_vertices_pos;	// Unique vertices positions
+	glm::mat4					meshTransform;			// Transformation Matrix for positioning the mesh
 	std::string					nodeName;
-	glm::mat4					meshTransform; // Transformation Matrix for positioning the mesh
-	
 
 	Mesh(std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial *pMaterial, std::string directory, std::string filename);
 	// render the mesh
 	void Draw(GLuint shaderID);
 	
 private:
-	unsigned int		VBO, EBO;
-	const aiMesh		*m_pMesh;
+	GLuint						m_VAO;	// Vertex Array object
+	GLuint						m_VBO;	// Vertex Buffer Object
+	GLuint						m_EBO;	// Element Buffer Object
+	const aiMesh				*m_pMesh;	// ASSIMP mesh object
+	std::vector<Vertex>			m_vertices;	// Vertices
+	std::vector<unsigned int>	m_indices;	// Indices
+	Material					m_material;	// Material
+
 
 	// initializes all the buffer objects/arrays
 	void setupMesh();

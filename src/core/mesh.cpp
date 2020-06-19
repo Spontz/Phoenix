@@ -41,13 +41,13 @@ Mesh::Mesh(std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertic
 	this->meshTransform = glm::mat4(1.0); // Load identity matrix by default
 	this->nodeName = nodeName;
 	this->m_pMesh = pMesh;
-	this->vertices = vertices;
-	this->indices = indices;
+	this->m_vertices = vertices;
+	this->m_indices = indices;
 	
 	loadUniqueVerticesPos();
 
 	// Setup the material of our mesh (each mesh has only one material)
-	this->material.Load(pMaterial, directory, filename);
+	this->m_material.Load(pMaterial, directory, filename);
 
 	// now that we have all the required data, set the vertex buffers and its attribute pointers.
 	setupMesh();
@@ -59,15 +59,15 @@ void Mesh::loadUniqueVerticesPos()
 {
 	// Loads the unique vertices list
 	bool vertexFound = false;
-	for (int i = 0; i < vertices.size(); i++) {
+	for (int i = 0; i < m_vertices.size(); i++) {
 		vertexFound = false;
 		for (int j = 0; j < unique_vertices_pos.size(); j++) {
-			if (vertices[i].Position == unique_vertices_pos[j]) {
+			if (m_vertices[i].Position == unique_vertices_pos[j]) {
 				vertexFound = true;
 			}
 		}
 		if (vertexFound == false)
-			unique_vertices_pos.push_back(vertices[i].Position);
+			unique_vertices_pos.push_back(m_vertices[i].Position);
 	}
 
 }
@@ -76,20 +76,20 @@ void Mesh::loadUniqueVerticesPos()
 void Mesh::setupMesh()
 {
 	// create VAO, VBO and ElementBuffer
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	glGenVertexArrays(1, &m_VAO);
+	glGenBuffers(1, &m_VBO);
+	glGenBuffers(1, &m_EBO);
 
-	glBindVertexArray(VAO);
+	glBindVertexArray(m_VAO);
 	// load data into vertex buffers
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 	// A great thing about structs is that their memory layout is sequential for all its items.
 	// The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
 	// again translates to 3/2 floats which translates to a byte array.
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(unsigned int), &m_indices[0], GL_STATIC_DRAW);
 
 	// set the vertex attribute pointers
 	// vertex Positions
@@ -124,27 +124,27 @@ void Mesh::setupMesh()
 void Mesh::Draw(GLuint shaderID)
 {
 	// Send material properties
-	glUniform3fv(glGetUniformLocation(shaderID, "color_ambient"), 1, &material.colAmbient[0]);
-	glUniform3fv(glGetUniformLocation(shaderID, "color_specular"), 1, &material.colSpecular[0]);
-	glUniform1f(glGetUniformLocation(shaderID, "strenght_specular"), material.strenghtSpecular);
-	glUniform3fv(glGetUniformLocation(shaderID, "color_diffuse"), 1, &material.colDiffuse[0]);
+	glUniform3fv(glGetUniformLocation(shaderID, "color_ambient"), 1, &m_material.colAmbient[0]);
+	glUniform3fv(glGetUniformLocation(shaderID, "color_specular"), 1, &m_material.colSpecular[0]);
+	glUniform1f(glGetUniformLocation(shaderID, "strenght_specular"), m_material.strenghtSpecular);
+	glUniform3fv(glGetUniformLocation(shaderID, "color_diffuse"), 1, &m_material.colDiffuse[0]);
 
 	// Send textures
-	unsigned int numTextures = static_cast<unsigned int>(material.textures.size());
+	unsigned int numTextures = static_cast<unsigned int>(m_material.textures.size());
 	for (unsigned int i = 0; i < numTextures; i++)
 	{
-		if (material.textures[i].ID == -1) // Avoid illegal access
+		if (m_material.textures[i].ID == -1) // Avoid illegal access
 			return;
-		Texture *tex = DEMO->textureManager.texture[material.textures[i].ID];
+		Texture *tex = DEMO->textureManager.texture[m_material.textures[i].ID];
 		// TODO: Remove this c_str() command could improve performance?
-		glUniform1i(glGetUniformLocation(shaderID, material.textures[i].shaderName.c_str()), i);
+		glUniform1i(glGetUniformLocation(shaderID, m_material.textures[i].shaderName.c_str()), i);
 		// and finally bind the texture
 		tex->bind(i);
 	}
 
 	// draw mesh
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, (int)indices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(m_VAO);
+	glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
 	// always good practice to set everything back to defaults once configured.
