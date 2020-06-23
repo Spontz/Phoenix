@@ -289,12 +289,18 @@ void demokernel::mainLoop() {
 
 	/* Loop until the user closes the window */
 	while ((!GLDRV->WindowShouldClose()) && (!this->exitDemo)) {
+		PX_PROFILE_SCOPE("RunLoop");
+
 		// Poll for and process events
 		GLDRV->ProcessInput();
-		// 
+
 		this->doExec();
 
-		glfwPollEvents();
+		{
+			PX_PROFILE_SCOPE("glfwPollEvents");
+			glfwPollEvents();
+		}
+		
 	}
 }
 
@@ -755,14 +761,16 @@ void demokernel::processSectionQueues() {
 
 	// Run Exec sections
 	LOG->Info(LogLevel::LOW, "  Running Exec Sections...");
-	for (i = 0; i < this->sectionManager.execSection.size(); i++) {
-		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
-		ds = this->sectionManager.section[sec_id];
-		ds->runTime = DEMO->runTime - ds->startTime;
-		ds->exec();			// Exec the Section
-		LOG->Info(LogLevel::LOW, "  Section %d [layer: %d id: %s type: %s] executed", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
+	{
+		PX_PROFILE_SCOPE("ExecSections");
+		for (i = 0; i < this->sectionManager.execSection.size(); i++) {
+			sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
+			ds = this->sectionManager.section[sec_id];
+			ds->runTime = DEMO->runTime - ds->startTime;
+			ds->exec();			// Exec the Section
+			LOG->Info(LogLevel::LOW, "  Section %d [layer: %d id: %s type: %s] executed", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
+		}
 	}
-
 	LOG->Info(LogLevel::MED, "End queue processing!");
 
 	// Set back to the frambuffer and restore the viewport
@@ -771,11 +779,16 @@ void demokernel::processSectionQueues() {
 
 	// Show debug info
 	if (this->debug) {
+		PX_PROFILE_SCOPE("DrawGui");
 		GLDRV->drawGui();
 	}
 
 	// swap buffer
-	GLDRV->swapBuffers();
+	{
+		PX_PROFILE_SCOPE("GLDRV::swapBuffers");
+		GLDRV->swapBuffers();
+	}
+	
 }
 
 void demokernel::load_spo(std::string sFile) {

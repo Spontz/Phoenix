@@ -185,7 +185,9 @@ glDriver& glDriver::GetInstance() {
 }
 
 void glDriver::ProcessInput()
-{
+{	
+	PX_PROFILE_FUNCTION();
+
 	if (DEMO->debug) {
 		if (glfwGetKey(p_glfw_window_, KEY_FORWARD) == GLFW_PRESS)
 			DEMO->camera->ProcessKeyboard(CameraMovement::FORWARD, GLDRV->TimeDelta);

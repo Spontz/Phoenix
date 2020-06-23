@@ -32,4 +32,6 @@
 
 #include "sections/sections.h"
 
+#include "debug/instrumentor.h"
+
 #endif

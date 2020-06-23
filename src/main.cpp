@@ -30,10 +30,12 @@ int main(int argc, char* argv[]) {
 
 	log.Info(LogLevel::HIGH, "Phoenix Visuals Engine starting up: Let's make some noise!");
 
+	PX_PROFILE_BEGIN_SESSION("DataLoad", "PhoenixProfile-DataLoad.json");
 	log.Info(LogLevel::MED, "Loading Scripts...");
 	if (!demo.load_config())
 		return 0;
 	demo.load_spos();
+	PX_PROFILE_END_SESSION();
 
 	log.Info(LogLevel::HIGH, "Initializing demo...");
 	if (!demo.initDemo()) {
@@ -41,8 +43,10 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	PX_PROFILE_BEGIN_SESSION("Runtime", "PhoenixProfile-Runtime.json");
 	log.Info(LogLevel::HIGH, "Initializing main loop...");
 	demo.mainLoop();
+	PX_PROFILE_END_SESSION();
 
 	log.Info(LogLevel::HIGH, "Closing demo. We hope you enjoyed watching this demo! See you next time! Watch more at www.spontz.org.");
 	demo.closeDemo();
