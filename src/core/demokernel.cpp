@@ -797,7 +797,11 @@ void demokernel::load_spo(std::string sFile) {
 	load_scriptData(pScript, sFile);
 }
 
+#include "scripting/spo.h"
 std::string demokernel::load_ascii_file(std::string const& sFile) {
+	//Phoenix::SpoReader spo;
+	//if (spo.readAsciiFromFile(sFile))
+	//	spo.loadScriptData();
 	return { std::istreambuf_iterator<char>(std::ifstream(sFile)), std::istreambuf_iterator<char>() };
 }
 
