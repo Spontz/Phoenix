@@ -194,15 +194,6 @@ private:
 	void initSectionQueues();		// Init Section Queues
 	void reInitSectionQueues();		// ReInit Section Queues
 	void processSectionQueues();	// Process Section Queues
-
-	// Scripts (SPO files) management
-	void load_spo(std::string sFile);
-	int load_scriptData(std::string sScript, std::string sFile);
-	static std::string load_ascii_file(std::string const& sFile);
-	int getCodeByName(char *name, glTable_t *table, int size);
-	int getBlendCodeByName(char *name);
-	int getBlendEquationCodeByName(char *name);
-	int getAlphaCodeByName(char *name);
 };
 // ******************************************************************
 

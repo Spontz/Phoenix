@@ -1,3 +1,6 @@
+// spo.cpp
+// Spontz Demogroup
+
 #include "spo.h"
 
 namespace Phoenix {
@@ -26,49 +29,15 @@ namespace Phoenix {
 			return false;
 	}
 
-	bool SpoReader::loadConfigScriptData()
+	bool SpoReader::readAsciiFromNetwork(std::string sScript)
 	{
-		// TODO: Crear el método que lee ficheros de configuracion, ver demokernel.cpp linea 1019
-		/*
-		Util::getKeyValue(line, key, value);
-
-			// generic variable loading
-			int* iptr;
-			float* fptr;
-			char** sptr;
-
-			for (i = 0; i < scriptCommand.size(); ++i) {
-				if (_strcmpi(key, scriptCommand[i].cName) == 0) {
-					switch (scriptCommand[i].vType) {
-					case VTYPE_INT:
-						if (sscanf(value, "%d", (int*)((char**)scriptCommand[i].vAddr)) != 1)
-							throw std::exception();
-						iptr = (int*)scriptCommand[i].vAddr;
-						LOG->Info(LogLevel::LOW, "  Command found: %s = %d", scriptCommand[i].cName, *iptr);
-						break;
-					case VTYPE_FLOAT:
-						if (sscanf(value, "%f", (float*)((char**)scriptCommand[i].vAddr)) != 1)
-							throw std::exception();
-						fptr = (float*)scriptCommand[i].vAddr;
-						LOG->Info(LogLevel::LOW, "  Command found: %s = %f", scriptCommand[i].cName, *fptr);
-						break;
-					case VTYPE_STRING:
-						*((char**)scriptCommand[i].vAddr) = _strdup(value);
-						sptr = (char**)scriptCommand[i].vAddr;
-						LOG->Info(LogLevel::LOW, "  Command found: %s = %s", scriptCommand[i].cName, *sptr);
-						break;
-					default:
-						LOG->Error("%d is not a valid variable type id.", scriptCommand[i].vType);
-						break;
-					}
-					break;
-				}
-			}
-		*/
-		return false;
+		m_filepath = "Netowrk";
+		m_scriptData = sScript;
+		return true;
 	}
 
-	bool SpoReader::loadScriptData() {
+	int SpoReader::loadScriptData()
+	{
 		std::istringstream f(m_scriptData);
 		std::string line;
 		int lineNum = 0; // Line counter
@@ -76,12 +45,111 @@ namespace Phoenix {
 		int sec_id = -1;
 		Section* new_sec = NULL;
 		Spline* new_spl = NULL;
-		SectionCommand command = SectionCommand::INVALID;
+		SectionCommand_ command = SectionCommand_::INVALID;
 
 
 		while (std::getline(f, line)) {
 			lineNum++;
-			// Remove '\r' (if exists
+			// Remove '\r' (if exists)
+			if (!line.empty() && line[line.size() - 1] == '\r')
+				line.erase(line.size() - 1);
+
+			// Ignore comments or empty line
+			if (line.empty() || (line[0] == ';') || (line[0] == '\n') || (line[0] == '\r') || (line[0] == ' ') || (line[0] == '\t')) {
+				LOG->Info(LogLevel::LOW, "  Comments found or empty in line %i, ignoring this line.", lineNum);
+				continue;
+			}
+
+			// If its a section
+			if (line[0] == '[') {
+				sec_id = loadSectionScriptData();
+				return sec_id;
+			}
+			// Else: it's a config file
+			else {
+				loadConfigScriptData();
+				return 0;
+			}
+		}
+		return -1;
+	}
+
+	bool SpoReader::loadConfigScriptData()
+	{
+		std::istringstream f(m_scriptData);
+		std::string line;
+		int lineNum = 0; // Line counter
+		std::string sec_type;
+		Section* new_sec = NULL;
+		Spline* new_spl = NULL;
+		int command = -1;
+		// generic variable loading
+		int* iptr;
+		float* fptr;
+		char** sptr;
+
+
+		while (std::getline(f, line)) {
+			lineNum++;
+			// Remove '\r' (if exists)
+			if (!line.empty() && line[line.size() - 1] == '\r')
+				line.erase(line.size() - 1);
+
+			// Ignore comments or empty line
+			if (line.empty() || (line[0] == '\n') || (line[0] == '\r')) {
+				continue;
+			}
+			if ((line[0] == ';') || (line[0] == ' ') || (line[0] == '\t')) {
+				LOG->Info(LogLevel::LOW, "  Comments found in line %i, ignoring this line.", lineNum);
+				continue;
+			}
+
+			std::pair<std::string, std::string> s_line = splitIn2Lines(line);
+			// check if its a known command
+			command = scriptCommandFound(s_line.first);
+			if (command != -1) {
+				switch (scriptCommand[command].vType) {
+				case SectionVar::TYPE_INT:
+					*(int*)((char**)scriptCommand[command].vAddr) = std::stoi(s_line.second);
+					iptr = (int*)scriptCommand[command].vAddr;
+					LOG->Info(LogLevel::LOW, "  Command found: %s = %d", scriptCommand[command].cName.c_str(), *iptr);
+					break;
+				case SectionVar::TYPE_FLOAT:
+					*(float*)((char**)scriptCommand[command].vAddr) = std::stof(s_line.second);
+					fptr = (float*)scriptCommand[command].vAddr;
+					LOG->Info(LogLevel::LOW, "  Command found: %s = %f", scriptCommand[command].cName.c_str(), *fptr);
+					break;
+				case SectionVar::TYPE_STRING:
+					*((char**)scriptCommand[command].vAddr) = _strdup(s_line.second.c_str());
+					sptr = (char**)scriptCommand[command].vAddr;
+					LOG->Info(LogLevel::LOW, "  Command found: %s = %s", scriptCommand[command].cName.c_str(), *sptr);
+					break;
+				default:
+					LOG->Error("%d is not a valid variable type id.", scriptCommand[command].vType);
+					break;
+				}
+			}
+			else {
+				LOG->Error("'%s' is not a valid SPO script variable. Check file: %s, line: %d", s_line.first.c_str(), m_filepath.c_str(), lineNum);
+			}
+		}
+		return true;
+	}
+
+	int SpoReader::loadSectionScriptData() {
+		std::istringstream f(m_scriptData);
+		std::string line;
+		int lineNum = 0; // Line counter
+		std::string sec_type;
+		int sec_id = -1;
+		Section* new_sec = NULL;
+		Spline* new_spl = NULL;
+		SectionCommand_ command = SectionCommand_::INVALID;
+
+
+		while (std::getline(f, line)) {
+			lineNum++;
+			// Remove '\r' (if exists)
 			if (!line.empty() && line[line.size() - 1] == '\r')
 				line.erase(line.size() - 1);
 
@@ -116,55 +184,55 @@ namespace Phoenix {
 			else if (sec_id != -1) {
 				std::pair<std::string, std::string> s_line = splitIn2Lines(line);
 				// check if its a known command
-				if (spoSectionCommand.find(s_line.first) == spoSectionCommand.end()) {
+				if (spoSectionCommand_.find(s_line.first) == spoSectionCommand_.end()) {
 					// If its not found, maybe is a normal parameter
 					switch (s_line.first[0]) {
 					case 'f':
-						command = SectionCommand::PARAM;
+						command = SectionCommand_::PARAM;
 						break;
 					case 's':
-						command = SectionCommand::STRING;
+						command = SectionCommand_::STRING;
 						break;
 					case 'u':
-						command = SectionCommand::UNIFORM;
+						command = SectionCommand_::UNIFORM;
 						break;
 					case 'c':
-						command = SectionCommand::SPLINE;
+						command = SectionCommand_::SPLINE;
 						break;
 					case 'm':
-						command = SectionCommand::MODIFIER;
+						command = SectionCommand_::MODIFIER;
 						break;
 					default:
-						command = SectionCommand::INVALID;
+						command = SectionCommand_::INVALID;
 						break;
 					}
 				}
 				else {
-					command = spoSectionCommand.find(s_line.first)->second;
+					command = spoSectionCommand_.find(s_line.first)->second;
 				}
 				// If we found the command
 				switch (command)
 				{
-					case SectionCommand::INVALID:
+					case SectionCommand_::INVALID:
 						LOG->Error("  Invalid line: %s", line.c_str());
 						break;
 
-					case SectionCommand::IDENTIFIER:
+					case SectionCommand_::IDENTIFIER:
 						new_sec->identifier = s_line.second;
 						LOG->Info(LogLevel::LOW, "  Section id: %s", new_sec->identifier.c_str());
 						break;
 
-					case SectionCommand::ENABLED:
+					case SectionCommand_::ENABLED:
 						new_sec->enabled = std::stoi(s_line.second);
 						LOG->Info(LogLevel::LOW, "  Section enabled state: %i", new_sec->enabled);
 						break;
 
-					case SectionCommand::START:
+					case SectionCommand_::START:
 						new_sec->startTime = std::stof(s_line.second);
 						LOG->Info(LogLevel::LOW, "  Section Start time: %f", new_sec->startTime);
 						break;
 
-					case SectionCommand::END:
+					case SectionCommand_::END:
 						new_sec->endTime = std::stof(s_line.second);
 						LOG->Info(LogLevel::LOW, "  Section End time: %f", new_sec->endTime);
 						new_sec->duration = new_sec->endTime - new_sec->startTime;
@@ -172,13 +240,13 @@ namespace Phoenix {
 							LOG->Error("Section End time is less or equal than Start timeStart time!");
 						break;
 
-					case SectionCommand::LAYER:
+					case SectionCommand_::LAYER:
 						new_sec->layer = std::stoi(s_line.second);
 						LOG->Info(LogLevel::LOW, "  Section layer: %i", new_sec->layer);
 						break;
 
 					
-					case SectionCommand::BLEND:
+					case SectionCommand_::BLEND:
 						{
 							auto blendModes = splitIn2Lines(s_line.second);
 
@@ -195,7 +263,7 @@ namespace Phoenix {
 						}
 						break;
 
-					case SectionCommand::BLEND_EQUATION:
+					case SectionCommand_::BLEND_EQUATION:
 						if (spoBlendEquationFunc.find(s_line.second) == spoBlendEquationFunc.end())
 							LOG->Error("Invalid blend equation in line: %s", line.c_str());
 						else {
@@ -204,7 +272,7 @@ namespace Phoenix {
 						}
 						break;
 							
-					case SectionCommand::ALPHA:
+					case SectionCommand_::ALPHA:
 						{
 							auto alphaValues = splitInMultipleLines(s_line.second);
 							switch (alphaValues.size()) {
@@ -230,7 +298,7 @@ namespace Phoenix {
 						}
 						break;
 							
-					case SectionCommand::PARAM:
+					case SectionCommand_::PARAM:
 						{
 							float fval = std::stof(s_line.second);
 							new_sec->param.push_back(fval);
@@ -238,17 +306,17 @@ namespace Phoenix {
 						}
 						break;
 
-					case SectionCommand::STRING:
+					case SectionCommand_::STRING:
 						new_sec->strings.push_back(s_line.second);
 						LOG->Info(LogLevel::LOW, "  Loaded string: \"%s\"", s_line.second.c_str());
 						break;
 
-					case SectionCommand::UNIFORM:
+					case SectionCommand_::UNIFORM:
 						new_sec->uniform.push_back(s_line.second);
 						LOG->Info(LogLevel::LOW, "  Loaded uniform: \"%s\"", s_line.second.c_str());
 						break;
 
-					case SectionCommand::SPLINE:
+					case SectionCommand_::SPLINE:
 						new_spl = new Spline();
 						new_spl->filename = DEMO->dataFolder + s_line.second;
 						new_spl->duration = new_sec->duration; // Spline duration is the same as the sectio duration
@@ -262,7 +330,7 @@ namespace Phoenix {
 			}
 		}
 
-		return true;
+		return sec_id;
 	}
 
 	std::pair<std::string, std::string> SpoReader::splitIn2Lines(const std::string & line) {
@@ -291,5 +359,14 @@ namespace Phoenix {
 			strings.push_back(s);
 		}
 		return strings;
+	}
+
+	int SpoReader::scriptCommandFound(const std::string& command)
+	{
+		for (int i = 0; i < scriptCommand.size(); i++) {
+			if (command == scriptCommand[i].cName)
+				return i;
+		}
+		return -1;
 	}
 }
