@@ -116,5 +116,7 @@ int TextureManager::getOpenGLTextureID(int index)
 void TextureManager::initTextureStates()
 {
 	// Bind no texture in texUnit 0
-	glBindTextureUnit(0, 0);
+	//glBindTextureUnit(0, 0); --> TODO: This gives error on some graphics card (https://community.intel.com/t5/Graphics/intel-uhd-graphics-630-with-latest-driver-will-cause-error-when/td-p/1161376)
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
