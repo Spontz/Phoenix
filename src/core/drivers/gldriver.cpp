@@ -146,12 +146,18 @@ void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, in
 				GLDRV->guiDrawTiming();
 			else if (key == KEY_SHOWFPS)
 				GLDRV->guiDrawFps();
-			else if (key == KEY_SHOWSECTIONINFO)
-				GLDRV->guiDrawSections();
+			else if (key == KEY_SHOWFPSHIST)
+				GLDRV->guiDrawFpsHistogram();
 			else if (key == KEY_SHOWFBO)
 				GLDRV->guiDrawFbo();
 			else if (key == KEY_CHANGEATTACH)
-				GLDRV->guiChangeAttachment();
+				GLDRV->guiChangeAttachment(); 
+			else if (key == KEY_SHOWSECTIONINFO)
+				GLDRV->guiDrawSections();
+			else if (key == KEY_SHOWSOUND)
+				GLDRV->guiDrawSound();
+			
+			
 
 			else if (key == KEY_CAPTURE)
 				DEMO->camera->CapturePos();
@@ -392,17 +398,27 @@ void glDriver::drawGui()
 
 void glDriver::guiDrawTiming()
 {
-	GLDRV->imGui_->show_timing = !GLDRV->imGui_->show_timing;
+	imGui_->show_timing = !imGui_->show_timing;
 }
 
 void glDriver::guiDrawFps()
 {
-	GLDRV->imGui_->show_fps = !GLDRV->imGui_->show_fps;
+	imGui_->show_fps = !imGui_->show_fps;
+}
+
+void glDriver::guiDrawFpsHistogram()
+{
+	imGui_->show_fpsHistogram = !imGui_->show_fpsHistogram;
 }
 
 void glDriver::guiDrawSections()
 {
-	GLDRV->imGui_->show_sesctionInfo = !GLDRV->imGui_->show_sesctionInfo;
+	imGui_->show_sesctionInfo = !imGui_->show_sesctionInfo;
+}
+
+void glDriver::guiDrawSound()
+{
+	imGui_->show_sound = !imGui_->show_sound;
 }
 
 void glDriver::guiDrawFbo()

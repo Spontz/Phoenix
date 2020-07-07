@@ -127,6 +127,8 @@ void sSound::exec() {
 			LOG->Error("Sound [%s]: BASS_ChannelGetData returned error: %i", this->identifier.c_str(), BASS_err);
 	}
 
+	BASSDRV->copyFFTdata(fft, BUFFER_SAMPLES);
+
 	instant = 0;
 	for (i = 0; i < (int)BUFFER_SAMPLES; i++)
 		instant += fft[i];
@@ -176,5 +178,12 @@ void sSound::end() {
 }
 
 std::string sSound::debug() {
-	return "[ sound id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";;
+	local = (sound_section*)this->vars;
+
+	std::string msg;
+	msg = "[ sound id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg += " beat: " + std::to_string(local->intensity) + "\n";
+	return msg;
+
+
 }

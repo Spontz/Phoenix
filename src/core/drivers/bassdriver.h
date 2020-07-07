@@ -7,7 +7,7 @@
 
 // hack: get rid of macros
 #define BASSDRV (&bassDriver::GetInstance())
-
+#define FFT_BUFFER_SAMPLES 512
 
 // ******************************************************************
 
@@ -18,6 +18,7 @@ public:
 
 private:
 	bassDriver() = default;
+	float fft[FFT_BUFFER_SAMPLES];
 
 public:
 	void init();
@@ -27,6 +28,8 @@ public:
 	void stop();
 	void end();
 
+	void copyFFTdata(float* fftData, int samples);
+	float* getFFTdata();
 	float sound_cpu();
 };
 

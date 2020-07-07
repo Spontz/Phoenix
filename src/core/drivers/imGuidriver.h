@@ -28,6 +28,7 @@ public:
 	bool	show_timing;
 	bool	show_sesctionInfo;
 	bool	show_fbo;
+	bool	show_sound;
 
 
 	int				num_fboSetToDraw;
@@ -53,6 +54,7 @@ private:
 	void drawSesctionInfo();
 	void drawFPSHistogram();
 	void drawFbo();
+	void drawSound();
 
 };
 

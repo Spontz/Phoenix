@@ -15,6 +15,11 @@ void bassDriver::init() {
 		LOG->Error("bassDriver: Sound cannot be initialized, error in BASS_Init()");
 		return;
 	}
+
+	for (int i = 0; i < FFT_BUFFER_SAMPLES; i++) {
+		fft[i] = 0.0;
+	}
+
 	LOG->Info(LogLevel::HIGH, "BASS library inited");
 	LOG->Info(LogLevel::MED, "BASS library version is: %s", BASSVERSIONTEXT);
 }
@@ -37,6 +42,18 @@ void bassDriver::stop() {
 
 void bassDriver::end() {
 	BASS_Free();
+}
+
+void bassDriver::copyFFTdata(float* fftData, int samples) {
+	if (samples != FFT_BUFFER_SAMPLES)
+		return;
+	else
+		memcpy(fft, fftData, FFT_BUFFER_SAMPLES);
+}
+
+float* bassDriver::getFFTdata()
+{
+	return &(fft[0]);
 }
 
 float bassDriver::sound_cpu() {

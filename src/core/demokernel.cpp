@@ -192,6 +192,7 @@ void demokernel::playDemo()
 	if (this->state != DEMO_PLAY) {
 		this->state = DEMO_PLAY;
 
+		if (this->sound) BASSDRV->play();
 		// reinit section queues
 		this->reInitSectionQueues();
 	}

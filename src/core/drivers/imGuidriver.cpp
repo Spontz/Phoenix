@@ -29,6 +29,7 @@ imGuiDriver::imGuiDriver()
 	show_timing(true),
 	show_sesctionInfo(false),
 	show_fbo(false),
+	show_sound(false),
 	num_fboSetToDraw(0),
 	num_fboAttachmentToDraw(0),
 	num_fboPerPage(4),
@@ -77,6 +78,8 @@ void imGuiDriver::drawGui()
 			drawFbo();
 		if (show_fpsHistogram)
 			drawFPSHistogram();
+		if (show_sound)
+			drawSound();
 	}
 	endDraw();
 }
@@ -124,11 +127,12 @@ void imGuiDriver::drawMenu() {
 	{
 		if (ImGui::BeginMenu("Demo"))
 		{
-			ImGui::MenuItem("Show FPS", "Y", &show_fps);
-			ImGui::MenuItem("Show FPS Histogram", "", &show_fpsHistogram);
-			ImGui::MenuItem("Show other Info", "T", &show_timing);
-			ImGui::MenuItem("Show FBO's", "F", &show_fbo);
-			ImGui::MenuItem("Show section stack", "U", &show_sesctionInfo);
+			ImGui::MenuItem("Show FPS", "1", &show_fps);
+			ImGui::MenuItem("Show FPS Histogram", "2", &show_fpsHistogram);
+			ImGui::MenuItem("Show other Info", "3", &show_timing);
+			ImGui::MenuItem("Show FBO's", "4", &show_fbo);
+			ImGui::MenuItem("Show section stack", "6", &show_sesctionInfo);
+			ImGui::MenuItem("Show sound information", "7", &show_sound);
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
@@ -196,7 +200,7 @@ void imGuiDriver::drawFbo() {
 	float fbo_w_size = static_cast<float>(vp_.width) / 5.0f; // 4 fbo's per row
 	float fbo_h_size = static_cast<float>(vp_.height) / 5.0f; // height is 1/3 screensize
 
-	if(!ImGui::Begin("Fbo info (press 'G' to change attachment)", &show_fbo))
+	if(!ImGui::Begin("Fbo info (press '5' to change attachment)", &show_fbo))
 	{
 		// Early out if the window is collapsed, as an optimization.
 		ImGui::End();
@@ -214,6 +218,23 @@ void imGuiDriver::drawFbo() {
 			}
 			ImGui::SameLine();
 		}
+	ImGui::End();
+}
+
+void imGuiDriver::drawSound()
+{
+	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
+	ImGui::SetNextWindowSize(ImVec2(static_cast<float>(vp_.width), 140.0f), ImGuiCond_Once);
+
+	if (!ImGui::Begin("Sound analysis", &show_sound))
+	{
+		ImGui::End();
+		return;
+	}
+	ImVec2 win = ImGui::GetWindowSize();
+	ImGui::Text("Beat value: %.3f, fadeout: %.3f, ratio: %.3f", DEMO->beat, DEMO->beat_fadeout, DEMO->beat_ratio);
+	ImGui::Text("FFT Samples: %d", FFT_BUFFER_SAMPLES);
+	ImGui::PlotHistogram("", BASSDRV->getFFTdata(), FFT_BUFFER_SAMPLES, 0, "sound histogram", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80));
 	ImGui::End();
 }
 

@@ -89,10 +89,13 @@ public:
 	bool	initGraphics();
 	void	initRender(int clear);
 	void	drawGui();
-	void	guiDrawTiming();
 	void	guiDrawFps();
-	void	guiDrawSections();
+	void	guiDrawFpsHistogram();
+	void	guiDrawTiming();
 	void	guiDrawFbo();
+	void	guiDrawSections();
+	void	guiDrawSound();
+	
 	void	guiChangeAttachment();
 
 	void	close();
