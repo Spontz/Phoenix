@@ -300,9 +300,14 @@ namespace Phoenix {
 							
 					case SectionCommand_::PARAM:
 						{
+						try{
 							float fval = std::stof(s_line.second);
 							new_sec->param.push_back(fval);
 							LOG->Info(LogLevel::LOW, "  Section parameter: %s = %f", s_line.first.c_str(), fval);
+						}
+						catch (...)	{
+							LOG->Error("  Parameter not loaded in line: %s --> The parameter: %s with value [%s] could not be parsed", line.c_str(), s_line.first.c_str(), s_line.second.c_str());
+						}
 						}
 						break;
 
