@@ -25,16 +25,15 @@ void Resource::loadAllResources()
 	Load_Shaders();
 	// Load Textures
 	Load_Tex_Spontz();			// Spontz ridiculous pictures
-	// Load Fonts
-	Load_Text_Fonts();			// Text fonts
+	// Load Fonts --> This is no longer needed since we are using imGui for output text
+	//Load_Text_Fonts();			// Text fonts
 	// Load Lights
 	Load_Lights();
 }
 
 Resource::Resource() {
 	obj_quadFullscreen = obj_qube = obj_skybox = 0;
-	
-	shdr_ObjColor = shdr_QuadDepth = shdr_QuadTex = shdr_QuadTexAlpha = shdr_QuadTexModel = shdr_QuadTexVFlipModel = shdr_Skybox = -1;
+	shdr_ObjColor = shdr_QuadDepth = shdr_QuadTex = shdr_QuadTexPVM = shdr_QuadTexAlpha = shdr_QuadTexModel = shdr_QuadTexVFlipModel = shdr_Skybox = -1;
 	tex_tv = 0;
 }
 
@@ -208,7 +207,8 @@ void Resource::Load_Tex_Spontz()
 
 void Resource::Load_Text_Fonts()
 {
-	DEMO->text = new Font(48, DEMO->dataFolder + "/resources/fonts/arial.ttf", DEMO->dataFolder + "/resources/shaders/font/font.vert", DEMO->dataFolder + "/resources/shaders/font/font.frag");
+	// Since we are using imGui, fonts are no longer needed
+	//DEMO->text = new Font(48, DEMO->dataFolder + "/resources/fonts/arial.ttf", DEMO->dataFolder + "/resources/shaders/font/font.vert", DEMO->dataFolder + "/resources/shaders/font/font.frag");
 }
 
 void Resource::Load_Lights()
