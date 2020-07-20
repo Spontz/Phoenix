@@ -37,7 +37,7 @@ sDrawSceneMatrix::sDrawSceneMatrix() {
 
 bool sDrawSceneMatrix::load() {
 	if ((this->param.size() != 4) || (this->strings.size() != 8)) {
-		LOG->Error("DrawSceneMatrix [%s]: 4 param and 8 strings needed", this->identifier.c_str());
+		LOG->Error("DrawSceneMatrix [%s]: 4 param and 7 strings needed", this->identifier.c_str());
 		return false;
 	}
 
@@ -56,7 +56,7 @@ bool sDrawSceneMatrix::load() {
 	// Load ref. model, model and shader
 	local->model_ref = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
 	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[1]);
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[2], DEMO->dataFolder + this->strings[3]);
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[2]);
 	if (local->model_ref < 0 || local->model < 0 || local->shader < 0)
 		return false;
 
@@ -81,7 +81,7 @@ bool sDrawSceneMatrix::load() {
 
 	local->exprPosition = new mathDriver(this);
 	// Load all the other strings
-	for (int i = 4; i < strings.size(); i++)
+	for (int i = 3; i < strings.size(); i++)
 		local->exprPosition->expression += this->strings[i];
 
 	local->exprPosition->SymbolTable.add_variable("aTime", local->AnimationTime);

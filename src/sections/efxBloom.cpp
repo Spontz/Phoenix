@@ -24,8 +24,8 @@ sEfxBloom::sEfxBloom() {
 
 bool sEfxBloom::load() {
 	// script validation
-	if ((this->param.size()) != 3 || (this->strings.size() != 5)) {
-		LOG->Error("EfxBloom [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 5 strings (One with the formula of the Blur Amount + the 4 with the Blur and then Bloom shader files)", this->identifier.c_str());
+	if ((this->param.size()) != 3 || (this->strings.size() != 3)) {
+		LOG->Error("EfxBloom [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 3 strings (One with the formula of the Blur Amount + 2 with the Blur and Bloom shaders)", this->identifier.c_str());
 		return false;
 	}
 	
@@ -58,9 +58,9 @@ bool sEfxBloom::load() {
 		return false;
 
 	// Load Blur shader
-	local->shaderBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2]);
+	local->shaderBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
 	// Load Bloom shader
-	local->shaderBloom = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[3], DEMO->dataFolder + this->strings[4]);
+	local->shaderBloom = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[2]);
 	if (local->shaderBlur < 0 || local->shaderBloom < 0)
 		return false;
 

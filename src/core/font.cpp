@@ -5,14 +5,14 @@
 #include "font.h"
 #define MAX_FONT_WIDTH 20000
 
-Font::Font(int size, std::string font_path, std::string vshader_path, std::string fshader_path)
+Font::Font(int size, std::string font_path, std::string shader_path)
 	:
 	textureID(0)
 {
 	// Load the shader
 	Shader *myShad;
 	glm::mat4 projection;
-	shdr_font = DEMO->shaderManager.addShader(vshader_path, fshader_path);
+	shdr_font = DEMO->shaderManager.addShader(shader_path);
 	
 	if (shdr_font != -1) {
 		myShad = DEMO->shaderManager.shader[shdr_font];

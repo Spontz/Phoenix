@@ -43,10 +43,10 @@ private:
 	bool initShaderParticleSystem();// For drawing the particles using geometry shaders
 
 	std::string		shaderPath;
-	std::string		pathBillboardVS, pathBillboardGS, pathBillboardFS;
+	std::string		pathBillboard;
 	ShaderVars		*varsBillboard;	// Billboard Shader variables
 
-	std::string		pathUpdateVS, pathUpdateGS, pathUpdateFS;
+	std::string		pathUpdate;
 	unsigned int	numMaxParticles;	// Number of maximum particles
 	unsigned int	numEmitters;		// Number of emmiters
 	float			emissionTime;

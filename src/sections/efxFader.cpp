@@ -17,8 +17,8 @@ sEfxFader::sEfxFader() {
 
 bool sEfxFader::load() {
 	// script validation
-	if ((this->param.size()) != 0 || (this->strings.size() != 2)) {
-		LOG->Error("EfxFader [%s]: 2 shader files required", this->identifier.c_str());
+	if ((this->param.size()) != 0 || (this->strings.size() != 1)) {
+		LOG->Error("EfxFader [%s]: 1 shader file required", this->identifier.c_str());
 		return false;
 	}
 	
@@ -27,7 +27,7 @@ bool sEfxFader::load() {
 	this->vars = (void *)local;
 
 	// Load Fader shader
-	local->shaderFader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[1]);
+	local->shaderFader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
 	if (local->shaderFader < 0)
 		return false;
 

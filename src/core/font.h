@@ -19,7 +19,7 @@ public:
 	FT_Library ft;
 	std::map<GLchar, Char> Characters;
 
-	Font(int size, std::string font_path, std::string vshader_path, std::string fshader_path);
+	Font(int size, std::string font_path, std::string shader_path);
 	virtual ~Font();
 
 	void RenderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);

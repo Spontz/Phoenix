@@ -23,8 +23,8 @@ sEfxBlur::sEfxBlur() {
 
 bool sEfxBlur::load() {
 	// script validation
-	if ((this->param.size()) != 3 || (this->strings.size() != 3)) {
-		LOG->Error("EfxBlur [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 3 strings (One with the formula of the Blur Amount + the 2 blur shader files)", this->identifier.c_str());
+	if ((this->param.size()) != 3 || (this->strings.size() != 2)) {
+		LOG->Error("EfxBlur [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 3 strings (One with the formula of the Blur Amount + blur shader file)", this->identifier.c_str());
 		return false;
 	}
 	
@@ -53,7 +53,7 @@ bool sEfxBlur::load() {
 		return false;
 
 	// Load Blur shader
-	local->shaderBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2]);
+	local->shaderBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
 	if (local->shaderBlur < 0)
 		return false;
 

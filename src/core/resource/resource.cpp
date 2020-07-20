@@ -190,6 +190,7 @@ void Resource::Load_Obj_Qube()
 
 void Resource::Load_Shaders()
 {
+	/*
 	shdr_QuadTex = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTex.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTex.frag");
 	shdr_QuadDepth = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadDepth.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadDepth.frag");
 	shdr_QuadTexAlpha = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexAlpha.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTexAlpha.frag");
@@ -198,6 +199,15 @@ void Resource::Load_Shaders()
 	shdr_QuadTexVFlipModel = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.frag");
 	shdr_Skybox = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/skybox/skybox.vert", DEMO->dataFolder + "/resources/shaders/skybox/skybox.frag");
 	shdr_ObjColor = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/ObjColor.vert", DEMO->dataFolder + "/resources/shaders/basic/ObjColor.frag");
+	*/
+	shdr_QuadTex = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTex.glsl");
+	shdr_QuadDepth = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadDepth.glsl");
+	shdr_QuadTexAlpha = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexAlpha.glsl");
+	shdr_QuadTexModel = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexModel.glsl");
+	shdr_QuadTexPVM = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexPVM.glsl");
+	shdr_QuadTexVFlipModel = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.glsl");
+	shdr_Skybox = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/skybox/skybox.glsl");
+	shdr_ObjColor = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/ObjColor.glsl");
 }
 
 void Resource::Load_Tex_Spontz()
@@ -208,7 +218,7 @@ void Resource::Load_Tex_Spontz()
 void Resource::Load_Text_Fonts()
 {
 	// Since we are using imGui, fonts are no longer needed
-	//DEMO->text = new Font(48, DEMO->dataFolder + "/resources/fonts/arial.ttf", DEMO->dataFolder + "/resources/shaders/font/font.vert", DEMO->dataFolder + "/resources/shaders/font/font.frag");
+	//DEMO->text = new Font(48, DEMO->dataFolder + "/resources/fonts/arial.ttf", DEMO->dataFolder + "/resources/shaders/font/font.glsl");
 }
 
 void Resource::Load_Lights()

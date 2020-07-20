@@ -29,8 +29,8 @@ bool sDrawImage::load() {
 	local = (drawImage_section*)malloc(sizeof(drawImage_section));
 	this->vars = (void *)local;
 
-	if (this->strings.size() < 6) {
-		LOG->Error("Draw Image [%s]: 6 strings required (image path, 2 for shader and 3 por image positioning)", this->identifier.c_str());
+	if (this->strings.size() < 5) {
+		LOG->Error("Draw Image [%s]: 5 strings required (image path, shader and 3 por image positioning)", this->identifier.c_str());
 		return false;
 	}
 
@@ -45,14 +45,15 @@ bool sDrawImage::load() {
 	local->texAspectRatio = (float)my_tex->height / (float)my_tex->width;
 
 	// Load the shader to apply
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2]);
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
 	if (local->shader == -1)
 		return false;
 
 	// Load the formmula containing the Image position and scale
 	local->exprPosition = new mathDriver(this);
 	// Load positions, process constants and compile expression
-	local->exprPosition->expression = this->strings[3] + this->strings[4] + this->strings[5]; // Concatenate the 3 positioning strings (position+rotation+scale)
+	// TODO: Change this with a for and read all strings like in the other sections
+	local->exprPosition->expression = this->strings[2] + this->strings[3] + this->strings[4]; // Concatenate the 3 positioning strings (position+rotation+scale)
 	local->exprPosition->SymbolTable.add_variable("tx", local->translation.x);
 	local->exprPosition->SymbolTable.add_variable("ty", local->translation.y);
 	local->exprPosition->SymbolTable.add_variable("tz", local->translation.z);

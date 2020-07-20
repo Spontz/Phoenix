@@ -25,12 +25,8 @@ ParticleSystem::ParticleSystem(std::string shaderPath, unsigned int	numMaxPartic
 	m_time = 0;
 
 	this->shaderPath = shaderPath;
-	this->pathBillboardVS = shaderPath + "/billboard.vert";
-	this->pathBillboardGS = shaderPath + "/billboard.geom";
-	this->pathBillboardFS = shaderPath + "/billboard.frag";
-	this->pathUpdateVS = shaderPath + "/update.vert";
-	this->pathUpdateGS = shaderPath + "/update.geom";
-	this->pathUpdateFS = shaderPath + "/update.frag";
+	this->pathBillboard = shaderPath + "/billboard.glsl";
+	this->pathUpdate = shaderPath + "/update.glsl";
 
 	this->numMaxParticles = numMaxParticles; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
 	this->numEmitters = numEmitters;
@@ -266,7 +262,7 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::mat4 &model
 
 bool ParticleSystem::initShaderBillboard()
 {
-	billboardShader = DEMO->shaderManager.addShader(this->pathBillboardVS, this->pathBillboardFS, this->pathBillboardGS);
+	billboardShader = DEMO->shaderManager.addShader(this->pathBillboard);
 	if (billboardShader < 0)
 		return false;
 	return true;
@@ -274,7 +270,7 @@ bool ParticleSystem::initShaderBillboard()
 
 bool ParticleSystem::initShaderParticleSystem()
 {
-	particleSystemShader = DEMO->shaderManager.addShader( this->pathUpdateVS, this->pathUpdateFS, this->pathUpdateGS,
+	particleSystemShader = DEMO->shaderManager.addShader( this->pathUpdate,
 															{ "Position1", "Velocity1", "Color1", "Age1", "Type1" });
 
 	if (particleSystemShader < 0)

@@ -22,8 +22,8 @@ bool sEfxMotionBlur::load() {
 	local = (efxMotionBlur_section*)malloc(sizeof(efxMotionBlur_section));
 	this->vars = (void *)local;
 	
-	if ((this->param.size()) != 2 || (this->strings.size() != 2)) {
-		LOG->Error("EfxMotionBlur [%s]: 2 params are needed (Fbo to use and FPS Scale), and 1 shader files (for Motionblur)", this->identifier.c_str());
+	if ((this->param.size()) != 2 || (this->strings.size() != 1)) {
+		LOG->Error("EfxMotionBlur [%s]: 2 params are needed (Fbo to use and FPS Scale), and 1 shader file (for Motionblur)", this->identifier.c_str());
 		return false;
 	}
 
@@ -33,7 +33,7 @@ bool sEfxMotionBlur::load() {
 	if (local->FPSScale == 0)
 		local->FPSScale = 1;
 
-	local->shaderMotionBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[1]);
+	local->shaderMotionBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
 	if (local->shaderMotionBlur<0)
 		return false;
 

@@ -51,10 +51,7 @@ bool sBackground::load() {
 	}
 
 	// Load the shader for drawing the quad
-	shader_id_ = DEMO->shaderManager.addShader(
-		DEMO->dataFolder + "/resources/shaders/sections/background_texquad.vert",
-		DEMO->dataFolder + "/resources/shaders/sections/background_texquad.frag"
-	);
+	shader_id_ = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/sections/background_texquad.glsl");
 	// Background texture load
 	texture_id_ = DEMO->textureManager.addTexture(DEMO->dataFolder + strings[0]);
 	if (texture_id_ == -1)

@@ -19,8 +19,8 @@ sDrawQuad::sDrawQuad() {
 
 bool sDrawQuad::load() {
 	// script validation
-	if ((this->param.size()) != 2 || (this->strings.size() != 2)) {
-		LOG->Error("DrawQuad [%s]: 2 params are needed (Clear the screen buffer & clear depth buffer), and 2 shader files (vertex and fragment)", this->identifier.c_str());
+	if ((this->param.size()) != 2 || (this->strings.size() != 1)) {
+		LOG->Error("DrawQuad [%s]: 2 params are needed (Clear the screen buffer & clear depth buffer), and the shader file", this->identifier.c_str());
 		return false;
 	}
 	
@@ -32,7 +32,7 @@ bool sDrawQuad::load() {
 	local->clearDepth = (int)this->param[1];
 	
 	// Load shader
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[1]);
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
 	if (local->shader < 0)
 		return false;
 

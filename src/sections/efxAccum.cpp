@@ -25,8 +25,8 @@ sEfxAccum::sEfxAccum() {
 
 bool sEfxAccum::load() {
 	// script validation
-	if ((this->param.size()) != 3 || (this->strings.size() < 2)) {
-		LOG->Error("EfxAccum [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 2 strings (accum shader files)", this->identifier.c_str());
+	if ((this->param.size()) != 3 || (this->strings.size() < 1)) {
+		LOG->Error("EfxAccum [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 1 string (accum shader)", this->identifier.c_str());
 		return false;
 	}
 	
@@ -49,7 +49,7 @@ bool sEfxAccum::load() {
 	// Load the Blur amount formula
 	local->exprAccum = new mathDriver(this);
 	// Load positions, process constants and compile expression
-	for (int i = 2; i < strings.size(); i++)
+	for (int i = 1; i < strings.size(); i++)
 		local->exprAccum->expression += this->strings[i];
 	local->exprAccum->SymbolTable.add_variable("SourceInfluence", local->sourceInfluence);
 	local->exprAccum->SymbolTable.add_variable("AccumInfluence", local->accumInfluence);
@@ -58,7 +58,7 @@ bool sEfxAccum::load() {
 		return false;
 
 	// Load Blur shader
-	local->shaderAccum = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[1]);
+	local->shaderAccum = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
 	if (local->shaderAccum < 0)
 		return false;
 

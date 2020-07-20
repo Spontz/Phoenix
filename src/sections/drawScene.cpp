@@ -35,8 +35,8 @@ sDrawScene::sDrawScene() {
 }
 
 bool sDrawScene::load() {
-	if ((this->param.size() != 4) || (this->strings.size() < 7)) {
-		LOG->Error("DrawScene [%s]: 4 param (Enable Depth buffer, enable wireframe, enable animation) and 7 strings needed", this->identifier.c_str());
+	if ((this->param.size() != 4) || (this->strings.size() < 6)) {
+		LOG->Error("DrawScene [%s]: 4 param (Enable Depth buffer, enable wireframe, enable animation) and 6 strings needed", this->identifier.c_str());
 		return false;
 	}
 
@@ -54,7 +54,7 @@ bool sDrawScene::load() {
 	
 	// Load model and shader
 	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2]);
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
 	if (local->model < 0 || local->shader < 0)
 		return false;
 
@@ -67,7 +67,7 @@ bool sDrawScene::load() {
 
 	local->exprPosition = new mathDriver(this);
 	// Load all the other strings
-	for (int i = 3; i < strings.size(); i++)
+	for (int i = 2; i < strings.size(); i++)
 		local->exprPosition->expression += this->strings[i];
 
 	local->exprPosition->SymbolTable.add_variable("CameraNumber", local->CameraNumber);

@@ -15,7 +15,7 @@ public:
 	ShaderManager();
 	virtual ~ShaderManager();
 
-	int addShader(std::string path_vert, std::string path_frag, std::string path_geom = "", std::vector<std::string> feedbackVaryings = {});
+	int addShader(std::string filepath, std::vector<std::string> feedbackVaryings = {});
 	void unbindShaders();
 
 private:

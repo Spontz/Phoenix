@@ -25,8 +25,8 @@ sDrawParticles::sDrawParticles() {
 
 bool sDrawParticles::load() {
 	// script validation
-	if ((this->param.size() != 1) || (this->strings.size() != 6)) {
-		LOG->Error("Draw Particles [%s]: 1 param (Particles number) and 6 strings needed (3 for shader files and 3 for positioning)", this->identifier.c_str());
+	if ((this->param.size() != 1) || (this->strings.size() != 4)) {
+		LOG->Error("Draw Particles [%s]: 1 param (Particles number) and 4 strings needed (1 for shader files and 3 for positioning)", this->identifier.c_str());
 		return false;
 	}
 	
@@ -36,7 +36,7 @@ bool sDrawParticles::load() {
 	this->vars = (void*)local;
 
 	// Load the shader
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[2], DEMO->dataFolder + this->strings[1]);
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
 
 	if (local->shader < 0)
 		return false;
@@ -47,7 +47,7 @@ bool sDrawParticles::load() {
 	// Load particle positioning
 	local->exprPosition = new mathDriver(this);
 	// Load all the other strings
-	for (int i = 3; i < strings.size(); i++)
+	for (int i = 1; i < strings.size(); i++)
 		local->exprPosition->expression += this->strings[i];
 
 	local->exprPosition->SymbolTable.add_variable("tx", local->translation.x);

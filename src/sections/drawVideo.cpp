@@ -22,8 +22,8 @@ sDrawVideo::sDrawVideo() {
 }
 
 bool sDrawVideo::load() {
-	if ((this->param.size() != 3) || (this->strings.size() < 3)) {
-		LOG->Error("DrawVideo [%s]: 3 param needed (Clear screen buffer, clear depth buffer & fit to content) and 3 strings needed (Video to play + 2 shader files)", this->identifier.c_str());
+	if ((this->param.size() != 3) || (this->strings.size() < 2)) {
+		LOG->Error("DrawVideo [%s]: 3 param needed (Clear screen buffer, clear depth buffer & fit to content) and 2 strings needed (Video to play + shader)", this->identifier.c_str());
 		return false;
 	}
 
@@ -35,7 +35,7 @@ bool sDrawVideo::load() {
 	local->fitToContent = (char)this->param[2];
 	local->videoNum = DEMO->videoManager.addVideo(DEMO->dataFolder + this->strings[0]);
 
-	local->shaderNum = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2]);
+	local->shaderNum = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
 
 	if ((local->videoNum == -1) || (local->shaderNum == -1))
 		return false;

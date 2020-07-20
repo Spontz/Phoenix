@@ -18,13 +18,17 @@ class Shader
 {
 public:
 	unsigned int ID;
-	std::string vertexShader_Filename;
-	std::string fragmentShader_Filename;
-	std::string geometryShader_Filename;
+	std::string m_filepath;
+//	std::string vertexShader_Filename;
+//	std::string fragmentShader_Filename;
+//	std::string geometryShader_Filename;
 	// constructor generates the shader on the fly
 	Shader();
+	virtual ~Shader();
 
-	int load(const std::string& vertexPath, const std::string& fragmentPath, const std::string& geometryPath = "", std::vector<std::string> feedbackVaryings = { });
+	//int load(const std::string& vertexPath, const std::string& fragmentPath, const std::string& geometryPath = "", std::vector<std::string> feedbackVaryings = { });
+	int load(const std::string& filepath, std::vector<std::string> feedbackVaryings = { });
+
 	// activate the shader
 	void use();
 	// utility uniform functions
@@ -46,6 +50,13 @@ public:
 private:
 	// utility function for checking shader compilation/linking errors.
 	// Return true if errors have been found
-	bool checkCompileErrors(GLuint shader, std::string type);
+	bool checkCompileErrors(GLuint shader, GLenum type);
+
+	std::string ReadFile(const std::string& filepath);
+	std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
+	bool Compile(const std::unordered_map<GLenum, std::string>& shaderSources, std::vector<std::string> feedbackVaryings = { });
+
+	GLenum Shader::GetShaderTypeFromString(const std::string& type);
+	const std::string Shader::GetShaderStringFromType(const GLenum& type);
 };
 #endif
