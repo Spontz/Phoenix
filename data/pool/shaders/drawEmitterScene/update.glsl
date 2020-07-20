@@ -1,3 +1,28 @@
+#type vertex
+#version 330
+
+layout (location = 0) in vec3 Position;
+layout (location = 1) in vec3 Velocity;
+layout (location = 2) in vec3 Color;
+layout (location = 3) in float Age;
+layout (location = 4) in int Type;
+
+out vec3 Position0;
+out vec3 Velocity0;
+out vec3 Color0;
+out float Age0;
+out int Type0;
+
+void main()
+{
+	Position0 = Position;
+	Velocity0 = Velocity;
+	Color0 = Color;
+	Age0 = Age;
+	Type0 = Type;
+}
+
+#type geometry
 #version 330
 
 layout(points) in;
@@ -29,23 +54,6 @@ uniform float fParticleLifetime;
 #define PARTICLE_TYPE_EMITTER 0
 #define PARTICLE_TYPE_SHELL 1
 
-/*
-void main()
-{
-	// Draw the emitter
-	if (Type0[0] == PARTICLE_TYPE_EMITTER) {
-		Type1 = PARTICLE_TYPE_EMITTER;
-		vec3 new_position = vec3(0, sin(gTime), 0);
-		Position1 = Velocity0[0] + new_position;//Position0[0];// + new_position;
-		//Velocity1 = Velocity0[0];
-		//Color1 = Color0[0];
-		//Age1 = Age;
-		EmitVertex();
-		EndPrimitive();		// Generate the emitter
-    }
-}
-*/
-
 // Get a random number, used for calculate the new direction
 vec3 GetRandomDir(float TexCoord)
 {
@@ -72,7 +80,7 @@ void main()
 			EmitVertex();
 			EndPrimitive();	// Generate a new particle from the launcher position
 			Age = 0.0;		// Set the age of the emitter to 0, so it can generate new particles later
-		}
+		}	
 		Type1 = PARTICLE_TYPE_EMITTER;
 		Position1 = Position0[0];// + DeltaP;
 		Velocity1 = Velocity0[0];
@@ -99,4 +107,12 @@ void main()
 			EndPrimitive(); // Update the particle status and position
 		}
 	}
+}
+
+
+#type fragment
+#version 330
+
+void main()
+{
 }

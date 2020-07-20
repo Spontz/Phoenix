@@ -48,7 +48,7 @@ int Shader::load(const std::string& filepath, std::vector<std::string> feedbackV
 	// 1. retrieve the vertex/fragment source code from filePath
 	std::string source = ReadFile(filepath);
 	auto shaderSources = PreProcess(source);
-	if (Compile(shaderSources) == false)
+	if (Compile(shaderSources, feedbackVaryings) == false)
 		return false;
 	else
 		return true;
