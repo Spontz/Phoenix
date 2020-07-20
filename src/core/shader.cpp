@@ -31,114 +31,6 @@ Shader::~Shader()
 	}
 }
 
-/*
-int Shader::load(const std::string& vertexPath, const std::string& fragmentPath, const std::string& geometryPath, std::vector<std::string> feedbackVaryings)
-{
-	// If we already have loaded this shader, we unload it first
-	if (ID > 0) {
-		glUseProgram(0);
-		glDeleteProgram(ID);
-		ID = 0;
-	}
-
-	vertexShader_Filename = vertexPath;
-	fragmentShader_Filename = fragmentPath;
-	geometryShader_Filename = geometryPath;
-	// 1. retrieve the vertex/fragment source code from filePath
-	std::string vertexCode;
-	std::string fragmentCode;
-	std::string geometryCode;
-	std::ifstream vShaderFile;
-	std::ifstream fShaderFile;
-	std::ifstream gShaderFile;
-	// ensure ifstream objects can throw exceptions:
-	vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-	fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-	gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-	try {
-		// open files
-		vShaderFile.open(vertexPath);
-		fShaderFile.open(fragmentPath);
-		std::stringstream vShaderStream, fShaderStream;
-		// read file's buffer contents into streams
-		vShaderStream << vShaderFile.rdbuf();
-		fShaderStream << fShaderFile.rdbuf();
-		// close file handlers
-		vShaderFile.close();
-		fShaderFile.close();
-		// convert stream into string
-		vertexCode = vShaderStream.str();
-		fragmentCode = fShaderStream.str();
-		// if geometry shader path is present, also load a geometry shader
-		if (geometryPath != "") {
-			gShaderFile.open(geometryPath);
-			std::stringstream gShaderStream;
-			gShaderStream << gShaderFile.rdbuf();
-			gShaderFile.close();
-			geometryCode = gShaderStream.str();
-		}
-	}
-	catch (std::ifstream::failure e) {
-		LOG->Error("Shader Error: Files have not been succesfully read, check paths: VERT: %s, FRAG: %s", vertexPath.c_str(), fragmentPath.c_str());
-		return 0;
-	}
-	const char* vShaderCode = vertexCode.c_str();
-	const char * fShaderCode = fragmentCode.c_str();
-	// 2. compile shaders
-	unsigned int vertex, fragment;
-	// vertex shader
-	vertex = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex, 1, &vShaderCode, NULL);
-	glCompileShader(vertex);
-	if (checkCompileErrors(vertex, "VERTEX"))
-		return 0;
-	// fragment Shader
-	fragment = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment, 1, &fShaderCode, NULL);
-	glCompileShader(fragment);
-	if (checkCompileErrors(fragment, "FRAGMENT"))
-		return 0;
-	// if geometry shader is given, compile geometry shader
-	unsigned int geometry;
-	if (geometryPath != "") {
-		const char * gShaderCode = geometryCode.c_str();
-		geometry = glCreateShader(GL_GEOMETRY_SHADER);
-		glShaderSource(geometry, 1, &gShaderCode, NULL);
-		glCompileShader(geometry);
-		if (checkCompileErrors(geometry, "GEOMETRY"))
-			return 0;
-	}
-	// shader Program
-	ID = glCreateProgram();
-	glAttachShader(ID, vertex);
-	glAttachShader(ID, fragment);
-	if (geometryPath != "")
-		glAttachShader(ID, geometry);
-
-	//Add the Transform Feedback Varyings
-	
-	if (feedbackVaryings.size() != 0) {
-		// We convert the vector of stings to vector of chars
-		std::vector<const char *> feedbackVaryings_cStr;
-		feedbackVaryings_cStr.reserve(feedbackVaryings.size());
-		for (int i = 0; i < feedbackVaryings.size(); ++i) {
-			feedbackVaryings_cStr.push_back(feedbackVaryings[i].c_str());
-		}
-		glTransformFeedbackVaryings(ID, (GLsizei)feedbackVaryings_cStr.size(), &feedbackVaryings_cStr[0], GL_INTERLEAVED_ATTRIBS);
-	}
-
-	glLinkProgram(ID);
-	if (checkCompileErrors(ID, "PROGRAM"))
-		return 0;
-	// delete the shaders as they're linked into our program now and no longer necessery
-	glDeleteShader(vertex);
-	glDeleteShader(fragment);
-	if (geometryPath != "")
-		glDeleteShader(geometry);
-	return 1;
-}
-*/
-
 // Load a shader
 // Return true is loaded OK
 // Return false is failed loading shader
@@ -230,47 +122,6 @@ GLint Shader::getUniformLocation(const char *name) const
 	return val;
 }
 
-// Check complie errors on shader
-// ------------------------------------------------------------------------
-bool Shader::checkCompileErrors(GLuint shader, GLenum type)
-{
-	GLint success;
-	GLint size;
-	GLchar *infoLog;
-	bool errors = false;
-
-	if (type != GL_PROGRAM) {
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-		if (!success) {
-			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
-			infoLog = new GLchar[size];
-			glGetShaderInfoLog(shader, size, NULL, infoLog);
-			std::string type_string;
-			if (type == GL_VERTEX_SHADER)
-				type_string = "Vertex";
-			if (type == GL_FRAGMENT_SHADER)
-				type_string = "Fragment";
-			if (type == GL_GEOMETRY_SHADER)
-				type_string = "Geometry";
-			LOG->Error("Shader Compile (%s - %s) log: %s", type_string.c_str(), m_filepath.c_str(), infoLog);
-			delete[] infoLog;
-			errors = true;
-		}
-	}
-	else {
-		glGetProgramiv(shader, GL_LINK_STATUS, &success);
-		if (!success) {
-			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
-			infoLog = (GLchar*)malloc(size);
-			glGetProgramInfoLog(shader, size, NULL, infoLog);
-			LOG->Error("Shader Linking: file %s, log: %s", this->m_filepath.c_str(), infoLog);
-			free(infoLog);
-			errors = true;
-		}
-	}
-	return errors;
-}
-
 
 std::string Shader::ReadFile(const std::string& filepath)
 {
@@ -342,6 +193,8 @@ bool Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSource
 	for (auto& kv : shaderSources)
 	{
 		GLenum type = kv.first;
+		if (kv.first == 0)
+			return false;
 		const std::string& source = kv.second;
 
 		GLuint shader = glCreateShader(type);
@@ -358,12 +211,13 @@ bool Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSource
 			GLint maxLength = 0;
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
 
-			std::vector<GLchar> infoLog(maxLength);
-			glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
+			GLchar* infoLog = new GLchar[maxLength];
+			glGetShaderInfoLog(shader, maxLength, &maxLength, infoLog);
 
 			glDeleteShader(shader);
 
 			LOG->Error("Shader Compile (%s - %s) log: %s", GetShaderStringFromType(type).c_str(), m_filepath.c_str(), infoLog);
+			delete[] infoLog;
 			return false;
 		}
 
@@ -397,8 +251,8 @@ bool Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSource
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
 
 		// The maxLength includes the NULL character
-		std::vector<GLchar> infoLog(maxLength);
-		glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+		GLchar* infoLog = new GLchar[maxLength];
+		glGetProgramInfoLog(program, maxLength, &maxLength, infoLog);
 
 		// We don't need the program anymore.
 		glDeleteProgram(program);
@@ -408,6 +262,7 @@ bool Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSource
 
 
 		LOG->Error("Shader Linking: file %s, log: %s", this->m_filepath.c_str(), infoLog);
+		delete[] infoLog;
 		return false;
 	}
 

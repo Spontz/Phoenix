@@ -58,7 +58,7 @@ int ShaderManager::addShader(std::string filepath, std::vector<std::string> feed
 	}
 		
 	else
-		LOG->Error("Could not load shader");
+		LOG->Error("Could not load shader: %s", filepath.c_str());
 
 
 	return shad_id;

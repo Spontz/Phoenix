@@ -19,9 +19,6 @@ class Shader
 public:
 	unsigned int ID;
 	std::string m_filepath;
-//	std::string vertexShader_Filename;
-//	std::string fragmentShader_Filename;
-//	std::string geometryShader_Filename;
 	// constructor generates the shader on the fly
 	Shader();
 	virtual ~Shader();
@@ -48,10 +45,7 @@ public:
 	GLint getUniformLocation(const char *varname) const;
 
 private:
-	// utility function for checking shader compilation/linking errors.
-	// Return true if errors have been found
-	bool checkCompileErrors(GLuint shader, GLenum type);
-
+	
 	std::string ReadFile(const std::string& filepath);
 	std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
 	bool Compile(const std::unordered_map<GLenum, std::string>& shaderSources, std::vector<std::string> feedbackVaryings = { });
