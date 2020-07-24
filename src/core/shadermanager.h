@@ -15,7 +15,7 @@ public:
 	ShaderManager();
 	virtual ~ShaderManager();
 
-	int addShader(std::string filepath, std::vector<std::string> feedbackVaryings = {});
+	Shader* addShader(std::string filepath, std::vector<std::string> feedbackVaryings = {});
 	void unbindShaders();
 
 private:

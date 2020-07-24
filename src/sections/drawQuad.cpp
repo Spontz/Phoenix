@@ -4,7 +4,7 @@
 typedef struct {
 	char		clearScreen;	// Clear Screen buffer
 	char		clearDepth;		// Clear Depth buffer
-	int			shader;			// Shader to apply
+	Shader*		shader;			// Shader to apply
 	ShaderVars	*shaderVars;	// Shader variables
 } drawQuad_section;
 
@@ -33,14 +33,12 @@ bool sDrawQuad::load() {
 	
 	// Load shader
 	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
-	if (local->shader < 0)
+	if (!local->shader)
 		return false;
 
 	// Create Shader variables
-	Shader *my_shader;
-	my_shader = DEMO->shaderManager.shader[local->shader];
-	my_shader->use();
-	local->shaderVars = new ShaderVars(this, my_shader);
+	local->shader->use();
+	local->shaderVars = new ShaderVars(this, local->shader);
 
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
@@ -60,8 +58,7 @@ void sDrawQuad::init() {
 void sDrawQuad::exec() {
 	local = (drawQuad_section*)this->vars;
 
-	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
-	my_shader->use();
+	local->shader->use();
 	// Clear the screen and depth buffers depending of the parameters passed by the user
 	if (local->clearScreen) glClear(GL_COLOR_BUFFER_BIT);
 	if (local->clearDepth) glClear(GL_DEPTH_BUFFER_BIT);

@@ -6,7 +6,7 @@ typedef struct {
 	int			texture;
 	float		texAspectRatio;
 
-	int			shader;
+	Shader*		shader;
 
 	glm::vec3	translation;
 	glm::vec3	rotation;
@@ -46,7 +46,7 @@ bool sDrawImage::load() {
 
 	// Load the shader to apply
 	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
-	if (local->shader == -1)
+	if (!local->shader)
 		return false;
 
 	// Load the formmula containing the Image position and scale
@@ -68,10 +68,8 @@ bool sDrawImage::load() {
 		return false;
 
 	// Create shader variables
-	Shader *my_shad;
-	my_shad = DEMO->shaderManager.shader[local->shader];
-	my_shad->use();
-	local->vars = new ShaderVars(this, my_shad);
+	local->shader->use();
+	local->vars = new ShaderVars(this, local->shader);
 
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
@@ -96,8 +94,6 @@ void sDrawImage::exec() {
 
 	Texture *my_tex;
 	my_tex = DEMO->textureManager.texture[local->texture];
-	Shader *my_shad;
-	my_shad = DEMO->shaderManager.shader[local->shader];
 
 
 	EvalBlendingStart();
@@ -116,11 +112,11 @@ void sDrawImage::exec() {
 		model = glm::scale(model, glm::vec3(local->scale.x, local->scale.y*local->texAspectRatio, local->scale.z));
 
 		// Draw the image
-		my_shad->use();
-		my_shad->setValue("model", model);
-		my_shad->setValue("projection", projection);
-		my_shad->setValue("view", view);
-		my_shad->setValue("screenTexture", 0);
+		local->shader->use();
+		local->shader->setValue("model", model);
+		local->shader->setValue("projection", projection);
+		local->shader->setValue("view", view);
+		local->shader->setValue("screenTexture", 0);
 
 		my_tex->bind();
 

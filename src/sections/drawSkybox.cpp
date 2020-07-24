@@ -89,15 +89,14 @@ void sDrawSkybox::exec() {
 	if (local->enableDepthBufferClearing)
 		glClear(GL_DEPTH_BUFFER_BIT);
 
-	Shader *my_shader = DEMO->shaderManager.shader[RES->shdr_Skybox];
-	my_shader->use();
+	RES->shdr_Skybox->use(); // TODO: Do not use the Resource shader for skybox, and use our own shader!
 
 	// view/projection transformations
 	float zoom = DEMO->camera->Zoom;
 	glm::mat4 projection = glm::perspective(glm::radians(zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
 	glm::mat4 view = glm::mat4(glm::mat3(DEMO->camera->GetViewMatrix())); // remove translation from the view matrix
-	my_shader->setValue("projection", projection);
-	my_shader->setValue("view", view);
+	RES->shdr_Skybox->setValue("projection", projection);
+	RES->shdr_Skybox->setValue("view", view);
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
@@ -105,9 +104,9 @@ void sDrawSkybox::exec() {
 	model = glm::rotate(model, glm::radians(local->rotation.y), glm::vec3(0, 1, 0));
 	model = glm::rotate(model, glm::radians(local->rotation.z), glm::vec3(0, 0, 1));
 	model = glm::scale(model, local->scale);
-	my_shader->setValue("model", model);
+	RES->shdr_Skybox->setValue("model", model);
 	
-	my_shader->setValue("skybox", 0);
+	RES->shdr_Skybox->setValue("skybox", 0);
 	RES->Draw_Skybox(local->cubemap);
 	
 

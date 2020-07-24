@@ -8,7 +8,7 @@ typedef struct {
 	bool			accumBuffer;	// Accum buffer to use (0 or 1)
 	char			clearScreen;	// Clear Screen buffer
 	char			clearDepth;		// Clear Depth buffer
-	int				shaderAccum;	// Accumulation Shader to apply
+	Shader*			shader;			// Accumulation Shader to apply
 	mathDriver		*exprAccum;		// Equations for the Accum effect
 	ShaderVars		*shaderVars;	// Shader variables
 
@@ -58,20 +58,16 @@ bool sEfxAccum::load() {
 		return false;
 
 	// Load Blur shader
-	local->shaderAccum = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
-	if (local->shaderAccum < 0)
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
+	if (!local->shader)
 		return false;
 
-	// Create Shader variables
-	Shader *my_shaderAccum;
-	my_shaderAccum = DEMO->shaderManager.shader[local->shaderAccum];
+	// Configure shader
+	local->shader->use();
+	local->shader->setValue("sourceImage", 0);	// The source image will be in the texture unit 0
+	local->shader->setValue("accumImage", 1);	// The accumulated image will be in the texture unit 1
 
-	// Configure Blur shader
-	my_shaderAccum->use();
-	my_shaderAccum->setValue("sourceImage", 0);	// The source image will be in the texture unit 0
-	my_shaderAccum->setValue("accumImage", 1);	// The accumulated image will be in the texture unit 1
-
-	local->shaderVars = new ShaderVars(this, my_shaderAccum);
+	local->shaderVars = new ShaderVars(this, local->shader);
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
 		local->shaderVars->ReadString(this->uniform[i].c_str());
@@ -100,9 +96,6 @@ void sEfxAccum::exec() {
 	float deltaTime = this->runTime - lastTime;
 	lastTime = this->runTime;
 
-	// Get the shaders
-	Shader *my_shaderAccum = DEMO->shaderManager.shader[local->shaderAccum];
-
 	// Evaluate the expression
 	local->exprAccum->Expression.value();
 
@@ -115,9 +108,9 @@ void sEfxAccum::exec() {
 			DEMO->efxAccumFbo.bind(local->accumBuffer, false, false);
 		
 			float fps = 1.0f / 60.0f;
-			my_shaderAccum->use();
-			my_shaderAccum->setValue("sourceInfluence", local->sourceInfluence * (deltaTime/fps) );
-			my_shaderAccum->setValue("accumInfluence", 1-(local->accumInfluence * (deltaTime/fps)) );
+			local->shader->use();
+			local->shader->setValue("sourceInfluence", local->sourceInfluence * (deltaTime/fps) );
+			local->shader->setValue("accumInfluence", 1-(local->accumInfluence * (deltaTime/fps)) );
 			local->shaderVars->setValues();
 
 			// Set the screen fbo in texture unit 0
@@ -140,10 +133,8 @@ void sEfxAccum::exec() {
 		
 
 		// Second step: Draw the accum buffer
-		Shader* my_shad = DEMO->shaderManager.shader[RES->shdr_QuadTex];
-
-		my_shad->use();
-		my_shad->setValue("screenTexture", 0);
+		RES->shdr_QuadTex->use();
+		RES->shdr_QuadTex->setValue("screenTexture", 0);
 		if (firstIteration)
 			DEMO->fboManager.bind_tex(local->FboNum, 0);
 		else

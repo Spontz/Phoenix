@@ -23,8 +23,7 @@ public:
 	Shader();
 	virtual ~Shader();
 
-	//int load(const std::string& vertexPath, const std::string& fragmentPath, const std::string& geometryPath = "", std::vector<std::string> feedbackVaryings = { });
-	int load(const std::string& filepath, std::vector<std::string> feedbackVaryings = { });
+	bool load(const std::string& filepath, std::vector<std::string> feedbackVaryings = { });
 
 	// activate the shader
 	void use();

@@ -6,7 +6,7 @@
 typedef struct {
 	int			model_ref;	// Reference model to be use to store positions
 	int			model;		// Model to draw
-	int			shader;
+	Shader*		shader;
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
 	int			playAnimation;		// Do we want to play the animation?
@@ -56,8 +56,11 @@ bool sDrawSceneMatrix::load() {
 	// Load ref. model, model and shader
 	local->model_ref = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
 	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[1]);
+	if (local->model_ref < 0 || local->model < 0)
+		return false;
+
 	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[2]);
-	if (local->model_ref < 0 || local->model < 0 || local->shader < 0)
+	if (!local->shader)
 		return false;
 
 	// Calculate the number of matrices that we need to store
@@ -100,10 +103,8 @@ bool sDrawSceneMatrix::load() {
 		return false;
 
 	// Create Shader variables
-	Shader *my_shader;
-	my_shader = DEMO->shaderManager.shader[local->shader];
-	my_shader->use();
-	local->vars = new ShaderVars(this, my_shader);
+	local->shader->use();
+	local->vars = new ShaderVars(this, local->shader);
 
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
@@ -125,7 +126,6 @@ void sDrawSceneMatrix::exec() {
 
 	Model *my_model_ref = DEMO->modelManager.model[local->model_ref];
 	Model *my_model = DEMO->modelManager.model[local->model];
-	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
 	
 	// Start evaluating blending
 	EvalBlendingStart();
@@ -141,10 +141,10 @@ void sDrawSceneMatrix::exec() {
 		my_model->setAnimation(local->AnimationNumber);
 
 	// Load shader
-	my_shader->use();
+	local->shader->use();
 
 	// For ShadowMapping
-	my_shader->setValue("lightSpaceMatrix", DEMO->lightManager.light[0]->spaceMatrix);
+	local->shader->setValue("lightSpaceMatrix", DEMO->lightManager.light[0]->spaceMatrix);
 	// End ShadowMapping
 
 	// view/projection transformations
@@ -155,11 +155,11 @@ void sDrawSceneMatrix::exec() {
 		0.1f, 10000.0f
 	);
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
-	my_shader->setValue("projection", projection);
-	my_shader->setValue("view", view);
+	local->shader->setValue("projection", projection);
+	local->shader->setValue("view", view);
 	// For MotionBlur: send the previous matrix
-	my_shader->setValue("prev_projection", local->prev_projection);
-	my_shader->setValue("prev_view", local->prev_view);
+	local->shader->setValue("prev_projection", local->prev_projection);
+	local->shader->setValue("prev_view", local->prev_view);
 
 	// Set the other shader variable values
 	local->vars->setValues();
@@ -174,7 +174,7 @@ void sDrawSceneMatrix::exec() {
 		{
 			// Evaluate the expression
 			local->exprPosition->Expression.value();
-			my_shader->setValue("n", local->n); // we send also the number of object to the shader
+			local->shader->setValue("n", local->n); // we send also the number of object to the shader
 
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, my_model_ref->meshes[i].unique_vertices_pos[j]);
@@ -188,10 +188,10 @@ void sDrawSceneMatrix::exec() {
 			my_model->modelTransform = model;
 
 			// For MotionBlur, we send the previous model matrix, and then store it for later use
-			my_shader->setValue("prev_model", local->prev_model[0][object]);
+			local->shader->setValue("prev_model", local->prev_model[0][object]);
 			local->prev_model[0][object] = model;
 
-			my_model->Draw(my_shader->ID, local->AnimationTime);
+			my_model->Draw(local->shader->ID, local->AnimationTime);
 
 			object++; 
 			local->n = (float)object;

@@ -18,7 +18,7 @@ struct sBackground : public Section {
 
 	private:
 	int texture_id_;
-	int shader_id_;
+	Shader* shader;
 	e_background_drawing_mode mode_;
 };
 
@@ -51,7 +51,9 @@ bool sBackground::load() {
 	}
 
 	// Load the shader for drawing the quad
-	shader_id_ = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/sections/background_texquad.glsl");
+	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/sections/background.glsl"); // TODO: Fix this, we should use this shader, but at this moment we don't use it :D
+	if (!shader)
+		return false;
 	// Background texture load
 	texture_id_ = DEMO->textureManager.addTexture(DEMO->dataFolder + strings[0]);
 	if (texture_id_ == -1)

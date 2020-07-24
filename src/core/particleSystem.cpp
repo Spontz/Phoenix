@@ -132,11 +132,10 @@ bool ParticleSystem::InitParticleSystem(Section* sec, const std::vector<Particle
 	}
 
 	// Send the variables to the Particle System shader
-	Shader *particleSystem_shader = DEMO->shaderManager.shader[particleSystemShader];
-	particleSystem_shader->use();
-	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT);
-	particleSystem_shader->setValue("fEmissionTime", this->emissionTime); // Time between emissions
-	particleSystem_shader->setValue("fParticleLifetime", this->particleLifeTime);
+	particleSystemShader->use();
+	particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT);
+	particleSystemShader->setValue("fEmissionTime", this->emissionTime); // Time between emissions
+	particleSystemShader->setValue("fParticleLifetime", this->particleLifeTime);
 
 	if (!initRandomTexture(1000)) {
 		return false;
@@ -150,10 +149,8 @@ bool ParticleSystem::InitParticleSystem(Section* sec, const std::vector<Particle
 	}
 
 	//Use the billboard shader and send variables
-	Shader *billboard_shader;
-	billboard_shader = DEMO->shaderManager.shader[billboardShader];
-	billboard_shader->use();
-	this->varsBillboard = new ShaderVars(sec, billboard_shader);
+	billboardShader->use();
+	this->varsBillboard = new ShaderVars(sec, billboardShader);
 	// Read the shader variables
 	for (int i = 0; i < billboardShaderVars.size(); i++) {
 		this->varsBillboard->ReadString(billboardShaderVars[i].c_str());
@@ -205,14 +202,13 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 {
 	//UpdateEmitters(deltaTime);
 
-	Shader *particleSystem_shader = DEMO->shaderManager.shader[particleSystemShader];
-	particleSystem_shader->use();
-	particleSystem_shader->setValue("gTime", this->m_time);
-	particleSystem_shader->setValue("gDeltaTime", deltaTime);
-	particleSystem_shader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-	particleSystem_shader->setValue("fEmissionTime", this->emissionTime);
-	particleSystem_shader->setValue("fParticleLifetime", this->particleLifeTime);
-	particleSystem_shader->setValue("force", this->force);
+	particleSystemShader->use();
+	particleSystemShader->setValue("gTime", this->m_time);
+	particleSystemShader->setValue("gDeltaTime", deltaTime);
+	particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
+	particleSystemShader->setValue("fEmissionTime", this->emissionTime);
+	particleSystemShader->setValue("fParticleLifetime", this->particleLifeTime);
+	particleSystemShader->setValue("force", this->force);
 
 
 	bindRandomTexture(RANDOM_TEXTURE_UNIT);
@@ -243,13 +239,11 @@ void ParticleSystem::UpdateParticles(float deltaTime)
 void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::mat4 &model, const glm::vec3 &CameraPos)
 {
 	//Use the billboard shader and send variables
-	Shader *my_shader;
-	my_shader = DEMO->shaderManager.shader[billboardShader];
-	my_shader->use();
-	my_shader->setValue("gCameraPos", CameraPos);				// Set camera position
-	my_shader->setValue("gVP", VP);								// Set ViewProjection Matrix
-	my_shader->setValue("model", model);						// Set Model Matrix
-	this->varsBillboard->setValues();
+	billboardShader->use();
+	billboardShader->setValue("gCameraPos", CameraPos);				// Set camera position
+	billboardShader->setValue("gVP", VP);								// Set ViewProjection Matrix
+	billboardShader->setValue("model", model);						// Set Model Matrix
+	varsBillboard->setValues();
 
 	glDisable(GL_RASTERIZER_DISCARD);	// Start drawing on the screen
 	glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currTFB]);
@@ -263,9 +257,9 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::mat4 &model
 bool ParticleSystem::initShaderBillboard()
 {
 	billboardShader = DEMO->shaderManager.addShader(this->pathBillboard);
-	if (billboardShader < 0)
-		return false;
-	return true;
+	if (billboardShader)
+		return true;
+	return false;
 }
 
 bool ParticleSystem::initShaderParticleSystem()
@@ -273,9 +267,9 @@ bool ParticleSystem::initShaderParticleSystem()
 	particleSystemShader = DEMO->shaderManager.addShader( this->pathUpdate,
 															{ "Position1", "Velocity1", "Color1", "Age1", "Type1" });
 
-	if (particleSystemShader < 0)
-		return false;
-	return true;
+	if (particleSystemShader)
+		return true;
+	return false;
 }
 
 // TODO: Investigate if we should move this "Random texture 1D generator" to the TextureManager class

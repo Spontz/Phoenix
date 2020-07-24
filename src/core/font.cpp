@@ -12,10 +12,9 @@ Font::Font(int size, std::string font_path, std::string shader_path)
 	// Load the shader
 	Shader *myShad;
 	glm::mat4 projection;
-	shdr_font = DEMO->shaderManager.addShader(shader_path);
+	myShad = DEMO->shaderManager.addShader(shader_path);
 	
-	if (shdr_font != -1) {
-		myShad = DEMO->shaderManager.shader[shdr_font];
+	if (myShad) {
 		projection = DEMO->camera->getOrthoMatrix_Projection();
 		myShad->use();
 	}

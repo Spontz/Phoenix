@@ -2,7 +2,7 @@
 #include "core/shadervars.h"
 
 typedef struct {
-	int				shaderFader;	// Fader Shader to apply
+	Shader*			shader;			// Fader Shader to apply
 	ShaderVars		*shaderVars;	// Shader variables
 } efxFader_section;
 
@@ -27,17 +27,13 @@ bool sEfxFader::load() {
 	this->vars = (void *)local;
 
 	// Load Fader shader
-	local->shaderFader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
-	if (local->shaderFader < 0)
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
+	if (!local->shader)
 		return false;
 
-	// Create shader variables
-	Shader *my_shaderFader;
-	my_shaderFader = DEMO->shaderManager.shader[local->shaderFader];
-
 	// Configure Fader shader
-	my_shaderFader->use();
-	local->shaderVars = new ShaderVars(this, my_shaderFader);
+	local->shader->use();
+	local->shaderVars = new ShaderVars(this, local->shader);
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
 		local->shaderVars->ReadString(this->uniform[i].c_str());
@@ -56,13 +52,10 @@ void sEfxFader::init() {
 void sEfxFader::exec() {
 	local = (efxFader_section*)this->vars;
 
-	// Get the shaders
-	Shader *my_shaderFader = DEMO->shaderManager.shader[local->shaderFader];
-
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
-		my_shaderFader->use();
+		local->shader->use();
 		// Set shader variables values
 		local->shaderVars->setValues();
 		// Render scene

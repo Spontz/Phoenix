@@ -59,8 +59,8 @@ private:
 	GLuint m_particleBuffer[2];		// Vertex Buffer: input
 	GLuint m_transformFeedback[2];	// Transform feedback buffers: output
 	Particle* m_emitterData;		// Emitter info (for updating emitters positions)
-	int particleSystemShader;
-	int billboardShader;
+	Shader* particleSystemShader;
+	Shader* billboardShader;
 
 	bool initRandomTexture(unsigned int Size); //TODO: Add it into the textureManager
 	void bindRandomTexture(GLuint TexUnit = 0);//TODO: this should be removed once is included in the textureManager

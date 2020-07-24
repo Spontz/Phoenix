@@ -6,8 +6,8 @@ typedef struct {
 	float			blurAmount;		// Blur layers to apply
 	char			clearScreen;	// Clear Screen buffer
 	char			clearDepth;		// Clear Depth buffer
-	int				shaderBlur;		// Blur Shader to apply
-	int				shaderBloom;	// Bloom Shader to apply
+	Shader*			shaderBlur;		// Blur Shader to apply
+	Shader*			shaderBloom;	// Bloom Shader to apply
 	mathDriver		*exprBloom;		// Equations for the Bloom effect
 	ShaderVars		*shaderVars;	// Shader variables
 
@@ -61,30 +61,26 @@ bool sEfxBloom::load() {
 	local->shaderBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
 	// Load Bloom shader
 	local->shaderBloom = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[2]);
-	if (local->shaderBlur < 0 || local->shaderBloom < 0)
+	if (!local->shaderBlur || !local->shaderBloom)
 		return false;
 
 	// Create Shader variables
-	Shader *my_shaderBlur;
-	Shader *my_shaderBloom;
-	my_shaderBlur = DEMO->shaderManager.shader[local->shaderBlur];
-	my_shaderBloom = DEMO->shaderManager.shader[local->shaderBloom];
-
+	
 	// Configure Blur shader
-	my_shaderBlur->use();
-	my_shaderBlur->setValue("image", 0);	// The image is in the texture unit 0
+	local->shaderBlur->use();
+	local->shaderBlur->setValue("image", 0);	// The image is in the texture unit 0
 
 	// Configure Bloom shader (variables are for this shader)
-	my_shaderBloom->use();
-	local->shaderVars = new ShaderVars(this, my_shaderBloom);
+	local->shaderBloom->use();
+	local->shaderVars = new ShaderVars(this, local->shaderBloom);
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
 		local->shaderVars->ReadString(this->uniform[i].c_str());
 	}
 	// Set shader variables values
 	local->shaderVars->setValues();
-	my_shaderBloom->setValue("scene", 0);		// The scene is in the Tex unit 0
-	my_shaderBloom->setValue("bloomBlur", 1);	// The bloom blur is in the Tex unit 1
+	local->shaderBloom->setValue("scene", 0);		// The scene is in the Tex unit 0
+	local->shaderBloom->setValue("bloomBlur", 1);	// The bloom blur is in the Tex unit 1
 
 	return true;
 }
@@ -100,10 +96,6 @@ void sEfxBloom::exec() {
 	if (local->clearScreen) glClear(GL_COLOR_BUFFER_BIT);
 	if (local->clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
 
-	// Get the shaders
-	Shader *my_shaderBlur = DEMO->shaderManager.shader[local->shaderBlur];
-	Shader *my_shaderBloom = DEMO->shaderManager.shader[local->shaderBloom];
-
 	// Evaluate the expression
 	local->exprBloom->Expression.value();
 
@@ -114,7 +106,7 @@ void sEfxBloom::exec() {
 		// First step: Blur the image from the "fbo attachment 1", and store it in our efxBloom fbo manager (efxBloomFbo)
 		bool horizontal = true;
 		bool first_iteration = true;
-		my_shaderBlur->use();
+		local->shaderBlur->use();
 
 		// Prevent negative Blurs
 		if (local->blurAmount < 0)
@@ -122,7 +114,7 @@ void sEfxBloom::exec() {
 		unsigned int iBlurAmount = static_cast<unsigned int>(local->blurAmount);
 		for (unsigned int i = 0; i < iBlurAmount; i++)
 		{
-			my_shaderBlur->setValue("horizontal", horizontal);
+			local->shaderBlur->setValue("horizontal", horizontal);
 			
 			// We always draw the First pass in the efxBloom FBO
 			DEMO->efxBloomFbo.bind(horizontal, false, false);
@@ -143,7 +135,7 @@ void sEfxBloom::exec() {
 		DEMO->efxBloomFbo.unbind(false, false); // Unbind drawing into an Fbo
 
 		// Second step: Merge the blurred image with the color image (fbo attachment 0)
-		my_shaderBloom->use();
+		local->shaderBloom->use();
 		// Set new shader variables values
 		local->shaderVars->setValues();
 

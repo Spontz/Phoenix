@@ -26,14 +26,14 @@ public:
 	int tex_tv; // Default texture (tv)
 
 	// Shaders
-	int shdr_QuadTex;			// Draws a textured quad
-	int shdr_QuadDepth;			// Draws a depth texture quad
-	int shdr_QuadTexAlpha;		// Draws a textured quad with alpha
-	int shdr_QuadTexModel;		// Draws a textured quad with model matrix
-	int shdr_QuadTexPVM;		// Draws a textured quad with projection, view and model matrixes
-	int shdr_QuadTexVFlipModel;	// Draws a textured quad with model matrix, and with the texture flipped vertically
-	int shdr_Skybox;			// Draws a skybox
-	int shdr_ObjColor;			// Draws an object with a color
+	Shader* shdr_QuadTex;			// Draws a textured quad
+	Shader* shdr_QuadDepth;			// Draws a depth texture quad
+	Shader* shdr_QuadTexAlpha;		// Draws a textured quad with alpha
+	Shader* shdr_QuadTexModel;		// Draws a textured quad with model matrix
+	Shader* shdr_QuadTexPVM;		// Draws a textured quad with projection, view and model matrixes
+	Shader* shdr_QuadTexVFlipModel;	// Draws a textured quad with model matrix, and with the texture flipped vertically
+	Shader* shdr_Skybox;			// Draws a skybox
+	Shader* shdr_ObjColor;			// Draws an object with a color
 
 	// Objects
 	GLuint obj_skybox;

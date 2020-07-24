@@ -60,19 +60,19 @@ Section::~Section()
 
 void Section::EvalBlendingStart()
 {
-	if (this->hasBlend) {
+	if (hasBlend) {
 		glEnable(GL_BLEND);
-		glBlendFunc(this->sfactor, this->dfactor);
-		if (this->blendEquation > 0)
-			glBlendEquation(this->blendEquation);
+		glBlendFunc(sfactor, dfactor);
+		if (blendEquation > 0)
+			glBlendEquation(blendEquation);
 	}
 }
 
 void Section::EvalBlendingEnd()
 {
-	if (this->hasBlend) {
+	if (hasBlend) {
 		glDisable(GL_BLEND);
-		if (this->blendEquation > 0)
+		if (blendEquation > 0)
 			glBlendEquation(GL_FUNC_ADD);
 	}
 }

@@ -5,7 +5,7 @@
 
 typedef struct {
 	int			model;
-	int			shader;
+	Shader*		shader;
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
 	float		CameraNumber;		// Number of the camera to use (-1 = means to not use camera)
@@ -54,9 +54,12 @@ bool sDrawScene::load() {
 	
 	// Load model and shader
 	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
-	if (local->model < 0 || local->shader < 0)
+	if (local->model < 0)
 		return false;
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
+	if (!local->shader)
+		return false;
+	
 
 	// Load model properties
 	Model *my_model;
@@ -93,10 +96,8 @@ bool sDrawScene::load() {
 
 
 	// Create Shader variables
-	Shader *my_shader;
-	my_shader = DEMO->shaderManager.shader[local->shader];
-	my_shader->use();
-	local->vars = new ShaderVars(this, my_shader);
+	local->shader->use();
+	local->vars = new ShaderVars(this, local->shader);
 
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
@@ -117,7 +118,6 @@ void sDrawScene::exec() {
 	local = (drawScene_section *)this->vars;
 
 	Model *my_model = DEMO->modelManager.model[local->model];
-	Shader *my_shader = DEMO->shaderManager.shader[local->shader];
 	
 	// Start evaluating blending
 	EvalBlendingStart();
@@ -140,10 +140,10 @@ void sDrawScene::exec() {
 		my_model->setCamera((unsigned int)local->CameraNumber);
 
 	// Load shader
-	my_shader->use();
+	local->shader->use();
 
 	// For ShadowMapping
-	my_shader->setValue("lightSpaceMatrix", DEMO->lightManager.light[0]->spaceMatrix);
+	local->shader->setValue("lightSpaceMatrix", DEMO->lightManager.light[0]->spaceMatrix);
 	// End ShadowMapping
 
 	// view/projection transformations
@@ -153,11 +153,11 @@ void sDrawScene::exec() {
 		0.1f, 10000.0f
 	);
 
-	my_shader->setValue("projection", projection);
+	local->shader->setValue("projection", projection);
 
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
 	//if (local->CameraNumber < 0)
-		my_shader->setValue("view", view);
+		local->shader->setValue("view", view);
 
 	
 
@@ -172,10 +172,10 @@ void sDrawScene::exec() {
 	my_model->modelTransform = model;
 
 	// For MotionBlur
-	my_shader->setValue("prev_projection", local->prev_projection);
+	local->shader->setValue("prev_projection", local->prev_projection);
 	//if (local->CameraNumber < 0)
-		my_shader->setValue("prev_view", local->prev_view);
-	my_shader->setValue("prev_model", local->prev_model);
+		local->shader->setValue("prev_view", local->prev_view);
+	local->shader->setValue("prev_model", local->prev_model);
 
 	local->prev_projection = projection;
 	//if (local->CameraNumber < 0)
@@ -186,7 +186,7 @@ void sDrawScene::exec() {
 	// Set the other shader variable values
 	local->vars->setValues();
 
-	my_model->Draw(my_shader->ID, local->AnimationTime);
+	my_model->Draw(local->shader->ID, local->AnimationTime);
 
 	glUseProgram(0);
 	if (local->drawWireframe)

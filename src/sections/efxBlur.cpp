@@ -6,7 +6,7 @@ typedef struct {
 	float			blurAmount;		// Blur layers to apply
 	char			clearScreen;	// Clear Screen buffer
 	char			clearDepth;		// Clear Depth buffer
-	int				shaderBlur;		// Blur Shader to apply
+	Shader*			shader;			// Blur Shader to apply
 	mathDriver		*exprBlur;		// Equations for the Blur effect
 	ShaderVars		*shaderVars;	// Shader variables
 
@@ -53,19 +53,15 @@ bool sEfxBlur::load() {
 		return false;
 
 	// Load Blur shader
-	local->shaderBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
-	if (local->shaderBlur < 0)
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
+	if (!local->shader)
 		return false;
 
-	// Create Shader variables
-	Shader *my_shaderBlur;
-	my_shaderBlur = DEMO->shaderManager.shader[local->shaderBlur];
-
 	// Configure Blur shader
-	my_shaderBlur->use();
-	my_shaderBlur->setValue("image", 0);	// The image is in the texture unit 0
+	local->shader->use();
+	local->shader->setValue("image", 0);	// The image is in the texture unit 0
 
-	local->shaderVars = new ShaderVars(this, my_shaderBlur);
+	local->shaderVars = new ShaderVars(this, local->shader);
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
 		local->shaderVars->ReadString(this->uniform[i].c_str());
@@ -87,9 +83,6 @@ void sEfxBlur::exec() {
 	if (local->clearScreen) glClear(GL_COLOR_BUFFER_BIT);
 	if (local->clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
 
-	// Get the shaders
-	Shader *my_shaderBlur = DEMO->shaderManager.shader[local->shaderBlur];
-
 	// Evaluate the expression
 	local->exprBlur->Expression.value();
 
@@ -99,7 +92,7 @@ void sEfxBlur::exec() {
 		// First step: Blur the image from the "fbo attachment 0", and store it in our efxBloom fbo manager (efxBloomFbo)
 		bool horizontal = true;
 		bool first_iteration = true;
-		my_shaderBlur->use();
+		local->shader->use();
 
 		// Prevent negative Blurs
 		if (local->blurAmount < 0)
@@ -107,10 +100,10 @@ void sEfxBlur::exec() {
 		unsigned int iBlurAmount = static_cast<unsigned int>(local->blurAmount);
 		for (unsigned int i = 0; i < iBlurAmount; i++)
 		{
-			my_shaderBlur->setValue("horizontal", horizontal);
+			local->shader->setValue("horizontal", horizontal);
 			
 			// We always draw the First pass in the efxBloom FBO
-			DEMO->efxBloomFbo.bind(horizontal, false, false);
+			DEMO->efxBloomFbo.bind(horizontal, false, false); // TODO: Fix: use an FBO for Blur, not the Bloom FBO
 			
 			// If it's the first iteration, we pick the fbo
 			// if not, we pick the fbo of our efxBloom

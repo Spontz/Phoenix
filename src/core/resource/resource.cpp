@@ -33,7 +33,7 @@ void Resource::loadAllResources()
 
 Resource::Resource() {
 	obj_quadFullscreen = obj_qube = obj_skybox = 0;
-	shdr_ObjColor = shdr_QuadDepth = shdr_QuadTex = shdr_QuadTexPVM = shdr_QuadTexAlpha = shdr_QuadTexModel = shdr_QuadTexVFlipModel = shdr_Skybox = -1;
+	shdr_ObjColor = shdr_QuadDepth = shdr_QuadTex = shdr_QuadTexPVM = shdr_QuadTexAlpha = shdr_QuadTexModel = shdr_QuadTexVFlipModel = shdr_Skybox = nullptr;
 	tex_tv = 0;
 }
 
@@ -190,16 +190,6 @@ void Resource::Load_Obj_Qube()
 
 void Resource::Load_Shaders()
 {
-	/*
-	shdr_QuadTex = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTex.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTex.frag");
-	shdr_QuadDepth = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadDepth.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadDepth.frag");
-	shdr_QuadTexAlpha = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexAlpha.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTexAlpha.frag");
-	shdr_QuadTexModel = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexModel.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTexModel.frag");
-	shdr_QuadTexPVM = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexPVM.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTexPVM.frag");
-	shdr_QuadTexVFlipModel = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.vert", DEMO->dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.frag");
-	shdr_Skybox = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/skybox/skybox.vert", DEMO->dataFolder + "/resources/shaders/skybox/skybox.frag");
-	shdr_ObjColor = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/ObjColor.vert", DEMO->dataFolder + "/resources/shaders/basic/ObjColor.frag");
-	*/
 	shdr_QuadTex = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTex.glsl");
 	shdr_QuadDepth = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadDepth.glsl");
 	shdr_QuadTexAlpha = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexAlpha.glsl");
@@ -232,10 +222,8 @@ void Resource::Load_Lights()
 // Draw a Quad with texture in full screen
 void Resource::Draw_QuadFS(int textureNum)
 {
-	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTex];
-
-	my_shad->use();
-	my_shad->setValue("screenTexture", 0);
+	shdr_QuadTex->use();
+	shdr_QuadTex->setValue("screenTexture", 0);
 	DEMO->textureManager.texture[textureNum]->bind();
 
 	Draw_QuadFS();
@@ -244,11 +232,9 @@ void Resource::Draw_QuadFS(int textureNum)
 // Draw a Quad with texture in full screen with alpha
 void Resource::Draw_QuadFS(int textureNum, float alpha)
 {
-	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTexAlpha];
-
-	my_shad->use();
-	my_shad->setValue("alpha", alpha);
-	my_shad->setValue("screenTexture", 0);
+	shdr_QuadTexAlpha->use();
+	shdr_QuadTexAlpha->setValue("alpha", alpha);
+	shdr_QuadTexAlpha->setValue("screenTexture", 0);
 	DEMO->textureManager.texture[textureNum]->bind();
 	
 	Draw_QuadFS();
@@ -257,10 +243,8 @@ void Resource::Draw_QuadFS(int textureNum, float alpha)
 // Draw a Quad with a FBO in full screen
 void Resource::Draw_QuadFBOFS(int fboNum, GLuint attachment)
 {
-	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTex];
-
-	my_shad->use();
-	my_shad->setValue("screenTexture", 0);
+	shdr_QuadTex->use();
+	shdr_QuadTex->setValue("screenTexture", 0);
 	DEMO->fboManager.bind_tex(fboNum, 0, attachment);
 	
 	Draw_QuadFS();
@@ -269,10 +253,8 @@ void Resource::Draw_QuadFBOFS(int fboNum, GLuint attachment)
 // Draw a Quad with a FBO in full screen
 void Resource::Draw_QuadEfxFBOFS(int efxFboNum, GLuint attachment)
 {
-	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTex];
-
-	my_shad->use();
-	my_shad->setValue("screenTexture", 0);
+	shdr_QuadTex->use();
+	shdr_QuadTex->setValue("screenTexture", 0);
 	DEMO->efxBloomFbo.bind_tex(efxFboNum, 0, attachment);
 
 	Draw_QuadFS();
@@ -281,10 +263,9 @@ void Resource::Draw_QuadEfxFBOFS(int efxFboNum, GLuint attachment)
 // Draw a Quad in full screen. A texture can be specified and a model matrix
 void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 const* model)
 {
-	Shader *my_shad = DEMO->shaderManager.shader[shdr_QuadTexModel];
-	my_shad->use();
-	my_shad->setValue("model", *model);
-	my_shad->setValue("screenTexture", 0);
+	shdr_QuadTexModel->use();
+	shdr_QuadTexModel->setValue("model", *model);
+	shdr_QuadTexModel->setValue("screenTexture", 0);
 	DEMO->textureManager.texture[textureNum]->bind();
 
 	Draw_QuadFS();
@@ -293,13 +274,11 @@ void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 const* model)
 // Draw a Quad in full screen. A texture can be specified and the 3 matrix
 void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *projection, glm::mat4* view, glm::mat4 *model)
 {
-	// TODO: We need to prepare the shader for this method
-	Shader* my_shad = DEMO->shaderManager.shader[shdr_QuadTexPVM];
-	my_shad->use();
-	my_shad->setValue("projection", *projection);
-	my_shad->setValue("view", *view);
-	my_shad->setValue("model", *model);
-	my_shad->setValue("screenTexture", 0);
+	shdr_QuadTexPVM->use();
+	shdr_QuadTexPVM->setValue("projection", *projection);
+	shdr_QuadTexPVM->setValue("view", *view);
+	shdr_QuadTexPVM->setValue("model", *model);
+	shdr_QuadTexPVM->setValue("screenTexture", 0);
 	DEMO->textureManager.texture[textureNum]->bind();
 
 	Draw_QuadFS();

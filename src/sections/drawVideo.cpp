@@ -5,11 +5,11 @@
 // ******************************************************************
 
 typedef struct {
-	char	clearScreen;	// Clear Screen buffer
-	char	clearDepth;		// Clear Depth buffer
-	char	fitToContent;	// Fit to content: 1=respect video aspect ratio, 0=fill entire viewport window
-	int		videoNum;
-	int		shaderNum;
+	char		clearScreen;	// Clear Screen buffer
+	char		clearDepth;		// Clear Depth buffer
+	char		fitToContent;	// Fit to content: 1=respect video aspect ratio, 0=fill entire viewport window
+	int			videoNum;
+	Shader*		shader;
 	ShaderVars	*shaderVars;	// Shader variables
 } drawVideo_section;
 
@@ -34,17 +34,18 @@ bool sDrawVideo::load() {
 	local->clearDepth = (char)this->param[1];
 	local->fitToContent = (char)this->param[2];
 	local->videoNum = DEMO->videoManager.addVideo(DEMO->dataFolder + this->strings[0]);
-
-	local->shaderNum = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
-
-	if ((local->videoNum == -1) || (local->shaderNum == -1))
+	if (local->videoNum == -1)
 		return false;
 
+
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
+	if (!local->shader)
+		return false;
+
+	
 	// Create Shader variables
-	Shader *my_shader;
-	my_shader = DEMO->shaderManager.shader[local->shaderNum];
-	my_shader->use();
-	local->shaderVars = new ShaderVars(this, my_shader);
+	local->shader->use();
+	local->shaderVars = new ShaderVars(this, local->shader);
 
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
@@ -96,10 +97,9 @@ void sDrawVideo::exec() {
 
 		//RES->Draw_Obj_QuadTex(local->texture, &model);
 		glBindVertexArray(RES->obj_quadFullscreen);
-		Shader *my_shader = DEMO->shaderManager.shader[local->shaderNum];
-		my_shader->use();
-		my_shader->setValue("model", model);
-		my_shader->setValue("screenTexture", 0);
+		local->shader->use();
+		local->shader->setValue("model", model);
+		local->shader->setValue("screenTexture", 0);
 		// Set other shader variables values
 		local->shaderVars->setValues();
 		my_video->bind(0);

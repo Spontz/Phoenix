@@ -34,7 +34,7 @@ Shader::~Shader()
 // Load a shader
 // Return true is loaded OK
 // Return false is failed loading shader
-int Shader::load(const std::string& filepath, std::vector<std::string> feedbackVaryings)
+bool Shader::load(const std::string& filepath, std::vector<std::string> feedbackVaryings)
 {
 	// If we already have loaded this shader, we unload it first
 	if (ID > 0) {
@@ -187,8 +187,9 @@ bool Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSource
 		return false;
 	}
 		
-	GLuint program = glCreateProgram();
+	ID = glCreateProgram();
 	std::vector<GLuint> glShaderIDs;
+	glShaderIDs.reserve(shaderSources.size());
 	int glShaderIDIndex = 0;
 	for (auto& kv : shaderSources)
 	{
@@ -221,11 +222,9 @@ bool Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSource
 			return false;
 		}
 
-		glAttachShader(program, shader);
+		glAttachShader(ID, shader);
 		glShaderIDs.push_back(shader);
 	}
-
-	ID = program;
 
 	//Add the Transform Feedback Varyings
 	if (feedbackVaryings.size() != 0) {
@@ -240,25 +239,25 @@ bool Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSource
 
 
 	// Link our program
-	glLinkProgram(program);
+	glLinkProgram(ID);
 
 	// Note the different functions here: glGetProgram* instead of glGetShader*.
 	GLint isLinked = 0;
-	glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
+	glGetProgramiv(ID, GL_LINK_STATUS, (int*)&isLinked);
 	if (isLinked == GL_FALSE)
 	{
 		GLint maxLength = 0;
-		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+		glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &maxLength);
 
 		// The maxLength includes the NULL character
 		GLchar* infoLog = new GLchar[maxLength];
-		glGetProgramInfoLog(program, maxLength, &maxLength, infoLog);
+		glGetProgramInfoLog(ID, maxLength, &maxLength, infoLog);
 
 		// We don't need the program anymore.
-		glDeleteProgram(program);
+		glDeleteProgram(ID);
 
-		for (auto id : glShaderIDs)
-			glDeleteShader(id);
+		for (auto shaderID : glShaderIDs)
+			glDeleteShader(shaderID);
 
 
 		LOG->Error("Shader Linking: file %s, log: %s", this->m_filepath.c_str(), infoLog);
@@ -268,7 +267,7 @@ bool Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSource
 
 	for (auto id : glShaderIDs)
 	{
-		glDetachShader(program, id);
+		glDetachShader(ID, id);
 		glDeleteShader(id);
 	}
 

@@ -9,7 +9,7 @@ typedef struct {
 	// Particle engine variables
 	int				numParticles;
 	ParticleMesh*	pSystem;
-	int				shader;
+	Shader*			shader;
 
 	// Particle Matrix positioning (for all the model)
 	glm::vec3		translation;
@@ -40,11 +40,13 @@ bool sDrawParticlesScene::load() {
 
 	// Load the shader
 	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
+	if (!local->shader)
+		return false;
 
 	// Load the model scene
 	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[1]);
 
-	if (local->shader < 0 || local->model <0)
+	if (local->model <0)
 		return false;
 
 	// Load model properties
@@ -101,10 +103,8 @@ bool sDrawParticlesScene::load() {
 	Pos.clear();
 
 	// Create Shader variables
-	Shader* my_shader;
-	my_shader = DEMO->shaderManager.shader[local->shader];
-	my_shader->use();
-	local->vars = new ShaderVars(this, my_shader);
+	local->shader->use();
+	local->vars = new ShaderVars(this, local->shader);
 
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
@@ -147,13 +147,12 @@ void sDrawParticlesScene::exec() {
 
 	
 	// Get the shader
-	Shader* my_shader = DEMO->shaderManager.shader[local->shader];
-	my_shader->use();
-	my_shader->setValue("gTime", this->runTime);	// Send the Time
-	my_shader->setValue("gVP", projection * view);	// Set Projection x View matrix
-	my_shader->setValue("gModel", model);			// Set Model matrix
-	my_shader->setValue("gCameraPos", DEMO->camera->Position);		// Set camera position
-	my_shader->setValue("gNumParticles", (float)local->numParticles);	// Set the total number of particles
+	local->shader->use();
+	local->shader->setValue("gTime", this->runTime);	// Send the Time
+	local->shader->setValue("gVP", projection * view);	// Set Projection x View matrix
+	local->shader->setValue("gModel", model);			// Set Model matrix
+	local->shader->setValue("gCameraPos", DEMO->camera->Position);		// Set camera position
+	local->shader->setValue("gNumParticles", (float)local->numParticles);	// Set the total number of particles
 
 	// Set the other shader variable values
 	local->vars->setValues();

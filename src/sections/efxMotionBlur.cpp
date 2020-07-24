@@ -6,7 +6,7 @@ typedef struct {
 	unsigned int	FPSScale;			// Scale FPS's
 	GLuint			bufferColor;		// Attcahment 0 of our FBO
 	GLuint			bufferVelocity;		// Attachment 1 of our FBO
-	int				shaderMotionBlur;	// Motionblur Shader to apply
+	Shader*			shader;				// Motionblur Shader to apply
 
 	ShaderVars		*shaderVars;	// Shader variables
 } efxMotionBlur_section;
@@ -33,17 +33,14 @@ bool sEfxMotionBlur::load() {
 	if (local->FPSScale == 0)
 		local->FPSScale = 1;
 
-	local->shaderMotionBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
-	if (local->shaderMotionBlur<0)
+	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
+	if (!local->shader)
 		return false;
 
-	Shader *my_shaderMotionBlur;
-	my_shaderMotionBlur = DEMO->shaderManager.shader[local->shaderMotionBlur];
-
 	// Configure Blur shader
-	my_shaderMotionBlur->use();
+	local->shader->use();
 
-	local->shaderVars = new ShaderVars(this, my_shaderMotionBlur);
+	local->shaderVars = new ShaderVars(this, local->shader);
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
 		local->shaderVars->ReadString(this->uniform[i].c_str());
@@ -51,8 +48,8 @@ bool sEfxMotionBlur::load() {
 	// Set shader variables values
 	local->shaderVars->setValues();
 
-	my_shaderMotionBlur->setValue("scene", 0);		// The scene is in the Tex unit 0
-	my_shaderMotionBlur->setValue("velocity", 1);	// The velocity is in the Tex unit 1
+	local->shader->setValue("scene", 0);		// The scene is in the Tex unit 0
+	local->shader->setValue("velocity", 1);	// The velocity is in the Tex unit 1
 
 	// Store the buffers of our FBO (we assume that in Attachment 0 we have the color and in Attachment 1 we have the brights)
 	local->bufferColor = DEMO->fboManager.fbo[local->FboNum]->m_colorAttachment[0];
@@ -68,17 +65,14 @@ void sEfxMotionBlur::init() {
 void sEfxMotionBlur::exec() {
 	local = (efxMotionBlur_section *)this->vars;
 
-	// Get the shader
-	Shader *my_shaderMotionBlur = DEMO->shaderManager.shader[local->shaderMotionBlur];
-
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		my_shaderMotionBlur->use();
+		local->shader->use();
 
 		// Set new shader variables values
-		my_shaderMotionBlur->setValue("uVelocityScale", DEMO->fps/local->FPSScale); //uVelocityScale = currentFps / targetFps;
+		local->shader->setValue("uVelocityScale", DEMO->fps/local->FPSScale); //uVelocityScale = currentFps / targetFps;
 		local->shaderVars->setValues();
 
 		glBindTextureUnit(0, local->bufferColor);
