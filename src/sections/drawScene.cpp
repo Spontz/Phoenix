@@ -35,14 +35,19 @@ sDrawScene::sDrawScene() {
 }
 
 bool sDrawScene::load() {
-	if ((this->param.size() != 4) || (this->strings.size() < 6)) {
-		LOG->Error("DrawScene [%s]: 4 param (Enable Depth buffer, enable wireframe, enable animation) and 6 strings needed", this->identifier.c_str());
+	if ((this->param.size() != 4) || (this->strings.size() < 7)) {
+		LOG->Error("DrawScene [%s]: 4 param (Enable Depth buffer, enable wireframe, enable animation and animation number) and 7 strings needed (model, shader, CameraNumber, Time and 3 for object positioning)", this->identifier.c_str());
 		return false;
 	}
 
 	local = (drawScene_section*)malloc(sizeof(drawScene_section));
 	this->vars = (void*)local;
 
+	// Load default values
+	local->AnimationNumber = 0;
+	local->CameraNumber = -1;
+	local->playAnimation = false;
+	local->AnimationTime = 0;
 
 	// Depth Buffer Clearing Flag
 	local->enableDepthBufferClearing = (int)this->param[0];

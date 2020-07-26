@@ -36,14 +36,18 @@ sDrawSceneMatrix::sDrawSceneMatrix() {
 }
 
 bool sDrawSceneMatrix::load() {
-	if ((this->param.size() != 4) || (this->strings.size() != 8)) {
-		LOG->Error("DrawSceneMatrix [%s]: 4 param and 7 strings needed", this->identifier.c_str());
+	if ((this->param.size() != 4) || (this->strings.size() < 7)) {
+		LOG->Error("DrawSceneMatrix [%s]: 4 param (Enable Depth buffer, enable wireframe, enable animation and animation number) and 7 strings needed", this->identifier.c_str());
 		return false;
 	}
 
 	local = (drawSceneMatrix_section*)malloc(sizeof(drawSceneMatrix_section));
 	this->vars = (void*)local;
 
+	// Load default values
+	local->AnimationNumber = 0;
+	local->playAnimation = false;
+	local->AnimationTime = 0;
 
 	// Depth Buffer Clearing Flag
 	local->enableDepthBufferClearing = (int)this->param[0];
