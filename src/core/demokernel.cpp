@@ -427,7 +427,7 @@ void demokernel::initControlVars() {
 void demokernel::initSectionQueues() {
 	Section* ds = NULL;
 	Section* ds_tmp = NULL;
-	sLoading* ds_loading = NULL;
+	Section* ds_loading = NULL;
 	float startTime = 0.0f;
 	int i;
 	int sec_id;
@@ -443,7 +443,7 @@ void demokernel::initSectionQueues() {
 	// Search for the loading section, if not found, we will create one
 	for (i = 0; i < this->sectionManager.section.size(); i++) {
 		if (this->sectionManager.section[i]->type == SectionType::Loading)
-			ds_loading = (sLoading*)this->sectionManager.section[i];
+			ds_loading = this->sectionManager.section[i];
 	}
 
 	if (ds_loading == NULL) {
@@ -454,7 +454,7 @@ void demokernel::initSectionQueues() {
 			return;
 		}
 		else
-			ds_loading = (sLoading*)this->sectionManager.section[sec_id];
+			ds_loading = this->sectionManager.section[sec_id];
 	}
 
 	// preload, load and init loading section

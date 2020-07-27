@@ -8,7 +8,7 @@ enum class e_background_drawing_mode : unsigned int {
 };
 
 struct sBackground : public Section {
-	public:
+public:
 	sBackground();
 	bool		load();
 	void		init();
@@ -16,11 +16,13 @@ struct sBackground : public Section {
 	void		end();
 	std::string debug();
 
-	private:
+private:
 	int texture_id_;
-	Shader* shader;
+	Shader* m_shader;
 	e_background_drawing_mode mode_;
 };
+
+// ******************************************************************
 
 Section* instance_background() {
 	return new sBackground();
@@ -51,8 +53,8 @@ bool sBackground::load() {
 	}
 
 	// Load the shader for drawing the quad
-	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/sections/background.glsl"); // TODO: Fix this, we should use this shader, but at this moment we don't use it :D
-	if (!shader)
+	m_shader = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/sections/background.glsl"); // TODO: Fix this, we should use this shader, but at this moment we don't use it :D
+	if (!m_shader)
 		return false;
 	// Background texture load
 	texture_id_ = DEMO->textureManager.addTexture(DEMO->dataFolder + strings[0]);

@@ -1,14 +1,25 @@
 #include "main.h"
 #include "core/shadervars.h"
 
-typedef struct {
+struct sEfxFader : public Section {
+public:
+	sEfxFader();
+	bool		load();
+	void		init();
+	void		exec();
+	void		end();
+	std::string debug();
+
+private:
 	Shader*			shader;			// Fader Shader to apply
 	ShaderVars		*shaderVars;	// Shader variables
-} efxFader_section;
-
-static efxFader_section *local;
+};
 
 // ******************************************************************
+
+Section* instance_efxFader() {
+	return new sEfxFader();
+}
 
 sEfxFader::sEfxFader() {
 	type = SectionType::EfxFader;
@@ -17,30 +28,26 @@ sEfxFader::sEfxFader() {
 
 bool sEfxFader::load() {
 	// script validation
-	if ((this->param.size()) != 0 || (this->strings.size() != 1)) {
-		LOG->Error("EfxFader [%s]: 1 shader file required", this->identifier.c_str());
+	if ((param.size()) != 0 || (strings.size() != 1)) {
+		LOG->Error("EfxFader [%s]: 1 shader file required", identifier.c_str());
 		return false;
 	}
 	
-
-	local = (efxFader_section*) malloc(sizeof(efxFader_section));
-	this->vars = (void *)local;
-
 	// Load Fader shader
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
-	if (!local->shader)
+	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + strings[0]);
+	if (!shader)
 		return false;
 
 	// Configure Fader shader
-	local->shader->use();
-	local->shaderVars = new ShaderVars(this, local->shader);
+	shader->use();
+	shaderVars = new ShaderVars(this, shader);
 	// Read the shader variables
-	for (int i = 0; i < this->uniform.size(); i++) {
-		local->shaderVars->ReadString(this->uniform[i].c_str());
+	for (int i = 0; i < uniform.size(); i++) {
+		shaderVars->ReadString(uniform[i].c_str());
 	}
 	
 	// Set shader variables values
-	local->shaderVars->setValues();
+	shaderVars->setValues();
 
 	return true;
 }
@@ -50,14 +57,12 @@ void sEfxFader::init() {
 }
 
 void sEfxFader::exec() {
-	local = (efxFader_section*)this->vars;
-
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
-		local->shader->use();
+		shader->use();
 		// Set shader variables values
-		local->shaderVars->setValues();
+		shaderVars->setValues();
 		// Render scene
 		RES->Draw_QuadFS();
 	}		
@@ -71,5 +76,5 @@ void sEfxFader::end() {
 }
 
 std::string sEfxFader::debug() {
-	return "[ efxFader id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	return "[ efxFader id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
 }

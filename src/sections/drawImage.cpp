@@ -1,7 +1,16 @@
 #include "main.h"
 #include "core/shadervars.h"
 
-typedef struct {
+struct sDrawImage : public Section {
+public:
+	sDrawImage();
+	bool		load();
+	void		init();
+	void		exec();
+	void		end();
+	std::string debug();
+
+private:
 	char		clearScreen;	// Clear Screen buffer
 	int			texture;
 	float		texAspectRatio;
@@ -16,9 +25,11 @@ typedef struct {
 	ShaderVars	*vars;			// For storing any other shader variables
 } drawImage_section;
 
-static drawImage_section *local;
-
 // ******************************************************************
+
+Section* instance_drawImage() {
+	return new sDrawImage();
+}
 
 sDrawImage::sDrawImage() {
 	type = SectionType::DrawImage;
@@ -26,58 +37,55 @@ sDrawImage::sDrawImage() {
 
 
 bool sDrawImage::load() {
-	local = (drawImage_section*)malloc(sizeof(drawImage_section));
-	this->vars = (void *)local;
-
-	if (this->strings.size() < 5) {
-		LOG->Error("Draw Image [%s]: 5 strings required (image path, shader and 3 por image positioning)", this->identifier.c_str());
+	if (strings.size() < 5) {
+		LOG->Error("Draw Image [%s]: 5 strings required (image path, shader and 3 por image positioning)", identifier.c_str());
 		return false;
 	}
 
 	// Texture load
-	local->texture = DEMO->textureManager.addTexture(DEMO->dataFolder + this->strings[0]);
+	texture = DEMO->textureManager.addTexture(DEMO->dataFolder + strings[0]);
 
-	if (local->texture == -1)
+	if (texture == -1)
 		return false;
 	// Load the background texture
 	Texture *my_tex;
-	my_tex = DEMO->textureManager.texture[local->texture];
-	local->texAspectRatio = (float)my_tex->height / (float)my_tex->width;
+	my_tex = DEMO->textureManager.texture[texture];
+	texAspectRatio = (float)my_tex->height / (float)my_tex->width;
 
 	// Load the shader to apply
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
-	if (!local->shader)
+	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + strings[1]);
+	if (!shader)
 		return false;
 
 	// Load the formmula containing the Image position and scale
-	local->exprPosition = new mathDriver(this);
+	exprPosition = new mathDriver(this);
 	// Load positions, process constants and compile expression
 	// TODO: Change this with a for and read all strings like in the other sections
-	local->exprPosition->expression = this->strings[2] + this->strings[3] + this->strings[4]; // Concatenate the 3 positioning strings (position+rotation+scale)
-	local->exprPosition->SymbolTable.add_variable("tx", local->translation.x);
-	local->exprPosition->SymbolTable.add_variable("ty", local->translation.y);
-	local->exprPosition->SymbolTable.add_variable("tz", local->translation.z);
-	local->exprPosition->SymbolTable.add_variable("rx", local->rotation.x);
-	local->exprPosition->SymbolTable.add_variable("ry", local->rotation.y);
-	local->exprPosition->SymbolTable.add_variable("rz", local->rotation.z);
-	local->exprPosition->SymbolTable.add_variable("sx", local->scale.x);
-	local->exprPosition->SymbolTable.add_variable("sy", local->scale.y);
-	local->exprPosition->SymbolTable.add_variable("sz", local->scale.z);
-	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
-	if (!local->exprPosition->compileFormula())
+	exprPosition->expression = strings[2] + strings[3] + strings[4]; // Concatenate the 3 positioning strings (position+rotation+scale)
+	exprPosition->SymbolTable.add_variable("tx", translation.x);
+	exprPosition->SymbolTable.add_variable("ty", translation.y);
+	exprPosition->SymbolTable.add_variable("tz", translation.z);
+	exprPosition->SymbolTable.add_variable("rx", rotation.x);
+	exprPosition->SymbolTable.add_variable("ry", rotation.y);
+	exprPosition->SymbolTable.add_variable("rz", rotation.z);
+	exprPosition->SymbolTable.add_variable("sx", scale.x);
+	exprPosition->SymbolTable.add_variable("sy", scale.y);
+	exprPosition->SymbolTable.add_variable("sz", scale.z);
+	exprPosition->Expression.register_symbol_table(exprPosition->SymbolTable);
+	if (!exprPosition->compileFormula())
 		return false;
 
 	// Create shader variables
-	local->shader->use();
-	local->vars = new ShaderVars(this, local->shader);
+	shader->use();
+	vars = new ShaderVars(this, shader);
 
 	// Read the shader variables
-	for (int i = 0; i < this->uniform.size(); i++) {
-		local->vars->ReadString(this->uniform[i].c_str());
+	for (int i = 0; i < uniform.size(); i++) {
+		vars->ReadString(uniform[i].c_str());
 	}
 
 	// Set shader variables values
-	local->vars->setValues();
+	vars->setValues();
 
 	return true;
 }
@@ -87,13 +95,11 @@ void sDrawImage::init() {
 }
 
 void sDrawImage::exec() {
-	local = (drawImage_section *)this->vars;
-
 	// Evaluate the expression
-	local->exprPosition->Expression.value();
+	exprPosition->Expression.value();
 
 	Texture *my_tex;
-	my_tex = DEMO->textureManager.texture[local->texture];
+	my_tex = DEMO->textureManager.texture[texture];
 
 
 	EvalBlendingStart();
@@ -105,23 +111,23 @@ void sDrawImage::exec() {
 		glm::mat4 projection = glm::perspective(glm::radians(zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
 
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, local->translation);
-		model = glm::rotate(model, glm::radians(local->rotation.x), glm::vec3(1, 0, 0));
-		model = glm::rotate(model, glm::radians(local->rotation.y), glm::vec3(0, 1, 0));
-		model = glm::rotate(model, glm::radians(local->rotation.z), glm::vec3(0, 0, 1));
-		model = glm::scale(model, glm::vec3(local->scale.x, local->scale.y*local->texAspectRatio, local->scale.z));
+		model = glm::translate(model, translation);
+		model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+		model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0, 1, 0));
+		model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0, 0, 1));
+		model = glm::scale(model, glm::vec3(scale.x, scale.y*texAspectRatio, scale.z));
 
 		// Draw the image
-		local->shader->use();
-		local->shader->setValue("model", model);
-		local->shader->setValue("projection", projection);
-		local->shader->setValue("view", view);
-		local->shader->setValue("screenTexture", 0);
+		shader->use();
+		shader->setValue("model", model);
+		shader->setValue("projection", projection);
+		shader->setValue("view", view);
+		shader->setValue("screenTexture", 0);
 
 		my_tex->bind();
 
 		// Set the values
-		local->vars->setValues();
+		vars->setValues();
 
 		RES->Draw_QuadFS();
 	}
@@ -134,12 +140,11 @@ void sDrawImage::end() {
 }
 
 std::string sDrawImage::debug() {
-	local = (drawImage_section *)this->vars;
 	Texture *my_tex;
-	my_tex = DEMO->textureManager.texture[local->texture];
+	my_tex = DEMO->textureManager.texture[texture];
 
 	std::string msg;
-	msg = "[ drawImage id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg = "[ drawImage id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
 	msg += " filename: " + my_tex->filename + "\n";
 	return msg;
 }

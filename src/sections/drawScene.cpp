@@ -1,9 +1,16 @@
 #include "main.h"
 #include "core/shadervars.h"
 
-// ******************************************************************
+struct sDrawScene : public Section {
+public:
+	sDrawScene();
+	bool		load();
+	void		init();
+	void		exec();
+	void		end();
+	std::string debug();
 
-typedef struct {
+private:
 	int			model;
 	Shader*		shader;
 	int			enableDepthBufferClearing;
@@ -24,11 +31,13 @@ typedef struct {
 
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
 	ShaderVars	*vars;			// For storing any other shader variables
-} drawScene_section;
-
-static drawScene_section *local;
+};
 
 // ******************************************************************
+
+Section* instance_drawScene() {
+	return new sDrawScene();
+}
 
 sDrawScene::sDrawScene() {
 	type = SectionType::DrawScene;
@@ -40,77 +49,74 @@ bool sDrawScene::load() {
 		return false;
 	}
 
-	local = (drawScene_section*)malloc(sizeof(drawScene_section));
-	this->vars = (void*)local;
-
 	// Load default values
-	local->AnimationNumber = 0;
-	local->CameraNumber = -1;
-	local->playAnimation = false;
-	local->AnimationTime = 0;
+	AnimationNumber = 0;
+	CameraNumber = -1;
+	playAnimation = false;
+	AnimationTime = 0;
 
 	// Depth Buffer Clearing Flag
-	local->enableDepthBufferClearing = (int)this->param[0];
-	local->drawWireframe= (int)this->param[1];
+	enableDepthBufferClearing = (int)this->param[0];
+	drawWireframe= (int)this->param[1];
 
 	// Animation parameters
-	local->playAnimation = (int)this->param[2];
-	local->AnimationNumber = (int)this->param[3];
+	playAnimation = (int)this->param[2];
+	AnimationNumber = (int)this->param[3];
 	
 	// Load model and shader
-	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
-	if (local->model < 0)
+	model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
+	if (model < 0)
 		return false;
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
-	if (!local->shader)
+	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
+	if (!shader)
 		return false;
 	
 
 	// Load model properties
 	Model *my_model;
-	my_model = DEMO->modelManager.model[local->model];
-	my_model->playAnimation = local->playAnimation;
+	my_model = DEMO->modelManager.model[model];
+	my_model->playAnimation = playAnimation;
 	if (my_model->playAnimation)
-		my_model->setAnimation(local->AnimationNumber);
+		my_model->setAnimation(AnimationNumber);
 
-	local->exprPosition = new mathDriver(this);
+	exprPosition = new mathDriver(this);
 	// Load all the other strings
 	for (int i = 2; i < strings.size(); i++)
-		local->exprPosition->expression += this->strings[i];
+		exprPosition->expression += this->strings[i];
 
-	local->exprPosition->SymbolTable.add_variable("CameraNumber", local->CameraNumber);
-	local->exprPosition->SymbolTable.add_variable("aTime", local->AnimationTime);
-	local->exprPosition->SymbolTable.add_variable("tx", local->translation.x);
-	local->exprPosition->SymbolTable.add_variable("ty", local->translation.y);
-	local->exprPosition->SymbolTable.add_variable("tz", local->translation.z);
-	local->exprPosition->SymbolTable.add_variable("rx", local->rotation.x);
-	local->exprPosition->SymbolTable.add_variable("ry", local->rotation.y);
-	local->exprPosition->SymbolTable.add_variable("rz", local->rotation.z);
-	local->exprPosition->SymbolTable.add_variable("sx", local->scale.x);
-	local->exprPosition->SymbolTable.add_variable("sy", local->scale.y);
-	local->exprPosition->SymbolTable.add_variable("sz", local->scale.z);
-	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
-	if (!local->exprPosition->compileFormula())
+	exprPosition->SymbolTable.add_variable("CameraNumber", CameraNumber);
+	exprPosition->SymbolTable.add_variable("aTime", AnimationTime);
+	exprPosition->SymbolTable.add_variable("tx", translation.x);
+	exprPosition->SymbolTable.add_variable("ty", translation.y);
+	exprPosition->SymbolTable.add_variable("tz", translation.z);
+	exprPosition->SymbolTable.add_variable("rx", rotation.x);
+	exprPosition->SymbolTable.add_variable("ry", rotation.y);
+	exprPosition->SymbolTable.add_variable("rz", rotation.z);
+	exprPosition->SymbolTable.add_variable("sx", scale.x);
+	exprPosition->SymbolTable.add_variable("sy", scale.y);
+	exprPosition->SymbolTable.add_variable("sz", scale.z);
+	exprPosition->Expression.register_symbol_table(exprPosition->SymbolTable);
+	if (!exprPosition->compileFormula())
 		return false;
-	local->exprPosition->Expression.value();
+	exprPosition->Expression.value();
 	// Set the camera number
-	if (local->CameraNumber < 0)
+	if (CameraNumber < 0)
 		my_model->useCamera = false;
 	else
-		my_model->setCamera((unsigned int)local->CameraNumber);
+		my_model->setCamera((unsigned int)CameraNumber);
 
 
 	// Create Shader variables
-	local->shader->use();
-	local->vars = new ShaderVars(this, local->shader);
+	shader->use();
+	vars = new ShaderVars(this, shader);
 
 	// Read the shader variables
 	for (int i = 0; i < this->uniform.size(); i++) {
-		local->vars->ReadString(this->uniform[i].c_str());
+		vars->ReadString(this->uniform[i].c_str());
 	}
 
 	// Set shader variables values
-	local->vars->setValues();
+	vars->setValues();
 
 	return true;
 }
@@ -120,35 +126,34 @@ void sDrawScene::init() {
 }
 
 void sDrawScene::exec() {
-	local = (drawScene_section *)this->vars;
-
-	Model *my_model = DEMO->modelManager.model[local->model];
+	
+	Model *my_model = DEMO->modelManager.model[model];
 	
 	// Start evaluating blending
 	EvalBlendingStart();
 
 	// Evaluate the expression
-	local->exprPosition->Expression.value();
+	exprPosition->Expression.value();
 
-	if (local->drawWireframe)
+	if (drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	if (local->enableDepthBufferClearing == 1)
+	if (enableDepthBufferClearing == 1)
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 	// Set model properties
-	my_model->playAnimation = local->playAnimation;
+	my_model->playAnimation = playAnimation;
 	if (my_model->playAnimation)
-		my_model->setAnimation(local->AnimationNumber);
-	if (local->CameraNumber < 0)
+		my_model->setAnimation(AnimationNumber);
+	if (CameraNumber < 0)
 		my_model->useCamera = false;
 	else
-		my_model->setCamera((unsigned int)local->CameraNumber);
+		my_model->setCamera((unsigned int)CameraNumber);
 
 	// Load shader
-	local->shader->use();
+	shader->use();
 
 	// For ShadowMapping
-	local->shader->setValue("lightSpaceMatrix", DEMO->lightManager.light[0]->spaceMatrix);
+	shader->setValue("lightSpaceMatrix", DEMO->lightManager.light[0]->spaceMatrix);
 	// End ShadowMapping
 
 	// view/projection transformations
@@ -158,43 +163,43 @@ void sDrawScene::exec() {
 		0.1f, 10000.0f
 	);
 
-	local->shader->setValue("projection", projection);
+	shader->setValue("projection", projection);
 
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
-	//if (local->CameraNumber < 0)
-		local->shader->setValue("view", view);
+	//if (CameraNumber < 0)
+		shader->setValue("view", view);
 
 	
 
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, local->translation);
-	model = glm::rotate(model, glm::radians(local->rotation.x), glm::vec3(1, 0, 0));
-	model = glm::rotate(model, glm::radians(local->rotation.y), glm::vec3(0, 1, 0));
-	model = glm::rotate(model, glm::radians(local->rotation.z), glm::vec3(0, 0, 1));
-	model = glm::scale(model, local->scale);
+	model = glm::translate(model, translation);
+	model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+	model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0, 1, 0));
+	model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0, 0, 1));
+	model = glm::scale(model, scale);
 	my_model->modelTransform = model;
 
 	// For MotionBlur
-	local->shader->setValue("prev_projection", local->prev_projection);
-	//if (local->CameraNumber < 0)
-		local->shader->setValue("prev_view", local->prev_view);
-	local->shader->setValue("prev_model", local->prev_model);
+	shader->setValue("prev_projection", prev_projection);
+	//if (CameraNumber < 0)
+		shader->setValue("prev_view", prev_view);
+	shader->setValue("prev_model", prev_model);
 
-	local->prev_projection = projection;
-	//if (local->CameraNumber < 0)
-		local->prev_view = view;
-	local->prev_model = model;
+	prev_projection = projection;
+	//if (CameraNumber < 0)
+		prev_view = view;
+	prev_model = model;
 	// End MotionBlur
 
 	// Set the other shader variable values
-	local->vars->setValues();
+	vars->setValues();
 
-	my_model->Draw(local->shader->ID, local->AnimationTime);
+	my_model->Draw(shader->ID, AnimationTime);
 
 	glUseProgram(0);
-	if (local->drawWireframe)
+	if (drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
 	// End evaluating blending
@@ -207,9 +212,7 @@ void sDrawScene::end() {
 
 std::string sDrawScene::debug()
 {
-	local = (drawScene_section *)this->vars;
-
-	Model *my_model = DEMO->modelManager.model[local->model];
+	Model *my_model = DEMO->modelManager.model[model];
 
 	std::string msg;
 	msg = "[ drawScene id: " + this-> identifier + " layer:" + std::to_string(this->layer) + " ]\n";

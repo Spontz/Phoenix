@@ -1,9 +1,16 @@
 #include "main.h"
 #include "core/shadervars.h"
 
-// ******************************************************************
+struct sDrawSkybox : public Section {
+public:
+	sDrawSkybox();
+	bool		load();
+	void		init();
+	void		exec();
+	void		end();
+	std::string debug();
 
-typedef struct {
+private:
 	int			cubemap;
 	int			model;
 	int			shader;
@@ -14,55 +21,54 @@ typedef struct {
 	glm::vec3	scale;
 	
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
-} drawSkybox_section;
-
-static drawSkybox_section *local;
+};
 
 // ******************************************************************
+
+Section* instance_drawSkybox() {
+	return new sDrawSkybox();
+}
 
 sDrawSkybox::sDrawSkybox() {
 	type = SectionType::DrawSkybox;
 }
 
 bool sDrawSkybox::load() {
-	if ((this->param.size() != 2) || (this->strings.size() != 8)) {
-		LOG->Error("DrawSkybox [%s]: 2 param and 8 strings needed: enable depthBuffer, drawWireframe + 6 strings with skybox faces, 2 strings with rot and scale", this->identifier.c_str());
+	if ((param.size() != 2) || (strings.size() != 8)) {
+		LOG->Error("DrawSkybox [%s]: 2 param and 8 strings needed: enable depthBuffer, drawWireframe + 6 strings with skybox faces, 2 strings with rot and scale", identifier.c_str());
 		return false;
 	}
 
 	// Check if skybox is present in resources
 	if (RES->obj_skybox < 0 || RES->shdr_Skybox < 0) {
-		LOG->Error("DrawSkybox [%s]: Skybox model or shader has not been properly loaded in resources, please fix it!", this->identifier.c_str());
+		LOG->Error("DrawSkybox [%s]: Skybox model or shader has not been properly loaded in resources, please fix it!", identifier.c_str());
 		return false;
 	}
 
-	local = (drawSkybox_section*)malloc(sizeof(drawSkybox_section));
-	this->vars = (void*)local;
-
 	// Depth Buffer Clearing Flag
-	local->enableDepthBufferClearing = (int)this->param[0];
-	local->drawWireframe = (int)this->param[1];
+	enableDepthBufferClearing = (int)param[0];
+	drawWireframe = (int)param[1];
 	
 	// Load the 6 textures of our cubemap
-	std::vector<std::string> faces {	DEMO->dataFolder + this->strings[0], DEMO->dataFolder + this->strings[1], DEMO->dataFolder + this->strings[2],
-										DEMO->dataFolder + this->strings[3], DEMO->dataFolder + this->strings[4], DEMO->dataFolder + this->strings[5]};
+	std::vector<std::string> faces {	DEMO->dataFolder + strings[0], DEMO->dataFolder + strings[1], DEMO->dataFolder + strings[2],
+										DEMO->dataFolder + strings[3], DEMO->dataFolder + strings[4], DEMO->dataFolder + strings[5]};
 
-	local->cubemap = DEMO->textureManager.addCubemap(faces, false);
-	if (local->cubemap < 0)
+	cubemap = DEMO->textureManager.addCubemap(faces, false);
+	if (cubemap < 0)
 		return false;
 
 	// Read variables for traslation, rotation and scaling
-	local->exprPosition = new mathDriver(this);
+	exprPosition = new mathDriver(this);
 	// Load positions, process constants and compile expression
-	local->exprPosition->expression = std::string(this->strings[6]) + this->strings[7]; // Concatenate the 2 positioning strings (rotation+scale)
-	local->exprPosition->SymbolTable.add_variable("rx", local->rotation.x);
-	local->exprPosition->SymbolTable.add_variable("ry", local->rotation.y);
-	local->exprPosition->SymbolTable.add_variable("rz", local->rotation.z);
-	local->exprPosition->SymbolTable.add_variable("sx", local->scale.x);
-	local->exprPosition->SymbolTable.add_variable("sy", local->scale.y);
-	local->exprPosition->SymbolTable.add_variable("sz", local->scale.z);
-	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
-	if (!local->exprPosition->compileFormula())
+	exprPosition->expression = std::string(strings[6]) + strings[7]; // Concatenate the 2 positioning strings (rotation+scale)
+	exprPosition->SymbolTable.add_variable("rx", rotation.x);
+	exprPosition->SymbolTable.add_variable("ry", rotation.y);
+	exprPosition->SymbolTable.add_variable("rz", rotation.z);
+	exprPosition->SymbolTable.add_variable("sx", scale.x);
+	exprPosition->SymbolTable.add_variable("sy", scale.y);
+	exprPosition->SymbolTable.add_variable("sz", scale.z);
+	exprPosition->Expression.register_symbol_table(exprPosition->SymbolTable);
+	if (!exprPosition->compileFormula())
 		return false;
 
 	return true;
@@ -73,9 +79,8 @@ void sDrawSkybox::init() {
 }
 
 void sDrawSkybox::exec() {
-	local = (drawSkybox_section *)this->vars;
 	// Evaluate the expression
-	local->exprPosition->Expression.value();
+	exprPosition->Expression.value();
 
 	// Start evaluating blending
 	EvalBlendingStart();
@@ -84,9 +89,9 @@ void sDrawSkybox::exec() {
 	glDepthFunc(GL_LEQUAL);
 
 
-	if (local->drawWireframe)
+	if (drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	if (local->enableDepthBufferClearing)
+	if (enableDepthBufferClearing)
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 	RES->shdr_Skybox->use(); // TODO: Do not use the Resource shader for skybox, and use our own shader!
@@ -100,17 +105,17 @@ void sDrawSkybox::exec() {
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, glm::radians(local->rotation.x), glm::vec3(1, 0, 0));
-	model = glm::rotate(model, glm::radians(local->rotation.y), glm::vec3(0, 1, 0));
-	model = glm::rotate(model, glm::radians(local->rotation.z), glm::vec3(0, 0, 1));
-	model = glm::scale(model, local->scale);
+	model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+	model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0, 1, 0));
+	model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0, 0, 1));
+	model = glm::scale(model, scale);
 	RES->shdr_Skybox->setValue("model", model);
 	
 	RES->shdr_Skybox->setValue("skybox", 0);
-	RES->Draw_Skybox(local->cubemap);
+	RES->Draw_Skybox(cubemap);
 	
 
-	if (local->drawWireframe)
+	if (drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
 	// End evaluating blending
@@ -122,5 +127,5 @@ void sDrawSkybox::end() {
 }
 
 std::string sDrawSkybox::debug() {
-	return "[ drawSkybox id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	return "[ drawSkybox id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
 }

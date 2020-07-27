@@ -1,15 +1,26 @@
 #include "main.h"
 
-typedef struct {
+struct sDrawFbo : public Section {
+public:
+	sDrawFbo();
+	bool		load();
+	void		init();
+	void		exec();
+	void		end();
+	std::string debug();
+
+private:
 	int		fbo;
 	int		fboAttachment;
 	char	clearScreen;	// Clear Screen buffer
 	char	clearDepth;		// Clear Depth buffer
-} drawFbo_section;
-
-static drawFbo_section *local;
+};
 
 // ******************************************************************
+
+Section* instance_drawFbo() {
+	return new sDrawFbo();
+}
 
 sDrawFbo::sDrawFbo() {
 	type = SectionType::DrawFbo;
@@ -18,29 +29,25 @@ sDrawFbo::sDrawFbo() {
 
 bool sDrawFbo::load() {
 	// script validation
-	if (this->param.size() != 4) {
-		LOG->Error("DrawFbo [%s]: 4 params are needed: fbo to use and attachment, clear the screen buffer, clear depth buffer", this->identifier.c_str());
+	if (param.size() != 4) {
+		LOG->Error("DrawFbo [%s]: 4 params are needed: fbo to use and attachment, clear the screen buffer, clear depth buffer", identifier.c_str());
 		return false;
 	}
-	
-
-	local = (drawFbo_section*) malloc(sizeof(drawFbo_section));
-	this->vars = (void *)local;
 
 	// load parameters
-	local->fbo = (int)this->param[0];
-	local->fboAttachment = (int)this->param[1];
-	local->clearScreen = (int)this->param[2];
-	local->clearDepth = (int)this->param[3];
+	fbo = (int)param[0];
+	fboAttachment = (int)param[1];
+	clearScreen = (int)param[2];
+	clearDepth = (int)param[3];
 
 	// Check for the right parameter values
-	if ((local->fbo < 0) || (local->fbo > (float)FBO_BUFFERS)) {
-		LOG->Error("DrawFbo [%s]: Invalid texture fbo number: %i", this->identifier.c_str(), local->fbo);
+	if ((fbo < 0) || (fbo > (float)FBO_BUFFERS)) {
+		LOG->Error("DrawFbo [%s]: Invalid texture fbo number: %i", identifier.c_str(), fbo);
 		return false;
 	}
 
-	if ((local->fboAttachment < 0) || (local->fboAttachment > (float)GLDRV_MAX_COLOR_ATTACHMENTS)) {
-		LOG->Error("DrawFbo [%s]: Invalid texture fbo attachment: %i", this->identifier.c_str(), local->fboAttachment);
+	if ((fboAttachment < 0) || (fboAttachment > (float)GLDRV_MAX_COLOR_ATTACHMENTS)) {
+		LOG->Error("DrawFbo [%s]: Invalid texture fbo attachment: %i", identifier.c_str(), fboAttachment);
 		return false;
 	}
 
@@ -52,17 +59,15 @@ void sDrawFbo::init() {
 }
 
 void sDrawFbo::exec() {
-	local = (drawFbo_section*)this->vars;
-
 	// Clear the screen and depth buffers depending of the parameters passed by the user
-	if (local->clearScreen) glClear(GL_COLOR_BUFFER_BIT);
-	if (local->clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
+	if (clearScreen) glClear(GL_COLOR_BUFFER_BIT);
+	if (clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
 	
 	EvalBlendingStart();
 
 	glDisable(GL_DEPTH_TEST);
 	{
-		RES->Draw_QuadFBOFS(local->fbo, local->fboAttachment);
+		RES->Draw_QuadFBOFS(fbo, fboAttachment);
 	}
 	glEnable(GL_DEPTH_TEST);
 
@@ -74,10 +79,8 @@ void sDrawFbo::end() {
 }
 
 std::string sDrawFbo::debug() {
-	local = (drawFbo_section *)this->vars;
-
 	std::string msg;
-	msg = "[ drawFbo id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
-	msg += " fbo: " + std::to_string(local->fbo) + "\n";
+	msg = "[ drawFbo id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
+	msg += " fbo: " + std::to_string(fbo) + "\n";
 	return msg;
 }

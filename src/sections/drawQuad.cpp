@@ -1,16 +1,27 @@
 #include "main.h"
 #include "core/shadervars.h"
 
-typedef struct {
+struct sDrawQuad : public Section {
+public:
+	sDrawQuad();
+	bool		load();
+	void		init();
+	void		exec();
+	void		end();
+	std::string debug();
+
+private:
 	char		clearScreen;	// Clear Screen buffer
 	char		clearDepth;		// Clear Depth buffer
 	Shader*		shader;			// Shader to apply
 	ShaderVars	*shaderVars;	// Shader variables
-} drawQuad_section;
-
-static drawQuad_section *local;
+};
 
 // ******************************************************************
+
+Section* instance_drawQuad() {
+	return new sDrawQuad();
+}
 
 sDrawQuad::sDrawQuad() {
 	type = SectionType::DrawQuad;
@@ -19,34 +30,31 @@ sDrawQuad::sDrawQuad() {
 
 bool sDrawQuad::load() {
 	// script validation
-	if ((this->param.size()) != 2 || (this->strings.size() != 1)) {
-		LOG->Error("DrawQuad [%s]: 2 params are needed (Clear the screen buffer & clear depth buffer), and the shader file", this->identifier.c_str());
+	if ((param.size()) != 2 || (strings.size() != 1)) {
+		LOG->Error("DrawQuad [%s]: 2 params are needed (Clear the screen buffer & clear depth buffer), and the shader file", identifier.c_str());
 		return false;
 	}
-	
-	local = (drawQuad_section*) malloc(sizeof(drawQuad_section));
-	this->vars = (void *)local;
 
 	// Load parameters
-	local->clearScreen = (int)this->param[0];
-	local->clearDepth = (int)this->param[1];
+	clearScreen = (int)param[0];
+	clearDepth = (int)param[1];
 	
 	// Load shader
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
-	if (!local->shader)
+	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + strings[0]);
+	if (!shader)
 		return false;
 
 	// Create Shader variables
-	local->shader->use();
-	local->shaderVars = new ShaderVars(this, local->shader);
+	shader->use();
+	shaderVars = new ShaderVars(this, shader);
 
 	// Read the shader variables
-	for (int i = 0; i < this->uniform.size(); i++) {
-		local->shaderVars->ReadString(this->uniform[i].c_str());
+	for (int i = 0; i < uniform.size(); i++) {
+		shaderVars->ReadString(uniform[i].c_str());
 	}
 
 	// Set shader variables values
-	local->shaderVars->setValues();
+	shaderVars->setValues();
 	
 	return true;
 }
@@ -56,15 +64,13 @@ void sDrawQuad::init() {
 }
 
 void sDrawQuad::exec() {
-	local = (drawQuad_section*)this->vars;
-
-	local->shader->use();
+	shader->use();
 	// Clear the screen and depth buffers depending of the parameters passed by the user
-	if (local->clearScreen) glClear(GL_COLOR_BUFFER_BIT);
-	if (local->clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
+	if (clearScreen) glClear(GL_COLOR_BUFFER_BIT);
+	if (clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
 	
 	// Set new shader variables values
-	local->shaderVars->setValues();
+	shaderVars->setValues();
 
 	// Render scene
 	EvalBlendingStart();
@@ -83,5 +89,5 @@ void sDrawQuad::end() {
 }
 
 std::string sDrawQuad::debug() {
-	return "[ drawQuad id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	return "[ drawQuad id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
 }

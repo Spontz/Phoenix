@@ -1,9 +1,16 @@
 #include "main.h"
 #include "core/shadervars.h"
 
-// ******************************************************************
+struct sDrawSceneMatrix : public Section {
+public:
+	sDrawSceneMatrix();
+	bool		load();
+	void		init();
+	void		exec();
+	void		end();
+	std::string debug();
 
-typedef struct {
+private:
 	int			model_ref;	// Reference model to be use to store positions
 	int			model;		// Model to draw
 	Shader*		shader;
@@ -25,98 +32,97 @@ typedef struct {
 
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
 	ShaderVars	*vars;			// For storing any other shader variables
-} drawSceneMatrix_section;
-
-static drawSceneMatrix_section *local;
+};
 
 // ******************************************************************
+
+Section* instance_drawSceneMatrix() {
+	return new sDrawSceneMatrix();
+}
 
 sDrawSceneMatrix::sDrawSceneMatrix() {
 	type = SectionType::DrawScene;
 }
 
 bool sDrawSceneMatrix::load() {
-	if ((this->param.size() != 4) || (this->strings.size() < 7)) {
-		LOG->Error("DrawSceneMatrix [%s]: 4 param (Enable Depth buffer, enable wireframe, enable animation and animation number) and 7 strings needed", this->identifier.c_str());
+	if ((param.size() != 4) || (strings.size() < 7)) {
+		LOG->Error("DrawSceneMatrix [%s]: 4 param (Enable Depth buffer, enable wireframe, enable animation and animation number) and 7 strings needed", identifier.c_str());
 		return false;
 	}
 
-	local = (drawSceneMatrix_section*)malloc(sizeof(drawSceneMatrix_section));
-	this->vars = (void*)local;
-
 	// Load default values
-	local->AnimationNumber = 0;
-	local->playAnimation = false;
-	local->AnimationTime = 0;
+	AnimationNumber = 0;
+	playAnimation = false;
+	AnimationTime = 0;
 
 	// Depth Buffer Clearing Flag
-	local->enableDepthBufferClearing = (int)this->param[0];
-	local->drawWireframe= (int)this->param[1];
+	enableDepthBufferClearing = (int)param[0];
+	drawWireframe= (int)param[1];
 
 	// Animation parameters
-	local->playAnimation = (int)this->param[2];
-	local->AnimationNumber = (int)this->param[3];
+	playAnimation = (int)param[2];
+	AnimationNumber = (int)param[3];
 	
 	// Load ref. model, model and shader
-	local->model_ref = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
-	local->model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[1]);
-	if (local->model_ref < 0 || local->model < 0)
+	model_ref = DEMO->modelManager.addModel(DEMO->dataFolder + strings[0]);
+	model = DEMO->modelManager.addModel(DEMO->dataFolder + strings[1]);
+	if (model_ref < 0 || model < 0)
 		return false;
 
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[2]);
-	if (!local->shader)
+	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + strings[2]);
+	if (!shader)
 		return false;
 
 	// Calculate the number of matrices that we need to store
 	Model *my_model_ref;
-	my_model_ref = DEMO->modelManager.model[local->model_ref];
+	my_model_ref = DEMO->modelManager.model[model_ref];
 	int num_matrices = 0;
 	for (int i = 0; i < my_model_ref->meshes.size(); i++)
 	{
 		num_matrices += (int)my_model_ref->meshes[i].unique_vertices_pos.size();
 	}
-	local->prev_model = new std::vector<glm::mat4>;
-	local->prev_model->resize(num_matrices);
+	prev_model = new std::vector<glm::mat4>;
+	prev_model->resize(num_matrices);
 
 	// Load model properties
 	Model *my_model;
-	my_model = DEMO->modelManager.model[local->model];
-	my_model->playAnimation = local->playAnimation;
+	my_model = DEMO->modelManager.model[model];
+	my_model->playAnimation = playAnimation;
 	if (my_model->playAnimation)
-		my_model->setAnimation(local->AnimationNumber);
+		my_model->setAnimation(AnimationNumber);
 
 
-	local->exprPosition = new mathDriver(this);
+	exprPosition = new mathDriver(this);
 	// Load all the other strings
 	for (int i = 3; i < strings.size(); i++)
-		local->exprPosition->expression += this->strings[i];
+		exprPosition->expression += strings[i];
 
-	local->exprPosition->SymbolTable.add_variable("aTime", local->AnimationTime);
-	local->exprPosition->SymbolTable.add_variable("n", local->n);
-	local->exprPosition->SymbolTable.add_variable("tx", local->translation.x);
-	local->exprPosition->SymbolTable.add_variable("ty", local->translation.y);
-	local->exprPosition->SymbolTable.add_variable("tz", local->translation.z);
-	local->exprPosition->SymbolTable.add_variable("rx", local->rotation.x);
-	local->exprPosition->SymbolTable.add_variable("ry", local->rotation.y);
-	local->exprPosition->SymbolTable.add_variable("rz", local->rotation.z);
-	local->exprPosition->SymbolTable.add_variable("sx", local->scale.x);
-	local->exprPosition->SymbolTable.add_variable("sy", local->scale.y);
-	local->exprPosition->SymbolTable.add_variable("sz", local->scale.z);
-	local->exprPosition->Expression.register_symbol_table(local->exprPosition->SymbolTable);
-	if (!local->exprPosition->compileFormula())
+	exprPosition->SymbolTable.add_variable("aTime", AnimationTime);
+	exprPosition->SymbolTable.add_variable("n", n);
+	exprPosition->SymbolTable.add_variable("tx", translation.x);
+	exprPosition->SymbolTable.add_variable("ty", translation.y);
+	exprPosition->SymbolTable.add_variable("tz", translation.z);
+	exprPosition->SymbolTable.add_variable("rx", rotation.x);
+	exprPosition->SymbolTable.add_variable("ry", rotation.y);
+	exprPosition->SymbolTable.add_variable("rz", rotation.z);
+	exprPosition->SymbolTable.add_variable("sx", scale.x);
+	exprPosition->SymbolTable.add_variable("sy", scale.y);
+	exprPosition->SymbolTable.add_variable("sz", scale.z);
+	exprPosition->Expression.register_symbol_table(exprPosition->SymbolTable);
+	if (!exprPosition->compileFormula())
 		return false;
 
 	// Create Shader variables
-	local->shader->use();
-	local->vars = new ShaderVars(this, local->shader);
+	shader->use();
+	vars = new ShaderVars(this, shader);
 
 	// Read the shader variables
-	for (int i = 0; i < this->uniform.size(); i++) {
-		local->vars->ReadString(this->uniform[i].c_str());
+	for (int i = 0; i < uniform.size(); i++) {
+		vars->ReadString(uniform[i].c_str());
 	}
 
 	// Set shader variables values
-	local->vars->setValues();
+	vars->setValues();
 
 	return true;
 }
@@ -126,29 +132,27 @@ void sDrawSceneMatrix::init() {
 }
 
 void sDrawSceneMatrix::exec() {
-	local = (drawSceneMatrix_section *)this->vars;
-
-	Model *my_model_ref = DEMO->modelManager.model[local->model_ref];
-	Model *my_model = DEMO->modelManager.model[local->model];
+	Model *my_model_ref = DEMO->modelManager.model[model_ref];
+	Model *my_model = DEMO->modelManager.model[model];
 	
 	// Start evaluating blending
 	EvalBlendingStart();
 
-	if (local->drawWireframe)
+	if (drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	if (local->enableDepthBufferClearing == 1)
+	if (enableDepthBufferClearing == 1)
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 	// Set model properties
-	my_model->playAnimation = local->playAnimation;
+	my_model->playAnimation = playAnimation;
 	if (my_model->playAnimation)
-		my_model->setAnimation(local->AnimationNumber);
+		my_model->setAnimation(AnimationNumber);
 
 	// Load shader
-	local->shader->use();
+	shader->use();
 
 	// For ShadowMapping
-	local->shader->setValue("lightSpaceMatrix", DEMO->lightManager.light[0]->spaceMatrix);
+	shader->setValue("lightSpaceMatrix", DEMO->lightManager.light[0]->spaceMatrix);
 	// End ShadowMapping
 
 	// view/projection transformations
@@ -159,55 +163,55 @@ void sDrawSceneMatrix::exec() {
 		0.1f, 10000.0f
 	);
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
-	local->shader->setValue("projection", projection);
-	local->shader->setValue("view", view);
+	shader->setValue("projection", projection);
+	shader->setValue("view", view);
 	// For MotionBlur: send the previous matrix
-	local->shader->setValue("prev_projection", local->prev_projection);
-	local->shader->setValue("prev_view", local->prev_view);
+	shader->setValue("prev_projection", prev_projection);
+	shader->setValue("prev_view", prev_view);
 
 	// Set the other shader variable values
-	local->vars->setValues();
+	vars->setValues();
 
 	// Set the position of the reference model
 	glm::mat4 model;
-	local->n = 0;
+	n = 0;
 	int object = 0;
 	for (int i = 0; i < my_model_ref->meshes.size(); i++)
 	{
 		for (int j = 0; j < my_model_ref->meshes[i].unique_vertices_pos.size(); j++)
 		{
 			// Evaluate the expression
-			local->exprPosition->Expression.value();
-			local->shader->setValue("n", local->n); // we send also the number of object to the shader
+			exprPosition->Expression.value();
+			shader->setValue("n", n); // we send also the number of object to the shader
 
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, my_model_ref->meshes[i].unique_vertices_pos[j]);
 
 			// Now render the object using the "model_ref" as a model matrix start position
-			model = glm::translate(model, local->translation);
-			model = glm::rotate(model, glm::radians(local->rotation.x), glm::vec3(1, 0, 0));
-			model = glm::rotate(model, glm::radians(local->rotation.y), glm::vec3(0, 1, 0));
-			model = glm::rotate(model, glm::radians(local->rotation.z), glm::vec3(0, 0, 1));
-			model = glm::scale(model, local->scale);
+			model = glm::translate(model, translation);
+			model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+			model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0, 1, 0));
+			model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0, 0, 1));
+			model = glm::scale(model, scale);
 			my_model->modelTransform = model;
 
 			// For MotionBlur, we send the previous model matrix, and then store it for later use
-			local->shader->setValue("prev_model", local->prev_model[0][object]);
-			local->prev_model[0][object] = model;
+			shader->setValue("prev_model", prev_model[0][object]);
+			prev_model[0][object] = model;
 
-			my_model->Draw(local->shader->ID, local->AnimationTime);
+			my_model->Draw(shader->ID, AnimationTime);
 
 			object++; 
-			local->n = (float)object;
+			n = (float)object;
 		}
 	}
 	
 	// For MotionBlur: store the previous matrix
-	local->prev_projection = projection;
-	local->prev_view = view;
+	prev_projection = projection;
+	prev_view = view;
 
 	glUseProgram(0);
-	if (local->drawWireframe)
+	if (drawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
 	// End evaluating blending
@@ -220,16 +224,14 @@ void sDrawSceneMatrix::end() {
 
 std::string sDrawSceneMatrix::debug()
 {
-	local = (drawSceneMatrix_section *)this->vars;
-
-	Model *my_model_ref = DEMO->modelManager.model[local->model_ref];
-	Model *my_model = DEMO->modelManager.model[local->model];
+	Model *my_model_ref = DEMO->modelManager.model[model_ref];
+	Model *my_model = DEMO->modelManager.model[model];
 
 	std::string msg;
-	msg = "[ drawSceneMatrix id: " + this-> identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg = "[ drawSceneMatrix id: " +  identifier + " layer:" + std::to_string(layer) + " ]\n";
 	msg += " Matrix file: " + my_model_ref->filename + "\n";
 	msg += " file: " + my_model->filename + "\n";
-	msg += " objects drawn: " + std::to_string((int)(local->n)) + "\n";
+	msg += " objects drawn: " + std::to_string((int)(n)) + "\n";
 	msg += " meshes in each scene: " + std::to_string(my_model->meshes.size()) + "\n";
 	return msg;
 }

@@ -1,7 +1,16 @@
 #include "main.h"
 #include "core/shadervars.h"
 
-typedef struct {
+struct sEfxAccum : public Section {
+public:
+	sEfxAccum();
+	bool		load();
+	void		init();
+	void		exec();
+	void		end();
+	std::string debug();
+
+private:
 	unsigned int	FboNum;			// Fbo to use (must have 2 color attachments!)
 	float			sourceInfluence;// Source influence (0 to 1)
 	float			accumInfluence;	// Accumulation influence (0 to 1)
@@ -11,12 +20,13 @@ typedef struct {
 	Shader*			shader;			// Accumulation Shader to apply
 	mathDriver		*exprAccum;		// Equations for the Accum effect
 	ShaderVars		*shaderVars;	// Shader variables
-
-} efxAccum_section;
-
-static efxAccum_section *local;
+};
 
 // ******************************************************************
+
+Section* instance_efxAccum() {
+	return new sEfxAccum();
+}
 
 sEfxAccum::sEfxAccum() {
 	type = SectionType::EfxAccum;
@@ -25,55 +35,51 @@ sEfxAccum::sEfxAccum() {
 
 bool sEfxAccum::load() {
 	// script validation
-	if ((this->param.size()) != 3 || (this->strings.size() < 1)) {
-		LOG->Error("EfxAccum [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 1 string (accum shader)", this->identifier.c_str());
+	if ((param.size()) != 3 || (strings.size() < 1)) {
+		LOG->Error("EfxAccum [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 1 string (accum shader)", identifier.c_str());
 		return false;
 	}
 	
-
-	local = (efxAccum_section*) malloc(sizeof(efxAccum_section));
-	this->vars = (void *)local;
-
 	// Load parameters
-	local->clearScreen = (int)this->param[0];
-	local->clearDepth = (int)this->param[1];
-	local->FboNum = (int)this->param[2];
-	local->accumBuffer = 0;
+	clearScreen = (int)param[0];
+	clearDepth = (int)param[1];
+	FboNum = (int)param[2];
+	accumBuffer = 0;
 	
 	// Check if the fbo can be used for the effect
-	if (local->FboNum < 0 || local->FboNum >= DEMO->fboManager.fbo.size()) {
-		LOG->Error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", this->identifier.c_str(), local->FboNum, DEMO->fboManager.fbo.size()-1);
+	if (FboNum < 0 || FboNum >= DEMO->fboManager.fbo.size()) {
+		LOG->Error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), FboNum, DEMO->fboManager.fbo.size()-1);
 		return false;
 	}
 	
 	// Load the Blur amount formula
-	local->exprAccum = new mathDriver(this);
+	exprAccum = new mathDriver(this);
 	// Load positions, process constants and compile expression
 	for (int i = 1; i < strings.size(); i++)
-		local->exprAccum->expression += this->strings[i];
-	local->exprAccum->SymbolTable.add_variable("SourceInfluence", local->sourceInfluence);
-	local->exprAccum->SymbolTable.add_variable("AccumInfluence", local->accumInfluence);
-	local->exprAccum->Expression.register_symbol_table(local->exprAccum->SymbolTable);
-	if (!local->exprAccum->compileFormula())
+		exprAccum->expression += strings[i];
+	exprAccum->SymbolTable.add_variable("SourceInfluence", sourceInfluence);
+	exprAccum->SymbolTable.add_variable("AccumInfluence", accumInfluence);
+	exprAccum->Expression.register_symbol_table(exprAccum->SymbolTable);
+	if (!exprAccum->compileFormula())
 		return false;
 
 	// Load Blur shader
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
-	if (!local->shader)
+	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + strings[0]);
+	if (!shader)
 		return false;
 
 	// Configure shader
-	local->shader->use();
-	local->shader->setValue("sourceImage", 0);	// The source image will be in the texture unit 0
-	local->shader->setValue("accumImage", 1);	// The accumulated image will be in the texture unit 1
+	shader->use();
+	shader->setValue("sourceImage", 0);	// The source image will be in the texture unit 0
+	shader->setValue("accumImage", 1);	// The accumulated image will be in the texture unit 1
 
-	local->shaderVars = new ShaderVars(this, local->shader);
+	shaderVars = new ShaderVars(this, shader);
 	// Read the shader variables
-	for (int i = 0; i < this->uniform.size(); i++) {
-		local->shaderVars->ReadString(this->uniform[i].c_str());
+	for (int i = 0; i < uniform.size(); i++) {
+		shaderVars->ReadString(uniform[i].c_str());
 	}
 	// Set shader variables values
-	local->shaderVars->setValues();
+	shaderVars->setValues();
 	
 	return true;
 }
@@ -86,18 +92,16 @@ static float lastTime = 0;
 static bool firstIteration = true;
 
 void sEfxAccum::exec() {
-	local = (efxAccum_section*)this->vars;
-
 	// Clear the screen and depth buffers depending of the parameters passed by the user
-	if (local->clearScreen) glClear(GL_COLOR_BUFFER_BIT);
-	if (local->clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
+	if (clearScreen) glClear(GL_COLOR_BUFFER_BIT);
+	if (clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
 
 	// Calculate deltaTime
-	float deltaTime = this->runTime - lastTime;
-	lastTime = this->runTime;
+	float deltaTime = runTime - lastTime;
+	lastTime = runTime;
 
 	// Evaluate the expression
-	local->exprAccum->Expression.value();
+	exprAccum->Expression.value();
 
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
@@ -105,22 +109,22 @@ void sEfxAccum::exec() {
 		
 		{
 			// We want to capture the frame in the "Accum Fbo", so first we use the previous fbo for storing the entire image
-			DEMO->efxAccumFbo.bind(local->accumBuffer, false, false);
+			DEMO->efxAccumFbo.bind(accumBuffer, false, false);
 		
 			float fps = 1.0f / 60.0f;
-			local->shader->use();
-			local->shader->setValue("sourceInfluence", local->sourceInfluence * (deltaTime/fps) );
-			local->shader->setValue("accumInfluence", 1-(local->accumInfluence * (deltaTime/fps)) );
-			local->shaderVars->setValues();
+			shader->use();
+			shader->setValue("sourceInfluence", sourceInfluence * (deltaTime/fps) );
+			shader->setValue("accumInfluence", 1-(accumInfluence * (deltaTime/fps)) );
+			shaderVars->setValues();
 
 			// Set the screen fbo in texture unit 0
-			DEMO->fboManager.bind_tex(local->FboNum, 0);
+			DEMO->fboManager.bind_tex(FboNum, 0);
 			
 			// Set the accumulation fbo in texture unit 1
 			if (firstIteration)
 				firstIteration = false;
-			local->accumBuffer = !local->accumBuffer; 
-			DEMO->efxAccumFbo.bind_tex(local->accumBuffer, 1);
+			accumBuffer = !accumBuffer; 
+			DEMO->efxAccumFbo.bind_tex(accumBuffer, 1);
 
 			// Render a quad using the Accum shader (combining the 2 Images)
 			RES->Draw_QuadFS();
@@ -136,9 +140,9 @@ void sEfxAccum::exec() {
 		RES->shdr_QuadTex->use();
 		RES->shdr_QuadTex->setValue("screenTexture", 0);
 		if (firstIteration)
-			DEMO->fboManager.bind_tex(local->FboNum, 0);
+			DEMO->fboManager.bind_tex(FboNum, 0);
 		else
-			DEMO->efxAccumFbo.bind_tex(!local->accumBuffer, 0);
+			DEMO->efxAccumFbo.bind_tex(!accumBuffer, 0);
 		RES->Draw_QuadFS();
 
 	}		
@@ -153,7 +157,7 @@ void sEfxAccum::end() {
 
 std::string sEfxAccum::debug() {
 	std::string msg;
-	msg = "[ efxAccum id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
-	msg += " fbo: " + std::to_string(local->FboNum) + " Source Influence: " + std::to_string(local->sourceInfluence) + "\n";
+	msg = "[ efxAccum id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
+	msg += " fbo: " + std::to_string(FboNum) + " Source Influence: " + std::to_string(sourceInfluence) + "\n";
 	return msg;
 }

@@ -70,82 +70,82 @@ int SectionManager::addSection(const std::string& key, const std::string& DataSo
 
 	switch (getSectionType(key)) {
 	case SectionType::Loading:
-		mySection = new sLoading();
+		mySection = instance_loading();
 		break;
 	case SectionType::Sound:
-		mySection = new sSound();
+		mySection = instance_sound();
 		break;
 	case SectionType::SetVariable:
-		mySection = new sSetVariable();
+		mySection = instance_setVariable();
 		break;
 	case SectionType::CameraSec:
-		mySection = new sCamera();
+		mySection = instance_camera();
 		break;
 	case SectionType::CameraAbsSec:
-		mySection = new sCameraAbs();
+		mySection = instance_cameraAbsSection();
 		break;
 	case SectionType::LightSec:
-		mySection = new sLight();
+		mySection = instance_light();
 		break;
 	case SectionType::Background:
 		mySection = instance_background();
 		break;
 	case SectionType::FboBind:
-		mySection = new sFboBind();
+		mySection = instance_fboBind();
 		break;
 	case SectionType::FboUnbind:
-		mySection = new sFboUnbind();
+		mySection = instance_fboUnbind();
 		break;
 	case SectionType::DrawImage:
-		mySection = new sDrawImage();
+		mySection = instance_drawImage();
 		break;
 	case SectionType::DrawSkybox:
-		mySection = new sDrawSkybox();
+		mySection = instance_drawSkybox();
 		break;
 	case SectionType::DrawVideo:
-		mySection = new sDrawVideo();
+		mySection = instance_drawVideo();
 		break;
 	case SectionType::DrawFbo:
-		mySection = new sDrawFbo();
+		mySection = instance_drawFbo();
 		break;
 	case SectionType::DrawQuad:
-		mySection = new sDrawQuad();
+		mySection = instance_drawQuad();
 		break;
 	case SectionType::DrawScene:
-		mySection = new sDrawScene();
+		mySection = instance_drawScene();
 		break;
 	case SectionType::DrawSceneMatrix:
-		mySection = new sDrawSceneMatrix();
+		mySection = instance_drawSceneMatrix();
 		break;
 	case SectionType::DrawParticles:
-		mySection = new sDrawParticles();
+		mySection = instance_drawParticles();
 		break;
 	case SectionType::DrawParticlesScene:
-		mySection = new sDrawParticlesScene();
+		mySection = instance_drawParticlesScene();
 		break;
 	case SectionType::DrawEmitters:
-		mySection = new sDrawEmitters();
+		mySection = instance_drawEmitters();
 		break;
 	case SectionType::DrawEmitterScene:
-		mySection = new sDrawEmitterScene();
+		mySection = instance_drawEmitterScene();
 		break;
 	case SectionType::EfxAccum:
-		mySection = new sEfxAccum();
+		mySection = instance_efxAccum();
 		break;
 	break;	case SectionType::EfxBloom:
-		mySection = new sEfxBloom();
+		mySection = instance_efxBloom();
 		break;
 	case SectionType::EfxBlur:
-		mySection = new sEfxBlur();
+		mySection = instance_efxBlur();
 		break;
 	case SectionType::EfxFader:
-		mySection = new sEfxFader();
+		mySection = instance_efxFader();
 		break;
 	case SectionType::EfxMotionBlur:
-		mySection = new sEfxMotionBlur();
+		mySection = instance_efxMotionBlur();
 		break;
 	case SectionType::Test:
-		mySection = new sTest();
+		mySection = instance_test();
 		break;
 	case SectionType::NOT_FOUND:
 		break;

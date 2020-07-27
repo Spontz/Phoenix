@@ -2,58 +2,64 @@
 #include "core/video.h"
 #include "core/shadervars.h"
 
-// ******************************************************************
+struct sDrawVideo : public Section {
+public:
+	sDrawVideo();
+	bool		load();
+	void		init();
+	void		exec();
+	void		end();
+	std::string debug();
 
-typedef struct {
+private:
 	char		clearScreen;	// Clear Screen buffer
 	char		clearDepth;		// Clear Depth buffer
 	char		fitToContent;	// Fit to content: 1=respect video aspect ratio, 0=fill entire viewport window
 	int			videoNum;
 	Shader*		shader;
 	ShaderVars	*shaderVars;	// Shader variables
-} drawVideo_section;
-
-static drawVideo_section *local;
+};
 
 // ******************************************************************
+
+Section* instance_drawVideo() {
+	return new sDrawVideo();
+}
 
 sDrawVideo::sDrawVideo() {
 	type = SectionType::DrawVideo;
 }
 
 bool sDrawVideo::load() {
-	if ((this->param.size() != 3) || (this->strings.size() < 2)) {
-		LOG->Error("DrawVideo [%s]: 3 param needed (Clear screen buffer, clear depth buffer & fit to content) and 2 strings needed (Video to play + shader)", this->identifier.c_str());
+	if ((param.size() != 3) || (strings.size() < 2)) {
+		LOG->Error("DrawVideo [%s]: 3 param needed (Clear screen buffer, clear depth buffer & fit to content) and 2 strings needed (Video to play + shader)", identifier.c_str());
 		return false;
 	}
 
-	local = (drawVideo_section*)malloc(sizeof(drawVideo_section));
-	this->vars = (void*)local;
-
-	local->clearScreen = (char)this->param[0];
-	local->clearDepth = (char)this->param[1];
-	local->fitToContent = (char)this->param[2];
-	local->videoNum = DEMO->videoManager.addVideo(DEMO->dataFolder + this->strings[0]);
-	if (local->videoNum == -1)
+	clearScreen = (char)param[0];
+	clearDepth = (char)param[1];
+	fitToContent = (char)param[2];
+	videoNum = DEMO->videoManager.addVideo(DEMO->dataFolder + strings[0]);
+	if (videoNum == -1)
 		return false;
 
 
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
-	if (!local->shader)
+	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + strings[1]);
+	if (!shader)
 		return false;
 
 	
 	// Create Shader variables
-	local->shader->use();
-	local->shaderVars = new ShaderVars(this, local->shader);
+	shader->use();
+	shaderVars = new ShaderVars(this, shader);
 
 	// Read the shader variables
-	for (int i = 0; i < this->uniform.size(); i++) {
-		local->shaderVars->ReadString(this->uniform[i].c_str());
+	for (int i = 0; i < uniform.size(); i++) {
+		shaderVars->ReadString(uniform[i].c_str());
 	}
 
 	// Set shader variables values
-	local->shaderVars->setValues();
+	shaderVars->setValues();
 
 	return true;
 }
@@ -63,14 +69,12 @@ void sDrawVideo::init() {
 }
 
 void sDrawVideo::exec() {
-	local = (drawVideo_section *)this->vars;
-
-	Video *my_video = DEMO->videoManager.video[local->videoNum];
-	my_video->renderVideo(this->runTime);
+	Video *my_video = DEMO->videoManager.video[videoNum];
+	my_video->renderVideo(runTime);
 
 
-	if (local->clearScreen) glClear(GL_COLOR_BUFFER_BIT);
-	if (local->clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
+	if (clearScreen) glClear(GL_COLOR_BUFFER_BIT);
+	if (clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
 
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
@@ -85,7 +89,7 @@ void sDrawVideo::exec() {
 		// Change the model matrix, in order to scale the image and keep proportions of the image
 		float new_tex_width_scaled = 1;
 		float new_tex_height_scaled = 1;
-		if (local->fitToContent) {
+		if (fitToContent) {
 			if (tex_aspect > view_aspect) {
 				new_tex_height_scaled = view_aspect / tex_aspect;
 			}
@@ -95,13 +99,13 @@ void sDrawVideo::exec() {
 		}
 		model = glm::scale(model, glm::vec3(new_tex_width_scaled, new_tex_height_scaled, 0.0f));
 
-		//RES->Draw_Obj_QuadTex(local->texture, &model);
+		//RES->Draw_Obj_QuadTex(texture, &model);
 		glBindVertexArray(RES->obj_quadFullscreen);
-		local->shader->use();
-		local->shader->setValue("model", model);
-		local->shader->setValue("screenTexture", 0);
+		shader->use();
+		shader->setValue("model", model);
+		shader->setValue("screenTexture", 0);
 		// Set other shader variables values
-		local->shaderVars->setValues();
+		shaderVars->setValues();
 		my_video->bind(0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
@@ -116,11 +120,10 @@ void sDrawVideo::end() {
 }
 
 std::string sDrawVideo::debug() {
-	local = (drawVideo_section *)this->vars;
-	Video *my_video = DEMO->videoManager.video[local->videoNum];
+	Video *my_video = DEMO->videoManager.video[videoNum];
 
 	std::string msg;
-	msg = "[ drawVideo id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	msg = "[ drawVideo id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
 	msg += " filename: " + my_video->fileName + "\n";
 	return msg;
 }

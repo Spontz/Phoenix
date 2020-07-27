@@ -1,7 +1,16 @@
 #include "main.h"
 #include "core/shadervars.h"
 
-typedef struct {
+struct sEfxMotionBlur : public Section {
+public:
+	sEfxMotionBlur();
+	bool		load();
+	void		init();
+	void		exec();
+	void		end();
+	std::string debug();
+
+private:
 	unsigned int	FboNum;				// Fbo to use (must have 2 color attachments!)
 	unsigned int	FPSScale;			// Scale FPS's
 	GLuint			bufferColor;		// Attcahment 0 of our FBO
@@ -9,51 +18,51 @@ typedef struct {
 	Shader*			shader;				// Motionblur Shader to apply
 
 	ShaderVars		*shaderVars;	// Shader variables
-} efxMotionBlur_section;
+};
 
-static efxMotionBlur_section *local;
+// ******************************************************************
 
+Section* instance_efxMotionBlur() {
+	return new sEfxMotionBlur();
+}
 
 sEfxMotionBlur::sEfxMotionBlur() {
 	type = SectionType::EfxMotionBlur;
 }
 
 bool sEfxMotionBlur::load() {
-	local = (efxMotionBlur_section*)malloc(sizeof(efxMotionBlur_section));
-	this->vars = (void *)local;
-	
-	if ((this->param.size()) != 2 || (this->strings.size() != 1)) {
-		LOG->Error("EfxMotionBlur [%s]: 2 params are needed (Fbo to use and FPS Scale), and 1 shader file (for Motionblur)", this->identifier.c_str());
+	if ((param.size()) != 2 || (strings.size() != 1)) {
+		LOG->Error("EfxMotionBlur [%s]: 2 params are needed (Fbo to use and FPS Scale), and 1 shader file (for Motionblur)", identifier.c_str());
 		return false;
 	}
 
-	local->FboNum = (int)this->param[0];
-	local->FPSScale = (int)this->param[1];
+	FboNum = (int)param[0];
+	FPSScale = (int)param[1];
 
-	if (local->FPSScale == 0)
-		local->FPSScale = 1;
+	if (FPSScale == 0)
+		FPSScale = 1;
 
-	local->shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[0]);
-	if (!local->shader)
+	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + strings[0]);
+	if (!shader)
 		return false;
 
 	// Configure Blur shader
-	local->shader->use();
+	shader->use();
 
-	local->shaderVars = new ShaderVars(this, local->shader);
+	shaderVars = new ShaderVars(this, shader);
 	// Read the shader variables
-	for (int i = 0; i < this->uniform.size(); i++) {
-		local->shaderVars->ReadString(this->uniform[i].c_str());
+	for (int i = 0; i < uniform.size(); i++) {
+		shaderVars->ReadString(uniform[i].c_str());
 	}
 	// Set shader variables values
-	local->shaderVars->setValues();
+	shaderVars->setValues();
 
-	local->shader->setValue("scene", 0);		// The scene is in the Tex unit 0
-	local->shader->setValue("velocity", 1);	// The velocity is in the Tex unit 1
+	shader->setValue("scene", 0);		// The scene is in the Tex unit 0
+	shader->setValue("velocity", 1);	// The velocity is in the Tex unit 1
 
 	// Store the buffers of our FBO (we assume that in Attachment 0 we have the color and in Attachment 1 we have the brights)
-	local->bufferColor = DEMO->fboManager.fbo[local->FboNum]->m_colorAttachment[0];
-	local->bufferVelocity = DEMO->fboManager.fbo[local->FboNum]->m_colorAttachment[1];
+	bufferColor = DEMO->fboManager.fbo[FboNum]->m_colorAttachment[0];
+	bufferVelocity = DEMO->fboManager.fbo[FboNum]->m_colorAttachment[1];
 
 	return true;
 }
@@ -63,20 +72,18 @@ void sEfxMotionBlur::init() {
 
 
 void sEfxMotionBlur::exec() {
-	local = (efxMotionBlur_section *)this->vars;
-
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		local->shader->use();
+		shader->use();
 
 		// Set new shader variables values
-		local->shader->setValue("uVelocityScale", DEMO->fps/local->FPSScale); //uVelocityScale = currentFps / targetFps;
-		local->shaderVars->setValues();
+		shader->setValue("uVelocityScale", DEMO->fps/FPSScale); //uVelocityScale = currentFps / targetFps;
+		shaderVars->setValues();
 
-		glBindTextureUnit(0, local->bufferColor);
-		glBindTextureUnit(1, local->bufferVelocity);
+		glBindTextureUnit(0, bufferColor);
+		glBindTextureUnit(1, bufferVelocity);
 		RES->Draw_QuadFS();
 	}
 	glEnable(GL_DEPTH_TEST);
@@ -87,10 +94,8 @@ void sEfxMotionBlur::end() {
 }
 
 std::string sEfxMotionBlur::debug() {
-	local = (efxMotionBlur_section*)this->vars;
-
 	std::string msg;
-	msg = "[ efxMotionBlur id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
-	msg += " fbo: " + std::to_string(local->FboNum) + " fps Scale: " + std::to_string(local->FPSScale) + "\n";
+	msg = "[ efxMotionBlur id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
+	msg += " fbo: " + std::to_string(FboNum) + " fps Scale: " + std::to_string(FPSScale) + "\n";
 	return msg;
 }

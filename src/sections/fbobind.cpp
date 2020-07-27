@@ -1,14 +1,25 @@
 #include "main.h"
 
-typedef struct {
+struct sFboBind : public Section{
+public:
+	sFboBind();
+	bool		load();
+	void		init();
+	void		exec();
+	void		end();
+	std::string debug();
+
+private:
 	int		fbo;
 	char	clearScreen;	// Clear Screen buffer
 	char	clearDepth;		// Clear Depth buffer
-} fbobind_section;
-
-static fbobind_section *local;
+};
 
 // ******************************************************************
+
+Section* instance_fboBind() {
+	return new sFboBind();
+}
 
 sFboBind::sFboBind() {
 	type = SectionType::FboBind;
@@ -16,21 +27,18 @@ sFboBind::sFboBind() {
 
 bool sFboBind::load() {
 	// script validation
-	if (this->param.size() != 3) {
-		LOG->Error("FboBind [%s]: 3 params are needed: fbo to use, clear the screen buffer, clear depth buffer", this->identifier.c_str());
+	if (param.size() != 3) {
+		LOG->Error("FboBind [%s]: 3 params are needed: fbo to use, clear the screen buffer, clear depth buffer", identifier.c_str());
 		return false;
 	}
 
-	local = (fbobind_section*) malloc(sizeof(fbobind_section));
-	this->vars = (void *)local;
-
 	// load parameters
-	local->fbo = (int)this->param[0];
-	local->clearScreen = (int)this->param[1];
-	local->clearDepth = (int)this->param[2];
+	fbo = (int)param[0];
+	clearScreen = (int)param[1];
+	clearDepth = (int)param[2];
 
-	if (local->fbo >= DEMO->fboManager.fbo.size()) {
-		LOG->Error("FboBind [%s]: The fbo number %i cannot be accessed, check graphics.spo file", this->identifier.c_str(), local->fbo);
+	if (fbo >= DEMO->fboManager.fbo.size()) {
+		LOG->Error("FboBind [%s]: The fbo number %i cannot be accessed, check graphics.spo file", identifier.c_str(), fbo);
 		return false;
 	}
 
@@ -43,11 +51,10 @@ void sFboBind::init() {
 
 void sFboBind::exec() {
 
-	local = (fbobind_section*)this->vars;
-	if (local->fbo == -1)
+	if (fbo == -1)
 		return;
 	// Enable the buffer in which we are going to paint
-	DEMO->fboManager.bind(local->fbo, local->clearScreen, local->clearDepth);
+	DEMO->fboManager.bind(fbo, clearScreen, clearDepth);
 }
 
 void sFboBind::end() {
@@ -55,10 +62,8 @@ void sFboBind::end() {
 }
 
 std::string sFboBind::debug() {
-	local = (fbobind_section *)this->vars;
-
 	std::string msg;
-	msg = "[ fboBind id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
-	msg += " fbo: " + std::to_string(local->fbo) + "\n";
+	msg = "[ fboBind id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
+	msg += " fbo: " + std::to_string(fbo) + "\n";
 	return msg;
 }
