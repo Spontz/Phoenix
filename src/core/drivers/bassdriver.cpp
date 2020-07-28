@@ -21,7 +21,6 @@ void bassDriver::init() {
 	}
 
 	LOG->Info(LogLevel::HIGH, "BASS library inited");
-	LOG->Info(LogLevel::MED, "BASS library version is: %s", BASSVERSIONTEXT);
 }
 
 void bassDriver::play() {
@@ -58,4 +57,9 @@ float* bassDriver::getFFTdata()
 
 float bassDriver::sound_cpu() {
 	return BASS_GetCPU();
+}
+
+const std::string bassDriver::getVersion()
+{
+	return BASSVERSIONTEXT;
 }

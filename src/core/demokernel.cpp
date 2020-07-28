@@ -58,18 +58,24 @@ void demokernel::getArguments(int argc, char* argv[]) {
 
 bool demokernel::initDemo() {
 
-	// Show Phoenix version
-	LOG->Info(LogLevel::HIGH, "Spontz visuals engine 'Phoenix' version: %d.%d", PHOENIX_MAJOR_VERSION, PHOENIX_MINOR_VERSION);
-
 	// initialize graphics driver
 	if (!GLDRV->initGraphics())
 		return false;
 	LOG->Info(LogLevel::HIGH, "OpenGL environment created");
-	LOG->Info(LogLevel::MED, "OpenGL library version is: %s", glGetString(GL_VERSION));
-
+	
 	// initialize sound driver
 	if (this->sound)
 		BASSDRV->init();
+
+
+	// Show versions
+	LOG->Info(LogLevel::MED, "Component versions:");
+	LOG->Info(LogLevel::HIGH, "Spontz visuals engine 'Phoenix' version: %s", getEngineVersion().c_str());
+	LOG->Info(LogLevel::MED, "OpenGL driver version is: %s", glGetString(GL_VERSION));
+	LOG->Info(LogLevel::MED, "GLFW library version is: %s", GLDRV->getVersion().c_str());
+	LOG->Info(LogLevel::MED, "Bass library version is: %s", BASSDRV->getVersion().c_str());
+	LOG->Info(LogLevel::MED, "Network Dyad.c library version is: %s", getLibDyadVersion().c_str());
+	LOG->Info(LogLevel::MED, "Assimp library version is: %s", getLibAssimpVersion().c_str());
 
 	// Create the camera
 	this->camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -80,14 +86,10 @@ bool demokernel::initDemo() {
 	if (DEMO->slaveMode) {
 		LOG->Info(LogLevel::HIGH, "Running in network slave mode");
 		NETDRV->init();
-		LOG->Info(LogLevel::MED, "Network Dyad.c library version is: %s", NETDRV->getVersion());
+		
 	}
 	else
 		LOG->Info(LogLevel::HIGH, "Running in standalone mode");
-
-	// Show Assimp library version
-	LOG->Info(LogLevel::MED, "Assimp Library version is: %d.%d.%d", aiGetVersionMajor(), aiGetVersionMinor(), aiGetVersionRevision());
-
 	// initialize global control variables
 	this->initControlVars();
 
@@ -260,6 +262,21 @@ void demokernel::setEndTime(float theTime)
 
 void demokernel::closeDemo() {
 	GLDRV->close();
+}
+
+const std::string demokernel::getEngineVersion()
+{
+	return std::string(std::to_string(PHOENIX_MAJOR_VERSION) + "." + std::to_string(PHOENIX_MINOR_VERSION));
+}
+
+const std::string demokernel::getLibAssimpVersion()
+{
+	return std::string(std::to_string(aiGetVersionMajor()) +"."+ std::to_string(aiGetVersionMinor()) + "." + std::to_string(aiGetVersionRevision()));
+}
+
+const std::string demokernel::getLibDyadVersion()
+{
+	return NETDRV->getVersion();
 }
 
 bool demokernel::checkDataFolder()

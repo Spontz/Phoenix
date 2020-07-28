@@ -99,6 +99,7 @@ public:
 	void	guiChangeAttachment();
 
 	void	close();
+	const std::string getVersion();
 
 	Viewport		GetFramebufferViewport() const;
 	float			GetFramebufferAspectRatio() const;

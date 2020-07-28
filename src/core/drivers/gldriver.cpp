@@ -256,7 +256,6 @@ void glDriver::initFramework() {
 		return;
 	}
 	else {
-		LOG->Info(LogLevel::MED, "GLFW library version is: %s", glfwGetVersionString());
 		glfwSetErrorCallback(glfwError_callback);
 	}
 }
@@ -603,6 +602,11 @@ void glDriver::close() {
 	// Close GLFW
 	glfwSetWindowShouldClose(p_glfw_window_, GL_TRUE);
 	glfwTerminate();
+}
+
+const std::string glDriver::getVersion()
+{
+	return glfwGetVersionString();
 }
 
 int glDriver::getTextureFormatByName(char* name) {

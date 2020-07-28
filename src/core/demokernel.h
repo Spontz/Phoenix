@@ -154,6 +154,9 @@ public:
 	bool initDemo();
 	void mainLoop();
 	void closeDemo();
+	const std::string getEngineVersion();
+	const std::string getLibAssimpVersion();
+	const std::string getLibDyadVersion();
 
 	// Data folder operations
 	bool checkDataFolder();
