@@ -30,12 +30,20 @@ imGuiDriver::imGuiDriver()
 	show_sesctionInfo(false),
 	show_fbo(false),
 	show_sound(false),
+	show_version(false),
 	num_fboSetToDraw(0),
 	num_fboAttachmentToDraw(0),
 	num_fboPerPage(4),
 	maxRenderFPSScale_(60),
 	currentRenderTime_(0)
 {
+	m_VersionEngine = DEMO->getEngineVersion();
+	m_VersionOpenGL = GLDRV->getOpenGLVersion();
+	m_VersionGLFW =  GLDRV->getVersion();
+	m_VersionBASS = BASSDRV->getVersion();
+	m_VersionDyad = DEMO->getLibDyadVersion();
+	m_VersionASSIMP = DEMO->getLibAssimpVersion();
+
 	for (int i = 0; i < RENDERTIME_SAMPLES; i++)
 		renderTimes_[i] = 0.0f;
 }
@@ -74,6 +82,8 @@ void imGuiDriver::drawGui()
 			drawSesctionInfo();
 		if (show_timing)
 			drawTiming();
+		if (show_version)
+			drawVersion();
 		if (show_fbo)
 			drawFbo();
 		if (show_fpsHistogram)
@@ -133,6 +143,7 @@ void imGuiDriver::drawMenu() {
 			ImGui::MenuItem("Show FBO's", "4", &show_fbo);
 			ImGui::MenuItem("Show section stack", "6", &show_sesctionInfo);
 			ImGui::MenuItem("Show sound information", "7", &show_sound);
+			ImGui::MenuItem("Show versions", "0", &show_version);
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
@@ -179,6 +190,23 @@ void imGuiDriver::drawTiming() {
 		ImGui::Text("Cam Pos: %.1f,%.1f,%.1f", DEMO->camera->Position.x, DEMO->camera->Position.y, DEMO->camera->Position.z);
 		ImGui::Text("Cam Front: %.1f,%.1f,%.1f", DEMO->camera->Front.x, DEMO->camera->Front.y, DEMO->camera->Front.z);
 		ImGui::Text("Cam Yaw: %.1f, Pitch: %.1f, Roll: %.1f, Zoom: %.1f", DEMO->camera->Yaw, DEMO->camera->Pitch, DEMO->camera->Roll, DEMO->camera->Zoom);
+	ImGui::End();
+}
+
+void imGuiDriver::drawVersion()
+{
+	if (!ImGui::Begin("Demo Info"))
+	{
+		// Early out if the window is collapsed, as an optimization.
+		ImGui::End();
+		return;
+	}
+	ImGui::Text("Phoenix engine version: %s", m_VersionEngine.c_str());
+	ImGui::Text("OpenGL driver version is: %s", m_VersionOpenGL.c_str());
+	ImGui::Text("GLFW library version is: %s", m_VersionGLFW.c_str());
+	ImGui::Text("Bass library version is: %s", m_VersionBASS.c_str());
+	ImGui::Text("Network Dyad.c library version is: %s", m_VersionDyad.c_str());
+	ImGui::Text("Assimp library version is: %s", m_VersionASSIMP.c_str());
 	ImGui::End();
 }
 

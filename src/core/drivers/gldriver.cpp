@@ -146,6 +146,8 @@ void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, in
 				GLDRV->guiDrawTiming();
 			else if (key == KEY_SHOWFPS)
 				GLDRV->guiDrawFps();
+			else if (key == KEY_SHOWVERSION)
+				GLDRV->guiDrawVersion();
 			else if (key == KEY_SHOWFPSHIST)
 				GLDRV->guiDrawFpsHistogram();
 			else if (key == KEY_SHOWFBO)
@@ -400,6 +402,11 @@ void glDriver::guiDrawTiming()
 	imGui_->show_timing = !imGui_->show_timing;
 }
 
+void glDriver::guiDrawVersion()
+{
+	imGui_->show_version = !imGui_->show_version;
+}
+
 void glDriver::guiDrawFps()
 {
 	imGui_->show_fps = !imGui_->show_fps;
@@ -607,6 +614,13 @@ void glDriver::close() {
 const std::string glDriver::getVersion()
 {
 	return glfwGetVersionString();
+}
+
+const std::string glDriver::getOpenGLVersion()
+{
+	std::string strVersion = (const char*)glGetString(GL_VERSION);
+	
+	return strVersion;
 }
 
 int glDriver::getTextureFormatByName(char* name) {

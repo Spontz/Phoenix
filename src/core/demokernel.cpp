@@ -71,7 +71,7 @@ bool demokernel::initDemo() {
 	// Show versions
 	LOG->Info(LogLevel::MED, "Component versions:");
 	LOG->Info(LogLevel::HIGH, "Spontz visuals engine 'Phoenix' version: %s", getEngineVersion().c_str());
-	LOG->Info(LogLevel::MED, "OpenGL driver version is: %s", glGetString(GL_VERSION));
+	LOG->Info(LogLevel::MED, "OpenGL driver version is: %s", GLDRV->getOpenGLVersion().c_str());
 	LOG->Info(LogLevel::MED, "GLFW library version is: %s", GLDRV->getVersion().c_str());
 	LOG->Info(LogLevel::MED, "Bass library version is: %s", BASSDRV->getVersion().c_str());
 	LOG->Info(LogLevel::MED, "Network Dyad.c library version is: %s", getLibDyadVersion().c_str());

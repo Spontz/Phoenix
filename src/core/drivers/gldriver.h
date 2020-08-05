@@ -92,6 +92,7 @@ public:
 	void	guiDrawFps();
 	void	guiDrawFpsHistogram();
 	void	guiDrawTiming();
+	void	guiDrawVersion();
 	void	guiDrawFbo();
 	void	guiDrawSections();
 	void	guiDrawSound();
@@ -100,6 +101,7 @@ public:
 
 	void	close();
 	const std::string getVersion();
+	const std::string getOpenGLVersion();
 
 	Viewport		GetFramebufferViewport() const;
 	float			GetFramebufferAspectRatio() const;

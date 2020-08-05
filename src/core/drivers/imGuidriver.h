@@ -29,6 +29,7 @@ public:
 	bool	show_sesctionInfo;
 	bool	show_fbo;
 	bool	show_sound;
+	bool	show_version;
 
 
 	int				num_fboSetToDraw;
@@ -40,6 +41,16 @@ public:
 	void close();
 
 private:
+	std::string m_VersionEngine;
+	std::string m_VersionOpenGL;
+	std::string m_VersionGLFW;
+	std::string m_VersionBASS;
+	std::string m_VersionDyad;
+	std::string m_VersionASSIMP;
+
+	
+
+
 	float		renderTimes_[RENDERTIME_SAMPLES];
 	int			maxRenderFPSScale_;
 	int			currentRenderTime_;
@@ -51,6 +62,7 @@ private:
 	void drawMenu();
 	void drawFps();
 	void drawTiming();
+	void drawVersion();
 	void drawSesctionInfo();
 	void drawFPSHistogram();
 	void drawFbo();
