@@ -266,7 +266,7 @@ void demokernel::closeDemo() {
 
 const std::string demokernel::getEngineVersion()
 {
-	return std::string(std::to_string(PHOENIX_MAJOR_VERSION) + "." + std::to_string(PHOENIX_MINOR_VERSION));
+	return std::string(std::to_string(PHOENIX_MAJOR_VERSION) + "." + std::to_string(PHOENIX_MINOR_VERSION) + "." + std::to_string(PHOENIX_BUILD_VERSION));
 }
 
 const std::string demokernel::getLibAssimpVersion()
