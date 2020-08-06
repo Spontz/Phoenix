@@ -31,6 +31,7 @@ imGuiDriver::imGuiDriver()
 	show_fbo(false),
 	show_sound(false),
 	show_version(false),
+	fontScale(1.0f),
 	num_fboSetToDraw(0),
 	num_fboAttachmentToDraw(0),
 	num_fboPerPage(4),
@@ -158,6 +159,7 @@ void imGuiDriver::drawFps() {
 		ImGui::End();
 		return;
 	}
+		ImGui::SetWindowFontScale(fontScale);
 		ImGui::Text("Fps: %.0f", DEMO->fps);
 	ImGui::End();
 }
@@ -234,6 +236,7 @@ void imGuiDriver::drawFbo() {
 		ImGui::End();
 		return;
 	}
+		ImGui::SetWindowFontScale(fontScale);
 		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fbo_num_min, fbo_num_max, num_fboAttachmentToDraw);
 		for (int i = fbo_num_min; i <= fbo_num_max; i++) {
 			if (i < DEMO->fboManager.fbo.size())
@@ -260,6 +263,7 @@ void imGuiDriver::drawSound()
 		return;
 	}
 	ImVec2 win = ImGui::GetWindowSize();
+	ImGui::SetWindowFontScale(fontScale);
 	ImGui::Text("Beat value: %.3f, fadeout: %.3f, ratio: %.3f", DEMO->beat, DEMO->beat_fadeout, DEMO->beat_ratio);
 	ImGui::Text("FFT Samples: %d", FFT_BUFFER_SAMPLES);
 	ImGui::PlotHistogram("", BASSDRV->getFFTdata(), FFT_BUFFER_SAMPLES, 0, "sound histogram", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80));
@@ -281,6 +285,7 @@ void imGuiDriver::drawSesctionInfo()
 		ImGui::End();
 		return;
 	}
+	ImGui::SetWindowFontScale(fontScale);
 	for (int i = 0; i < DEMO->sectionManager.execSection.size(); i++) {
 		sec_id = DEMO->sectionManager.execSection[i].second;	// The second value is the ID of the section
 		ds = DEMO->sectionManager.section[sec_id];
@@ -303,6 +308,7 @@ void imGuiDriver::drawFPSHistogram()
 		return;
 	}
 		ImVec2 win = ImGui::GetWindowSize();
+		ImGui::SetWindowFontScale(fontScale);
 		ImGui::DragInt("FPS Scale", &maxRenderFPSScale_, 10, 10, 1000, "%d");
 		float max = 1000.0f / static_cast<float>(maxRenderFPSScale_);
 		ImGui::SameLine();

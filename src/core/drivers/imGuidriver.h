@@ -23,6 +23,7 @@ public:
 	imGuiDriver();
 	virtual ~imGuiDriver();
 
+	float	fontScale;
 	bool	show_fps;
 	bool	show_fpsHistogram;
 	bool	show_timing;

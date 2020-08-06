@@ -25,6 +25,7 @@ demokernel::demokernel() {
 	this->state = -1;
 	this->demoName = "Phoneix Spontz Demoengine";
 	this->debug = FALSE;
+	this->debug_fontSize = 1.0f; 
 	this->log_detail = LogLevel::HIGH;
 
 	#ifdef _DEBUG

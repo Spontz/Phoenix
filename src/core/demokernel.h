@@ -85,6 +85,7 @@ public:
 	std::string dataFolder;	// Path to "data" folder
 	char*		demoName;
 	int			debug;
+	float		debug_fontSize;
 	char		log_detail;
 
 	// misc

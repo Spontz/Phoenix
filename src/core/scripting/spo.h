@@ -119,6 +119,7 @@ namespace Phoenix {
 		const std::vector<tScriptCommand> scriptCommand = {
 			{"demo_name",				SectionVar::TYPE_STRING,		&DEMO->demoName			},
 			{"debug",					SectionVar::TYPE_INT,			&DEMO->debug			},
+			{"debugFontSize",			SectionVar::TYPE_FLOAT,			&DEMO->debug_fontSize	},
 			{"loop",					SectionVar::TYPE_INT,			&DEMO->loop				},
 			{"sound",					SectionVar::TYPE_INT,			&DEMO->sound			},
 			{"demo_start",				SectionVar::TYPE_FLOAT,			&DEMO->startTime		},

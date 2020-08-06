@@ -323,6 +323,7 @@ bool glDriver::initGraphics() {
 	if (p_glfw_window_) {
 		imGui_ = new imGuiDriver();
 		imGui_->init(p_glfw_window_);
+		imGui_->fontScale = DEMO->debug_fontSize;
 	}
 	
 
