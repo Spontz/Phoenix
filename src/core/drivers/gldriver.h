@@ -29,19 +29,27 @@ struct tGLFboFormat {
 
 // ******************************************************************
 
+struct tGLConfig {
+	int				fullScreen;
+	unsigned int	framebuffer_width;
+	unsigned int	framebuffer_height;
+	float			framebuffer_aspect_ratio;
+	int				stencil;
+	int				multisampling;
+	int				vsync;
+};
+// ******************************************************************
+
 class glDriver {
 	// hack, todo: remove friends
 	friend class mathDriver; // for exprtk__ members
 	friend struct InitScriptCommands; // for script__ members;
 
 public:
-	int				fullScreen;
-
-public:
-	// hack: create script_vars struct and pass to glDriver on construction
-	unsigned int	script__gl_width__framebuffer_width_;
-	unsigned int	script__gl_height__framebuffer_height_;
-	float			script__gl_aspect__framebuffer_viewport_aspect_ratio_;
+	static glDriver& GetInstance();
+	tGLFboFormat	fbo[FBO_BUFFERS];
+	tGLConfig		config;
+	float			m_mouseX, m_mouseY;
 
 private:
 	// hack: create exprtk_vars struct and pass to glDriver on construction
@@ -49,31 +57,17 @@ private:
 	float			exprtk__vpHeight__current_viewport_height_;
 	float			exprtk__aspectRatio__current_viewport_aspect_ratio_;
 
-private:
-	GLFWwindow*		p_glfw_window_;
-	Viewport		current_viewport_;
-	GLsizei			current_rt_width_, current_rt_height_;
-	imGuiDriver*	imGui_;
-
-public:
-	// TODO: make private
-	int				stencil;
-	int				multisampling;
-	int				vsync;
-	float			TimeCurrentFrame;
-	float			TimeLastFrame;
-	float			TimeDelta;
-	tGLFboFormat	fbo[FBO_BUFFERS];
-	float			mouse_lastxpos, mouse_lastypos;
-	float			mouse_x, mouse_y;
+	GLFWwindow*		m_glfw_window;
+	Viewport		m_current_viewport;
+	imGuiDriver*	m_imGui;
+	float			m_timeCurrentFrame;
+	float			m_timeLastFrame;
+	float			m_timeDelta;
+	float			m_mouse_lastxpos, m_mouse_lastypos;
 
 private:
 	glDriver();
-
-public:
-	static glDriver& GetInstance();
-
-private:
+	
 	// Callbacks
 	static void glDebugMessage_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 	static void glfwError_callback(int, const char* err_str);
@@ -83,6 +77,16 @@ private:
 	static void mouseButton_callback(GLFWwindow* p_glfw_window, int button, int action, int mods);
 	static void glfwWindowSize_callback(GLFWwindow* p_glfw_window, int width, int height);
 	void OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int height);
+
+	void	initFbos();
+	void	initStates();
+
+	bool	checkGLError(char* pOut);
+
+	int		getTextureFormatByName(char* name);
+	int		getTextureInternalFormatByName(char* name);
+	int		getTextureTypeByName(char* name);
+	int		getTextureComponentsByName(char* name);
 
 public:
 	void	initFramework();
@@ -96,10 +100,7 @@ public:
 	void	guiDrawFbo();
 	void	guiDrawSections();
 	void	guiDrawSound();
-	
 	void	guiChangeAttachment();
-
-	void	close();
 	const std::string getVersion();
 	const std::string getOpenGLVersion();
 
@@ -111,21 +112,12 @@ public:
 	void			SetCurrentViewport(Viewport const& viewport);
 	
 	void	calcMousePos(float x, float y);
+	void	ProcessInput();
 
 	void	swapBuffers();
-	void	ProcessInput();
+
 	int		WindowShouldClose();
-
-private:
-	void	initFbos();
-	void	initStates();
-	
-	bool	checkGLError(char* pOut);
-
-	int		getTextureFormatByName(char* name);
-	int		getTextureInternalFormatByName(char* name);
-	int		getTextureTypeByName(char* name);
-	int		getTextureComponentsByName(char* name);
+	void	close();
 };
 
 #endif

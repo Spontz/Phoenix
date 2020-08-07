@@ -45,15 +45,15 @@ void glDriver::OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int hei
 	width = std::max(width, 1);
 	height = std::max(height, 1);
 
-	script__gl_width__framebuffer_width_ = width;
-	script__gl_height__framebuffer_height_ = height;
+	config.framebuffer_width = width;
+	config.framebuffer_height = height;
 
 	// RT will be set to FB later
 	//GLDRV->current_rt_width_ = width;
 	//GLDRV->current_rt_height_ = height;
 
-	mouse_lastxpos = static_cast<float>(width) / 2.0f;
-	mouse_lastypos = static_cast<float>(height) / 2.0f;
+	m_mouse_lastxpos = static_cast<float>(width) / 2.0f;
+	m_mouse_lastypos = static_cast<float>(height) / 2.0f;
 
 	// Recalculate viewport sizes
 	SetCurrentViewport(GetFramebufferViewport());
@@ -73,17 +73,17 @@ void glDriver::mouseMove_callback(GLFWwindow* p_glfw_window, double xpos, double
 		// Move camera with Left click
 		if (glfwGetMouseButton(p_glfw_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 
-			float xoffset = x - GLDRV->mouse_lastxpos;
-			float yoffset = GLDRV->mouse_lastypos - y; // reversed since y-coordinates go from bottom to top
+			float xoffset = x - GLDRV->m_mouse_lastxpos;
+			float yoffset = GLDRV->m_mouse_lastypos - y; // reversed since y-coordinates go from bottom to top
 
-			GLDRV->mouse_lastxpos = x;
-			GLDRV->mouse_lastypos = y;
+			GLDRV->m_mouse_lastxpos = x;
+			GLDRV->m_mouse_lastypos = y;
 
 			DEMO->camera->ProcessMouseMovement(xoffset, yoffset);
 		}
 		if (glfwGetMouseButton(p_glfw_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
-			GLDRV->mouse_lastxpos = x;
-			GLDRV->mouse_lastypos = y;
+			GLDRV->m_mouse_lastxpos = x;
+			GLDRV->m_mouse_lastypos = y;
 		}
 		// Capture mouse position with Right click
 		if (glfwGetMouseButton(p_glfw_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
@@ -98,8 +98,8 @@ void glDriver::mouseButton_callback(GLFWwindow* p_glfw_window, int button, int a
 {
 	if (DEMO->debug && !(ImGui::GetIO().WantCaptureMouse)) {
 		if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
-			GLDRV->calcMousePos(GLDRV->mouse_lastxpos, GLDRV->mouse_lastypos);
-			LOG->SendEditor("Mouse pos [%.4f, %.4f]", GLDRV->mouse_x, GLDRV->mouse_y);
+			GLDRV->calcMousePos(GLDRV->m_mouse_lastxpos, GLDRV->m_mouse_lastypos);
+			LOG->SendEditor("Mouse pos [%.4f, %.4f]", GLDRV->m_mouseX, GLDRV->m_mouseY);
 		}
 	}
 }
@@ -197,53 +197,53 @@ void glDriver::ProcessInput()
 	PX_PROFILE_FUNCTION();
 
 	if (DEMO->debug) {
-		if (glfwGetKey(p_glfw_window_, KEY_FORWARD) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CameraMovement::FORWARD, GLDRV->TimeDelta);
-		if (glfwGetKey(p_glfw_window_, KEY_BACKWARD) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CameraMovement::BACKWARD, GLDRV->TimeDelta);
-		if (glfwGetKey(p_glfw_window_, KEY_STRAFELEFT) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CameraMovement::LEFT, GLDRV->TimeDelta);
-		if (glfwGetKey(p_glfw_window_, KEY_STRAFERIGHT) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CameraMovement::RIGHT, GLDRV->TimeDelta);
-		if (glfwGetKey(p_glfw_window_, KEY_ROLLRIGHT) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CameraMovement::ROLL_RIGHT, GLDRV->TimeDelta);
-		if (glfwGetKey(p_glfw_window_, KEY_ROLLLEFT) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CameraMovement::ROLL_LEFT, GLDRV->TimeDelta);
+		if (glfwGetKey(m_glfw_window, KEY_FORWARD) == GLFW_PRESS)
+			DEMO->camera->ProcessKeyboard(CameraMovement::FORWARD, GLDRV->m_timeDelta);
+		if (glfwGetKey(m_glfw_window, KEY_BACKWARD) == GLFW_PRESS)
+			DEMO->camera->ProcessKeyboard(CameraMovement::BACKWARD, GLDRV->m_timeDelta);
+		if (glfwGetKey(m_glfw_window, KEY_STRAFELEFT) == GLFW_PRESS)
+			DEMO->camera->ProcessKeyboard(CameraMovement::LEFT, GLDRV->m_timeDelta);
+		if (glfwGetKey(m_glfw_window, KEY_STRAFERIGHT) == GLFW_PRESS)
+			DEMO->camera->ProcessKeyboard(CameraMovement::RIGHT, GLDRV->m_timeDelta);
+		if (glfwGetKey(m_glfw_window, KEY_ROLLRIGHT) == GLFW_PRESS)
+			DEMO->camera->ProcessKeyboard(CameraMovement::ROLL_RIGHT, GLDRV->m_timeDelta);
+		if (glfwGetKey(m_glfw_window, KEY_ROLLLEFT) == GLFW_PRESS)
+			DEMO->camera->ProcessKeyboard(CameraMovement::ROLL_LEFT, GLDRV->m_timeDelta);
 	}
 
 }
 
 glDriver::glDriver()
 	:
-	current_rt_height_(0),
-	current_rt_width_(0),
-	TimeCurrentFrame(0.0f),
-	TimeDelta(0.0f),
-	TimeLastFrame(0.0f),
-	p_glfw_window_(nullptr),
-	imGui_(nullptr),
-
-	script__gl_width__framebuffer_width_(640),
-	script__gl_height__framebuffer_height_(480),
-	script__gl_aspect__framebuffer_viewport_aspect_ratio_(UIntFraction{ 16,9 }.GetRatio()),
+	m_timeCurrentFrame(0.0f),
+	m_timeDelta(0.0f),
+	m_timeLastFrame(0.0f),
+	m_glfw_window(nullptr),
+	m_imGui(nullptr),
 
 	exprtk__aspectRatio__current_viewport_aspect_ratio_(0.0f),
 	exprtk__vpHeight__current_viewport_height_(0.0f),
 	exprtk__vpWidth__current_viewport_width_(0.0f),
 
-	current_viewport_{ 0,0,0,0 },
+	m_current_viewport{ 0,0,0,0 },
 
-	mouse_lastxpos(0),
-	mouse_lastypos(0),
-	mouse_x(0),
-	mouse_y(0),
-	fullScreen(0),
-	stencil(0),
-	multisampling(0),
-	vsync(0),
-	fbo{ tGLFboFormat{0.0f,0.0f,0,0,0,0,0,nullptr,0} }
+	m_mouse_lastxpos(0),
+	m_mouse_lastypos(0),
+	m_mouseX(0),
+	m_mouseY(0),
+
+	fbo{ tGLFboFormat{0.0f,0.0f,0,0,0,0,0,nullptr,0} },
+	config { tGLConfig{ 0, 640, 480, (float)16.0f/9.0f, 0,0,0}}
 {
-	// hack:
+	// Config
+	config.framebuffer_width = 640;
+	config.framebuffer_height = 480;
+	config.framebuffer_aspect_ratio = UIntFraction{ 16,9 }.GetRatio();
+	config.fullScreen = 0;
+	config.stencil = 0;
+	config.multisampling = 0;
+	config.vsync = 0;
+	
 	for (auto i = 0; i < FBO_BUFFERS; ++i) {
 		fbo[i].width = 0;
 		fbo[i].height = 0;
@@ -263,8 +263,8 @@ void glDriver::initFramework() {
 }
 
 bool glDriver::initGraphics() {
-	mouse_lastxpos = script__gl_width__framebuffer_width_ / 2.0f;
-	mouse_lastypos = script__gl_height__framebuffer_height_ / 2.0f;
+	m_mouse_lastxpos = config.framebuffer_width / 2.0f;
+	m_mouse_lastypos = config.framebuffer_height / 2.0f;
 
 	// Create a windowed mode window and its OpenGL context
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -273,34 +273,34 @@ bool glDriver::initGraphics() {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	p_glfw_window_ = glfwCreateWindow(
-		script__gl_width__framebuffer_width_,
-		script__gl_height__framebuffer_height_,
+	m_glfw_window = glfwCreateWindow(
+		config.framebuffer_width,
+		config.framebuffer_height,
 		DEMO->demoName,
-		GLDRV->fullScreen ? glfwGetPrimaryMonitor() : nullptr,
+		config.fullScreen ? glfwGetPrimaryMonitor() : nullptr,
 		nullptr
 	);
 
-	if (!p_glfw_window_) {
+	if (!m_glfw_window) {
 		glfwTerminate();
 		//LOG->Error("Window was not created. OpenGL version not supported?");
 		return false;
 	}
 		
 	// Enable multisampling (aka anti-aliasing)
-	if (this->multisampling)
+	if (config.multisampling)
 		glfwWindowHint(GLFW_SAMPLES, 4); // This does mean that the size of all the buffers is increased by 4
 
 	// Make the window's context current
-	glfwMakeContextCurrent(p_glfw_window_);
+	glfwMakeContextCurrent(m_glfw_window);
 
 	// Configure GLFW callbacks
-	glfwSetWindowSizeCallback(p_glfw_window_, glfwWindowSize_callback);
-	glfwSetKeyCallback(p_glfw_window_, key_callback);
-	glfwSetCursorPosCallback(p_glfw_window_, mouseMove_callback);
-	glfwSetMouseButtonCallback(p_glfw_window_, mouseButton_callback);
+	glfwSetWindowSizeCallback(m_glfw_window, glfwWindowSize_callback);
+	glfwSetKeyCallback(m_glfw_window, key_callback);
+	glfwSetCursorPosCallback(m_glfw_window, mouseMove_callback);
+	glfwSetMouseButtonCallback(m_glfw_window, mouseButton_callback);
 
-	glfwSetScrollCallback(p_glfw_window_, mouseScroll_callback);
+	glfwSetScrollCallback(m_glfw_window, mouseScroll_callback);
 
 	// Initialize glad
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -310,7 +310,7 @@ bool glDriver::initGraphics() {
 	}
 	
 	// Enable multisampling state (aka anti-aliasing)
-	if (this->multisampling)
+	if (config.multisampling)
 		glEnable(GL_MULTISAMPLE);
 
 	// Calculate the Viewport sizes
@@ -320,10 +320,10 @@ bool glDriver::initGraphics() {
 	initRender(true);
 
 	// imGUI init
-	if (p_glfw_window_) {
-		imGui_ = new imGuiDriver();
-		imGui_->init(p_glfw_window_);
-		imGui_->fontScale = DEMO->debug_fontSize;
+	if (m_glfw_window) {
+		m_imGui = new imGuiDriver();
+		m_imGui->init(m_glfw_window);
+		m_imGui->fontScale = DEMO->debug_fontSize;
 	}
 	
 
@@ -341,7 +341,7 @@ bool glDriver::initGraphics() {
 	initFbos();
 
 	// Init internal timer
-	TimeCurrentFrame = static_cast<float>(glfwGetTime());
+	m_timeCurrentFrame = static_cast<float>(glfwGetTime());
 
 	return true;
 }
@@ -366,15 +366,15 @@ void glDriver::initStates() {
 
 void glDriver::initRender(int clear) {
 	// Vsync Management
-	glfwSwapInterval(vsync); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
+	glfwSwapInterval(config.vsync); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
 
 	// reset the default gl state
 	this->initStates();
 
 	// Set the internal timer
-	TimeLastFrame = TimeCurrentFrame;
-	TimeCurrentFrame = static_cast<float>(glfwGetTime());
-	TimeDelta = TimeCurrentFrame - TimeLastFrame;
+	m_timeLastFrame = m_timeCurrentFrame;
+	m_timeCurrentFrame = static_cast<float>(glfwGetTime());
+	m_timeDelta = m_timeCurrentFrame - m_timeLastFrame;
 
 	// set the viewport to the standard size
 	// setViewport(vpXOffset, vpYOffset, static_cast<int>(vpWidth), static_cast<int>(vpHeight));
@@ -384,7 +384,7 @@ void glDriver::initRender(int clear) {
 	if (clear) {
 		glClearColor(0, 0, 0, 0);
 
-		if (this->stencil > 0) {
+		if (config.stencil > 0) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
 		else {
@@ -395,81 +395,81 @@ void glDriver::initRender(int clear) {
 
 void glDriver::drawGui()
 {
-	imGui_->drawGui();
+	m_imGui->drawGui();
 }
 
 void glDriver::guiDrawTiming()
 {
-	imGui_->show_timing = !imGui_->show_timing;
+	m_imGui->show_timing = !m_imGui->show_timing;
 }
 
 void glDriver::guiDrawVersion()
 {
-	imGui_->show_version = !imGui_->show_version;
+	m_imGui->show_version = !m_imGui->show_version;
 }
 
 void glDriver::guiDrawFps()
 {
-	imGui_->show_fps = !imGui_->show_fps;
+	m_imGui->show_fps = !m_imGui->show_fps;
 }
 
 void glDriver::guiDrawFpsHistogram()
 {
-	imGui_->show_fpsHistogram = !imGui_->show_fpsHistogram;
+	m_imGui->show_fpsHistogram = !m_imGui->show_fpsHistogram;
 }
 
 void glDriver::guiDrawSections()
 {
-	imGui_->show_sesctionInfo = !imGui_->show_sesctionInfo;
+	m_imGui->show_sesctionInfo = !m_imGui->show_sesctionInfo;
 }
 
 void glDriver::guiDrawSound()
 {
-	imGui_->show_sound = !imGui_->show_sound;
+	m_imGui->show_sound = !m_imGui->show_sound;
 }
 
 void glDriver::guiDrawFbo()
 {
-	imGui_->num_fboSetToDraw++;
-	imGui_->show_fbo = true;
-	if (imGui_->num_fboSetToDraw > (ceil((float)FBO_BUFFERS / (float)imGui_->num_fboPerPage)))
+	m_imGui->num_fboSetToDraw++;
+	m_imGui->show_fbo = true;
+	if (m_imGui->num_fboSetToDraw > (ceil((float)FBO_BUFFERS / (float)m_imGui->num_fboPerPage)))
 	{
-		imGui_->num_fboSetToDraw = 0;
-		imGui_->show_fbo = false;
+		m_imGui->num_fboSetToDraw = 0;
+		m_imGui->show_fbo = false;
 	}		
 }
 
 void glDriver::guiChangeAttachment()
 {
-	GLDRV->imGui_->num_fboAttachmentToDraw++;
-	if (GLDRV->imGui_->num_fboAttachmentToDraw >= GLDRV_MAX_COLOR_ATTACHMENTS)
-		GLDRV->imGui_->num_fboAttachmentToDraw = 0;
+	GLDRV->m_imGui->num_fboAttachmentToDraw++;
+	if (GLDRV->m_imGui->num_fboAttachmentToDraw >= GLDRV_MAX_COLOR_ATTACHMENTS)
+		GLDRV->m_imGui->num_fboAttachmentToDraw = 0;
 }
 
 Viewport glDriver::GetFramebufferViewport() const {
 	return Viewport::FromRenderTargetAndAspectRatio(
-		script__gl_width__framebuffer_width_,
-		script__gl_height__framebuffer_height_,
-		script__gl_aspect__framebuffer_viewport_aspect_ratio_
+		config.framebuffer_width,
+		config.framebuffer_height,
+		config.framebuffer_aspect_ratio
 	);
 }
 
 Viewport const& glDriver::GetCurrentViewport() const {
-	return current_viewport_;
+	return m_current_viewport;
 }
 
 float glDriver::GetFramebufferAspectRatio() const {
-	return static_cast<float>(script__gl_width__framebuffer_width_) / static_cast<float>(script__gl_height__framebuffer_height_);
+	return static_cast<float>(config.framebuffer_width) / static_cast<float>(config.framebuffer_height);
 }
 
 void glDriver::SetCurrentViewport(Viewport const& viewport) {
 	glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
 
-	current_viewport_ = viewport;
+	m_current_viewport = viewport;
 
 	exprtk__vpWidth__current_viewport_width_ = static_cast<float>(viewport.width);
 	exprtk__vpHeight__current_viewport_height_ = static_cast<float>(viewport.height);
-	exprtk__aspectRatio__current_viewport_aspect_ratio_ = current_viewport_.GetAspectRatio();
+	exprtk__aspectRatio__current_viewport_aspect_ratio_ = m_current_viewport.GetAspectRatio();
 }
 
 void glDriver::SetFramebuffer() {
@@ -493,8 +493,8 @@ void glDriver::initFbos() {
 		bloomFbo.format = "RGB_16F";
 		bloomFbo.numColorAttachments = 1;
 		bloomFbo.ratio = 4;
-		bloomFbo.width = static_cast<float>(script__gl_width__framebuffer_width_) / static_cast <float>(bloomFbo.ratio);
-		bloomFbo.height = static_cast<float>(script__gl_height__framebuffer_height_) / static_cast <float>(bloomFbo.ratio);
+		bloomFbo.width = static_cast<float>(config.framebuffer_width) / static_cast <float>(bloomFbo.ratio);
+		bloomFbo.height = static_cast<float>(config.framebuffer_height) / static_cast <float>(bloomFbo.ratio);
 		bloomFbo.tex_iformat = getTextureInternalFormatByName(bloomFbo.format);
 		bloomFbo.tex_format = getTextureFormatByName(bloomFbo.format);
 		bloomFbo.tex_type = getTextureTypeByName(bloomFbo.format);
@@ -525,8 +525,8 @@ void glDriver::initFbos() {
 		accumFbo.format = "RGBA_16F";
 		accumFbo.numColorAttachments = 1;
 		accumFbo.ratio = 1;
-		accumFbo.width = static_cast<float>(script__gl_width__framebuffer_width_) / static_cast <float>(accumFbo.ratio);
-		accumFbo.height = static_cast<float>(script__gl_height__framebuffer_height_) / static_cast <float>(accumFbo.ratio);
+		accumFbo.width = static_cast<float>(config.framebuffer_width) / static_cast <float>(accumFbo.ratio);
+		accumFbo.height = static_cast<float>(config.framebuffer_height) / static_cast <float>(accumFbo.ratio);
 		accumFbo.tex_iformat = getTextureInternalFormatByName(accumFbo.format);
 		accumFbo.tex_format = getTextureFormatByName(accumFbo.format);
 		accumFbo.tex_type = getTextureTypeByName(accumFbo.format);
@@ -554,8 +554,8 @@ void glDriver::initFbos() {
 	for (int i = 0; i < FBO_BUFFERS; i++) {
 		if (((this->fbo[i].width != 0) && (this->fbo[i].height != 0)) || (this->fbo[i].ratio != 0)) {
 			if (this->fbo[i].ratio != 0) {
-				this->fbo[i].width = (float)(this->script__gl_width__framebuffer_width_ / this->fbo[i].ratio);
-				this->fbo[i].height = (float)(this->script__gl_height__framebuffer_height_ / this->fbo[i].ratio);
+				this->fbo[i].width = (float)(config.framebuffer_width / this->fbo[i].ratio);
+				this->fbo[i].height = (float)(config.framebuffer_height / this->fbo[i].ratio);
 			}
 
 			this->fbo[i].tex_iformat = getTextureInternalFormatByName(this->fbo[i].format);
@@ -576,7 +576,7 @@ void glDriver::initFbos() {
 }
 
 int glDriver::WindowShouldClose() {
-	return glfwWindowShouldClose(p_glfw_window_);
+	return glfwWindowShouldClose(m_glfw_window);
 }
 
 bool glDriver::checkGLError(char* pOut) {
@@ -600,15 +600,15 @@ bool glDriver::checkGLError(char* pOut) {
 }
 
 void glDriver::swapBuffers() {
-	glfwSwapBuffers(p_glfw_window_);
+	glfwSwapBuffers(m_glfw_window);
 }
 
 void glDriver::close() {
 	// Close ImGui
-	imGui_->close();
+	m_imGui->close();
 	
 	// Close GLFW
-	glfwSetWindowShouldClose(p_glfw_window_, GL_TRUE);
+	glfwSetWindowShouldClose(m_glfw_window, GL_TRUE);
 	glfwTerminate();
 }
 
@@ -670,7 +670,7 @@ void glDriver::calcMousePos(float x, float y) {
 		x_coord -= 0.5f;	// Change scale from -0.5 to 0.5
 		y_coord -= 0.5f;
 		y_coord *= -1.0f;
-		this->mouse_x = x_coord;
-		this->mouse_y = y_coord;
+		this->m_mouseX = x_coord;
+		this->m_mouseY = y_coord;
 	}
 }

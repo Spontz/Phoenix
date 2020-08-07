@@ -13,8 +13,8 @@ mathDriver::mathDriver(Section *sec) {
 	SymbolTable.add_variable("tdemo", DEMO->runTime);
 	SymbolTable.add_variable("beat", DEMO->beat);
 	SymbolTable.add_variable("fps", DEMO->fps);
-	SymbolTable.add_variable("mouseX", GLDRV->mouse_x);
-	SymbolTable.add_variable("mouseY", GLDRV->mouse_y);
+	SymbolTable.add_variable("mouseX", GLDRV->m_mouseX);
+	SymbolTable.add_variable("mouseY", GLDRV->m_mouseY);
 
 	// Multi-purpose variables
 	for (int i = 0; i < MULTIPURPOSE_VARS; i++) {

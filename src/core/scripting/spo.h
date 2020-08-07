@@ -127,12 +127,12 @@ namespace Phoenix {
 			{"slave",					SectionVar::TYPE_INT,			&DEMO->slaveMode		},
 			{"log_detail",				SectionVar::TYPE_INT,			&DEMO->log_detail		},
 
-			{"gl_fullscreen",			SectionVar::TYPE_INT,			&GLDRV->fullScreen		},
-			{"gl_width",				SectionVar::TYPE_INT,			&GLDRV->script__gl_width__framebuffer_width_		},
-			{"gl_height",				SectionVar::TYPE_INT,			&GLDRV->script__gl_height__framebuffer_height_		},
-			{"gl_aspect",				SectionVar::TYPE_FLOAT,			&GLDRV->script__gl_aspect__framebuffer_viewport_aspect_ratio_	},
-			{"gl_stencil",				SectionVar::TYPE_INT,			&GLDRV->stencil			},
-			{"gl_vsync",				SectionVar::TYPE_INT,			&GLDRV->vsync			},
+			{"gl_fullscreen",			SectionVar::TYPE_INT,			&GLDRV->config.fullScreen		},
+			{"gl_width",				SectionVar::TYPE_INT,			&GLDRV->config.framebuffer_width					},
+			{"gl_height",				SectionVar::TYPE_INT,			&GLDRV->config.framebuffer_height				},
+			{"gl_aspect",				SectionVar::TYPE_FLOAT,			&GLDRV->config.framebuffer_aspect_ratio	},
+			{"gl_stencil",				SectionVar::TYPE_INT,			&GLDRV->config.stencil	},
+			{"gl_vsync",				SectionVar::TYPE_INT,			&GLDRV->config.vsync	},
 
 			{"fbo_0_ratio",				SectionVar::TYPE_INT,			&GLDRV->fbo[0].ratio	},
 			{"fbo_0_format",			SectionVar::TYPE_STRING,		&GLDRV->fbo[0].format	},
