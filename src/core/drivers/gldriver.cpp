@@ -47,6 +47,9 @@ void glDriver::OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int hei
 
 	config.framebuffer_width = width;
 	config.framebuffer_height = height;
+	
+	// TODO: Ivan request: Change the debug font Size when we resize the screen
+	//m_imGui->fontScale = ((float)width * (float)height) / ((640.0f * 400.0f)) * DEMO->debug_fontSize;
 
 	// RT will be set to FB later
 	//GLDRV->current_rt_width_ = width;
