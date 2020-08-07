@@ -16,7 +16,7 @@ bool ShaderVars::ReadString(const char * string_var)
 	char	var_name[MAXSIZE_VAR_NAME];
 	char	var_type[MAXSIZE_VAR_TYPE];
 	char	var_value[MAXSIZE_VAR_EVAL];
-	int		var_UnitId;	// Useful for sampler2D
+	int		var_UnitId = 0;	// Texture Unit ID - Useful for sampler2D
 
 	std::vector<std::string>	vars;
 	
@@ -152,6 +152,7 @@ bool ShaderVars::ReadString(const char * string_var)
 		var->texUnitID = var_UnitId;
 		// If sampler2D is a fbo...
 		if (0 == strncmp("fbo", var_value, 3)) {
+			var->isFBO = true;
 			int fbonum;
 			sscanf(var_value, "fbo%d", &fbonum);
 			if (fbonum<0 || fbonum>(FBO_BUFFERS - 1)) {
@@ -160,12 +161,12 @@ bool ShaderVars::ReadString(const char * string_var)
 			}
 			else {
 				var->texture = fbonum;
-				// TODO: By default we are drawing always the attachment 0, but we could change this by adding another parameter in the script file with the attachment to draw
 				var->texGLid = DEMO->fboManager.getOpenGLTextureID(fbonum);
 			}
 		}
 		// Is it s a normal texture...
 		else {
+			var->isFBO = false;
 			var->texture = DEMO->textureManager.addTexture(DEMO->dataFolder + var_value);
 			var->texGLid = DEMO->textureManager.getOpenGLTextureID(var->texture);
 		}
@@ -225,6 +226,9 @@ void ShaderVars::setValues()
 	for (i = 0; i < sampler2D.size(); i++) {
 		my_sampler2D = sampler2D[i];
 		my_shader->setValue(my_sampler2D->name, my_sampler2D->texUnitID);
+		// TODO: This ugly and dirty. This is needed because when we rezise the screen, the FBO's are recalculated (therefore texGLid is changed), therefoere we need to look everytime if the texGLid id has changed
+		if (my_sampler2D->isFBO)
+			my_sampler2D->texGLid = DEMO->fboManager.getOpenGLTextureID(my_sampler2D->texture);
 		glBindTextureUnit(my_sampler2D->texUnitID, my_sampler2D->texGLid);
 	}
 }

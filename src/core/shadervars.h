@@ -58,6 +58,7 @@ typedef struct {
 	int				texture;	// Engine internal texture ID
 	int				texGLid;	// Texture ID
 	int				texUnitID;	// Texture unit ID
+	bool			isFBO;		// is the Sampler2D an FBO?
 } varSampler2D;				// Structure for a evaluation Sampler2D (TEXTURE)
 
 
