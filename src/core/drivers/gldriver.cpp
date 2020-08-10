@@ -48,8 +48,8 @@ void glDriver::OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int hei
 	config.framebuffer_width = width;
 	config.framebuffer_height = height;
 	
-	// TODO: Ivan request: Change the debug font Size when we resize the screen
-	//m_imGui->fontScale = ((float)width * (float)height) / ((640.0f * 400.0f)) * DEMO->debug_fontSize;
+	// Change the debug font Size when we resize the screen
+	m_imGui->changeFontSize(DEMO->debug_fontSize, width, height);
 
 	// RT will be set to FB later
 	//GLDRV->current_rt_width_ = width;
@@ -145,10 +145,8 @@ void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, in
 			}
 			else if (key == KEY_RESTART)
 				DEMO->restartDemo();
-			else if (key == KEY_SHOWTIME)
-				GLDRV->guiDrawTiming();
-			else if (key == KEY_SHOWFPS)
-				GLDRV->guiDrawFps();
+			else if (key == KEY_SHOWINFO)
+				GLDRV->guiDrawInfo();
 			else if (key == KEY_SHOWVERSION)
 				GLDRV->guiDrawVersion();
 			else if (key == KEY_SHOWFPSHIST)
@@ -326,7 +324,7 @@ bool glDriver::initGraphics() {
 	if (m_glfw_window) {
 		m_imGui = new imGuiDriver();
 		m_imGui->init(m_glfw_window);
-		m_imGui->fontScale = DEMO->debug_fontSize;
+		m_imGui->changeFontSize(DEMO->debug_fontSize, config.framebuffer_width, config.framebuffer_height);
 	}
 	
 
@@ -401,19 +399,14 @@ void glDriver::drawGui()
 	m_imGui->drawGui();
 }
 
-void glDriver::guiDrawTiming()
-{
-	m_imGui->show_timing = !m_imGui->show_timing;
-}
-
 void glDriver::guiDrawVersion()
 {
 	m_imGui->show_version = !m_imGui->show_version;
 }
 
-void glDriver::guiDrawFps()
+void glDriver::guiDrawInfo()
 {
-	m_imGui->show_fps = !m_imGui->show_fps;
+	m_imGui->show_info = !m_imGui->show_info;
 }
 
 void glDriver::guiDrawFpsHistogram()

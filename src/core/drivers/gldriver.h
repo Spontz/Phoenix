@@ -93,9 +93,8 @@ public:
 	bool	initGraphics();
 	void	initRender(int clear);
 	void	drawGui();
-	void	guiDrawFps();
+	void	guiDrawInfo();
 	void	guiDrawFpsHistogram();
-	void	guiDrawTiming();
 	void	guiDrawVersion();
 	void	guiDrawFbo();
 	void	guiDrawSections();

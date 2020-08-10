@@ -23,10 +23,8 @@ public:
 	imGuiDriver();
 	virtual ~imGuiDriver();
 
-	float	fontScale;
-	bool	show_fps;
+	bool	show_info;
 	bool	show_fpsHistogram;
-	bool	show_timing;
 	bool	show_sesctionInfo;
 	bool	show_fbo;
 	bool	show_sound;
@@ -40,6 +38,7 @@ public:
 	void init(GLFWwindow *window);
 	void drawGui();
 	void close();
+	void changeFontSize(float baseSize, int width, int height);
 
 private:
 	std::string m_VersionEngine;
@@ -48,21 +47,19 @@ private:
 	std::string m_VersionBASS;
 	std::string m_VersionDyad;
 	std::string m_VersionASSIMP;
+	std::string m_VersionImGUI;
 
-	
+	float		m_renderTimes[RENDERTIME_SAMPLES];
+	int			m_maxRenderFPSScale;
+	int			m_currentRenderTime;
+	float		m_fontScale;
 
-
-	float		renderTimes_[RENDERTIME_SAMPLES];
-	int			maxRenderFPSScale_;
-	int			currentRenderTime_;
-	Viewport	vp_;
+	Viewport	m_vp;
 
 
 	void startDraw();
 	void endDraw();
-	void drawMenu();
-	void drawFps();
-	void drawTiming();
+	void drawInfo();
 	void drawVersion();
 	void drawSesctionInfo();
 	void drawFPSHistogram();
