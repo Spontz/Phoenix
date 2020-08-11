@@ -38,25 +38,26 @@ struct tGLConfig {
 	int				multisampling;
 	int				vsync;
 };
+
+struct tExprTkViewport {
+	float			width;
+	float			height;
+	float			aspect_ratio;
+};
+
+
 // ******************************************************************
 
 class glDriver {
-	// hack, todo: remove friends
-	friend class mathDriver; // for exprtk__ members
-	friend struct InitScriptCommands; // for script__ members;
 
 public:
 	static glDriver& GetInstance();
 	tGLFboFormat	fbo[FBO_BUFFERS];
 	tGLConfig		config;
+	tExprTkViewport	exprTk_current_viewport; // Viewport variables for ExprTk
 	float			m_mouseX, m_mouseY;
 
 private:
-	// hack: create exprtk_vars struct and pass to glDriver on construction
-	float			exprtk__vpWidth__current_viewport_width_;
-	float			exprtk__vpHeight__current_viewport_height_;
-	float			exprtk__aspectRatio__current_viewport_aspect_ratio_;
-
 	GLFWwindow*		m_glfw_window;
 	Viewport		m_current_viewport;
 	imGuiDriver*	m_imGui;

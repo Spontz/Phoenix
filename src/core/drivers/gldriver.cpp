@@ -222,10 +222,6 @@ glDriver::glDriver()
 	m_glfw_window(nullptr),
 	m_imGui(nullptr),
 
-	exprtk__aspectRatio__current_viewport_aspect_ratio_(0.0f),
-	exprtk__vpHeight__current_viewport_height_(0.0f),
-	exprtk__vpWidth__current_viewport_width_(0.0f),
-
 	m_current_viewport{ 0,0,0,0 },
 
 	m_mouse_lastxpos(0),
@@ -234,7 +230,8 @@ glDriver::glDriver()
 	m_mouseY(0),
 
 	fbo{ tGLFboFormat{0.0f,0.0f,0,0,0,0,0,nullptr,0} },
-	config { tGLConfig{ 0, 640, 480, (float)16.0f/9.0f, 0,0,0}}
+	config { tGLConfig{ 0, 640, 480, (float)16.0f/9.0f, 0,0,0}},
+	exprTk_current_viewport{ tExprTkViewport {0,0,0} }
 {
 	// Config
 	config.framebuffer_width = 640;
@@ -463,9 +460,9 @@ void glDriver::SetCurrentViewport(Viewport const& viewport) {
 
 	m_current_viewport = viewport;
 
-	exprtk__vpWidth__current_viewport_width_ = static_cast<float>(viewport.width);
-	exprtk__vpHeight__current_viewport_height_ = static_cast<float>(viewport.height);
-	exprtk__aspectRatio__current_viewport_aspect_ratio_ = m_current_viewport.GetAspectRatio();
+	exprTk_current_viewport.width = static_cast<float>(viewport.width);
+	exprTk_current_viewport.height = static_cast<float>(viewport.height);
+	exprTk_current_viewport.aspect_ratio = m_current_viewport.GetAspectRatio();
 }
 
 void glDriver::SetFramebuffer() {

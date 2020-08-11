@@ -5,7 +5,6 @@
 #include "main.h"
 
 Section::Section() {
-	int i			= 0;
 	type			= 0;
 	identifier		= "No ID defined";
 	DataSource		= "";
