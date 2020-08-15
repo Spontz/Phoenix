@@ -11,6 +11,7 @@ public:
 	std::string debug();
 
 private:
+	demokernel& demo = demokernel::GetInstance();
 	unsigned int	FboNum;			// Fbo to use (must have 2 color attachments!)
 	float			blurAmount;		// Blur layers to apply
 	char			clearScreen;	// Clear Screen buffer
@@ -45,11 +46,11 @@ bool sEfxBloom::load() {
 	FboNum = (int)param[2];
 	
 	// Check if the fbo can be used for the effect
-	if (FboNum < 0 || FboNum >= DEMO->fboManager.fbo.size()) {
-		LOG->Error("EfxBloom [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), FboNum, DEMO->fboManager.fbo.size()-1);
+	if (FboNum < 0 || FboNum >= demo.fboManager.fbo.size()) {
+		LOG->Error("EfxBloom [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), FboNum, demo.fboManager.fbo.size()-1);
 		return false;
 	}
-	if (DEMO->fboManager.fbo[FboNum]->numAttachments < 2) {
+	if (demo.fboManager.fbo[FboNum]->numAttachments < 2) {
 		LOG->Error("EfxBloom [%s]: The fbo specified [%d] has less than 2 attachments, so it cannot be used for bloom effect: Attahment 0 is the color image and Attachment 1 is the brights image", identifier.c_str(), FboNum);
 		return false;
 	}
@@ -64,9 +65,9 @@ bool sEfxBloom::load() {
 		return false;
 
 	// Load Blur shader
-	shaderBlur = DEMO->shaderManager.addShader(DEMO->dataFolder + strings[1]);
+	shaderBlur = demo.shaderManager.addShader(demo.dataFolder + strings[1]);
 	// Load Bloom shader
-	shaderBloom = DEMO->shaderManager.addShader(DEMO->dataFolder + strings[2]);
+	shaderBloom = demo.shaderManager.addShader(demo.dataFolder + strings[2]);
 	if (!shaderBlur || !shaderBloom)
 		return false;
 
@@ -121,14 +122,14 @@ void sEfxBloom::exec() {
 			shaderBlur->setValue("horizontal", horizontal);
 			
 			// We always draw the First pass in the efxBloom FBO
-			DEMO->efxBloomFbo.bind(horizontal, false, false);
+			demo.efxBloomFbo.bind(horizontal, false, false);
 			
 			// If it's the first iteration, we pick the second attachment of our fbo
 			// if not, we pick the fbo of our efxBloom
 			if (first_iteration)
-				DEMO->fboManager.bind_tex(FboNum, 0, 1); //Use the second attachment of the fbo
+				demo.fboManager.bind_tex(FboNum, 0, 1); //Use the second attachment of the fbo
 			else
-				DEMO->efxBloomFbo.bind_tex(!horizontal, 0, 0);	// Use the texture from our efxBloom
+				demo.efxBloomFbo.bind_tex(!horizontal, 0, 0);	// Use the texture from our efxBloom
 			
 			// Render scene
 			RES->Draw_QuadFS();
@@ -136,7 +137,7 @@ void sEfxBloom::exec() {
 			if (first_iteration)
 				first_iteration = false;
 		}
-		DEMO->efxBloomFbo.unbind(false, false); // Unbind drawing into an Fbo
+		demo.efxBloomFbo.unbind(false, false); // Unbind drawing into an Fbo
 
 		// Second step: Merge the blurred image with the color image (fbo attachment 0)
 		shaderBloom->use();
@@ -144,13 +145,13 @@ void sEfxBloom::exec() {
 		shaderVars->setValues();
 
 		// Tex unit 0: scene
-		DEMO->fboManager.fbo[FboNum]->bind_tex(0);
+		demo.fboManager.fbo[FboNum]->bind_tex(0);
 		// Tex unit 1: Bloom blur
-		auto tmp = DEMO->efxBloomFbo.fbo;
-		DEMO->efxBloomFbo.fbo[!horizontal]->bind_tex(1);
+		auto tmp = demo.efxBloomFbo.fbo;
+		demo.efxBloomFbo.fbo[!horizontal]->bind_tex(1);
 
 		// Adjust back the current fbo
-		DEMO->fboManager.bindCurrent();
+		demo.fboManager.bindCurrent();
 		RES->Draw_QuadFS();
 	}		
 	glEnable(GL_DEPTH_TEST);

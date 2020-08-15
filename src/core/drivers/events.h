@@ -9,7 +9,6 @@
 
 // definition of engine control keys
 #define KEY_EXIT			GLFW_KEY_ESCAPE
-#define KEY_SCREENSHOT		GLFW_KEY_PRINT_SCREEN
 #define KEY_TIME			GLFW_KEY_ENTER
 
 #define KEY_SHOWVERSION		GLFW_KEY_0

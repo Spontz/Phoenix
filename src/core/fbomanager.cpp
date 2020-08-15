@@ -41,7 +41,7 @@ void FboManager::bindCurrent()
 		if (clearDepth)	glClear(GL_DEPTH_BUFFER_BIT);
 	}
 	else{
-		DEMO->fboManager.unbind(clearColor, clearDepth);
+		unbind(clearColor, clearDepth);
 	}
 }
 

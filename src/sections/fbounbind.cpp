@@ -10,6 +10,7 @@ public:
 	std::string debug();
 
 private:
+	demokernel& demo = demokernel::GetInstance();
 	char	clearScreen;	// Clear Screen buffer
 	char	clearDepth;		// Clear Depth buffer
 } fbounbind_section;
@@ -43,7 +44,7 @@ void sFboUnbind::init() {
 
 void sFboUnbind::exec() {
 	// Unbind the fbo
-	DEMO->fboManager.unbind(clearScreen, clearDepth);
+	demo.fboManager.unbind(clearScreen, clearDepth);
 }
 
 void sFboUnbind::end() {

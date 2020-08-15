@@ -11,6 +11,7 @@ public:
 	std::string debug();
 
 private:
+	demokernel& demo = demokernel::GetInstance();
 	Shader*			shader;			// Fader Shader to apply
 	ShaderVars		*shaderVars;	// Shader variables
 };
@@ -34,7 +35,7 @@ bool sEfxFader::load() {
 	}
 	
 	// Load Fader shader
-	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + strings[0]);
+	shader = demo.shaderManager.addShader(demo.dataFolder + strings[0]);
 	if (!shader)
 		return false;
 

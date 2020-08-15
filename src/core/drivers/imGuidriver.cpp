@@ -22,8 +22,9 @@ char* stateStr[] = {
 
 imGuiDriver::imGuiDriver()
 	:
-	p_glfw_window_(nullptr),
-	io_(nullptr),
+	m_demo(demokernel::GetInstance()),
+	p_glfw_window(nullptr),
+	m_io(nullptr),
 	show_info(true),
 	show_fpsHistogram(false),
 	show_sesctionInfo(false),
@@ -37,12 +38,12 @@ imGuiDriver::imGuiDriver()
 	m_maxRenderFPSScale(60),
 	m_currentRenderTime(0)
 {
-	m_VersionEngine = DEMO->getEngineVersion();
+	m_VersionEngine = m_demo.getEngineVersion();
 	m_VersionOpenGL = GLDRV->getOpenGLVersion();
 	m_VersionGLFW =  GLDRV->getVersion();
 	m_VersionBASS = BASSDRV->getVersion();
-	m_VersionDyad = DEMO->getLibDyadVersion();
-	m_VersionASSIMP = DEMO->getLibAssimpVersion();
+	m_VersionDyad = m_demo.getLibDyadVersion();
+	m_VersionASSIMP = m_demo.getLibAssimpVersion();
 	m_VersionImGUI = IMGUI_VERSION;
 
 	for (int i = 0; i < RENDERTIME_SAMPLES; i++)
@@ -57,9 +58,9 @@ void imGuiDriver::init(GLFWwindow *window) {
 	// imGUI init
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	io_ = &(ImGui::GetIO()); (void)io_;
-	//io_.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	//io_.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	m_io = &(ImGui::GetIO()); (void)m_io;
+	//m_io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	//m_io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
@@ -132,15 +133,15 @@ void imGuiDriver::drawInfo() {
 
 	// Get Demo status
 	char* demoStatus;
-	if (DEMO->state & DEMO_PAUSE) {
-		if (DEMO->state & DEMO_REWIND) demoStatus = stateStr[4];
-		else if (DEMO->state & DEMO_FASTFORWARD) demoStatus = stateStr[5];
+	if (m_demo.state & DEMO_PAUSE) {
+		if (m_demo.state & DEMO_REWIND) demoStatus = stateStr[4];
+		else if (m_demo.state & DEMO_FASTFORWARD) demoStatus = stateStr[5];
 		else demoStatus = stateStr[3];
 
 	}
 	else {
-		if (DEMO->state & DEMO_REWIND) demoStatus = stateStr[1];
-		else if (DEMO->state & DEMO_FASTFORWARD) demoStatus = stateStr[2];
+		if (m_demo.state & DEMO_REWIND) demoStatus = stateStr[1];
+		else if (m_demo.state & DEMO_FASTFORWARD) demoStatus = stateStr[2];
 		else demoStatus = stateStr[0];
 	}
 
@@ -175,16 +176,20 @@ void imGuiDriver::drawInfo() {
 
 	// Draw Info
 		ImGui::SetWindowFontScale(m_fontScale);
-		ImGui::Text("Font: %.3f", m_fontScale);
-		ImGui::Text("Fps: %.0f", DEMO->fps);
+		//ImGui::Text("Font: %.3f", m_fontScale);	// Show font size
+		ImGui::Text("Fps: %.0f", m_demo.fps);
 		ImGui::Text("Demo status: %s", demoStatus);
-		ImGui::Text("Time: %.2f/%.2f", DEMO->runTime, DEMO->endTime);
+		ImGui::Text("Time: %.2f/%.2f", m_demo.runTime, m_demo.endTime);
 		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->sound_cpu());
-		ImGui::Text("Texture mem used: %.2fmb", DEMO->textureManager.mem + DEMO->fboManager.mem + DEMO->efxBloomFbo.mem + DEMO->efxAccumFbo.mem);
-		ImGui::Text("Cam Speed: %.0f", DEMO->camera->MovementSpeed);
-		ImGui::Text("Cam Pos: %.1f,%.1f,%.1f", DEMO->camera->Position.x, DEMO->camera->Position.y, DEMO->camera->Position.z);
-		ImGui::Text("Cam Front: %.1f,%.1f,%.1f", DEMO->camera->Front.x, DEMO->camera->Front.y, DEMO->camera->Front.z);
-		ImGui::Text("Cam Yaw: %.1f, Pitch: %.1f, Roll: %.1f, Zoom: %.1f", DEMO->camera->Yaw, DEMO->camera->Pitch, DEMO->camera->Roll, DEMO->camera->Zoom);
+		ImGui::Text("Texture mem used: %.2fmb", m_demo.textureManager.mem + m_demo.fboManager.mem + m_demo.efxBloomFbo.mem + m_demo.efxAccumFbo.mem);
+		ImGui::Text("Cam Speed: %.0f", m_demo.camera->MovementSpeed);
+		ImGui::Text("Cam Pos: %.1f,%.1f,%.1f", m_demo.camera->Position.x, m_demo.camera->Position.y, m_demo.camera->Position.z);
+		ImGui::Text("Cam Front: %.1f,%.1f,%.1f", m_demo.camera->Front.x, m_demo.camera->Front.y, m_demo.camera->Front.z);
+		ImGui::Text("Cam Yaw: %.1f, Pitch: %.1f, Roll: %.1f, Zoom: %.1f", m_demo.camera->Yaw, m_demo.camera->Pitch, m_demo.camera->Roll, m_demo.camera->Zoom);
+		if (m_demo.slaveMode == 1)
+			ImGui::Text("Slave Mode ON");
+		else
+			ImGui::Text("Slave Mode OFF");
 	ImGui::End();
 }
 
@@ -216,8 +221,8 @@ void imGuiDriver::drawFbo() {
 	int fbo_num_min = ((num_fboSetToDraw - 1) * num_fboPerPage);
 	int fbo_num_max = (num_fboPerPage - 1) + ((num_fboSetToDraw - 1) * num_fboPerPage);
 
-	if (fbo_num_max >= DEMO->fboManager.fbo.size())
-		fbo_num_max = static_cast<int>(DEMO->fboManager.fbo.size()) - 1;
+	if (fbo_num_max >= m_demo.fboManager.fbo.size())
+		fbo_num_max = static_cast<int>(m_demo.fboManager.fbo.size()) - 1;
 
 	ImGui::SetNextWindowPos(ImVec2(0, (2.0f* static_cast<float>(m_vp.y) - offsetY +2.0f* static_cast<float>(m_vp.height)/3.0f)), ImGuiCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height)/3.0f + offsetY), ImGuiCond_Once);
@@ -233,9 +238,9 @@ void imGuiDriver::drawFbo() {
 		ImGui::SetWindowFontScale(m_fontScale);
 		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fbo_num_min, fbo_num_max, num_fboAttachmentToDraw);
 		for (int i = fbo_num_min; i <= fbo_num_max; i++) {
-			if (i < DEMO->fboManager.fbo.size())
+			if (i < m_demo.fboManager.fbo.size())
 			{
-				Fbo* my_fbo = DEMO->fboManager.fbo[i];
+				Fbo* my_fbo = m_demo.fboManager.fbo[i];
 				if (num_fboAttachmentToDraw < my_fbo->numAttachments)
 					ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[num_fboAttachmentToDraw], ImVec2(fbo_w_size, fbo_h_size), ImVec2(0, 1), ImVec2(1, 0));
 				else
@@ -258,7 +263,7 @@ void imGuiDriver::drawSound()
 	}
 	ImVec2 win = ImGui::GetWindowSize();
 	ImGui::SetWindowFontScale(m_fontScale);
-	ImGui::Text("Beat value: %.3f, fadeout: %.3f, ratio: %.3f", DEMO->beat, DEMO->beat_fadeout, DEMO->beat_ratio);
+	ImGui::Text("Beat value: %.3f, fadeout: %.3f, ratio: %.3f", m_demo.beat, m_demo.beat_fadeout, m_demo.beat_ratio);
 	ImGui::Text("FFT Samples: %d", FFT_BUFFER_SAMPLES);
 	ImGui::PlotHistogram("", BASSDRV->getFFTdata(), FFT_BUFFER_SAMPLES, 0, "sound histogram", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80));
 	ImGui::End();
@@ -280,9 +285,9 @@ void imGuiDriver::drawSesctionInfo()
 		return;
 	}
 	ImGui::SetWindowFontScale(m_fontScale);
-	for (int i = 0; i < DEMO->sectionManager.execSection.size(); i++) {
-		sec_id = DEMO->sectionManager.execSection[i].second;	// The second value is the ID of the section
-		ds = DEMO->sectionManager.section[sec_id];
+	for (int i = 0; i < m_demo.sectionManager.execSection.size(); i++) {
+		sec_id = m_demo.sectionManager.execSection[i].second;	// The second value is the ID of the section
+		ds = m_demo.sectionManager.section[sec_id];
 		ImGui::Text(ds->debug().c_str());
 		ImGui::Separator();
 	}
@@ -291,7 +296,7 @@ void imGuiDriver::drawSesctionInfo()
 
 void imGuiDriver::drawFPSHistogram()
 {
-	m_renderTimes[m_currentRenderTime] = DEMO->realFrameTime*1000.f; // Render times in ms
+	m_renderTimes[m_currentRenderTime] = m_demo.realFrameTime*1000.f; // Render times in ms
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), 140.0f), ImGuiCond_Once);

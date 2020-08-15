@@ -11,6 +11,7 @@ public:
 	std::string debug();
 
 private:
+	demokernel& demo = demokernel::GetInstance();
 	int			cubemap;
 	int			model;
 	int			shader;
@@ -50,10 +51,10 @@ bool sDrawSkybox::load() {
 	drawWireframe = (int)param[1];
 	
 	// Load the 6 textures of our cubemap
-	std::vector<std::string> faces {	DEMO->dataFolder + strings[0], DEMO->dataFolder + strings[1], DEMO->dataFolder + strings[2],
-										DEMO->dataFolder + strings[3], DEMO->dataFolder + strings[4], DEMO->dataFolder + strings[5]};
+	std::vector<std::string> faces {	demo.dataFolder + strings[0], demo.dataFolder + strings[1], demo.dataFolder + strings[2],
+										demo.dataFolder + strings[3], demo.dataFolder + strings[4], demo.dataFolder + strings[5]};
 
-	cubemap = DEMO->textureManager.addCubemap(faces, false);
+	cubemap = demo.textureManager.addCubemap(faces, false);
 	if (cubemap < 0)
 		return false;
 
@@ -97,9 +98,9 @@ void sDrawSkybox::exec() {
 	RES->shdr_Skybox->use(); // TODO: Do not use the Resource shader for skybox, and use our own shader!
 
 	// view/projection transformations
-	float zoom = DEMO->camera->Zoom;
+	float zoom = demo.camera->Zoom;
 	glm::mat4 projection = glm::perspective(glm::radians(zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
-	glm::mat4 view = glm::mat4(glm::mat3(DEMO->camera->GetViewMatrix())); // remove translation from the view matrix
+	glm::mat4 view = glm::mat4(glm::mat3(demo.camera->GetViewMatrix())); // remove translation from the view matrix
 	RES->shdr_Skybox->setValue("projection", projection);
 	RES->shdr_Skybox->setValue("view", view);
 

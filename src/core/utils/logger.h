@@ -31,9 +31,10 @@ public:
 	void CloseLogFile() const;
 
 private:
-	LogLevel log_level_;
-	std::string output_file_ = "demo_log.txt";
-	mutable std::ofstream log_ofstream_;
+	LogLevel				log_level_;
+	std::string				output_file_ = "demo_log.txt";
+	mutable std::ofstream	log_ofstream_;
+	netDriver&				m_netDriver;
 };
 
 // hack: 0 macros

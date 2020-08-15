@@ -49,7 +49,7 @@ void glDriver::OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int hei
 	config.framebuffer_height = height;
 	
 	// Change the debug font Size when we resize the screen
-	m_imGui->changeFontSize(DEMO->debug_fontSize, width, height);
+	m_imGui->changeFontSize(m_demo.debug_fontSize, width, height);
 
 	// RT will be set to FB later
 	//GLDRV->current_rt_width_ = width;
@@ -69,7 +69,7 @@ void glDriver::OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int hei
 
 void glDriver::mouseMove_callback(GLFWwindow* p_glfw_window, double xpos, double ypos)
 {
-	if (DEMO->debug && !(ImGui::GetIO().WantCaptureMouse)) {
+	if (GLDRV->m_demo.debug && !(ImGui::GetIO().WantCaptureMouse)) {
 		float x = static_cast<float>(xpos);
 		float y = static_cast<float>(ypos);
 
@@ -82,7 +82,7 @@ void glDriver::mouseMove_callback(GLFWwindow* p_glfw_window, double xpos, double
 			GLDRV->m_mouse_lastxpos = x;
 			GLDRV->m_mouse_lastypos = y;
 
-			DEMO->camera->ProcessMouseMovement(xoffset, yoffset);
+			GLDRV->m_demo.camera->ProcessMouseMovement(xoffset, yoffset);
 		}
 		if (glfwGetMouseButton(p_glfw_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
 			GLDRV->m_mouse_lastxpos = x;
@@ -99,7 +99,7 @@ void glDriver::mouseMove_callback(GLFWwindow* p_glfw_window, double xpos, double
 
 void glDriver::mouseButton_callback(GLFWwindow* p_glfw_window, int button, int action, int mods)
 {
-	if (DEMO->debug && !(ImGui::GetIO().WantCaptureMouse)) {
+	if (GLDRV->m_demo.debug && !(ImGui::GetIO().WantCaptureMouse)) {
 		if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
 			GLDRV->calcMousePos(GLDRV->m_mouse_lastxpos, GLDRV->m_mouse_lastypos);
 			LOG->SendEditor("Mouse pos [%.4f, %.4f]", GLDRV->m_mouseX, GLDRV->m_mouseY);
@@ -111,8 +111,8 @@ void glDriver::mouseButton_callback(GLFWwindow* p_glfw_window, int button, int a
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 void glDriver::mouseScroll_callback(GLFWwindow* p_glfw_window, double xoffset, double yoffset)
 {
-	if (DEMO->debug && !(ImGui::GetIO().WantCaptureMouse))
-		DEMO->camera->ProcessMouseScroll((float)yoffset);
+	if (GLDRV->m_demo.debug && !(ImGui::GetIO().WantCaptureMouse))
+		GLDRV->m_demo.camera->ProcessMouseScroll((float)yoffset);
 }
 
 void glDriver::glDebugMessage_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
@@ -123,28 +123,27 @@ void glDriver::glDebugMessage_callback(GLenum source, GLenum type, GLuint id, GL
 }
 
 void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, int action, int mods) {
+	
+	demokernel& demo = GLDRV->m_demo;
 
 	if (action == GLFW_PRESS) {
 		if (key == KEY_EXIT)
-			DEMO->exitDemo = true;
-		else if (key == KEY_SCREENSHOT) {
-			//GLDRV->screenshot(); //TODO
-		}
-		if (DEMO->debug) {
+			demo.exitDemo = true;
+		if (demo.debug) {
 			if (key == KEY_FASTFORWARD)
-				DEMO->fastforwardDemo();
+				demo.fastforwardDemo();
 			else if (key == KEY_REWIND)
-				DEMO->rewindDemo();
+				demo.rewindDemo();
 			else if (key == KEY_TIME)
-				LOG->Info(LogLevel::HIGH, "Demo time: %.4f", DEMO->runTime);
+				LOG->Info(LogLevel::HIGH, "Demo time: %.4f", demo.runTime);
 			else if (key == KEY_PLAY_PAUSE) {
-				if (DEMO->state == DEMO_PLAY)
-					DEMO->pauseDemo();
+				if (demo.state == DEMO_PLAY)
+					demo.pauseDemo();
 				else
-					DEMO->playDemo();
+					demo.playDemo();
 			}
 			else if (key == KEY_RESTART)
-				DEMO->restartDemo();
+				demo.restartDemo();
 			else if (key == KEY_SHOWINFO)
 				GLDRV->guiDrawInfo();
 			else if (key == KEY_SHOWVERSION)
@@ -163,25 +162,25 @@ void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, in
 			
 
 			else if (key == KEY_CAPTURE)
-				DEMO->camera->CapturePos();
+				demo.camera->CapturePos();
 			else if (key == KEY_CAMRESET)
-				DEMO->camera->Reset();
+				demo.camera->Reset();
 			else if (key == KEY_MULTIPLIER) 
-				DEMO->camera->MovementSpeed *= 2.0f;
+				demo.camera->MovementSpeed *= 2.0f;
 			else if (key == KEY_DIVIDER) {
-				DEMO->camera->MovementSpeed /= 2.0f;
-				if (DEMO->camera->MovementSpeed < 1.0f)
-					DEMO->camera->MovementSpeed = 1.0f;
+				demo.camera->MovementSpeed /= 2.0f;
+				if (demo.camera->MovementSpeed < 1.0f)
+					demo.camera->MovementSpeed = 1.0f;
 			}
 
 		}
 	}
-	if (action == GLFW_RELEASE && DEMO->debug == TRUE) {
+	if (action == GLFW_RELEASE && demo.debug == TRUE) {
 		if (key == KEY_FASTFORWARD || key == KEY_REWIND) {
-			if (DEMO->state & DEMO_PAUSE)
-				DEMO->pauseDemo();
+			if (demo.state & DEMO_PAUSE)
+				demo.pauseDemo();
 			else
-				DEMO->playDemo();
+				demo.playDemo();
 		}
 	}
 }
@@ -197,25 +196,26 @@ void glDriver::ProcessInput()
 {	
 	PX_PROFILE_FUNCTION();
 
-	if (DEMO->debug) {
+	if (m_demo.debug) {
 		if (glfwGetKey(m_glfw_window, KEY_FORWARD) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CameraMovement::FORWARD, GLDRV->m_timeDelta);
+			m_demo.camera->ProcessKeyboard(CameraMovement::FORWARD, GLDRV->m_timeDelta);
 		if (glfwGetKey(m_glfw_window, KEY_BACKWARD) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CameraMovement::BACKWARD, GLDRV->m_timeDelta);
+			m_demo.camera->ProcessKeyboard(CameraMovement::BACKWARD, GLDRV->m_timeDelta);
 		if (glfwGetKey(m_glfw_window, KEY_STRAFELEFT) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CameraMovement::LEFT, GLDRV->m_timeDelta);
+			m_demo.camera->ProcessKeyboard(CameraMovement::LEFT, GLDRV->m_timeDelta);
 		if (glfwGetKey(m_glfw_window, KEY_STRAFERIGHT) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CameraMovement::RIGHT, GLDRV->m_timeDelta);
+			m_demo.camera->ProcessKeyboard(CameraMovement::RIGHT, GLDRV->m_timeDelta);
 		if (glfwGetKey(m_glfw_window, KEY_ROLLRIGHT) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CameraMovement::ROLL_RIGHT, GLDRV->m_timeDelta);
+			m_demo.camera->ProcessKeyboard(CameraMovement::ROLL_RIGHT, GLDRV->m_timeDelta);
 		if (glfwGetKey(m_glfw_window, KEY_ROLLLEFT) == GLFW_PRESS)
-			DEMO->camera->ProcessKeyboard(CameraMovement::ROLL_LEFT, GLDRV->m_timeDelta);
+			m_demo.camera->ProcessKeyboard(CameraMovement::ROLL_LEFT, GLDRV->m_timeDelta);
 	}
 
 }
 
 glDriver::glDriver()
 	:
+	m_demo(demokernel::GetInstance()),
 	m_timeCurrentFrame(0.0f),
 	m_timeDelta(0.0f),
 	m_timeLastFrame(0.0f),
@@ -274,7 +274,7 @@ bool glDriver::initGraphics() {
 	m_glfw_window = glfwCreateWindow(
 		config.framebuffer_width,
 		config.framebuffer_height,
-		DEMO->demoName,
+		m_demo.demoName,
 		config.fullScreen ? glfwGetPrimaryMonitor() : nullptr,
 		nullptr
 	);
@@ -321,12 +321,12 @@ bool glDriver::initGraphics() {
 	if (m_glfw_window) {
 		m_imGui = new imGuiDriver();
 		m_imGui->init(m_glfw_window);
-		m_imGui->changeFontSize(DEMO->debug_fontSize, config.framebuffer_width, config.framebuffer_height);
+		m_imGui->changeFontSize(m_demo.debug_fontSize, config.framebuffer_width, config.framebuffer_height);
 	}
 	
 
 	// During init, enable debug output
-	if (DEMO->debug) {
+	if (m_demo.debug) {
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 		glDebugMessageCallback(glDebugMessage_callback, 0);
@@ -356,10 +356,10 @@ void glDriver::initStates() {
 	glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL - TODO: Should be LESS according learnopengl.com
 
 	// Init lights colors, fbo's, shader ID's and texture States
-	DEMO->lightManager.initAllLightsColors();
-	DEMO->fboManager.unbind(true, true);
-	DEMO->shaderManager.unbindShaders();
-	DEMO->textureManager.initTextureStates();
+	m_demo.lightManager.initAllLightsColors();
+	m_demo.fboManager.unbind(true, true);
+	m_demo.shaderManager.unbindShaders();
+	m_demo.textureManager.initTextureStates();
 }
 
 void glDriver::initRender(int clear) {
@@ -466,7 +466,7 @@ void glDriver::SetCurrentViewport(Viewport const& viewport) {
 }
 
 void glDriver::SetFramebuffer() {
-	DEMO->fboManager.unbind(false, false);
+	m_demo.fboManager.unbind(false, false);
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	// Restore the driver viewport
 	//SetCurrentViewport(GetFramebufferViewport());
@@ -476,9 +476,9 @@ void glDriver::initFbos() {
 	////////////// efxBloom FBO Manager: internal FBO's that are being used by the engine effects
 	{
 		// Clear Fbo's, if there is any
-		if (DEMO->efxBloomFbo.fbo.size() > 0) {
+		if (m_demo.efxBloomFbo.fbo.size() > 0) {
 			LOG->Info(LogLevel::LOW, "Ooops! we need to regenerate the Bloom efx FBO's! clearing efx FBO's first!");
-			DEMO->efxBloomFbo.clearFbos();
+			m_demo.efxBloomFbo.clearFbos();
 		}
 
 		// init fbo's for Bloom
@@ -495,7 +495,7 @@ void glDriver::initFbos() {
 
 		int res = 0;
 		for (int i = 0; i < EFXBLOOM_FBO_BUFFERS; i++) {
-			res = DEMO->efxBloomFbo.addFbo(bloomFbo.format, (int)bloomFbo.width, (int)bloomFbo.height, bloomFbo.tex_iformat, bloomFbo.tex_format, bloomFbo.tex_type, bloomFbo.tex_components, bloomFbo.numColorAttachments);
+			res = m_demo.efxBloomFbo.addFbo(bloomFbo.format, (int)bloomFbo.width, (int)bloomFbo.height, bloomFbo.tex_iformat, bloomFbo.tex_format, bloomFbo.tex_type, bloomFbo.tex_components, bloomFbo.numColorAttachments);
 			if (res >= 0)
 				LOG->Info(LogLevel::LOW, "EfxBloom Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, bloomFbo.width, bloomFbo.height, bloomFbo.format, bloomFbo.tex_components, bloomFbo.tex_format, bloomFbo.tex_iformat, bloomFbo.tex_type);
 			else
@@ -508,9 +508,9 @@ void glDriver::initFbos() {
 	// TODO: Que pasa si varios efectos de Accum se lanzan a la vez? no pueden usar la misma textura, asi que se mezclarán! deberíamos tener una fbo por cada efecto? es un LOCURON!!
 	{
 		// Clear Fbo's, if there is any
-		if (DEMO->efxAccumFbo.fbo.size() > 0) {
+		if (m_demo.efxAccumFbo.fbo.size() > 0) {
 			LOG->Info(LogLevel::LOW, "Ooops! we need to regenerate the Accum efx FBO's! clearing efx FBO's first!");
-			DEMO->efxAccumFbo.clearFbos();
+			m_demo.efxAccumFbo.clearFbos();
 		}
 
 		// init fbo's for Accum
@@ -527,7 +527,7 @@ void glDriver::initFbos() {
 
 		int res = 0;
 		for (int i = 0; i < EFXACCUM_FBO_BUFFERS; i++) {
-			res = DEMO->efxAccumFbo.addFbo(accumFbo.format, (int)accumFbo.width, (int)accumFbo.height, accumFbo.tex_iformat, accumFbo.tex_format, accumFbo.tex_type, accumFbo.tex_components, accumFbo.numColorAttachments);
+			res = m_demo.efxAccumFbo.addFbo(accumFbo.format, (int)accumFbo.width, (int)accumFbo.height, accumFbo.tex_iformat, accumFbo.tex_format, accumFbo.tex_type, accumFbo.tex_components, accumFbo.numColorAttachments);
 			if (res >= 0)
 				LOG->Info(LogLevel::LOW, "EfxAccum Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, accumFbo.width, accumFbo.height, accumFbo.format, accumFbo.tex_components, accumFbo.tex_format, accumFbo.tex_iformat, accumFbo.tex_type);
 			else
@@ -538,9 +538,9 @@ void glDriver::initFbos() {
 
 	////////////// FBO Manager: Generic FBO's that can be used by the user
 	// Clear Fbo's, if there is any
-	if (DEMO->fboManager.fbo.size() > 0) {
+	if (m_demo.fboManager.fbo.size() > 0) {
 		LOG->Info(LogLevel::LOW, "Ooops! we need to regenerate the FBO's! clearing generic FBO's first!");
-		DEMO->fboManager.clearFbos();
+		m_demo.fboManager.clearFbos();
 	}
 
 	// init fbo's
@@ -557,7 +557,7 @@ void glDriver::initFbos() {
 			this->fbo[i].tex_components = getTextureComponentsByName(this->fbo[i].format);
 			// Check if the format is valid
 			if (this->fbo[i].tex_format > 0) {
-				DEMO->fboManager.addFbo(this->fbo[i].format, (int)this->fbo[i].width, (int)this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type, this->fbo[i].tex_components, this->fbo[i].numColorAttachments);
+				m_demo.fboManager.addFbo(this->fbo[i].format, (int)this->fbo[i].width, (int)this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type, this->fbo[i].tex_components, this->fbo[i].numColorAttachments);
 				LOG->Info(LogLevel::LOW, "Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_components, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
 			}
 			else {

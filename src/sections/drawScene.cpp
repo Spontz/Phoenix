@@ -11,6 +11,7 @@ public:
 	std::string debug();
 
 private:
+	demokernel& demo = demokernel::GetInstance();
 	int			model;
 	Shader*		shader;
 	int			enableDepthBufferClearing;
@@ -49,6 +50,8 @@ bool sDrawScene::load() {
 		return false;
 	}
 
+
+
 	// Load default values
 	AnimationNumber = 0;
 	CameraNumber = -1;
@@ -64,17 +67,17 @@ bool sDrawScene::load() {
 	AnimationNumber = (int)this->param[3];
 	
 	// Load model and shader
-	model = DEMO->modelManager.addModel(DEMO->dataFolder + this->strings[0]);
+	model = demo.modelManager.addModel(demo.dataFolder + this->strings[0]);
 	if (model < 0)
 		return false;
-	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + this->strings[1]);
+	shader = demo.shaderManager.addShader(demo.dataFolder + this->strings[1]);
 	if (!shader)
 		return false;
 	
 
 	// Load model properties
 	Model *my_model;
-	my_model = DEMO->modelManager.model[model];
+	my_model = demo.modelManager.model[model];
 	my_model->playAnimation = playAnimation;
 	if (my_model->playAnimation)
 		my_model->setAnimation(AnimationNumber);
@@ -127,7 +130,7 @@ void sDrawScene::init() {
 
 void sDrawScene::exec() {
 	
-	Model *my_model = DEMO->modelManager.model[model];
+	Model *my_model = demo.modelManager.model[model];
 	
 	// Start evaluating blending
 	EvalBlendingStart();
@@ -153,19 +156,19 @@ void sDrawScene::exec() {
 	shader->use();
 
 	// For ShadowMapping
-	shader->setValue("lightSpaceMatrix", DEMO->lightManager.light[0]->spaceMatrix);
+	shader->setValue("lightSpaceMatrix", demo.lightManager.light[0]->spaceMatrix);
 	// End ShadowMapping
 
 	// view/projection transformations
 	glm::mat4 projection = glm::perspective(
-		glm::radians(DEMO->camera->Zoom),
+		glm::radians(demo.camera->Zoom),
 		GLDRV->GetFramebufferViewport().GetAspectRatio(),
 		0.1f, 10000.0f
 	);
 
 	shader->setValue("projection", projection);
 
-	glm::mat4 view = DEMO->camera->GetViewMatrix();
+	glm::mat4 view = demo.camera->GetViewMatrix();
 	//if (CameraNumber < 0)
 		shader->setValue("view", view);
 
@@ -212,7 +215,7 @@ void sDrawScene::end() {
 
 std::string sDrawScene::debug()
 {
-	Model *my_model = DEMO->modelManager.model[model];
+	Model* my_model = demo.modelManager.model[model];
 
 	std::string msg;
 	msg = "[ drawScene id: " + this-> identifier + " layer:" + std::to_string(this->layer) + " ]\n";

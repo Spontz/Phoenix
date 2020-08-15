@@ -3,7 +3,6 @@
 
 
 #include "core/drivers/net/dyad.h"
-
 #include "main.h"
 
 #define DELIMITER '\x1f'
@@ -68,13 +67,9 @@ void onConnectToEngine(dyad_Event *e) {
 	NETDRV->connectedToEditor = true;
 }
 
-// Initialize the netDriver main pointer to NULL
-netDriver* netDriver::m_pThis = NULL;
-
-netDriver * netDriver::getInstance() {
-	if (m_pThis == NULL)
-		m_pThis = new netDriver();
-	return m_pThis;
+netDriver& netDriver::GetInstance() {
+	static netDriver obj;
+	return obj;
 }
 
 netDriver::netDriver()

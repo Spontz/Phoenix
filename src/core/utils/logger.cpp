@@ -4,12 +4,15 @@
 #include "main.h"
 #include "logger.h"
 
-Logger & Logger::GetInstance() {
+Logger& Logger::GetInstance() {
 	static Logger l;
 	return l;
 }
 
-Logger::Logger() {
+Logger::Logger()
+	:
+	m_netDriver(netDriver::GetInstance())
+{
 	log_level_ = LogLevel::HIGH;
 	if (DEMO->debug)
 		OpenLogFile();
@@ -76,7 +79,7 @@ void Logger::SendEditor(const char* message, ...) const {
 		if (DEMO->slaveMode == 1) {
 			std::string message = "INFO::";
 			message += Chain_;
-			NETDRV->sendMessage(message);
+			m_netDriver.sendMessage(message);
 		}
 		delete[] Text_;
 		delete[] Chain_;
@@ -111,7 +114,7 @@ void Logger::Error(const char* message, ...) const {
 		if (DEMO->slaveMode == 1) {
 			std::string message = "ERROR::";
 			message += Chain_;
-			NETDRV->sendMessage(message);
+			m_netDriver.sendMessage(message);
 		}
 		delete[] Text_;
 		delete[] Chain_;

@@ -10,6 +10,7 @@ public:
 	std::string debug();
 
 private:
+	demokernel& demo = demokernel::GetInstance();
 	int		fbo;
 	int		fboAttachment;
 	char	clearScreen;	// Clear Screen buffer

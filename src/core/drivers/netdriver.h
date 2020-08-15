@@ -4,7 +4,7 @@
 #ifndef NETDRIVER_H
 #define NETDRIVER_H
 
-#define NETDRV netDriver::getInstance()
+#define NETDRV (&netDriver::GetInstance())
 
 class netDriver {
 	
@@ -15,7 +15,7 @@ public:
 	bool	connectedToEditor;
 	std::string	messageToSend;
 	
-	static netDriver* getInstance();
+	static netDriver& GetInstance();
 
 	netDriver();
 	void init();
@@ -30,7 +30,6 @@ public:
 private:
 	char * getParamString(const char *message, int requestedParameter);
 	float getParamFloat(const char *message, int requestedParameter);
-	static netDriver* m_pThis;
 };
 
 #endif

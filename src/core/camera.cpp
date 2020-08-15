@@ -118,14 +118,16 @@ void Camera::ProcessMouseScroll(float yoffset)
 // Captures Camera position and appends to a file called "camera.cam" (only works in debug mode)
 void Camera::CapturePos()
 {
+	demokernel& demo = demokernel::GetInstance();
+
 	std::ofstream camFile;
 	//string message;
 	char message[1024];
 	camFile.open("camera.cam", std::ios::out | std::ios::app);
 	sprintf_s(message, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
-		DEMO->camera->Position.x, DEMO->camera->Position.y, DEMO->camera->Position.z,
-		DEMO->camera->Up.x, DEMO->camera->Up.y, DEMO->camera->Up.z,
-		DEMO->camera->Yaw, DEMO->camera->Pitch, DEMO->camera->Zoom, DEMO->camera->Roll);
+		demo.camera->Position.x, demo.camera->Position.y, demo.camera->Position.z,
+		demo.camera->Up.x, demo.camera->Up.y, demo.camera->Up.z,
+		demo.camera->Yaw, demo.camera->Pitch, demo.camera->Zoom, demo.camera->Roll);
 	camFile << message << "\n";
 	camFile.close();
 }

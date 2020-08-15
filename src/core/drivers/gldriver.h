@@ -58,6 +58,7 @@ public:
 	float			m_mouseX, m_mouseY;
 
 private:
+	demokernel&		m_demo;
 	GLFWwindow*		m_glfw_window;
 	Viewport		m_current_viewport;
 	imGuiDriver*	m_imGui;

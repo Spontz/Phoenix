@@ -11,6 +11,7 @@ public:
 	std::string debug();
 
 private:
+	demokernel& demo = demokernel::GetInstance();
 	unsigned int	FboNum;				// Fbo to use (must have 2 color attachments!)
 	unsigned int	FPSScale;			// Scale FPS's
 	GLuint			bufferColor;		// Attcahment 0 of our FBO
@@ -42,7 +43,7 @@ bool sEfxMotionBlur::load() {
 	if (FPSScale == 0)
 		FPSScale = 1;
 
-	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + strings[0]);
+	shader = demo.shaderManager.addShader(demo.dataFolder + strings[0]);
 	if (!shader)
 		return false;
 
@@ -61,8 +62,8 @@ bool sEfxMotionBlur::load() {
 	shader->setValue("velocity", 1);	// The velocity is in the Tex unit 1
 
 	// Store the buffers of our FBO (we assume that in Attachment 0 we have the color and in Attachment 1 we have the brights)
-	bufferColor = DEMO->fboManager.fbo[FboNum]->m_colorAttachment[0];
-	bufferVelocity = DEMO->fboManager.fbo[FboNum]->m_colorAttachment[1];
+	bufferColor = demo.fboManager.fbo[FboNum]->m_colorAttachment[0];
+	bufferVelocity = demo.fboManager.fbo[FboNum]->m_colorAttachment[1];
 
 	return true;
 }
@@ -79,7 +80,7 @@ void sEfxMotionBlur::exec() {
 		shader->use();
 
 		// Set new shader variables values
-		shader->setValue("uVelocityScale", DEMO->fps/FPSScale); //uVelocityScale = currentFps / targetFps;
+		shader->setValue("uVelocityScale", demo.fps/FPSScale); //uVelocityScale = currentFps / targetFps;
 		shaderVars->setValues();
 
 		glBindTextureUnit(0, bufferColor);

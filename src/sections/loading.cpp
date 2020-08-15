@@ -10,6 +10,7 @@ public:
 	std::string debug();
 
 private:
+	demokernel& demo = demokernel::GetInstance();
 	int tex_front, tex_back, tex_bar;
 	
 	float	tx, ty;// Bar Translation
@@ -39,18 +40,18 @@ bool sLoading::load() {
 	}
 
 	if (!byDefault) {
-		tex_back = DEMO->textureManager.addTexture(DEMO->dataFolder + strings[0]);
-		tex_front = DEMO->textureManager.addTexture(DEMO->dataFolder + strings[1]);
-		tex_bar = DEMO->textureManager.addTexture(DEMO->dataFolder + strings[2]);
+		tex_back = demo.textureManager.addTexture(demo.dataFolder + strings[0]);
+		tex_front = demo.textureManager.addTexture(demo.dataFolder + strings[1]);
+		tex_bar = demo.textureManager.addTexture(demo.dataFolder + strings[2]);
 		tx = param[0];
 		ty = param[1];
 		sy = param[2];
 	}
 	else {
 		// Deault values
-		tex_back = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/loading/loadingback.jpg");
-		tex_front = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/loading/loadingfront.jpg");
-		tex_bar = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/loading/loadingbar.jpg");
+		tex_back = demo.textureManager.addTexture(demo.dataFolder + "/resources/loading/loadingback.jpg");
+		tex_front = demo.textureManager.addTexture(demo.dataFolder + "/resources/loading/loadingfront.jpg");
+		tex_bar = demo.textureManager.addTexture(demo.dataFolder + "/resources/loading/loadingbar.jpg");
 		tx = 0.0f;
 		ty = -0.4f;
 		sy = 0.1f;
@@ -74,8 +75,8 @@ void sLoading::exec() {
 	}
 
 	float zero2one = 0;
-	if (DEMO->sectionManager.loadSection.size()>0)
-		zero2one = (float)DEMO->loadedSections / (float)(DEMO->sectionManager.loadSection.size());
+	if (demo.sectionManager.loadSection.size()>0)
+		zero2one = (float)demo.loadedSections / (float)(demo.sectionManager.loadSection.size());
 	
 	GLDRV->initRender(true);
 	glClearColor(0, 0, 0, 0);

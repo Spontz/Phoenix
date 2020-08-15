@@ -14,10 +14,10 @@
 
 class imGuiDriver {
 
-
 private:
-	GLFWwindow*		p_glfw_window_;
-	ImGuiIO*		io_;
+	GLFWwindow*		p_glfw_window;
+	ImGuiIO*		m_io;
+	demokernel&		m_demo;
 
 public:
 	imGuiDriver();

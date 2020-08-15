@@ -12,6 +12,7 @@ public:
 	std::string debug();
 
 private:
+	demokernel& demo = demokernel::GetInstance();
 	char		clearScreen;	// Clear Screen buffer
 	char		clearDepth;		// Clear Depth buffer
 	char		fitToContent;	// Fit to content: 1=respect video aspect ratio, 0=fill entire viewport window
@@ -39,12 +40,12 @@ bool sDrawVideo::load() {
 	clearScreen = (char)param[0];
 	clearDepth = (char)param[1];
 	fitToContent = (char)param[2];
-	videoNum = DEMO->videoManager.addVideo(DEMO->dataFolder + strings[0]);
+	videoNum = demo.videoManager.addVideo(demo.dataFolder + strings[0]);
 	if (videoNum == -1)
 		return false;
 
 
-	shader = DEMO->shaderManager.addShader(DEMO->dataFolder + strings[1]);
+	shader = demo.shaderManager.addShader(demo.dataFolder + strings[1]);
 	if (!shader)
 		return false;
 
@@ -69,7 +70,7 @@ void sDrawVideo::init() {
 }
 
 void sDrawVideo::exec() {
-	Video *my_video = DEMO->videoManager.video[videoNum];
+	Video *my_video = demo.videoManager.video[videoNum];
 	my_video->renderVideo(runTime);
 
 
@@ -120,7 +121,7 @@ void sDrawVideo::end() {
 }
 
 std::string sDrawVideo::debug() {
-	Video *my_video = DEMO->videoManager.video[videoNum];
+	Video *my_video = demo.videoManager.video[videoNum];
 
 	std::string msg;
 	msg = "[ drawVideo id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";

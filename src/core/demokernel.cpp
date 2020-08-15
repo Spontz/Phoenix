@@ -84,7 +84,7 @@ bool demokernel::initDemo() {
 	// Start loading Basic resources
 	RES->loadAllResources();
 
-	if (DEMO->slaveMode) {
+	if (slaveMode) {
 		LOG->Info(LogLevel::HIGH, "Running in network slave mode");
 		NETDRV->init();
 		
@@ -320,14 +320,14 @@ bool demokernel::load_config()
 	LOG->Info(LogLevel::MED, "Finished loading all config files.");
 
 	// Log file
-	if (DEMO->debug)
+	if (debug)
 		LOG->OpenLogFile();
-	LOG->setLogLevel(static_cast<LogLevel>(DEMO->log_detail));
+	LOG->setLogLevel(static_cast<LogLevel>(log_detail));
 
-	if (DEMO->slaveMode) {
+	if (slaveMode) {
 		LOG->Info(LogLevel::MED, "Engine is in slave mode, therefore, enabling force loads for shaders and textures!");
-		DEMO->textureManager.forceLoad = true;
-		DEMO->shaderManager.forceLoad = true;
+		textureManager.forceLoad = true;
+		shaderManager.forceLoad = true;
 	}
 	return true;
 }
@@ -492,7 +492,7 @@ void demokernel::initSectionQueues() {
 	for (i = 0; i < this->sectionManager.section.size(); i++) {
 		ds = this->sectionManager.section[i];
 		// If we are in slave mode, we load all the sections but if not, we will load only the ones that are inside the demo time
-		if ((DEMO->slaveMode == 1) || (((ds->startTime < DEMO->endTime) || fabs(DEMO->endTime) < FLT_EPSILON) && (ds->endTime > DEMO->startTime))) {
+		if ((slaveMode == 1) || (((ds->startTime < endTime) || fabs(endTime) < FLT_EPSILON) && (ds->endTime > startTime))) {
 			// If the section is not the "loading", then we add id to the Ready Section lst
 			if (ds->type != SectionType::Loading) {
 				this->sectionManager.loadSection.push_back(i);
@@ -592,7 +592,7 @@ void demokernel::processSectionQueues() {
 		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
 		ds = this->sectionManager.section[sec_id];
 		if (ds->inited == FALSE) {
-			ds->runTime = DEMO->runTime - ds->startTime;
+			ds->runTime = runTime - ds->startTime;
 			ds->init();			// Init the Section
 			ds->inited = TRUE;
 			LOG->Info(LogLevel::LOW, "  Section %d [layer: %d id: %s type: %s] inited", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
@@ -612,7 +612,7 @@ void demokernel::processSectionQueues() {
 		for (i = 0; i < this->sectionManager.execSection.size(); i++) {
 			sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
 			ds = this->sectionManager.section[sec_id];
-			ds->runTime = DEMO->runTime - ds->startTime;
+			ds->runTime = runTime - ds->startTime;
 			ds->exec();			// Exec the Section
 			LOG->Info(LogLevel::LOW, "  Section %d [layer: %d id: %s type: %s] executed", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 		}
