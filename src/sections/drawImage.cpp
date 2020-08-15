@@ -11,7 +11,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 	char		clearScreen;	// Clear Screen buffer
 	int			texture;
 	float		texAspectRatio;
@@ -44,17 +43,17 @@ bool sDrawImage::load() {
 	}
 
 	// Texture load
-	texture = demo.textureManager.addTexture(demo.dataFolder + strings[0]);
+	texture = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[0]);
 
 	if (texture == -1)
 		return false;
 	// Load the background texture
 	Texture *my_tex;
-	my_tex = demo.textureManager.texture[texture];
+	my_tex = m_demo.textureManager.texture[texture];
 	texAspectRatio = (float)my_tex->height / (float)my_tex->width;
 
 	// Load the shader to apply
-	shader = demo.shaderManager.addShader(demo.dataFolder + strings[1]);
+	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[1]);
 	if (!shader)
 		return false;
 
@@ -100,15 +99,15 @@ void sDrawImage::exec() {
 	exprPosition->Expression.value();
 
 	Texture *my_tex;
-	my_tex = demo.textureManager.texture[texture];
+	my_tex = m_demo.textureManager.texture[texture];
 
 
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
 		// View / projection / model Matrixes
-		glm::mat4 view = demo.camera->GetViewMatrix();
-		float zoom = demo.camera->Zoom;
+		glm::mat4 view = m_demo.camera->GetViewMatrix();
+		float zoom = m_demo.camera->Zoom;
 		glm::mat4 projection = glm::perspective(glm::radians(zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
 
 		glm::mat4 model = glm::mat4(1.0f);
@@ -142,7 +141,7 @@ void sDrawImage::end() {
 
 std::string sDrawImage::debug() {
 	Texture *my_tex;
-	my_tex = demo.textureManager.texture[texture];
+	my_tex = m_demo.textureManager.texture[texture];
 
 	std::string msg;
 	msg = "[ drawImage id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";

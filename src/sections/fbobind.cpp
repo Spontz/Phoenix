@@ -10,7 +10,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 	int		fbo;
 	char	clearScreen;	// Clear Screen buffer
 	char	clearDepth;		// Clear Depth buffer
@@ -38,7 +37,7 @@ bool sFboBind::load() {
 	clearScreen = (int)param[1];
 	clearDepth = (int)param[2];
 
-	if (fbo >= demo.fboManager.fbo.size()) {
+	if (fbo >= m_demo.fboManager.fbo.size()) {
 		LOG->Error("FboBind [%s]: The fbo number %i cannot be accessed, check graphics.spo file", identifier.c_str(), fbo);
 		return false;
 	}
@@ -55,7 +54,7 @@ void sFboBind::exec() {
 	if (fbo == -1)
 		return;
 	// Enable the buffer in which we are going to paint
-	demo.fboManager.bind(fbo, clearScreen, clearDepth);
+	m_demo.fboManager.bind(fbo, clearScreen, clearDepth);
 }
 
 void sFboBind::end() {

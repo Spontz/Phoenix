@@ -11,7 +11,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 
 };
 

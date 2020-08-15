@@ -11,7 +11,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 	unsigned int	FboNum;			// Fbo to use (must have 2 color attachments!)
 	float			blurAmount;		// Blur layers to apply
 	char			clearScreen;	// Clear Screen buffer
@@ -45,8 +44,8 @@ bool sEfxBlur::load() {
 	FboNum = (int)param[2];
 	
 	// Check if the fbo can be used for the effect
-	if (FboNum < 0 || FboNum >= demo.fboManager.fbo.size()) {
-		LOG->Error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), FboNum, demo.fboManager.fbo.size()-1);
+	if (FboNum < 0 || FboNum >= m_demo.fboManager.fbo.size()) {
+		LOG->Error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), FboNum, m_demo.fboManager.fbo.size()-1);
 		return false;
 	}
 	
@@ -60,7 +59,7 @@ bool sEfxBlur::load() {
 		return false;
 
 	// Load Blur shader
-	shader = demo.shaderManager.addShader(demo.dataFolder + strings[1]);
+	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[1]);
 	if (!shader)
 		return false;
 
@@ -108,14 +107,14 @@ void sEfxBlur::exec() {
 			shader->setValue("horizontal", horizontal);
 			
 			// We always draw the First pass in the efxBloom FBO
-			demo.efxBloomFbo.bind(horizontal, false, false); // TODO: Fix: use an FBO for Blur, not the Bloom FBO
+			m_demo.efxBloomFbo.bind(horizontal, false, false); // TODO: Fix: use an FBO for Blur, not the Bloom FBO
 			
 			// If it's the first iteration, we pick the fbo
 			// if not, we pick the fbo of our efxBloom
 			if (first_iteration)
-				demo.fboManager.bind_tex(FboNum);
+				m_demo.fboManager.bind_tex(FboNum);
 			else
-				demo.efxBloomFbo.bind_tex(!horizontal);
+				m_demo.efxBloomFbo.bind_tex(!horizontal);
 			
 			// Render scene
 			RES->Draw_QuadFS();
@@ -124,10 +123,10 @@ void sEfxBlur::exec() {
 				first_iteration = false;
 		}
 
-		demo.efxBloomFbo.unbind(false, false); // Unbind drawing into an Fbo
+		m_demo.efxBloomFbo.unbind(false, false); // Unbind drawing into an Fbo
 		
 		// Adjust back the current fbo
-		demo.fboManager.bindCurrent();
+		m_demo.fboManager.bindCurrent();
 		// Second step: Draw the Blurred image
 		RES->Draw_QuadEfxFBOFS(!horizontal);
 	}		

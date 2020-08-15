@@ -4,7 +4,11 @@
 #include "section.h"
 #include "main.h"
 
-Section::Section() {
+Section::Section()
+	:
+	m_demo(demokernel::GetInstance())
+{
+	
 	type			= 0;
 	identifier		= "No ID defined";
 	DataSource		= "";

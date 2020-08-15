@@ -17,7 +17,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 	int texture_id_;
 	Shader* m_shader;
 	e_background_drawing_mode mode_;
@@ -54,11 +53,11 @@ bool sBackground::load() {
 	}
 
 	// Load the shader for drawing the quad
-	m_shader = demo.shaderManager.addShader(demo.dataFolder + "/resources/shaders/sections/background.glsl"); // TODO: Fix this, we should use this shader, but at this moment we don't use it :D
+	m_shader = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/sections/background.glsl"); // TODO: Fix this, we should use this shader, but at this moment we don't use it :D
 	if (!m_shader)
 		return false;
 	// Background texture load
-	texture_id_ = demo.textureManager.addTexture(demo.dataFolder + strings[0]);
+	texture_id_ = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[0]);
 	if (texture_id_ == -1)
 		return false;
 	return true;
@@ -72,7 +71,7 @@ void sBackground::exec() {
 	glDisable(GL_DEPTH_TEST);
 	{
 		// Load the background texture
-		const Texture* const p_texture = demo.textureManager.texture[texture_id_];
+		const Texture* const p_texture = m_demo.textureManager.texture[texture_id_];
 		// Texture and View aspect ratio, stored for Keeping image proportions
 		const float tex_aspect = static_cast<float>(p_texture->width) / static_cast<float>(p_texture->height);
 		const float viewport_aspect = GLDRV->GetCurrentViewport().GetAspectRatio();
@@ -101,7 +100,7 @@ void sBackground::end() {
 
 std::string sBackground::debug() {
 	Texture* my_tex;
-	my_tex = demo.textureManager.texture[texture_id_];
+	my_tex = m_demo.textureManager.texture[texture_id_];
 
 	std::string msg;
 	msg = "[ background id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";

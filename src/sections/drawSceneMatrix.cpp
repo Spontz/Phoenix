@@ -11,7 +11,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 	int			model_ref;	// Reference model to be use to store positions
 	int			model;		// Model to draw
 	Shader*		shader;
@@ -65,18 +64,18 @@ bool sDrawSceneMatrix::load() {
 	AnimationNumber = (int)param[3];
 	
 	// Load ref. model, model and shader
-	model_ref = demo.modelManager.addModel(demo.dataFolder + strings[0]);
-	model = demo.modelManager.addModel(demo.dataFolder + strings[1]);
+	model_ref = m_demo.modelManager.addModel(m_demo.dataFolder + strings[0]);
+	model = m_demo.modelManager.addModel(m_demo.dataFolder + strings[1]);
 	if (model_ref < 0 || model < 0)
 		return false;
 
-	shader = demo.shaderManager.addShader(demo.dataFolder + strings[2]);
+	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[2]);
 	if (!shader)
 		return false;
 
 	// Calculate the number of matrices that we need to store
 	Model *my_model_ref;
-	my_model_ref = demo.modelManager.model[model_ref];
+	my_model_ref = m_demo.modelManager.model[model_ref];
 	int num_matrices = 0;
 	for (int i = 0; i < my_model_ref->meshes.size(); i++)
 	{
@@ -87,7 +86,7 @@ bool sDrawSceneMatrix::load() {
 
 	// Load model properties
 	Model *my_model;
-	my_model = demo.modelManager.model[model];
+	my_model = m_demo.modelManager.model[model];
 	my_model->playAnimation = playAnimation;
 	if (my_model->playAnimation)
 		my_model->setAnimation(AnimationNumber);
@@ -133,8 +132,8 @@ void sDrawSceneMatrix::init() {
 }
 
 void sDrawSceneMatrix::exec() {
-	Model *my_model_ref = demo.modelManager.model[model_ref];
-	Model *my_model = demo.modelManager.model[model];
+	Model *my_model_ref = m_demo.modelManager.model[model_ref];
+	Model *my_model = m_demo.modelManager.model[model];
 	
 	// Start evaluating blending
 	EvalBlendingStart();
@@ -153,17 +152,17 @@ void sDrawSceneMatrix::exec() {
 	shader->use();
 
 	// For ShadowMapping
-	shader->setValue("lightSpaceMatrix", demo.lightManager.light[0]->spaceMatrix);
+	shader->setValue("lightSpaceMatrix", m_demo.lightManager.light[0]->spaceMatrix);
 	// End ShadowMapping
 
 	// view/projection transformations
 	glm::mat4 projection = glm::perspective(
-		glm::radians(demo.camera->Zoom),
+		glm::radians(m_demo.camera->Zoom),
 		//GLDRV->GetCurrentViewport().GetAspectRatio(),
 		GLDRV->GetFramebufferViewport().GetAspectRatio(),
 		0.1f, 10000.0f
 	);
-	glm::mat4 view = demo.camera->GetViewMatrix();
+	glm::mat4 view = m_demo.camera->GetViewMatrix();
 	shader->setValue("projection", projection);
 	shader->setValue("view", view);
 	// For MotionBlur: send the previous matrix
@@ -225,8 +224,8 @@ void sDrawSceneMatrix::end() {
 
 std::string sDrawSceneMatrix::debug()
 {
-	Model *my_model_ref = demo.modelManager.model[model_ref];
-	Model *my_model = demo.modelManager.model[model];
+	Model *my_model_ref = m_demo.modelManager.model[model_ref];
+	Model *my_model = m_demo.modelManager.model[model];
 
 	std::string msg;
 	msg = "[ drawSceneMatrix id: " +  identifier + " layer:" + std::to_string(layer) + " ]\n";

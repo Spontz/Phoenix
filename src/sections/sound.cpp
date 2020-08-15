@@ -19,7 +19,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 	HSTREAM str;	// Music Stream
 
 	// Beat parameters
@@ -42,7 +41,7 @@ sSound::sSound()
 }
 
 bool sSound::load() {
-	if (!demo.sound) {
+	if (!m_demo.sound) {
 		return false;
 	}
 
@@ -55,8 +54,8 @@ bool sSound::load() {
 	prev_volume = volume;
 
 	// Beat detection - Init variables
-	beat_ratio = demo.beat_ratio;
-	fade_out = demo.beat_fadeout;
+	beat_ratio = m_demo.beat_ratio;
+	fade_out = m_demo.beat_fadeout;
 
 	// Clean variables
 	for (auto i = 0; i < BUFFER_SAMPLES; i++) {
@@ -65,7 +64,7 @@ bool sSound::load() {
 	intensity = 0;
 	position = 1;
 
-	std::string file = demo.dataFolder + strings[0];
+	std::string file = m_demo.dataFolder + strings[0];
 	str = BASS_StreamCreateFile(FALSE, file.c_str(), 0, 0, BASS_STREAM_PRESCAN);
 	if (str == 0) {
 		LOG->Error("Sound [%s]: Cannot read file: %s - Error Code: %i", identifier.c_str(), file.c_str(), BASS_ErrorGetCode());
@@ -77,15 +76,15 @@ bool sSound::load() {
 void sSound::init() {
 	int BASS_err = 0;
 
-	if (!demo.sound)
+	if (!m_demo.sound)
 		return;
 
-	if (demo.state != DEMO_PLAY)
+	if (m_demo.state != DEMO_PLAY)
 		return;
 
 	// Beat detection - Init variables
-	beat_ratio = demo.beat_ratio;
-	fade_out = demo.beat_fadeout;
+	beat_ratio = m_demo.beat_ratio;
+	fade_out = m_demo.beat_fadeout;
 
 	// Clean variables
 	for (auto i = 0; i < BUFFER_SAMPLES; i++) {
@@ -116,8 +115,8 @@ void sSound::exec() {
 	float fft[BUFFER_SAMPLES] = {0.0f}; // 512 samples, because we have used "BASS_DATA_FFT1024", and this returns 512 values
 
 	// Update local values with the ones defined by the demosystem
-	beat_ratio = demo.beat_ratio;
-	fade_out = demo.beat_fadeout;
+	beat_ratio = m_demo.beat_ratio;
+	fade_out = m_demo.beat_fadeout;
 
 	// Adjust volume if necessary
 	if (volume != prev_volume) {
@@ -149,13 +148,13 @@ void sSound::exec() {
 		intensity = 1.0f;
 	}
 	else if (intensity > 0) {
-		intensity -= fade_out * demo.frameTime;
+		intensity -= fade_out * m_demo.frameTime;
 		if (intensity < 0) intensity = 0;
 	}
 
 	// updated kernel shared variable
 	// to be used by kernel itself or another sections
-	demo.beat = intensity;
+	m_demo.beat = intensity;
 
 	// update energy buffer
 	if (position < BUFFER_SAMPLES) {
@@ -171,7 +170,7 @@ void sSound::exec() {
 }
 
 void sSound::end() {
-	if (!demo.sound)
+	if (!m_demo.sound)
 		return;
 
 	BOOL r = BASS_ChannelStop(str);

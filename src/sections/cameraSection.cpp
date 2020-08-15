@@ -11,7 +11,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 	int			freeCam;
 	glm::vec3	cam_pos;
 	float		cam_yaw;
@@ -97,7 +96,7 @@ void sCamera::exec() {
 		// apply formula modifications
 		exprCamera->Expression.value();
 
-		demo.camera->setCamera(glm::vec3(new_pos[0], new_pos[1], new_pos[2]) + cam_pos,
+		m_demo.camera->setCamera(glm::vec3(new_pos[0], new_pos[1], new_pos[2]) + cam_pos,
 			glm::vec3(new_pos[3], new_pos[4], new_pos[5]),
 			new_pos[6] + cam_yaw, new_pos[7] + cam_pitch, new_pos[8] + cam_roll, new_pos[9] + cam_zoom);
 	}

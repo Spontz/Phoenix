@@ -9,6 +9,8 @@
 
 #define SECTION_MODIFIERS	32
 
+class demokernel;
+
 typedef struct {
 	int spline;
 	int param;
@@ -62,8 +64,8 @@ public:
 	virtual void		end ()		{};	// destroy allocated memory
 	virtual std::string	debug()		{ return std::string(); };	// outputs a message for debugging
 			
-private:
-
+protected:
+	demokernel&			m_demo;
 };
 
 #endif

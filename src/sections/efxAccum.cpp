@@ -11,7 +11,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 	unsigned int	FboNum;			// Fbo to use (must have 2 color attachments!)
 	float			sourceInfluence;// Source influence (0 to 1)
 	float			accumInfluence;	// Accumulation influence (0 to 1)
@@ -48,8 +47,8 @@ bool sEfxAccum::load() {
 	accumBuffer = 0;
 	
 	// Check if the fbo can be used for the effect
-	if (FboNum < 0 || FboNum >= demo.fboManager.fbo.size()) {
-		LOG->Error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), FboNum, demo.fboManager.fbo.size()-1);
+	if (FboNum < 0 || FboNum >= m_demo.fboManager.fbo.size()) {
+		LOG->Error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), FboNum, m_demo.fboManager.fbo.size()-1);
 		return false;
 	}
 	
@@ -65,7 +64,7 @@ bool sEfxAccum::load() {
 		return false;
 
 	// Load Blur shader
-	shader = demo.shaderManager.addShader(demo.dataFolder + strings[0]);
+	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
 	if (!shader)
 		return false;
 
@@ -110,7 +109,7 @@ void sEfxAccum::exec() {
 		
 		{
 			// We want to capture the frame in the "Accum Fbo", so first we use the previous fbo for storing the entire image
-			demo.efxAccumFbo.bind(accumBuffer, false, false);
+			m_demo.efxAccumFbo.bind(accumBuffer, false, false);
 		
 			float fps = 1.0f / 60.0f;
 			shader->use();
@@ -119,21 +118,21 @@ void sEfxAccum::exec() {
 			shaderVars->setValues();
 
 			// Set the screen fbo in texture unit 0
-			demo.fboManager.bind_tex(FboNum, 0);
+			m_demo.fboManager.bind_tex(FboNum, 0);
 			
 			// Set the accumulation fbo in texture unit 1
 			if (firstIteration)
 				firstIteration = false;
 			accumBuffer = !accumBuffer; 
-			demo.efxAccumFbo.bind_tex(accumBuffer, 1);
+			m_demo.efxAccumFbo.bind_tex(accumBuffer, 1);
 
 			// Render a quad using the Accum shader (combining the 2 Images)
 			RES->Draw_QuadFS();
 
-			demo.efxAccumFbo.unbind(false, false); // Unbind drawing into the "Accum Fbo"
+			m_demo.efxAccumFbo.unbind(false, false); // Unbind drawing into the "Accum Fbo"
 
 			// Adjust back the current fbo
-			demo.fboManager.bindCurrent();
+			m_demo.fboManager.bindCurrent();
 		}
 		
 
@@ -141,9 +140,9 @@ void sEfxAccum::exec() {
 		RES->shdr_QuadTex->use();
 		RES->shdr_QuadTex->setValue("screenTexture", 0);
 		if (firstIteration)
-			demo.fboManager.bind_tex(FboNum, 0);
+			m_demo.fboManager.bind_tex(FboNum, 0);
 		else
-			demo.efxAccumFbo.bind_tex(!accumBuffer, 0);
+			m_demo.efxAccumFbo.bind_tex(!accumBuffer, 0);
 		RES->Draw_QuadFS();
 
 	}		

@@ -12,7 +12,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 	int			freeCam;
 	// Spline cam variables
 	glm::vec3	cam_pos;

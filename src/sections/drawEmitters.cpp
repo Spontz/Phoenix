@@ -12,7 +12,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 	// 3D Model
 	int			model;
 
@@ -61,10 +60,10 @@ bool sDrawEmitters::load() {
 
 	// Load the shaders
 	std::string pathShaders;
-	pathShaders = demo.dataFolder + strings[0];
+	pathShaders = m_demo.dataFolder + strings[0];
 
 	// Load the model scene
-	model = demo.modelManager.addModel(demo.dataFolder + strings[1]);
+	model = m_demo.modelManager.addModel(m_demo.dataFolder + strings[1]);
 
 	if (model < 0)
 		return false;
@@ -101,7 +100,7 @@ bool sDrawEmitters::load() {
 
 	// Load model properties
 	Model *my_model;
-	my_model = demo.modelManager.model[model];
+	my_model = m_demo.modelManager.model[model];
 
 	// Load the particle generator parameters
 	int numEmitters = 0;
@@ -190,7 +189,7 @@ void sDrawEmitters::exec() {
 	glDepthMask(GL_FALSE); // Disable depth buffer writting
 
 	glm::mat4 projection = glm::perspective(glm::radians(DEMO->camera->Zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
-	glm::mat4 view = demo.camera->GetViewMatrix();
+	glm::mat4 view = m_demo.camera->GetViewMatrix();
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
@@ -211,7 +210,7 @@ void sDrawEmitters::exec() {
 	}
 	pSystem->force = force;
 	
-	pSystem->Render(deltaTime, vp, model, demo.camera->Position);
+	pSystem->Render(deltaTime, vp, model, m_demo.camera->Position);
 
 
 	// End evaluating blending

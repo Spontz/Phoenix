@@ -12,7 +12,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 	// Particle engine variables
 	int				numParticles;
 	ParticleMesh*	pSystem;
@@ -46,7 +45,7 @@ bool sDrawParticles::load() {
 	
 
 	// Load the shader
-	shader = demo.shaderManager.addShader(demo.dataFolder + strings[0]);
+	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
 
 	if (!shader)
 		return false;
@@ -109,8 +108,8 @@ void sDrawParticles::exec() {
 
 	glDepthMask(GL_FALSE); // Disable depth buffer writting
 
-	glm::mat4 projection = glm::perspective(glm::radians(demo.camera->Zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
-	glm::mat4 view = demo.camera->GetViewMatrix();
+	glm::mat4 projection = glm::perspective(glm::radians(m_demo.camera->Zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
+	glm::mat4 view = m_demo.camera->GetViewMatrix();
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
@@ -126,7 +125,7 @@ void sDrawParticles::exec() {
 	shader->setValue("gTime", runTime);	// Send the Time
 	shader->setValue("gVP", projection * view);	// Set Projection x View matrix
 	shader->setValue("gModel", model);			// Set Model matrix
-	shader->setValue("gCameraPos", demo.camera->Position);		// Set camera position
+	shader->setValue("gCameraPos", m_demo.camera->Position);		// Set camera position
 	shader->setValue("gNumParticles", (float)numParticles);	// Set the total number of particles
 
 	// Set the other shader variable values

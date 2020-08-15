@@ -11,7 +11,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 	char		clearScreen;	// Clear Screen buffer
 	char		clearDepth;		// Clear Depth buffer
 	Shader*		shader;			// Shader to apply
@@ -41,7 +40,7 @@ bool sDrawQuad::load() {
 	clearDepth = (int)param[1];
 	
 	// Load shader
-	shader = demo.shaderManager.addShader(demo.dataFolder + strings[0]);
+	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
 	if (!shader)
 		return false;
 

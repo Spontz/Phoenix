@@ -10,7 +10,6 @@ public:
 	std::string debug();
 
 private:
-	demokernel& demo = demokernel::GetInstance();
 	int			lightNum;			// Light Number
 	int			linkPostoCamera;	// Link the light to the Camera Position
 	int			shadowMapping;		// Is the light being used for shadowMapping?
@@ -42,8 +41,8 @@ bool sLight::load() {
 
 	// Load the parameters
 	lightNum = (int)param[0];
-	if (lightNum<0 || lightNum >= demo.lightManager.light.size()) {
-		LOG->Error("Light: The light number is not supported by the engine. Max Lights: %d", (demo.lightManager.light.size()-1));
+	if (lightNum<0 || lightNum >= m_demo.lightManager.light.size()) {
+		LOG->Error("Light: The light number is not supported by the engine. Max Lights: %d", (m_demo.lightManager.light.size()-1));
 		return false;
 	}
 
@@ -57,7 +56,7 @@ bool sLight::load() {
 	draw = (int)param[6];
 	draw_size = param[7];
 
-	Light* my_light = demo.lightManager.light[lightNum];
+	Light* my_light = m_demo.lightManager.light[lightNum];
 
 	// Register the variables
 	exprLight = new mathDriver(this);
@@ -79,11 +78,11 @@ void sLight::exec() {
 	// Evaluate the expression
 	exprLight->Expression.value();
 
-	Light* my_light = demo.lightManager.light[lightNum];
+	Light* my_light = m_demo.lightManager.light[lightNum];
 
 	if (linkPostoCamera) {
-		my_light->position = demo.camera->Position;
-		my_light->direction = demo.camera->Position + (demo.camera->Front*10.0f); // TODO: Remove this hardcode! XD
+		my_light->position = m_demo.camera->Position;
+		my_light->direction = m_demo.camera->Position + (m_demo.camera->Front*10.0f); // TODO: Remove this hardcode! XD
 	}
 		
 
