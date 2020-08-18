@@ -6,11 +6,13 @@
 #include <string>
 #include "main.h"
 
-#define RES (Resource::GetResource())
+
+// TODO: Resource class should be included inside demokernel class as an object
+#define RES (&Resource::GetInstance())
 
 class Resource {
 public:
-	static Resource* GetResource();
+	static Resource& GetInstance();
 	void loadAllResources();
 
 	void Draw_QuadFS();											// Draws a quad in fullscreen
@@ -52,8 +54,5 @@ private:
 	void Load_Text_Fonts();
 
 	void Load_Lights();
-
-
-	static Resource* m_pThis;
 };
 #endif

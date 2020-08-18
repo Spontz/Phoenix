@@ -170,8 +170,6 @@ public:
 	
 private:
 
-	static demokernel* m_pThis;
-	
 	void doExec();
 
 	// Timing controls

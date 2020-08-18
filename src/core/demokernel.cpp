@@ -13,9 +13,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-// Initialize the demokernel main pointer to NULL // TODO: Remove this m_pThis
-demokernel* demokernel::m_pThis = NULL;
-
 // ******************************************************************
 
 demokernel& demokernel::GetInstance() {

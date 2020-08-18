@@ -4,14 +4,9 @@
 #include "resource.h"
 #include "main.h"
 
-Resource* Resource::m_pThis = NULL;
-
-
-Resource* Resource::GetResource() {
-	if (m_pThis == NULL) {
-		m_pThis = new Resource();
-	}
-	return m_pThis;
+Resource& Resource::GetInstance() {
+	static Resource r;
+	return r;
 }
 
 void Resource::loadAllResources()
