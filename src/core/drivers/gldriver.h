@@ -4,11 +4,10 @@
 #ifndef GLDRIVER_H
 #define GLDRIVER_H
 
-#include <GLFW/glfw3.h>
+#include "main.h"
+
 #include "core/drivers/imGuidriver.h"
 #include "core/viewport.h"
-
-
 
 // HACK: get rid of macros
 #define GLDRV (&glDriver::GetInstance())
@@ -67,9 +66,10 @@ private:
 	float			m_timeDelta;
 	float			m_mouse_lastxpos, m_mouse_lastypos;
 
-private:
+public:
 	glDriver();
-	
+
+private:
 	// Callbacks
 	static void glDebugMessage_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 	static void glfwError_callback(int, const char* err_str);

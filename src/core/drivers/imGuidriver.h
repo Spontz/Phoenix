@@ -4,8 +4,9 @@
 #ifndef IMGUIDRIVER_H
 #define IMGUIDRIVER_H
 
-#include <GLFW/glfw3.h>
-#include "imgui.h"
+
+#include "main.h"
+
 #include "core/viewport.h"
 
 #define RENDERTIME_SAMPLES 256

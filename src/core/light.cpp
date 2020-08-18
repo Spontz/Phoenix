@@ -3,6 +3,7 @@
 
 #include "main.h"
 #include "core/light.h"
+#include "core/resource/resource.h"
 
 Light::Light(std::string name, LightType lightType, glm::vec3 position) {
 	this->name = name;

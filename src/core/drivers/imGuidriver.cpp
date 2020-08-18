@@ -2,10 +2,9 @@
 // Spontz Demogroup
 
 #include "main.h"
-#include "imgui.h"
-#include "imGuidriver.h"
-#include "core/drivers/imGui/imgui_impl_glfw.h"
-#include "core/drivers/imGui/imgui_impl_opengl3.h"
+
+#include "core/drivers/bassdriver.h"
+#include "core/drivers/imGuidriver.h"
 
 // Demo states to show in the drawTiming information ****************
 char* stateStr[] = {

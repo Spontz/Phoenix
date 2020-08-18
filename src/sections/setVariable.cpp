@@ -1,4 +1,5 @@
 #include "main.h"
+#include "core/drivers/mathdriver.h"
 
 struct sSetVariable : public Section {
 public:

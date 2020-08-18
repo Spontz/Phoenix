@@ -1,5 +1,6 @@
 #include "main.h"
 #include "core/particleMesh.h"
+#include "core/drivers/mathdriver.h"
 #include "core/shadervars.h"
 
 struct sDrawParticlesScene : public Section {

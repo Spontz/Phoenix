@@ -4,14 +4,12 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include <glad/glad.h>
-#include <glm/glm.hpp>
+#include "main.h"
 
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include "main.h"
 
 
 class Shader

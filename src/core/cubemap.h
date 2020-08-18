@@ -3,8 +3,10 @@
 
 #ifndef CUBEMAP_H
 #define CUBEMAP_H
+
+#include "main.h"
+
 #include <string>
-#include <glad/glad.h>
 
 class Cubemap {
 public:

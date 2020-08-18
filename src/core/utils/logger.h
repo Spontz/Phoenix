@@ -4,6 +4,8 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include "core/drivers/netdriver.h"
+
 #include <string>
 #include <fstream>
 

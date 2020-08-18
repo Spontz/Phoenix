@@ -2,12 +2,6 @@
 // Spontz Demogroup
 
 
-/*
-#include <glad/glad.h>
-#include <glm/glm.hpp>
-*/
-
-
 #include "main.h"
 
 #include "core/shader.h"

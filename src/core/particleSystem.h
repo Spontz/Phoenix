@@ -4,10 +4,8 @@
 #ifndef PARTICLESYSTEM_H
 #define PARTICLESYSTEM_H
 
-//#include <glad/glad.h>
-//#include <glm/glm.hpp>
-
 #include "main.h"
+
 #include "core/shadervars.h"
 
 #define PARTICLE_TYPE_EMITTER 0

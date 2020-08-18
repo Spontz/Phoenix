@@ -1,14 +1,19 @@
 // demoKernel.cpp
 // Spontz Demogroup
 
+#include "main.h"
+#include "core/scripting/spo.h"
+#include "core/drivers/gldriver.h"
+#include "core/drivers/bassdriver.h"
+#include "core/resource/resource.h"
+#include "debug/instrumentor.h"
+
 #include <iostream>
 #include <io.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "main.h"
-#include "core/scripting/spo.h"
 
-// Initialize the demokernel main pointer to NULL
+// Initialize the demokernel main pointer to NULL // TODO: Remove this m_pThis
 demokernel* demokernel::m_pThis = NULL;
 
 // ******************************************************************

@@ -3,8 +3,10 @@
 
 #ifndef TEXTURE_H
 #define TEXTURE_H
+
+#include "main.h"
+
 #include <string>
-#include <glad/glad.h>
 
 // flags for texture properties
 #define NO_MIPMAP 1

@@ -6,7 +6,7 @@
 #include <string>
 #include "main.h"
 
-#define RES Resource::GetResource()
+#define RES (Resource::GetResource())
 
 class Resource {
 public:

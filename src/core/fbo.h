@@ -3,8 +3,10 @@
 
 #ifndef FBO_H
 #define FBO_H
+
+#include "main.h"
+
 #include <string>
-#include <glad/glad.h>
 
 // flags for texture properties
 #define NO_MIPMAP 1

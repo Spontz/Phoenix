@@ -1,8 +1,7 @@
 #pragma comment( lib, "bass" )
 
-#include <bass.h>
-
 #include "main.h"
+#include "core/drivers/bassdriver.h"
 
 #define BUFFER_SAMPLES	512
 #define	DEFAULT_ENERGY	1.0f

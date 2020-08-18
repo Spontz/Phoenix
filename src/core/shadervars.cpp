@@ -2,7 +2,7 @@
 // Spontz Demogroup
 
 #include "main.h"
-//#include "core/shader.h"
+#include "core/drivers/mathdriver.h"
 #include "core/shadervars.h"
 
 ShaderVars::ShaderVars(Section* sec, Shader* shad)

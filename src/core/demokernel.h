@@ -5,6 +5,9 @@
 #define DEMOKERNEL_H
 
 #include <iostream>
+
+#include "drivers/gldriver.h"
+
 #include "core/spline.h"
 #include "core/section.h"
 #include "core/sectionmanager.h"
@@ -21,23 +24,7 @@
 #include "core/light.h"
 
 // ******************************************************************
-
-#define SECTION_PARAMS			32
-#define SECTION_STRINGS			32
-#define SECTION_SPLINES			32
-#define SECTION_MODIFIERS		32
-
-#define FBO_BUFFERS				25
-#define EFXBLOOM_FBO_BUFFERS	2
-#define EFXACCUM_FBO_BUFFERS	2
-#define MULTIPURPOSE_VARS		10
-
-// Warning! 'FBO_BUFFERS' should not be less than 25, if you want to set less than 25,
-// please check the variable 'scriptCommand' contents in 'demokernel.cpp' file.
-
-// ******************************************************************
-
-// demo states
+// demo states: TODO Change by enum
 #define DEMO_LOADING		0
 #define DEMO_PLAY			2
 #define DEMO_PAUSE			4

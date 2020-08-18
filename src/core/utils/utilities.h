@@ -4,11 +4,11 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
+#include "main.h"
+
 #include <iostream>
 #include <string>
 #include <time.h>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 
 #define ZERO_MEM(a) memset(a, 0, sizeof(a))
 #define ZERO_MEM_VAR(var) memset(&var, 0, sizeof(var))

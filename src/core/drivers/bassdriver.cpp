@@ -1,9 +1,11 @@
 // bassdriver.cpp
 // Spontz Demogroup
 
-#include <bass.h>
+
 
 #include "main.h"
+
+#include "bassdriver.h"
 
 bassDriver& bassDriver::GetInstance() {
 	static bassDriver instance;

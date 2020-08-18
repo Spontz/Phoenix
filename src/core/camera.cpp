@@ -2,6 +2,7 @@
 // Spontz Demogroup
 
 #include "main.h"
+
 #include "core/camera.h"
 
 // Default camera values

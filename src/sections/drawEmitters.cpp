@@ -1,4 +1,5 @@
 #include "main.h"
+#include "core/drivers/mathdriver.h"
 #include "core/particleSystem.h"
 #include "core/shadervars.h"
 

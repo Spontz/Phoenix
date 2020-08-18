@@ -4,6 +4,8 @@
 
 #include "main.h"
 
+#include "core/drivers/mathdriver.h"
+
 mathDriver::mathDriver(Section *sec) {
 	expression = "";
 	

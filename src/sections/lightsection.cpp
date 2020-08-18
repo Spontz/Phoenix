@@ -1,4 +1,5 @@
 #include "main.h"
+#include "core/drivers/mathdriver.h"
 
 struct sLight : public Section {
 public:

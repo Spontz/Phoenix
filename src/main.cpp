@@ -5,6 +5,8 @@
 
 #include "main.h"
 
+#include "debug/instrumentor.h"
+
 int main(int argc, char* argv[]) {
 	auto& demo = demokernel::GetInstance();
 	auto& log = Logger::GetInstance();

@@ -2,6 +2,7 @@
 // Spontz Demogroup
 
 #include <main.h>
+
 #include "fbo.h"
 
 Fbo::Fbo(): use_linear(true), m_colorAttachment(0)
