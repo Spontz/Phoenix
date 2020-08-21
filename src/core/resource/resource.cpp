@@ -1,17 +1,13 @@
 // resource.cpp
 // Spontz Demogroup
 
-#include "resource.h"
 #include "main.h"
 
-Resource& Resource::GetInstance() {
-	static Resource r;
-	return r;
-}
+#include "resource.h"
 
 void Resource::loadAllResources()
 {
-	LOG->Info(LogLevel::LOW, "Start Loading Engine Internal Resources");
+	LOG->Info(LogLevel::LOW, "Start loading engine internal resources");
 	// Load Objects
 	Load_Obj_QuadFullscreen();
 	Load_Obj_Skybox();
@@ -24,12 +20,26 @@ void Resource::loadAllResources()
 	//Load_Text_Fonts();			// Text fonts
 	// Load Lights
 	Load_Lights();
+	LOG->Info(LogLevel::LOW, "End loading engine internal resources");
 }
 
-Resource::Resource() {
+Resource::Resource()
+	:
+	m_demo(demokernel::GetInstance())
+{
 	obj_quadFullscreen = obj_qube = obj_skybox = 0;
 	shdr_ObjColor = shdr_QuadDepth = shdr_QuadTex = shdr_QuadTexPVM = shdr_QuadTexAlpha = shdr_QuadTexModel = shdr_QuadTexVFlipModel = shdr_Skybox = nullptr;
 	tex_tv = 0;
+}
+
+Resource::~Resource()
+{
+	if (obj_quadFullscreen)
+		glDeleteVertexArrays(1, &obj_quadFullscreen);
+	if (obj_qube)
+		glDeleteVertexArrays(1, &obj_qube);
+	if (obj_skybox)
+		glDeleteVertexArrays(1, &obj_skybox);
 }
 
 
@@ -185,33 +195,33 @@ void Resource::Load_Obj_Qube()
 
 void Resource::Load_Shaders()
 {
-	shdr_QuadTex = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTex.glsl");
-	shdr_QuadDepth = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadDepth.glsl");
-	shdr_QuadTexAlpha = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexAlpha.glsl");
-	shdr_QuadTexModel = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexModel.glsl");
-	shdr_QuadTexPVM = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexPVM.glsl");
-	shdr_QuadTexVFlipModel = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.glsl");
-	shdr_Skybox = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/skybox/skybox.glsl");
-	shdr_ObjColor = DEMO->shaderManager.addShader(DEMO->dataFolder + "/resources/shaders/basic/ObjColor.glsl");
+	shdr_QuadTex = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/QuadTex.glsl");
+	shdr_QuadDepth = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/QuadDepth.glsl");
+	shdr_QuadTexAlpha = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/QuadTexAlpha.glsl");
+	shdr_QuadTexModel = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/QuadTexModel.glsl");
+	shdr_QuadTexPVM = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/QuadTexPVM.glsl");
+	shdr_QuadTexVFlipModel = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.glsl");
+	shdr_Skybox = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/skybox/skybox.glsl");
+	shdr_ObjColor = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/ObjColor.glsl");
 }
 
 void Resource::Load_Tex_Spontz()
 {
-	tex_tv = DEMO->textureManager.addTexture(DEMO->dataFolder + "/resources/textures/tv.jpg");
+	tex_tv = m_demo.textureManager.addTexture(m_demo.dataFolder + "/resources/textures/tv.jpg");
 }
 
 void Resource::Load_Text_Fonts()
 {
 	// Since we are using imGui, fonts are no longer needed
-	//DEMO->text = new Font(48, DEMO->dataFolder + "/resources/fonts/arial.ttf", DEMO->dataFolder + "/resources/shaders/font/font.glsl");
+	//m_demo.text = new Font(48, m_demo.dataFolder + "/resources/fonts/arial.ttf", m_demo.dataFolder + "/resources/shaders/font/font.glsl");
 }
 
 void Resource::Load_Lights()
 {
-	DEMO->lightManager.addLight(LightType::SpotLight);
-	DEMO->lightManager.addLight(LightType::SpotLight);
-	DEMO->lightManager.addLight(LightType::PointLight);
-	DEMO->lightManager.addLight(LightType::PointLight);
+	m_demo.lightManager.addLight(LightType::SpotLight);
+	m_demo.lightManager.addLight(LightType::SpotLight);
+	m_demo.lightManager.addLight(LightType::PointLight);
+	m_demo.lightManager.addLight(LightType::PointLight);
 }
 
 // Draw a Quad with texture in full screen
@@ -219,7 +229,7 @@ void Resource::Draw_QuadFS(int textureNum)
 {
 	shdr_QuadTex->use();
 	shdr_QuadTex->setValue("screenTexture", 0);
-	DEMO->textureManager.texture[textureNum]->bind();
+	m_demo.textureManager.texture[textureNum]->bind();
 
 	Draw_QuadFS();
 }
@@ -230,7 +240,7 @@ void Resource::Draw_QuadFS(int textureNum, float alpha)
 	shdr_QuadTexAlpha->use();
 	shdr_QuadTexAlpha->setValue("alpha", alpha);
 	shdr_QuadTexAlpha->setValue("screenTexture", 0);
-	DEMO->textureManager.texture[textureNum]->bind();
+	m_demo.textureManager.texture[textureNum]->bind();
 	
 	Draw_QuadFS();
 }
@@ -240,7 +250,7 @@ void Resource::Draw_QuadFBOFS(int fboNum, GLuint attachment)
 {
 	shdr_QuadTex->use();
 	shdr_QuadTex->setValue("screenTexture", 0);
-	DEMO->fboManager.bind_tex(fboNum, 0, attachment);
+	m_demo.fboManager.bind_tex(fboNum, 0, attachment);
 	
 	Draw_QuadFS();
 }
@@ -250,7 +260,7 @@ void Resource::Draw_QuadEfxFBOFS(int efxFboNum, GLuint attachment)
 {
 	shdr_QuadTex->use();
 	shdr_QuadTex->setValue("screenTexture", 0);
-	DEMO->efxBloomFbo.bind_tex(efxFboNum, 0, attachment);
+	m_demo.efxBloomFbo.bind_tex(efxFboNum, 0, attachment);
 
 	Draw_QuadFS();
 }
@@ -261,7 +271,7 @@ void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 const* model)
 	shdr_QuadTexModel->use();
 	shdr_QuadTexModel->setValue("model", *model);
 	shdr_QuadTexModel->setValue("screenTexture", 0);
-	DEMO->textureManager.texture[textureNum]->bind();
+	m_demo.textureManager.texture[textureNum]->bind();
 
 	Draw_QuadFS();
 }
@@ -274,7 +284,7 @@ void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *projection, glm::mat4
 	shdr_QuadTexPVM->setValue("view", *view);
 	shdr_QuadTexPVM->setValue("model", *model);
 	shdr_QuadTexPVM->setValue("screenTexture", 0);
-	DEMO->textureManager.texture[textureNum]->bind();
+	m_demo.textureManager.texture[textureNum]->bind();
 
 	Draw_QuadFS();
 }
@@ -291,7 +301,7 @@ void Resource::Draw_QuadFS()
 void Resource::Draw_Skybox(int cubemap)
 {
 	glBindVertexArray(obj_skybox);
-	DEMO->textureManager.cubemap[cubemap]->bind();
+	m_demo.textureManager.cubemap[cubemap]->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 }

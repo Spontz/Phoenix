@@ -118,7 +118,7 @@ void sEfxBlur::exec() {
 				m_demo.efxBloomFbo.bind_tex(!horizontal);
 			
 			// Render scene
-			RES->Draw_QuadFS();
+			m_demo.res->Draw_QuadFS();
 			horizontal = !horizontal;
 			if (first_iteration)
 				first_iteration = false;
@@ -129,7 +129,7 @@ void sEfxBlur::exec() {
 		// Adjust back the current fbo
 		m_demo.fboManager.bindCurrent();
 		// Second step: Draw the Blurred image
-		RES->Draw_QuadEfxFBOFS(!horizontal);
+		m_demo.res->Draw_QuadEfxFBOFS(!horizontal);
 	}		
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();

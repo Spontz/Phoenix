@@ -89,7 +89,7 @@ void sBackground::exec() {
 		}
 		const glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(new_tex_width_scaled, new_tex_height_scaled, 0.0f));
 
-		RES->Draw_Obj_QuadTex(texture_id_, &model);
+		m_demo.res->Draw_Obj_QuadTex(texture_id_, &model);
 	}
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();

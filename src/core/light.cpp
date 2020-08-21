@@ -21,9 +21,9 @@ void Light::CalcSpaceMatrix(float left, float right, float bottom, float top, fl
 }
 
 void Light::draw(float size) {
-	RES->shdr_ObjColor->use();
+	DEMO->res->shdr_ObjColor->use();
 
-	RES->shdr_ObjColor->setValue("color", this->colAmbient);
+	DEMO->res->shdr_ObjColor->setValue("color", this->colAmbient);
 
 	glm::mat4 projection = glm::perspective(
 		glm::radians(DEMO->camera->Zoom),
@@ -33,16 +33,16 @@ void Light::draw(float size) {
 	);
 
 	glm::mat4 view = DEMO->camera->GetViewMatrix();
-	RES->shdr_ObjColor->setValue("projection", projection);
-	RES->shdr_ObjColor->setValue("view", view);
+	DEMO->res->shdr_ObjColor->setValue("projection", projection);
+	DEMO->res->shdr_ObjColor->setValue("view", view);
 
 	// Place the quad onto desired place
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, this->position);
 	model = glm::scale(model, glm::vec3(size, size, size));
-	RES->shdr_ObjColor->setValue("model", model);
+	DEMO->res->shdr_ObjColor->setValue("model", model);
 
-	RES->Draw_Cube();
+	DEMO->res->Draw_Cube();
 }
 
 void Light::initColorValues()

@@ -199,7 +199,7 @@ char * netDriver::processMessage(const char * message)
 															theResult, DELIMITER,
 															DEMO->fps, DELIMITER,
 															DEMO->state, DELIMITER,
-															DEMO->runTime, DELIMITER,
+															DEMO->demo_runTime, DELIMITER,
 															(char *)theInformation);
 	
 	//LOG->Info(LogLevel::LOW, "Sending response: [%s]", theResponse);

@@ -12,7 +12,7 @@ mathDriver::mathDriver(Section *sec) {
 	// Add the variables that will be used by all sections
 	SymbolTable.add_variable("t", sec->runTime);
 	SymbolTable.add_variable("tend", sec->duration);
-	SymbolTable.add_variable("tdemo", DEMO->runTime);
+	SymbolTable.add_variable("tdemo", DEMO->demo_runTime);
 	SymbolTable.add_variable("beat", DEMO->beat);
 	SymbolTable.add_variable("fps", DEMO->fps);
 	SymbolTable.add_variable("mouseX", GLDRV->m_mouseX);

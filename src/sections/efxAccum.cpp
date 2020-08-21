@@ -128,7 +128,7 @@ void sEfxAccum::exec() {
 			m_demo.efxAccumFbo.bind_tex(accumBuffer, 1);
 
 			// Render a quad using the Accum shader (combining the 2 Images)
-			RES->Draw_QuadFS();
+			m_demo.res->Draw_QuadFS();
 
 			m_demo.efxAccumFbo.unbind(false, false); // Unbind drawing into the "Accum Fbo"
 
@@ -138,13 +138,13 @@ void sEfxAccum::exec() {
 		
 
 		// Second step: Draw the accum buffer
-		RES->shdr_QuadTex->use();
-		RES->shdr_QuadTex->setValue("screenTexture", 0);
+		m_demo.res->shdr_QuadTex->use();
+		m_demo.res->shdr_QuadTex->setValue("screenTexture", 0);
 		if (firstIteration)
 			m_demo.fboManager.bind_tex(FboNum, 0);
 		else
 			m_demo.efxAccumFbo.bind_tex(!accumBuffer, 0);
-		RES->Draw_QuadFS();
+		m_demo.res->Draw_QuadFS();
 
 	}		
 	glEnable(GL_DEPTH_TEST);

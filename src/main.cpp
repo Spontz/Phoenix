@@ -14,6 +14,9 @@ int main(int argc, char* argv[]) {
 
 	demo.getArguments(argc, argv);
 
+	// Load internal resources
+	demo.allocateResources();
+
 	// Define the Log level
 	#ifdef _DEBUG
 		log.setLogLevel(LogLevel::LOW); // Define the lowest log detail level

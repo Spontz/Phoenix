@@ -20,33 +20,46 @@ demokernel& demokernel::GetInstance() {
 	return r;
 }
 
-demokernel::demokernel() {
-	// initialize global kernel variables
-	this->text = nullptr;
-	this->camera = nullptr;
-	this->state = -1;
-	this->demoName = "Phoneix Spontz Demoengine";
-	this->debug = FALSE;
-	this->debug_fontSize = 1.0f; 
-	this->log_detail = LogLevel::HIGH;
-
+demokernel::demokernel()
+	:
+	text (nullptr),
+	camera (nullptr),
+	state(-1),
+	demoName("Phoneix Spontz Demoengine"),
+	debug (false),
+	debug_fontSize(1.0f),
+	log_detail (LogLevel::HIGH),
+	loop (true),
+	sound (true),
+	demo_runTime (0),
+	demo_startTime (0),
+	demo_endTime (20.0f),
+	realFrameTime(0),
+	frameTime(0),
+	afterFrameTime(0),
+	beforeFrameTime(0),
+	accumFrameTime(0),
+	accumFrameCount(0),
+	fps(0),
+	frameCount(0),
+	slaveMode (false),
+	beat (0),
+	beat_ratio (1.4f),
+	beat_fadeout (4.0f),
+	mouseX(0),
+	mouseY(0),
+	mouseXvar(0),
+	mouseYvar(0),
+	loadedSections(0),
+	exitDemo(false),
+	res (nullptr)
+{
 	#ifdef _DEBUG
-	this->debug = TRUE;
-	this->log_detail = LogLevel::LOW;
+	debug = TRUE;
+	log_detail = LogLevel::LOW;
 	#endif
-
-	this->loop = TRUE;
-	this->sound = TRUE;
-	this->startTime = 0.0f;
-	this->endTime = 20.0f;
-	this->slaveMode = FALSE;
-	this->beat = 0.0f;
-	this->beat_ratio = 1.4f;
-	this->beat_fadeout = 4.0f;
-
-	// Other variables
-	this->accumFrameTime = 0;
-	this->accumFrameCount = 0;
+	for (int i = 0; i < MULTIPURPOSE_VARS; i++)
+		var[i] = 0;
 }
 
 void demokernel::getArguments(int argc, char* argv[]) {
@@ -67,7 +80,7 @@ bool demokernel::initDemo() {
 	LOG->Info(LogLevel::HIGH, "OpenGL environment created");
 	
 	// initialize sound driver
-	if (this->sound)
+	if (sound)
 		BASSDRV->init();
 
 
@@ -81,10 +94,10 @@ bool demokernel::initDemo() {
 	LOG->Info(LogLevel::MED, "Assimp library version is: %s", getLibAssimpVersion().c_str());
 
 	// Create the camera
-	this->camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 	// Start loading Basic resources
-	RES->loadAllResources();
+	res->loadAllResources();
 
 	if (slaveMode) {
 		LOG->Info(LogLevel::HIGH, "Running in network slave mode");
@@ -94,31 +107,31 @@ bool demokernel::initDemo() {
 	else
 		LOG->Info(LogLevel::HIGH, "Running in standalone mode");
 	// initialize global control variables
-	this->initControlVars();
+	initControlVars();
 
 	// prepare sections
-	this->initSectionQueues();
+	initSectionQueues();
 
 	// get initial sync timer values
-	this->initTimer();
+	initTimer();
 
 	return true;
 }
 
 void demokernel::mainLoop() {
-	if (this->debug)
+	if (debug)
 		LOG->Info(LogLevel::MED, "************ Main demo loop started!");
 
-	this->state = DEMO_PLAY;
+	state = DEMO_PLAY;
 
 	/* Loop until the user closes the window */
-	while ((!GLDRV->WindowShouldClose()) && (!this->exitDemo)) {
+	while ((!GLDRV->WindowShouldClose()) && (!exitDemo)) {
 		PX_PROFILE_SCOPE("RunLoop");
 
 		// Poll for and process events
 		GLDRV->ProcessInput();
 
-		this->doExec();
+		doExec();
 
 		{
 			PX_PROFILE_SCOPE("glfwPollEvents");
@@ -131,117 +144,117 @@ void demokernel::mainLoop() {
 void demokernel::doExec() {
 
 	// control exit demo (debug, loop) when end time arrives
-	if ((this->endTime > 0) && (this->runTime > this->endTime)) {
+	if ((demo_endTime > 0) && (demo_runTime > demo_endTime)) {
 
-		if (this->loop) {
-			this->restartDemo();
+		if (loop) {
+			restartDemo();
 		}
 		else {
-			if (this->debug) {
-				this->runTime = this->endTime;
-				this->pauseDemo();
+			if (debug) {
+				demo_runTime = demo_endTime;
+				pauseDemo();
 			}
 			else {
-				this->exitDemo = TRUE;
+				exitDemo = TRUE;
 				return;
 			}
 		}
 	}
 
 	// non-play state
-	if (this->state != DEMO_PLAY) {
+	if (state != DEMO_PLAY) {
 
-		this->processSectionQueues();
-		this->pauseTimer();
-		if (this->state & DEMO_REWIND) {
+		processSectionQueues();
+		pauseTimer();
+		if (state & DEMO_REWIND) {
 			// decrease demo runtime
-			this->runTime -= 10.0f * this->realFrameTime;
-			if (this->runTime < this->startTime) {
-				this->runTime = this->startTime;
-				this->pauseDemo();
+			demo_runTime -= 10.0f * realFrameTime;
+			if (demo_runTime < demo_startTime) {
+				demo_runTime = demo_startTime;
+				pauseDemo();
 			}
 		}
-		else if (this->state & DEMO_FASTFORWARD) {
+		else if (state & DEMO_FASTFORWARD) {
 
 			// increase demo runtime
-			this->runTime += 10.0f * this->realFrameTime;
-			if (this->runTime > this->endTime) {
-				this->runTime = this->endTime;
-				this->pauseDemo();
+			demo_runTime += 10.0f * realFrameTime;
+			if (demo_runTime > demo_endTime) {
+				demo_runTime = demo_endTime;
+				pauseDemo();
 			}
 		}
 
 		// reset section queues
-		this->reInitSectionQueues();
+		reInitSectionQueues();
 	}
 	// play state
 	else {
 		// Prepare and execute the sections
-		this->processSectionQueues();
+		processSectionQueues();
 
 		// Update the timing information for the sections
-		this->processTimer();
+		processTimer();
 	}
 
 	// update sound driver once a frame (seems that is not needed)
-	//if (this->sound)
+	//if (sound)
 	//	BASSDRV->update();
 
 	// Update network driver
-	if (this->slaveMode)
+	if (slaveMode)
 		NETDRV->update();
 }
 
 void demokernel::playDemo()
 {
-	if (this->state != DEMO_PLAY) {
-		this->state = DEMO_PLAY;
+	if (state != DEMO_PLAY) {
+		state = DEMO_PLAY;
 
-		if (this->sound) BASSDRV->play();
+		if (sound) BASSDRV->play();
 		// reinit section queues
-		this->reInitSectionQueues();
+		reInitSectionQueues();
 	}
 }
 
 void demokernel::pauseDemo()
 {
-	this->state = DEMO_PAUSE;
-	this->frameTime = 0;
-	if (this->sound) BASSDRV->pause();
+	state = DEMO_PAUSE;
+	frameTime = 0;
+	if (sound) BASSDRV->pause();
 }
 
 void demokernel::restartDemo()
 {
-	this->state = DEMO_PLAY;
-	if (this->sound) {
+	state = DEMO_PLAY;
+	if (sound) {
 		BASSDRV->stop();
 	}
 
-	this->initControlVars();
-	this->reInitSectionQueues();
-	this->initTimer();
+	initControlVars();
+	reInitSectionQueues();
+	initTimer();
 }
 
 void demokernel::rewindDemo()
 {
-	this->state = (this->state & DEMO_PAUSE) | DEMO_REWIND;
-	if (this->sound) BASSDRV->stop();
+	state = (state & DEMO_PAUSE) | DEMO_REWIND;
+	if (sound) BASSDRV->stop();
 }
 
 void demokernel::fastforwardDemo()
 {
-	this->state = (this->state & DEMO_PAUSE) | DEMO_FASTFORWARD;
-	if (this->sound) BASSDRV->stop();
+	state = (state & DEMO_PAUSE) | DEMO_FASTFORWARD;
+	if (sound) BASSDRV->stop();
 }
 
 void demokernel::setStartTime(float theTime)
 {
 	// Correct the time if it has an invalud value
 	if (theTime < 0) theTime = 0;
-	else if (theTime > this->endTime) theTime = this->endTime;
+	else if (theTime > demo_endTime) theTime = demo_endTime;
 
 	// Set the new time
-	this->startTime = theTime;
+	demo_startTime = theTime;
 }
 
 void demokernel::setCurrentTime(float theTime)
@@ -250,17 +263,17 @@ void demokernel::setCurrentTime(float theTime)
 	if (theTime < 0) theTime = 0;
 
 	// Set the new time
-	this->runTime = theTime;
+	demo_runTime = theTime;
 }
 
 void demokernel::setEndTime(float theTime)
 {
 	// Correct the time if it has an invalud value
 	if (theTime < 0) theTime = 0;
-	else if (theTime < this->startTime) theTime = this->startTime;
+	else if (theTime < demo_startTime) theTime = demo_startTime;
 
 	// Set the new time
-	this->endTime = theTime;
+	demo_endTime = theTime;
 }
 
 void demokernel::closeDemo() {
@@ -285,14 +298,20 @@ const std::string demokernel::getLibDyadVersion()
 bool demokernel::checkDataFolder()
 {
 	struct stat info;
-	if (stat(this->dataFolder.c_str(), &info) != 0)
+	if (stat(dataFolder.c_str(), &info) != 0)
 		return false;
 	return true;
 }
 
 std::string demokernel::getFolder(std::string path)
 {
-	return (this->dataFolder + path);
+	return (dataFolder + path);
+}
+
+void demokernel::allocateResources()
+{
+	if (res == nullptr)
+		res = new Resource();
 }
 
 bool demokernel::load_config()
@@ -367,7 +386,7 @@ bool demokernel::load_scriptFromNetwork(std::string sScript)
 		return false;
 	}
 
-	auto my_sec = this->sectionManager.section[sec_id];
+	auto my_sec = sectionManager.section[sec_id];
 
 	// Load the data from the section
 	my_sec->loaded = my_sec->load();
@@ -381,67 +400,67 @@ bool demokernel::load_scriptFromNetwork(std::string sScript)
 
 void demokernel::initTimer()
 {
-	this->beforeFrameTime = static_cast<float>(glfwGetTime());
+	beforeFrameTime = static_cast<float>(glfwGetTime());
 }
 
 void demokernel::calculateFPS(float const frameTime)
 {
-	this->accumFrameTime += frameTime;
-	this->accumFrameCount++;
-	if (this->accumFrameTime > 0.3f) {
-		this->fps = (float)this->accumFrameCount / this->accumFrameTime;
-		this->accumFrameTime = 0;
-		this->accumFrameCount = 0;
+	accumFrameTime += frameTime;
+	accumFrameCount++;
+	if (accumFrameTime > 0.3f) {
+		fps = (float)accumFrameCount / accumFrameTime;
+		accumFrameTime = 0;
+		accumFrameCount = 0;
 	}
 }
 
 void demokernel::processTimer()
 {
 	// frame time calculation
-	this->afterFrameTime = static_cast<float>(glfwGetTime());
-	this->realFrameTime = this->afterFrameTime - this->beforeFrameTime;
-	this->beforeFrameTime = this->afterFrameTime;
+	afterFrameTime = static_cast<float>(glfwGetTime());
+	realFrameTime = afterFrameTime - beforeFrameTime;
+	beforeFrameTime = afterFrameTime;
 
 	// advance sections and demo time
-	this->frameTime = this->realFrameTime;
-	this->runTime += this->frameTime;
+	frameTime = realFrameTime;
+	demo_runTime += frameTime;
 
 	// frame count
-	this->frameCount++;
+	frameCount++;
 
 	// fps calculation
-	this->calculateFPS(this->frameTime);
+	calculateFPS(frameTime);
 }
 
 void demokernel::pauseTimer()
 {
 	// frame time calculation
-	this->afterFrameTime = static_cast<float>(glfwGetTime());
-	this->realFrameTime = this->afterFrameTime - this->beforeFrameTime;
-	this->beforeFrameTime = this->afterFrameTime;
+	afterFrameTime = static_cast<float>(glfwGetTime());
+	realFrameTime = afterFrameTime - beforeFrameTime;
+	beforeFrameTime = afterFrameTime;
 
 	// sections should not advance
-	this->frameTime = 0;
+	frameTime = 0;
 
 	// frame count
-	this->frameCount++;
+	frameCount++;
 
 	// fps calculation
-	this->calculateFPS(this->realFrameTime);
+	calculateFPS(realFrameTime);
 }
 
 void demokernel::initControlVars() {
 	// reset time
-	this->runTime = this->startTime;
+	demo_runTime = demo_startTime;
 
 	// reset control time variables
-	this->frameTime = 0;
-	this->realFrameTime = 0;
-	this->frameCount = 0;
-	this->accumFrameCount = 0;
-	this->accumFrameTime = 0;
-	this->fps = 0;
-	this->exitDemo = FALSE;
+	frameTime = 0;
+	realFrameTime = 0;
+	frameCount = 0;
+	accumFrameCount = 0;
+	accumFrameTime = 0;
+	fps = 0;
+	exitDemo = FALSE;
 }
 
 void demokernel::initSectionQueues() {
@@ -453,28 +472,28 @@ void demokernel::initSectionQueues() {
 	int sec_id;
 
 	// Set the demo state to loading
-	this->state = DEMO_LOADING;
+	state = DEMO_LOADING;
 	LOG->Info(LogLevel::HIGH, "Loading Start...");
 
-	if (this->debug) {
+	if (debug) {
 		startTime = (float)glfwGetTime();
 	}
 
 	// Search for the loading section, if not found, we will create one
-	for (i = 0; i < this->sectionManager.section.size(); i++) {
-		if (this->sectionManager.section[i]->type == SectionType::Loading)
-			ds_loading = this->sectionManager.section[i];
+	for (i = 0; i < sectionManager.section.size(); i++) {
+		if (sectionManager.section[i]->type == SectionType::Loading)
+			ds_loading = sectionManager.section[i];
 	}
 
 	if (ds_loading == NULL) {
 		LOG->Info(LogLevel::MED, "Loading section not found: using default loader");
-		sec_id = this->sectionManager.addSection("Loading", "Automatically created", TRUE);
+		sec_id = sectionManager.addSection("Loading", "Automatically created", TRUE);
 		if (sec_id < 0) {
 			LOG->Error("Critical Error, Loading section not found and could not be created!");
 			return;
 		}
 		else
-			ds_loading = this->sectionManager.section[sec_id];
+			ds_loading = sectionManager.section[sec_id];
 	}
 
 	// preload, load and init loading section
@@ -487,34 +506,34 @@ void demokernel::initSectionQueues() {
 	LOG->Info(LogLevel::MED, "  Loading section loaded, inited and executed for first time");
 
 	// Clear the load and run section lists
-	this->sectionManager.loadSection.clear();
-	this->sectionManager.execSection.clear();
+	sectionManager.loadSection.clear();
+	sectionManager.execSection.clear();
 
 	// Populate Load Section: The sections that need to be loaded
-	for (i = 0; i < this->sectionManager.section.size(); i++) {
-		ds = this->sectionManager.section[i];
+	for (i = 0; i < sectionManager.section.size(); i++) {
+		ds = sectionManager.section[i];
 		// If we are in slave mode, we load all the sections but if not, we will load only the ones that are inside the demo time
-		if ((slaveMode == 1) || (((ds->startTime < endTime) || fabs(endTime) < FLT_EPSILON) && (ds->endTime > startTime))) {
+		if ((slaveMode == 1) || (((ds->startTime < demo_endTime) || fabs(demo_endTime) < FLT_EPSILON) && (ds->endTime > startTime))) {
 			// If the section is not the "loading", then we add id to the Ready Section lst
 			if (ds->type != SectionType::Loading) {
-				this->sectionManager.loadSection.push_back(i);
+				sectionManager.loadSection.push_back(i);
 				// load section splines (to avoid code load in the sections)
 				//loadSplines(ds); // TODO: Delete this once splines are working
 			}
 		}
 	}
 
-	LOG->Info(LogLevel::LOW, "  Ready Section queue complete: %d sections to be loaded", this->sectionManager.loadSection.size());
+	LOG->Info(LogLevel::LOW, "  Ready Section queue complete: %d sections to be loaded", sectionManager.loadSection.size());
 
 	// Start Loading the sections of the Ready List
-	this->loadedSections = 0;
-	for (i = 0; i < this->sectionManager.loadSection.size(); i++) {
-		sec_id = this->sectionManager.loadSection[i];
-		ds = this->sectionManager.section[sec_id];
+	loadedSections = 0;
+	for (i = 0; i < sectionManager.loadSection.size(); i++) {
+		sec_id = sectionManager.loadSection[i];
+		ds = sectionManager.section[sec_id];
 		if (ds->load()) {
 			ds->loaded = TRUE;
 		}
-		++this->loadedSections; // Incrmeent the loading sections even if it has not been sucesfully loaded, because it's just for the "loading" screen
+		++loadedSections; // Incrmeent the loading sections even if it has not been sucesfully loaded, because it's just for the "loading" screen
 
 		// Update loading
 		ds_loading->exec();
@@ -523,13 +542,13 @@ void demokernel::initSectionQueues() {
 		else
 			LOG->Error("  Section %d [id: %s, DataSource: %s] not loaded properly!", sec_id, ds->identifier.c_str(), ds->DataSource.c_str());
 
-		if (this->exitDemo) {
-			this->closeDemo();
+		if (exitDemo) {
+			closeDemo();
 			exit(EXIT_SUCCESS);
 		}
 	}
 
-	LOG->Info(LogLevel::MED, "Loading complete, %d sections have been loaded", this->loadedSections);
+	LOG->Info(LogLevel::MED, "Loading complete, %d sections have been loaded", loadedSections);
 
 	// End loading
 	ds_loading->end();
@@ -543,9 +562,9 @@ void demokernel::reInitSectionQueues() {
 	int sec_id;
 
 	LOG->Info(LogLevel::LOW, "  Analysing sections that must be re-inited...");
-	for (i = 0; i < this->sectionManager.execSection.size(); i++) {
-		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
-		ds = this->sectionManager.section[sec_id];
+	for (i = 0; i < sectionManager.execSection.size(); i++) {
+		sec_id = sectionManager.execSection[i].second;	// The second value is the ID of the section
+		ds = sectionManager.section[sec_id];
 		if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
 			ds->inited = FALSE;			// Mark the section as not inited
 			LOG->Info(LogLevel::LOW, "  Section %d [layer: %d id: %s] marked to be inited", sec_id, ds->layer, ds->identifier.c_str());
@@ -560,15 +579,15 @@ void demokernel::processSectionQueues() {
 	std::vector<Section*>::iterator it;
 
 
-	LOG->Info(LogLevel::MED, "Start queue processing (end, init and exec) for second: %.4f", this->runTime);
+	LOG->Info(LogLevel::MED, "Start queue processing (end, init and exec) for second: %.4f", demo_runTime);
 	// We loop all the sections, searching for finished sections,
 	// if any is found, we will remove from the queue and will execute the .end() function
 
 	// Check the sections that need to be finalized
-	LOG->Info(LogLevel::LOW, "  Analysing sections that can be removed...", this->runTime);
-	for (it = this->sectionManager.section.begin(); it < this->sectionManager.section.end(); it++) {
+	LOG->Info(LogLevel::LOW, "  Analysing sections that can be removed...", demo_runTime);
+	for (it = sectionManager.section.begin(); it < sectionManager.section.end(); it++) {
 		ds = *it;
-		if ((ds->endTime <= this->runTime) && (ds->ended == FALSE)) {
+		if ((ds->endTime <= demo_runTime) && (ds->ended == FALSE)) {
 			ds->end();
 			ds->ended = TRUE;
 			LOG->Info(LogLevel::LOW, "  Section [layer: %d id: %s type: %s] ended", ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
@@ -576,25 +595,25 @@ void demokernel::processSectionQueues() {
 	}
 
 	// Check the sections that need to be executed
-	LOG->Info(LogLevel::LOW, "  Analysing sections that must be executed...", this->runTime);
-	this->sectionManager.execSection.clear();
-	for (i = 0; i < this->sectionManager.section.size(); i++) {
-		ds = this->sectionManager.section[i];
-		if ((ds->startTime <= this->runTime) && (ds->endTime >= this->runTime) &&		// If time is OK
+	LOG->Info(LogLevel::LOW, "  Analysing sections that must be executed...", demo_runTime);
+	sectionManager.execSection.clear();
+	for (i = 0; i < sectionManager.section.size(); i++) {
+		ds = sectionManager.section[i];
+		if ((ds->startTime <= demo_runTime) && (ds->endTime >= demo_runTime) &&		// If time is OK
 			(ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {		// If its enabled, loaded and is not hte Loading section
-			this->sectionManager.execSection.push_back(std::make_pair(ds->layer, i));		// Load the section: first the layer and then the ID
+			sectionManager.execSection.push_back(std::make_pair(ds->layer, i));		// Load the section: first the layer and then the ID
 		}
 	}
-	sort(this->sectionManager.execSection.begin(), this->sectionManager.execSection.end());	// Sort sections by Layer
+	sort(sectionManager.execSection.begin(), sectionManager.execSection.end());	// Sort sections by Layer
 
-	LOG->Info(LogLevel::LOW, "  Exec Section queue complete: %d sections to be executed", this->sectionManager.execSection.size());
+	LOG->Info(LogLevel::LOW, "  Exec Section queue complete: %d sections to be executed", sectionManager.execSection.size());
 	// Run Init sections
 	LOG->Info(LogLevel::LOW, "  Running Init Sections...");
-	for (i = 0; i < this->sectionManager.execSection.size(); i++) {
-		sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
-		ds = this->sectionManager.section[sec_id];
+	for (i = 0; i < sectionManager.execSection.size(); i++) {
+		sec_id = sectionManager.execSection[i].second;	// The second value is the ID of the section
+		ds = sectionManager.section[sec_id];
 		if (ds->inited == FALSE) {
-			ds->runTime = runTime - ds->startTime;
+			ds->runTime = demo_runTime - ds->startTime;
 			ds->init();			// Init the Section
 			ds->inited = TRUE;
 			LOG->Info(LogLevel::LOW, "  Section %d [layer: %d id: %s type: %s] inited", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
@@ -611,10 +630,10 @@ void demokernel::processSectionQueues() {
 	LOG->Info(LogLevel::LOW, "  Running Exec Sections...");
 	{
 		PX_PROFILE_SCOPE("ExecSections");
-		for (i = 0; i < this->sectionManager.execSection.size(); i++) {
-			sec_id = this->sectionManager.execSection[i].second;	// The second value is the ID of the section
-			ds = this->sectionManager.section[sec_id];
-			ds->runTime = runTime - ds->startTime;
+		for (i = 0; i < sectionManager.execSection.size(); i++) {
+			sec_id = sectionManager.execSection[i].second;	// The second value is the ID of the section
+			ds = sectionManager.section[sec_id];
+			ds->runTime = demo_runTime - ds->startTime;
 			ds->exec();			// Exec the Section
 			LOG->Info(LogLevel::LOW, "  Section %d [layer: %d id: %s type: %s] executed", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 		}
@@ -626,7 +645,7 @@ void demokernel::processSectionQueues() {
 
 
 	// Show debug info
-	if (this->debug) {
+	if (debug) {
 		PX_PROFILE_SCOPE("DrawGui");
 		GLDRV->drawGui();
 	}

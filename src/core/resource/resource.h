@@ -3,16 +3,18 @@
 
 #ifndef RESOURCE_H
 #define RESOURCE_H
-#include <string>
+
 #include "main.h"
 
-
-// TODO: Resource class should be included inside demokernel class as an object
-#define RES (&Resource::GetInstance())
+#include <string>
 
 class Resource {
 public:
-	static Resource& GetInstance();
+	Resource();
+	virtual ~Resource();
+
+	demokernel& m_demo;
+
 	void loadAllResources();
 
 	void Draw_QuadFS();											// Draws a quad in fullscreen
@@ -44,7 +46,7 @@ public:
 	
 private:
 
-	Resource();
+
 
 	void Load_Obj_QuadFullscreen();
 	void Load_Obj_Skybox();

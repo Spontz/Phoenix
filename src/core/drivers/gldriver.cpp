@@ -137,7 +137,7 @@ void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, in
 			else if (key == KEY_REWIND)
 				demo.rewindDemo();
 			else if (key == KEY_TIME)
-				LOG->Info(LogLevel::HIGH, "Demo time: %.4f", demo.runTime);
+				LOG->Info(LogLevel::HIGH, "Demo time: %.4f", demo.demo_runTime);
 			else if (key == KEY_PLAY_PAUSE) {
 				if (demo.state == DEMO_PLAY)
 					demo.pauseDemo();

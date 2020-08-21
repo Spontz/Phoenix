@@ -130,7 +130,7 @@ void sDrawImage::exec() {
 		// Set the values
 		vars->setValues();
 
-		RES->Draw_QuadFS();
+		m_demo.res->Draw_QuadFS();
 	}
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();

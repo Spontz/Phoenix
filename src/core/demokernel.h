@@ -23,6 +23,8 @@
 #include "core/camera.h"
 #include "core/light.h"
 
+#include "core/resource/resource.h"
+
 // ******************************************************************
 // demo states: TODO Change by enum
 #define DEMO_LOADING		0
@@ -80,8 +82,8 @@ public:
 	int			sound;
 
 	int			state;				// state of the demo (play, pause, loading, etc.)
-	float		startTime;			// first demo second
-	float		endTime;			// last demo second (0 = unlimited)
+	float		demo_startTime;		// first demo second
+	float		demo_endTime;		// last demo second (0 = unlimited)
 
 	// Managers
 	SectionManager	sectionManager;
@@ -96,11 +98,14 @@ public:
 	Camera			*camera;
 	Font			*text;
 
+	// Resources
+	Resource		*res;
+
 	// loading information
 	int loadedSections;
 
 	// realtime information
-	float runTime;								// seconds ellapsed since 0.0 <- demo init, not SDL init
+	float demo_runTime;								// seconds ellapsed since 0.0 <- demo init, not SDL init
 	float beforeFrameTime;						// time before render the actual frame
 	float afterFrameTime;						// time after render the actual frame
 	float frameTime;							// last frame time (used by sections)
@@ -112,11 +117,7 @@ public:
 	float accumFrameTime;						// time since last fps calculation
 	float fps;									// frames per second
 
-	int keys[512];								// keyboard control (SDL 2.0 handles 512 diferent scan codes)
-	char mouseButton;							// left mouse button status
 	char exitDemo;								// exits demo at next loop if true
-
-	int rtt, backup;							// render to texture shared texture index (RGB8 format)
 
 	// Beat and beat detection parameters
 	float beat;									// intensity of the current music beat
@@ -125,7 +126,6 @@ public:
 
 	int mouseX, mouseY;							// Mouse global coordinates
 	int mouseXvar, mouseYvar;					// Mouse variation rom the center of the screen
-	char mouseButtons;							// Mouse buttons state
 
 	// network slave mode
 	int slaveMode;								// 1 = network slave; 0 = standalone mode;
@@ -137,6 +137,9 @@ public:
 	// MEMBERS
 
 	static demokernel& GetInstance();
+
+	// Resources Management
+	void allocateResources();
 
 	void getArguments(int argc, char *argv[]);
 	bool initDemo();

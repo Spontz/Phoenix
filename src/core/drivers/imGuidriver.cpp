@@ -178,7 +178,7 @@ void imGuiDriver::drawInfo() {
 		//ImGui::Text("Font: %.3f", m_fontScale);	// Show font size
 		ImGui::Text("Fps: %.0f", m_demo.fps);
 		ImGui::Text("Demo status: %s", demoStatus);
-		ImGui::Text("Time: %.2f/%.2f", m_demo.runTime, m_demo.endTime);
+		ImGui::Text("Time: %.2f/%.2f", m_demo.demo_runTime, m_demo.demo_endTime);
 		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->sound_cpu());
 		ImGui::Text("Texture mem used: %.2fmb", m_demo.textureManager.mem + m_demo.fboManager.mem + m_demo.efxBloomFbo.mem + m_demo.efxAccumFbo.mem);
 		ImGui::Text("Cam Speed: %.0f", m_demo.camera->MovementSpeed);

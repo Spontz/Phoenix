@@ -132,7 +132,7 @@ void sEfxBloom::exec() {
 				m_demo.efxBloomFbo.bind_tex(!horizontal, 0, 0);	// Use the texture from our efxBloom
 			
 			// Render scene
-			RES->Draw_QuadFS();
+			m_demo.res->Draw_QuadFS();
 			horizontal = !horizontal;
 			if (first_iteration)
 				first_iteration = false;
@@ -152,7 +152,7 @@ void sEfxBloom::exec() {
 
 		// Adjust back the current fbo
 		m_demo.fboManager.bindCurrent();
-		RES->Draw_QuadFS();
+		m_demo.res->Draw_QuadFS();
 	}		
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();

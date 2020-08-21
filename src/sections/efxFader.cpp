@@ -64,7 +64,7 @@ void sEfxFader::exec() {
 		// Set shader variables values
 		shaderVars->setValues();
 		// Render scene
-		RES->Draw_QuadFS();
+		m_demo.res->Draw_QuadFS();
 	}		
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();

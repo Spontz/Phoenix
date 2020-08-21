@@ -99,8 +99,7 @@ void sDrawVideo::exec() {
 		}
 		model = glm::scale(model, glm::vec3(new_tex_width_scaled, new_tex_height_scaled, 0.0f));
 
-		//RES->Draw_Obj_QuadTex(texture, &model);
-		glBindVertexArray(RES->obj_quadFullscreen);
+		glBindVertexArray(m_demo.res->obj_quadFullscreen);
 		shader->use();
 		shader->setValue("model", model);
 		shader->setValue("screenTexture", 0);

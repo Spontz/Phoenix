@@ -84,7 +84,7 @@ void sEfxMotionBlur::exec() {
 
 		glBindTextureUnit(0, bufferColor);
 		glBindTextureUnit(1, bufferVelocity);
-		RES->Draw_QuadFS();
+		m_demo.res->Draw_QuadFS();
 	}
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();
