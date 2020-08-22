@@ -99,15 +99,14 @@ void sDrawVideo::exec() {
 		}
 		model = glm::scale(model, glm::vec3(new_tex_width_scaled, new_tex_height_scaled, 0.0f));
 
-		glBindVertexArray(m_demo.res->obj_quadFullscreen);
 		shader->use();
 		shader->setValue("model", model);
 		shader->setValue("screenTexture", 0);
 		// Set other shader variables values
 		shaderVars->setValues();
 		my_video->bind(0);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
+		m_demo.res->Draw_QuadFS(); // Draw a quad with the video
+		
 	}
 	glEnable(GL_DEPTH_TEST);
 

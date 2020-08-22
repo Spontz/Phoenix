@@ -26,42 +26,18 @@
 #include "core/resource/resource.h"
 
 // ******************************************************************
-// demo states: TODO Change by enum
-#define DEMO_LOADING		0
-#define DEMO_PLAY			2
-#define DEMO_PAUSE			4
-#define DEMO_REWIND			8
-#define DEMO_FASTFORWARD	16
-
-// ******************************************************************
 
 #define DEMO (&demokernel::GetInstance())
 
 // ******************************************************************
 
-typedef struct {
-	char *name;
-	int code;
-} glTable_t;
-
-// ******************************************************************
-
-// defined section commands
-enum SectionCommand : char const {
-	IDENTIFIER = 0,
-	START,
-	END,
-	LAYER,
-	BLEND,
-	BLEND_EQUATION,
-	ALPHA,
-	PARAM,
-	STRING,
-	UNIFORM,
-	SPLINE,
-	MODIFIER,
-	ENABLED,
-	COMMANDS_NUMBER // defined section reserved keys
+// Demo status
+enum DemoStatus : char const {
+	LOADING = 0,
+	PLAY = 2,
+	PAUSE = 4,
+	REWIND = 8,
+	FASTFORWARD = 16
 };
 
 // ******************************************************************

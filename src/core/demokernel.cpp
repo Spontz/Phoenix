@@ -122,7 +122,7 @@ void demokernel::mainLoop() {
 	if (debug)
 		LOG->Info(LogLevel::MED, "************ Main demo loop started!");
 
-	state = DEMO_PLAY;
+	state = DemoStatus::PLAY;
 
 	/* Loop until the user closes the window */
 	while ((!GLDRV->WindowShouldClose()) && (!exitDemo)) {
@@ -162,11 +162,11 @@ void demokernel::doExec() {
 	}
 
 	// non-play state
-	if (state != DEMO_PLAY) {
+	if (state != DemoStatus::PLAY) {
 
 		processSectionQueues();
 		pauseTimer();
-		if (state & DEMO_REWIND) {
+		if (state & DemoStatus::REWIND) {
 			// decrease demo runtime
 			demo_runTime -= 10.0f * realFrameTime;
 			if (demo_runTime < demo_startTime) {
@@ -174,7 +174,7 @@ void demokernel::doExec() {
 				pauseDemo();
 			}
 		}
-		else if (state & DEMO_FASTFORWARD) {
+		else if (state & DemoStatus::FASTFORWARD) {
 
 			// increase demo runtime
 			demo_runTime += 10.0f * realFrameTime;
@@ -207,8 +207,8 @@ void demokernel::doExec() {
 
 void demokernel::playDemo()
 {
-	if (state != DEMO_PLAY) {
-		state = DEMO_PLAY;
+	if (state != DemoStatus::PLAY) {
+		state = DemoStatus::PLAY;
 
 		if (sound) BASSDRV->play();
 		// reinit section queues
@@ -218,14 +218,14 @@ void demokernel::playDemo()
 
 void demokernel::pauseDemo()
 {
-	state = DEMO_PAUSE;
+	state = DemoStatus::PAUSE;
 	frameTime = 0;
 	if (sound) BASSDRV->pause();
 }
 
 void demokernel::restartDemo()
 {
-	state = DEMO_PLAY;
+	state = DemoStatus::PLAY;
 	if (sound) {
 		BASSDRV->stop();
 	}
@@ -237,13 +237,13 @@ void demokernel::restartDemo()
 
 void demokernel::rewindDemo()
 {
-	state = (state & DEMO_PAUSE) | DEMO_REWIND;
+	state = (state & DemoStatus::PAUSE) | DemoStatus::REWIND;
 	if (sound) BASSDRV->stop();
 }
 
 void demokernel::fastforwardDemo()
 {
-	state = (state & DEMO_PAUSE) | DEMO_FASTFORWARD;
+	state = (state & DemoStatus::PAUSE) | DemoStatus::FASTFORWARD;
 	if (sound) BASSDRV->stop();
 }
 
@@ -472,7 +472,7 @@ void demokernel::initSectionQueues() {
 	int sec_id;
 
 	// Set the demo state to loading
-	state = DEMO_LOADING;
+	state = DemoStatus::LOADING;// DEMO_LOADING;
 	LOG->Info(LogLevel::HIGH, "Loading Start...");
 
 	if (debug) {

@@ -43,7 +43,7 @@ void glDriver::glfwWindowSize_callback(GLFWwindow* p_glfw_window, int width, int
 }
 
 void glDriver::OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int height) {
-	// TODO/HACK: Add min size to window @ OS api level and get rid of this
+	// Get a minimal window size
 	width = std::max(width, 1);
 	height = std::max(height, 1);
 
@@ -139,7 +139,7 @@ void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, in
 			else if (key == KEY_TIME)
 				LOG->Info(LogLevel::HIGH, "Demo time: %.4f", demo.demo_runTime);
 			else if (key == KEY_PLAY_PAUSE) {
-				if (demo.state == DEMO_PLAY)
+				if (demo.state == DemoStatus::PLAY)
 					demo.pauseDemo();
 				else
 					demo.playDemo();
@@ -179,7 +179,7 @@ void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, in
 	}
 	if (action == GLFW_RELEASE && demo.debug == TRUE) {
 		if (key == KEY_FASTFORWARD || key == KEY_REWIND) {
-			if (demo.state & DEMO_PAUSE)
+			if (demo.state & DemoStatus::PAUSE)
 				demo.pauseDemo();
 			else
 				demo.playDemo();
@@ -355,7 +355,7 @@ void glDriver::initStates() {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	// draw cwise and ccwise in fill mode
 
 	glEnable(GL_DEPTH_TEST);					// depth test enabled
-	glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL - TODO: Should be LESS according learnopengl.com
+	glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL
 
 	// Init lights colors, fbo's, shader ID's and texture States
 	m_demo.lightManager.initAllLightsColors();

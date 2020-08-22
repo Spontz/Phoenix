@@ -132,15 +132,15 @@ void imGuiDriver::drawInfo() {
 
 	// Get Demo status
 	char* demoStatus;
-	if (m_demo.state & DEMO_PAUSE) {
-		if (m_demo.state & DEMO_REWIND) demoStatus = stateStr[4];
-		else if (m_demo.state & DEMO_FASTFORWARD) demoStatus = stateStr[5];
+	if (m_demo.state & DemoStatus::PAUSE) {
+		if (m_demo.state & DemoStatus::REWIND) demoStatus = stateStr[4];
+		else if (m_demo.state & DemoStatus::FASTFORWARD) demoStatus = stateStr[5];
 		else demoStatus = stateStr[3];
 
 	}
 	else {
-		if (m_demo.state & DEMO_REWIND) demoStatus = stateStr[1];
-		else if (m_demo.state & DEMO_FASTFORWARD) demoStatus = stateStr[2];
+		if (m_demo.state & DemoStatus::REWIND) demoStatus = stateStr[1];
+		else if (m_demo.state & DemoStatus::FASTFORWARD) demoStatus = stateStr[2];
 		else demoStatus = stateStr[0];
 	}
 

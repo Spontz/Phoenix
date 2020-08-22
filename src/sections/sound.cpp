@@ -78,7 +78,7 @@ void sSound::init() {
 	if (!m_demo.sound)
 		return;
 
-	if (m_demo.state != DEMO_PLAY)
+	if (m_demo.state != DemoStatus::PLAY)
 		return;
 
 	// Beat detection - Init variables
