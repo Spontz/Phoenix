@@ -60,27 +60,27 @@ Texture* TextureManager::addTexture(std::string path, bool flip, std::string typ
 }
 
 // Adds a Cubemap into the queue, returns the Number of the cubemap added
-int TextureManager::addCubemap(std::vector<std::string> path, bool flip)
+Cubemap* TextureManager::addCubemap(std::vector<std::string> path, bool flip)
 {
 	unsigned int i;
-	int cubemap_num = -1;
+	Cubemap* p_cubemap = nullptr;
 
 	// check if cubemap is already loaded, then we just return the ID of our texture
 	bool already_loaded = true;
 	for (i = 0; i < cubemap.size(); i++) {
 		if (cubemap[i]->filename == path) // Check if all the paths are the same (so cubemap is already loaded)
 		{
-			cubemap_num = i;
+			p_cubemap = cubemap[i];
 		}
 	}
 
-	if (cubemap_num == -1) { // If the cubemap has not been found, we need to load it from the first time
+	if (p_cubemap == nullptr) { // If the cubemap has not been found, we need to load it from the first time
 		Cubemap *new_cubemap = new Cubemap();
 		if (new_cubemap->load(path, flip)) {
 			cubemap.push_back(new_cubemap);
-			cubemap_num = (int)cubemap.size() - 1;
+			p_cubemap = new_cubemap;
 			mem += new_cubemap->mem;
-			LOG->Info(LogLevel::MED, "Cubemap %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path[0].c_str(), cubemap_num, mem);
+			LOG->Info(LogLevel::MED, "Cubemap %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path[0].c_str(), cubemap.size()-1, mem);
 		}
 		else {
 			for (i = 0; i < path.size(); i++)
@@ -89,11 +89,10 @@ int TextureManager::addCubemap(std::vector<std::string> path, bool flip)
 	}
 	else { // If the cubemap is catched we should not do anything, unless we have been told to upload it again
 		if (forceLoad) {
-			Cubemap *cube = cubemap[cubemap_num];
-			mem -= cube->mem; // Decrease the overall texture memory
-			if (cube->load(path, flip)) {
-				mem += cube->mem;
-				LOG->Info(LogLevel::MED, "Cubemap %s[id:%d] force reload OK. Overall texture Memory : %.3fMb", path[0].c_str(), cubemap_num, mem);
+			mem -= p_cubemap->mem; // Decrease the overall texture memory
+			if (p_cubemap->load(path, flip)) {
+				mem += p_cubemap->mem;
+				LOG->Info(LogLevel::MED, "Cubemap %s[id:%d] force reload OK. Overall texture Memory : %.3fMb", path[0].c_str(), i, mem);
 			}
 			else {
 				for (i = 0; i < path.size(); i++)
@@ -102,7 +101,7 @@ int TextureManager::addCubemap(std::vector<std::string> path, bool flip)
 		}
 	}
 
-	return cubemap_num;
+	return p_cubemap;
 }
 
 int TextureManager::getOpenGLTextureID(int index)

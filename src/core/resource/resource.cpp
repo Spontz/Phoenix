@@ -320,10 +320,10 @@ void Resource::Draw_QuadFS()
 }
 
 
-void Resource::Draw_Skybox(int cubemap)
+void Resource::Draw_Skybox(Cubemap* cubemap)
 {
 	glBindVertexArray(obj_skybox);
-	m_demo.textureManager.cubemap[cubemap]->bind();
+	cubemap->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 }

@@ -12,7 +12,7 @@ public:
 	std::string debug();
 
 private:
-	int			cubemap;
+	Cubemap*	cubemap;
 	int			model;
 	int			shader;
 	int			enableDepthBufferClearing;
@@ -55,7 +55,7 @@ bool sDrawSkybox::load() {
 										m_demo.dataFolder + strings[3], m_demo.dataFolder + strings[4], m_demo.dataFolder + strings[5]};
 
 	cubemap = m_demo.textureManager.addCubemap(faces, false);
-	if (cubemap < 0)
+	if (!cubemap)
 		return false;
 
 	// Read variables for traslation, rotation and scaling

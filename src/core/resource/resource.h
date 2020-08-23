@@ -26,7 +26,7 @@ public:
 	void Draw_Obj_QuadTex(int textureNum, glm::mat4 const* model);
 	void Draw_Obj_QuadTex(Texture* tex, glm::mat4 const* model);	// TODO: Use this and remove the others not using the Texture object
 	void Draw_Obj_QuadTex(int textureNum, glm::mat4 *projection, glm::mat4* view, glm::mat4 *model);
-	void Draw_Skybox(int cubemap);								// Draws a skybox for a given cubemap texture
+	void Draw_Skybox(Cubemap* cubemap);							// Draws a skybox for a given cubemap texture
 	void Draw_Cube();											// Draws a cube
 
 	Texture* tex_tv; // Default texture (tv)
