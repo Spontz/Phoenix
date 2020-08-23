@@ -1,10 +1,8 @@
 #include "main.h"
 
 enum class e_background_drawing_mode : unsigned int {
-	// adjust the image to fit all the viewport, but it may break the image aspect ratio
-	fit_to_viewport = 0,
-	// adjust the image in order to be seen completelly, but keeping the image aspect ratio
-	fit_to_content = 1
+	fit_to_viewport = 0, 	// adjust the image to fit all the viewport, but it may break the image aspect ratio
+	fit_to_content = 1		// adjust the image in order to be seen completelly, but keeping the image aspect ratio
 };
 
 struct sBackground : public Section {
@@ -28,7 +26,12 @@ Section* instance_background() {
 	return new sBackground();
 }
 
-sBackground::sBackground(){
+sBackground::sBackground()
+	:
+	texture_id_(-1),
+	m_shader(nullptr),
+	mode_(e_background_drawing_mode::fit_to_viewport)
+{
 	type = SectionType::Background;
 }
 
@@ -53,7 +56,7 @@ bool sBackground::load() {
 	}
 
 	// Load the shader for drawing the quad
-	m_shader = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/sections/background.glsl"); // TODO: Fix this, we should use this shader, but at this moment we don't use it :D
+	m_shader = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/sections/background.glsl");
 	if (!m_shader)
 		return false;
 	// Background texture load
@@ -89,7 +92,11 @@ void sBackground::exec() {
 		}
 		const glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(new_tex_width_scaled, new_tex_height_scaled, 0.0f));
 
-		m_demo.res->Draw_Obj_QuadTex(texture_id_, &model);
+		m_shader->use();
+		m_shader->setValue("model", model);
+		m_shader->setValue("screenTexture", 0);
+		m_demo.textureManager.texture[texture_id_]->bind(0);
+		m_demo.res->Draw_QuadFS();
 	}
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();
