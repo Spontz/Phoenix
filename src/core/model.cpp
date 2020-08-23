@@ -310,7 +310,8 @@ std::vector<int> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type
 			filepath = filename.substr(0, filename.find_last_of('.')) + ".jpg";	// In that case, we change this to "<model_name.jpg>"
 		fullpath = directory + "/" + filepath.C_Str();
 		int tex = DEMO->textureManager.addTexture(fullpath.c_str(), false, typeName);
-		textures.push_back(tex);
+		if (tex > -1)
+			textures.push_back(tex);
 	}
 	return textures;
 }
