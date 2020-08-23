@@ -13,7 +13,7 @@ public:
 
 private:
 	char		clearScreen;	// Clear Screen buffer
-	int			texture;
+	Texture*	texture;
 	float		texAspectRatio;
 
 	Shader*		shader;
@@ -46,12 +46,10 @@ bool sDrawImage::load() {
 	// Texture load
 	texture = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[0]);
 
-	if (texture == -1)
+	if (!texture)
 		return false;
 	// Load the background texture
-	Texture *my_tex;
-	my_tex = m_demo.textureManager.texture[texture];
-	texAspectRatio = (float)my_tex->height / (float)my_tex->width;
+	texAspectRatio = (float)texture->height / (float)texture->width;
 
 	// Load the shader to apply
 	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[1]);
@@ -99,10 +97,6 @@ void sDrawImage::exec() {
 	// Evaluate the expression
 	exprPosition->Expression.value();
 
-	Texture *my_tex;
-	my_tex = m_demo.textureManager.texture[texture];
-
-
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
@@ -125,7 +119,7 @@ void sDrawImage::exec() {
 		shader->setValue("view", view);
 		shader->setValue("screenTexture", 0);
 
-		my_tex->bind();
+		texture->bind();
 
 		// Set the values
 		vars->setValues();
@@ -141,11 +135,8 @@ void sDrawImage::end() {
 }
 
 std::string sDrawImage::debug() {
-	Texture *my_tex;
-	my_tex = m_demo.textureManager.texture[texture];
-
 	std::string msg;
 	msg = "[ drawImage id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
-	msg += " filename: " + my_tex->filename + "\n";
+	msg += " filename: " + texture->filename + "\n";
 	return msg;
 }

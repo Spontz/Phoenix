@@ -133,13 +133,12 @@ void Mesh::Draw(GLuint shaderID)
 	unsigned int numTextures = static_cast<unsigned int>(m_material.textures.size());
 	for (unsigned int i = 0; i < numTextures; i++)
 	{
-		if (m_material.textures[i].ID == -1) // Avoid illegal access
+		if (!(m_material.textures[i].tex)) // Avoid illegal access
 			return;
-		Texture *tex = DEMO->textureManager.texture[m_material.textures[i].ID];
 		// TODO: Remove this c_str() command could improve performance?
 		glUniform1i(glGetUniformLocation(shaderID, m_material.textures[i].shaderName.c_str()), i);
 		// and finally bind the texture
-		tex->bind(i);
+		m_material.textures[i].tex->bind(i);
 	}
 
 	// draw mesh

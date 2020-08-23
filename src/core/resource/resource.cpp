@@ -245,6 +245,17 @@ void Resource::Draw_QuadFS(int textureNum, float alpha)
 	Draw_QuadFS();
 }
 
+// Draw a Quad with texture in full screen with alpha
+void Resource::Draw_QuadFS(Texture* tex, float alpha)
+{
+	shdr_QuadTexAlpha->use();
+	shdr_QuadTexAlpha->setValue("alpha", alpha);
+	shdr_QuadTexAlpha->setValue("screenTexture", 0);
+	tex->bind();
+
+	Draw_QuadFS();
+}
+
 // Draw a Quad with a FBO in full screen
 void Resource::Draw_QuadFBOFS(int fboNum, GLuint attachment)
 {
@@ -272,6 +283,17 @@ void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 const* model)
 	shdr_QuadTexModel->setValue("model", *model);
 	shdr_QuadTexModel->setValue("screenTexture", 0);
 	m_demo.textureManager.texture[textureNum]->bind();
+
+	Draw_QuadFS();
+}
+
+// Draw a Quad in full screen. A texture can be specified and a model matrix
+void Resource::Draw_Obj_QuadTex(Texture* tex, glm::mat4 const* model)
+{
+	shdr_QuadTexModel->use();
+	shdr_QuadTexModel->setValue("model", *model);
+	shdr_QuadTexModel->setValue("screenTexture", 0);
+	tex->bind();
 
 	Draw_QuadFS();
 }

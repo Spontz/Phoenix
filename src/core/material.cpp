@@ -89,11 +89,10 @@ std::vector<textureStack> Material::loadTextures(const aiMaterial * mat, aiTextu
 			filepath = m_ModelFilename.substr(0, m_ModelFilename.find_last_of('.')) + ".jpg";	// In that case, we change this to "<model_name.jpg>"
 		fullpath = m_ModelDirectory + "/" + filepath.C_Str();
 		textureStack tex;
-		tex.ID	= DEMO->textureManager.addTexture(fullpath.c_str(), false, typeName);
+		tex.tex	= DEMO->textureManager.addTexture(fullpath.c_str(), false, typeName);
 		tex.blendOperation = operation;
 		tex.strength = blendFactor;
-		if (tex.ID > 0) {
-			Texture *my_tex = DEMO->textureManager.texture[tex.ID];
+		if (tex.tex) {
 			tex.shaderName = typeName + std::to_string(i + 1);
 			textures.push_back(tex);
 		}

@@ -20,44 +20,43 @@ TextureManager::~TextureManager()
 	mem = 0;
 }
 
-int TextureManager::addTexture(std::string path, bool flip, std::string type) {
+Texture* TextureManager::addTexture(std::string path, bool flip, std::string type) {
 	unsigned int i;
-	int tex_num = -1;
+	Texture* p_tex = nullptr;
 
 	// check if texture is already loaded, then we just retrieve the ID of our texture
 	for (i = 0; i < texture.size(); i++) {
 		if (texture[i]->filename.compare(path) == 0) {
-			tex_num = i;
+			p_tex = texture[i];
 		}
 	}
 
-	if (tex_num == -1) { // If the texture has not been found, we need to load it for the first time
+	if (p_tex == nullptr) { // If the texture has not been found, we need to load it for the first time
 		Texture *new_tex = new Texture();
 		if (new_tex->load(path, flip)) {
 			new_tex->type = type;
 			texture.push_back(new_tex);
 			mem += new_tex->mem;
-			tex_num = (int)texture.size() - 1;
-			LOG->Info(LogLevel::MED, "Texture %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path.c_str(), tex_num, mem);
+			p_tex = new_tex;
+			LOG->Info(LogLevel::MED, "Texture %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path.c_str(), texture.size()-1, mem);
 		}
 		else
 			LOG->Error("Could not load texture: %s", path.c_str());
 	}
 	else { // If the texture is catched we should not do anything, unless we have been told to upload it again
 		if (forceLoad) {
-			Texture *tex = texture[tex_num];
-			mem -= tex->mem; // Decrease the overall texture memory
-			if (tex->load(path, flip)) {
-				tex->type = type;
-				mem += tex->mem;
-				LOG->Info(LogLevel::MED, "Texture %s [id: %d] force reload OK. Overall texture Memory: %.3fMb", path.c_str(), tex_num, mem);
+			mem -= p_tex->mem; // Decrease the overall texture memory
+			if (p_tex->load(path, flip)) {
+				p_tex->type = type;
+				mem += p_tex->mem;
+				LOG->Info(LogLevel::MED, "Texture %s [id: %d] force reload OK. Overall texture Memory: %.3fMb", path.c_str(), i, mem);
 			}
 			else
 				LOG->Error("Could not load texture: %s", path.c_str());
 		}
 	}
 
-	return tex_num;
+	return p_tex;
 }
 
 // Adds a Cubemap into the queue, returns the Number of the cubemap added

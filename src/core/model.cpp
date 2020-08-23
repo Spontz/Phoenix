@@ -298,9 +298,9 @@ Mesh Model::processMesh(std::string nodeName, aiMesh *mesh, const aiScene *scene
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.
 // the required info is returned as a Texture struct.
-std::vector<int> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName)
+std::vector<Texture*> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
 {
-	std::vector<int> textures;
+	std::vector<Texture*> textures;
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
 		aiString filepath;
@@ -309,8 +309,8 @@ std::vector<int> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type
 		if (0 == strcmp(filepath.C_Str(), "$texture_dummy.bmp"))				// Prevent a bug in assimp: In some cases, the texture by default is named "$texture_dummy.bmp"
 			filepath = filename.substr(0, filename.find_last_of('.')) + ".jpg";	// In that case, we change this to "<model_name.jpg>"
 		fullpath = directory + "/" + filepath.C_Str();
-		int tex = DEMO->textureManager.addTexture(fullpath.c_str(), false, typeName);
-		if (tex > -1)
+		Texture* tex = DEMO->textureManager.addTexture(fullpath.c_str(), false, typeName);
+		if (tex)
 			textures.push_back(tex);
 	}
 	return textures;

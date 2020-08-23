@@ -15,8 +15,8 @@ public:
 	std::string debug();
 
 private:
-	int texture_id_;
-	Shader* m_shader;
+	Texture* texture_;
+	Shader* shader_;
 	e_background_drawing_mode mode_;
 };
 
@@ -28,8 +28,8 @@ Section* instance_background() {
 
 sBackground::sBackground()
 	:
-	texture_id_(-1),
-	m_shader(nullptr),
+	texture_(nullptr),
+	shader_(nullptr),
 	mode_(e_background_drawing_mode::fit_to_viewport)
 {
 	type = SectionType::Background;
@@ -56,12 +56,12 @@ bool sBackground::load() {
 	}
 
 	// Load the shader for drawing the quad
-	m_shader = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/sections/background.glsl");
-	if (!m_shader)
+	shader_ = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/sections/background.glsl");
+	if (!shader_)
 		return false;
 	// Background texture load
-	texture_id_ = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[0]);
-	if (texture_id_ == -1)
+	texture_ = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[0]);
+	if (!texture_)
 		return false;
 	return true;
 }
@@ -73,10 +73,8 @@ void sBackground::exec() {
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
-		// Load the background texture
-		const Texture* const p_texture = m_demo.textureManager.texture[texture_id_];
 		// Texture and View aspect ratio, stored for Keeping image proportions
-		const float tex_aspect = static_cast<float>(p_texture->width) / static_cast<float>(p_texture->height);
+		const float tex_aspect = static_cast<float>(texture_->width) / static_cast<float>(texture_->height);
 		const float viewport_aspect = GLDRV->GetCurrentViewport().GetAspectRatio();
 
 		// Put orthogonal mode
@@ -92,10 +90,10 @@ void sBackground::exec() {
 		}
 		const glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(new_tex_width_scaled, new_tex_height_scaled, 0.0f));
 
-		m_shader->use();
-		m_shader->setValue("model", model);
-		m_shader->setValue("screenTexture", 0);
-		m_demo.textureManager.texture[texture_id_]->bind(0);
+		shader_->use();
+		shader_->setValue("model", model);
+		shader_->setValue("screenTexture", 0);
+		texture_->bind(0);
 		m_demo.res->Draw_QuadFS();
 	}
 	glEnable(GL_DEPTH_TEST);
@@ -106,11 +104,8 @@ void sBackground::end() {
 }
 
 std::string sBackground::debug() {
-	Texture* my_tex;
-	my_tex = m_demo.textureManager.texture[texture_id_];
-
 	std::string msg;
 	msg = "[ background id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
-	msg += " filename: " + my_tex->filename + "\n";
+	msg += " filename: " + texture_->filename + "\n";
 	return msg;
 }

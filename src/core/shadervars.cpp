@@ -160,15 +160,13 @@ bool ShaderVars::ReadString(const char * string_var)
 				return false;
 			}
 			else {
-				var->texture = fbonum;
-				var->texGLid = DEMO->fboManager.getOpenGLTextureID(fbonum);
+				var->fboNum = fbonum;
 			}
 		}
 		// Is it s a normal texture...
 		else {
 			var->isFBO = false;
 			var->texture = DEMO->textureManager.addTexture(DEMO->dataFolder + var_value);
-			var->texGLid = DEMO->textureManager.getOpenGLTextureID(var->texture);
 		}
 		sampler2D.push_back(var);
 	}
@@ -227,9 +225,13 @@ void ShaderVars::setValues()
 		my_sampler2D = sampler2D[i];
 		my_shader->setValue(my_sampler2D->name, my_sampler2D->texUnitID);
 		// TODO: This ugly and dirty. This is needed because when we rezise the screen, the FBO's are recalculated (therefore texGLid is changed), therefoere we need to look everytime if the texGLid id has changed
-		if (my_sampler2D->isFBO)
-			my_sampler2D->texGLid = DEMO->fboManager.getOpenGLTextureID(my_sampler2D->texture);
-		glBindTextureUnit(my_sampler2D->texUnitID, my_sampler2D->texGLid);
+		if (my_sampler2D->isFBO) {
+			//Fbo* my_fbo = DEMO->fboManager.fbo[my_sampler2D->fboNum];
+			//glBindTextureUnit(my_sampler2D->texUnitID, my_fbo->m_colorAttachment[0]);
+			glBindTextureUnit(my_sampler2D->texUnitID, DEMO->fboManager.getOpenGLTextureID(my_sampler2D->fboNum));
+		}
+		else
+			glBindTextureUnit(my_sampler2D->texUnitID, my_sampler2D->texture->m_textureID);
 	}
 }
 

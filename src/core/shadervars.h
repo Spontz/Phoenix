@@ -55,8 +55,8 @@ typedef struct {
 typedef struct {
 	char			name[MAXSIZE_VAR_NAME];
 	GLint			loc;
-	int				texture;	// Engine internal texture ID
-	int				texGLid;	// Texture ID
+	Texture*		texture;	// Texture
+	int				fboNum;		// Fbo number
 	int				texUnitID;	// Texture unit ID
 	bool			isFBO;		// is the Sampler2D an FBO?
 } varSampler2D;				// Structure for a evaluation Sampler2D (TEXTURE)

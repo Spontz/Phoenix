@@ -10,7 +10,9 @@ public:
 	std::string debug();
 
 private:
-	int tex_front, tex_back, tex_bar;
+	Texture* tex_front;
+	Texture* tex_back;
+	Texture* tex_bar;
 	
 	float	tx, ty;// Bar Translation
 	float	sy;// Bar Scale
@@ -56,7 +58,7 @@ bool sLoading::load() {
 		sy = 0.1f;
 	}
 
-	if (tex_bar == -1 || tex_back == -1 || tex_front == -1) {
+	if (tex_bar == nullptr || tex_back == nullptr || tex_front == nullptr) {
 		LOG->Error("Loading [%s]: Could not load some of the loading textures", identifier.c_str());
 	}
 
@@ -69,7 +71,7 @@ void sLoading::init() {
 
 void sLoading::exec() {
 	// Prevent a crash if any texture is not found
-	if (tex_bar == -1 || tex_back == -1 || tex_front == -1) {
+	if (tex_bar == nullptr || tex_back == nullptr || tex_front == nullptr) {
 		return;
 	}
 
