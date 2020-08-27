@@ -2,7 +2,6 @@
 // Spontz Demogroup
 
 
-#include "core/drivers/net/dyad.h"
 #include "main.h"
 
 #define DELIMITER '\x1f'
@@ -11,6 +10,11 @@
 // ***********************************
 
 #define SPZ_STL(a) _##a
+
+netDriver& netDriver::GetInstance() {
+	static netDriver obj;
+	return obj;
+}
 
 // Returns the requested parameter from the passed message (first parameter is 1) as a string
 char * netDriver::getParamString(const char *message, int requestedParameter) {
@@ -40,7 +44,7 @@ float netDriver::getParamFloat(const char *message, int requestedParameter) {
 	return theFloatResult;
 }
 
-void onData_SendResponse(dyad_Event *e) {
+void netDriver::onData_SendResponse(dyad_Event *e) {
 	auto theResponse = NETDRV->processMessage(e->data);
 
 	// Send the response and close the connection
@@ -50,43 +54,39 @@ void onData_SendResponse(dyad_Event *e) {
 	delete[] theResponse;
 }
 
-void onAccept(dyad_Event *e) {
+void netDriver::onAccept(dyad_Event *e) {
 	dyad_addListener(e->remote, DYAD_EVENT_DATA, onData_SendResponse, NULL);
 }
 
-void onListen(dyad_Event *e) {
+void netDriver::onListen(dyad_Event *e) {
 	LOG->Info(LogLevel::MED, "Network listener started in port: %d", dyad_getPort(e->stream));
 }
 
-void onError(dyad_Event *e) {
+void netDriver::onError(dyad_Event *e) {
 	LOG->Error("Network server error: %s", e->msg);
 }
 
-void onConnectToEngine(dyad_Event *e) {
+void netDriver::onConnectToEngine(dyad_Event *e) {
 	LOG->Info(LogLevel::MED, "Network: Connected to editor through port: %d", dyad_getPort(e->stream));
-	NETDRV->connectedToEditor = true;
+	NETDRV->connectedToEditor_ = true;
 }
 
-netDriver& netDriver::GetInstance() {
-	static netDriver obj;
-	return obj;
-}
+
 
 netDriver::netDriver()
+	:
+	portReceive_(28000),
+	portSend_(28001),
+	inited_(false),
+	connectedToEditor_(false),
+	serv_connect(nullptr)
 {
-	port		= 28000;	// Port for receiving data from the Editor
-	port_send	= 28001;	// Port for sending data to the Editor
-	inited = false;
-	connectedToEditor = false;
 }
 
 
 
 void netDriver::init()
 {
-	this->messageToSend = "";
-	this->connectedToEditor = false;
-
 	dyad_init();
 
 	dyad_Stream *serv = dyad_newStream();
@@ -96,22 +96,20 @@ void netDriver::init()
 	dyad_addListener(serv, DYAD_EVENT_ERROR, onError, NULL);
 	dyad_addListener(serv, DYAD_EVENT_ACCEPT, onAccept, NULL);
 	dyad_addListener(serv, DYAD_EVENT_LISTEN, onListen, NULL);
-	dyad_listenEx(serv, "0.0.0.0", port, 511);
+	dyad_listenEx(serv, "0.0.0.0", portReceive_, 511);
 	
 	this->connectToEditor();
 
-	inited = true;
+	inited_ = true;
 }
 
-// TODO: We should fix this! it should not be a global variable!
-dyad_Stream *serv_connect;
 void netDriver::connectToEditor()
 {
 	// Listener for sending messages to the editor
-	LOG->Info(LogLevel::MED, "Network: outgoing messages will be done through port: %d", this->port_send);
+	LOG->Info(LogLevel::MED, "Network: outgoing messages will be done through port: %d", this->portSend_);
 	serv_connect = dyad_newStream();
 	dyad_addListener(serv_connect, DYAD_EVENT_CONNECT, onConnectToEngine, NULL);
-	dyad_connect(serv_connect, "127.0.0.1", port_send);
+	dyad_connect(serv_connect, "127.0.0.1", portSend_);
 }
 
 void netDriver::update()
@@ -210,7 +208,7 @@ char * netDriver::processMessage(const char * message)
 
 void netDriver::sendMessage(std::string message)
 {
-	if (this->connectedToEditor) {
+	if (this->connectedToEditor_) {
 		dyad_write(serv_connect, message.c_str(), (int)message.length());
 	}
 }

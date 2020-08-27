@@ -6,7 +6,7 @@
 
 #define PHOENIX_MAJOR_VERSION 1
 #define PHOENIX_MINOR_VERSION 0
-#define PHOENIX_BUILD_VERSION 10
+#define PHOENIX_BUILD_VERSION 11
 
 #ifdef PHOENIX_MAIN
 	#define STB_IMAGE_IMPLEMENTATION
@@ -15,6 +15,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_ENABLE_EXPERIMENTAL
 
+#include "core/drivers/net/dyad.h"
 #include <windows.h>
 #include <glad/glad.h>
 #include "core/drivers/imGui/imgui_impl_glfw.h"
