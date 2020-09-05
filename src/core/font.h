@@ -16,8 +16,6 @@ struct Char {
 
 class Font {
 public:
-	FT_Library ft;
-	std::map<GLchar, Char> Characters;
 
 	Font(int size, std::string font_path, std::string shader_path);
 	virtual ~Font();
@@ -29,7 +27,10 @@ private:
 	GLuint		textureID;		// ID handle of the texture atlas
 	GLuint		width, height;	// Texture atlas size
 	GLuint		VAO, VBO;		// Buffer objects for drawing the text
-	int			shdr_font;		// Shader used for drawing the text
+	Shader*		shdr_font;		// Shader used for drawing the text
+	FT_Library	ft;
+	std::map<GLchar, Char> Characters;
+
 };
 
 #endif
