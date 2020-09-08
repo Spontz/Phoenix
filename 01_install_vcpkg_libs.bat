@@ -1,5 +1,6 @@
 rmdir vcpkg /s /q
-git clone https://github.com/Spontz/vcpkg.git
+REM git clone https://github.com/Spontz/vcpkg.git
+git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
 git pull
 call bootstrap-vcpkg.bat
