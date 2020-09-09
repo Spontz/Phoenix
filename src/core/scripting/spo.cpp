@@ -26,6 +26,7 @@ namespace Phoenix {
 			{"gl_aspect",				SectionVar::TYPE_FLOAT,			&GLDRV->config.framebuffer_aspect_ratio	},
 			{"gl_stencil",				SectionVar::TYPE_INT,			&GLDRV->config.stencil	},
 			{"gl_vsync",				SectionVar::TYPE_INT,			&GLDRV->config.vsync	},
+			{"gl_multisample",			SectionVar::TYPE_INT,			&GLDRV->config.multisampling	},
 
 			{"fbo_0_ratio",				SectionVar::TYPE_INT,			&GLDRV->fbo[0].ratio	},
 			{"fbo_0_format",			SectionVar::TYPE_STRING,		&GLDRV->fbo[0].format	},

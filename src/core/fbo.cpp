@@ -67,18 +67,22 @@ bool Fbo::upload(std::string EngineFormat, int index, int Width, int Height, int
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_colorAttachment[i], 0);
 		}
 		// create a depth buffer object for depth and stencil attachment (we won't be sampling these)
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_depthAttachment);
-		glBindTexture(GL_TEXTURE_2D, this->m_depthAttachment);
-		glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, width, height);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_depthAttachment, 0);
-
-		//glGenRenderbuffers(1, &(this->m_depthAttachment));
-		//glBindRenderbuffer(GL_RENDERBUFFER, this->m_depthAttachment);
-		//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, this->width, this->height);
-		//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->m_depthAttachment);
+		glGenRenderbuffers(1, &m_depthAttachment);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_depthAttachment);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthAttachment);
 		
+		//glCreateTextures(GL_TEXTURE_2D, 1, &m_depthAttachment);
+		//glBindTexture(GL_TEXTURE_2D, this->m_depthAttachment);
+		//glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, width, height);
+		//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_depthAttachment, 0);
+
 		// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-		unsigned int attachments[GLDRV_MAX_COLOR_ATTACHMENTS] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+		unsigned int attachments[GLDRV_MAX_COLOR_ATTACHMENTS];
+		for (int i = 0; i < GLDRV_MAX_COLOR_ATTACHMENTS; i++) {
+			attachments[i] = GL_COLOR_ATTACHMENT0 + i;
+		}
+
 		glDrawBuffers(this->numAttachments, attachments);
 	}
 	else {	// If it's a Depth texture...

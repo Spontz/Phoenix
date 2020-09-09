@@ -136,6 +136,8 @@ void Mesh::Draw(GLuint shaderID)
 		if (!(m_material.textures[i].tex)) // Avoid illegal access
 			return;
 		// TODO: Remove this c_str() command could improve performance?
+		// TODO: Deberíamos cargar la ultima texture unit que se ha usado, y emepzar desde allí, en vez de empezar desde 0, ya que puede
+		// que se haya usado alguna texture unit anteriormente (por ejemplo, para shadowmaps)
 		glUniform1i(glGetUniformLocation(shaderID, m_material.textures[i].shaderName.c_str()), i);
 		// and finally bind the texture
 		m_material.textures[i].tex->bind(i);
