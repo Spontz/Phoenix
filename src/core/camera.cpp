@@ -128,7 +128,7 @@ void Camera::CapturePos()
 	sprintf_s(message, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
 		demo.camera->Position.x, demo.camera->Position.y, demo.camera->Position.z,
 		demo.camera->Up.x, demo.camera->Up.y, demo.camera->Up.z,
-		demo.camera->Yaw, demo.camera->Pitch, demo.camera->Zoom, demo.camera->Roll);
+		demo.camera->Yaw, demo.camera->Pitch, demo.camera->Roll, demo.camera->Zoom);
 	camFile << message << "\n";
 	camFile.close();
 }
