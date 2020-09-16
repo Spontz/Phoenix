@@ -250,7 +250,9 @@ void sDrawSceneMatrix::exec() {
 			m_cObjDistance = my_model_ref->meshes[i].unique_vertices_dist[j];
 			// Evaluate the expression
 			exprPosition->Expression.value();
-			shader->setValue("n", m_cObjID); // we send also the number of object to the shader
+			shader->setValue("n", m_cObjID); // Send the number of object to the shader
+			shader->setValue("n_d", m_cObjDistance); // Send the distance of object to the shader
+			shader->setValue("n_pos", m_cObjPos); // Send the object relative position to the shader
 
 			objModel = matrixModel;// glm::mat4(1.0f);
 			objModel = glm::translate(objModel, my_model_ref->meshes[i].unique_vertices_pos[j]);
@@ -262,10 +264,6 @@ void sDrawSceneMatrix::exec() {
 			objModel = glm::rotate(objModel, glm::radians(m_cObjRotation.z), glm::vec3(0, 0, 1));
 			objModel = glm::scale(objModel, m_cObjScale);
 			my_model->modelTransform = objModel;
-
-			// Get the current position of the vertex
-			glm::vec3 current_pos = objModel[3];
-			LOG->Info(LogLevel::HIGH, "Object %d, Current position [%.3f, %.3f,%.3f], Dist [%.3f]", object, m_cObjPos.x, m_cObjPos.y, m_cObjPos.z, m_cObjDistance);
 
 			// For MotionBlur, we send the previous model matrix, and then store it for later use
 			shader->setValue("prev_model", prev_model[0][object]);
