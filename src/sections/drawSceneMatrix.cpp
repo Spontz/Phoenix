@@ -232,7 +232,7 @@ void sDrawSceneMatrix::exec() {
 	
 		// Evaluate the expression
 	exprPosition->Expression.value();
-	shader->setValue("nT", m_numObjects);	// Send total objects to draw to the shader
+	shader->setValue("n_total", m_numObjects);	// Send total objects to draw to the shader
 
 
 	matrixModel = glm::mat4(1.0f);
