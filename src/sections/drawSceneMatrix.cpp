@@ -232,7 +232,7 @@ void sDrawSceneMatrix::exec() {
 	
 		// Evaluate the expression
 	exprPosition->Expression.value();
-	shader->setValue("nT", m_numObjects);	// Total objects to draw
+	shader->setValue("nT", m_numObjects);	// Send total objects to draw to the shader
 
 
 	matrixModel = glm::mat4(1.0f);
@@ -250,11 +250,11 @@ void sDrawSceneMatrix::exec() {
 			m_cObjDistance = my_model_ref->meshes[i].unique_vertices_dist[j];
 			// Evaluate the expression
 			exprPosition->Expression.value();
-			shader->setValue("n", m_cObjID); // Send the number of object to the shader
-			shader->setValue("n_d", m_cObjDistance); // Send the distance of object to the shader
-			shader->setValue("n_pos", m_cObjPos); // Send the object relative position to the shader
+			shader->setValue("n", m_cObjID);			// Send the number of object to the shader
+			shader->setValue("n_d", m_cObjDistance);	// Send the distance of object to the shader
+			shader->setValue("n_pos", m_cObjPos);		// Send the object relative position to the shader
 
-			objModel = matrixModel;// glm::mat4(1.0f);
+			objModel = matrixModel;
 			objModel = glm::translate(objModel, my_model_ref->meshes[i].unique_vertices_pos[j]);
 
 			// Now render the object using the "model_ref" as a model matrix start position
