@@ -63,6 +63,7 @@ struct Vertex {
 class Mesh {
 public:
 	std::vector<glm::vec3>		unique_vertices_pos;	// Unique vertices positions
+	std::vector<float>			unique_vertices_dist;	// Unique vertices distance to the center
 	glm::mat4					meshTransform;			// Transformation Matrix for positioning the mesh
 	std::string					nodeName;
 

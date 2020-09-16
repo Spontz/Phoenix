@@ -66,8 +66,15 @@ void Mesh::loadUniqueVerticesPos()
 				vertexFound = true;
 			}
 		}
-		if (vertexFound == false)
+		if (vertexFound == false) {
 			unique_vertices_pos.push_back(m_vertices[i].Position);
+			// Calculate distance to the center
+			float d = std::sqrtf(	m_vertices[i].Position.x * m_vertices[i].Position.x +
+									m_vertices[i].Position.y * m_vertices[i].Position.y +
+									m_vertices[i].Position.z * m_vertices[i].Position.z);
+			unique_vertices_dist.push_back(d);
+		}
+			
 	}
 
 }
