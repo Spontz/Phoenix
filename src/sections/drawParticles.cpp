@@ -39,7 +39,7 @@ sDrawParticles::sDrawParticles() {
 
 bool sDrawParticles::load() {
 	// script validation
-	if ((param.size() != 1) || (strings.size() != 4)) {
+	if ((param.size() != 1) || (strings.size() < 4)) {
 		LOG->Error("Draw Particles [%s]: 1 param (Particles number) and 4 strings needed (1 for shader files and 3 for positioning)", identifier.c_str());
 		return false;
 	}

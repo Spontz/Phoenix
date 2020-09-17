@@ -12,7 +12,7 @@ public:
 	std::string debug();
 
 private:
-	int			model;
+	Model*		model;
 	Shader*		shader;
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
@@ -24,11 +24,16 @@ private:
 	glm::vec3	translation;
 	glm::vec3	rotation;
 	glm::vec3	scale;
-	
+
+	// Model, projection and view matrix
+	glm::mat4	mat_model;
+	glm::mat4	mat_projection;
+	glm::mat4	mat_view;
+
 	// Previous model, projection and view matrix, for being used in effects like motion blur
-	glm::mat4	prev_model;
-	glm::mat4	prev_projection;
-	glm::mat4	prev_view;
+	glm::mat4	mat_prev_model;
+	glm::mat4	mat_prev_projection;
+	glm::mat4	mat_prev_view;
 
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
 	ShaderVars	*vars;			// For storing any other shader variables
@@ -40,7 +45,28 @@ Section* instance_drawScene() {
 	return new sDrawScene();
 }
 
-sDrawScene::sDrawScene() {
+sDrawScene::sDrawScene() 
+:
+	model (nullptr),
+	shader(nullptr),
+	enableDepthBufferClearing(1),
+	drawWireframe(0),
+	CameraNumber(-1),
+	playAnimation(0),
+	AnimationNumber(0),
+	AnimationTime(0),
+	translation({ 0,0,0 }),
+	rotation({ 0,0,0 }),
+	scale({ 1,1,1 }),
+	mat_model(glm::mat4(1.0f)),
+	mat_projection(glm::mat4(1.0f)),
+	mat_view(glm::mat4(1.0f)),
+	mat_prev_model(glm::mat4(1.0f)),
+	mat_prev_projection(glm::mat4(1.0f)),
+	mat_prev_view(glm::mat4(1.0f)),
+	exprPosition(nullptr),
+	vars(nullptr)
+{
 	type = SectionType::DrawScene;
 }
 
@@ -68,19 +94,16 @@ bool sDrawScene::load() {
 	
 	// Load model and shader
 	model = m_demo.modelManager.addModel(m_demo.dataFolder + this->strings[0]);
-	if (model < 0)
+	if (!model)
 		return false;
 	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + this->strings[1]);
 	if (!shader)
 		return false;
 	
-
 	// Load model properties
-	Model *my_model;
-	my_model = m_demo.modelManager.model[model];
-	my_model->playAnimation = playAnimation;
-	if (my_model->playAnimation)
-		my_model->setAnimation(AnimationNumber);
+	model->playAnimation = playAnimation;
+	if (model->playAnimation)
+		model->setAnimation(AnimationNumber);
 
 	exprPosition = new mathDriver(this);
 	// Load all the other strings
@@ -104,9 +127,9 @@ bool sDrawScene::load() {
 	exprPosition->Expression.value();
 	// Set the camera number
 	if (CameraNumber < 0)
-		my_model->useCamera = false;
+		model->useCamera = false;
 	else
-		my_model->setCamera((unsigned int)CameraNumber);
+		model->setCamera((unsigned int)CameraNumber);
 
 
 	// Create Shader variables
@@ -130,8 +153,6 @@ void sDrawScene::init() {
 
 void sDrawScene::exec() {
 	
-	Model *my_model = m_demo.modelManager.model[model];
-	
 	// Start evaluating blending
 	EvalBlendingStart();
 
@@ -144,13 +165,13 @@ void sDrawScene::exec() {
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 	// Set model properties
-	my_model->playAnimation = playAnimation;
-	if (my_model->playAnimation)
-		my_model->setAnimation(AnimationNumber);
+	model->playAnimation = playAnimation;
+	if (model->playAnimation)
+		model->setAnimation(AnimationNumber);
 	if (CameraNumber < 0)
-		my_model->useCamera = false;
+		model->useCamera = false;
 	else
-		my_model->setCamera((unsigned int)CameraNumber);
+		model->setCamera((unsigned int)CameraNumber);
 
 	// Load shader
 	shader->use();
@@ -160,46 +181,44 @@ void sDrawScene::exec() {
 	// End ShadowMapping
 
 	// view/projection transformations
-	glm::mat4 projection = glm::perspective(
+	mat_projection = glm::perspective(
 		glm::radians(m_demo.camera->Zoom),
 		GLDRV->GetFramebufferViewport().GetAspectRatio(),
 		0.1f, 10000.0f
 	);
 
-	shader->setValue("projection", projection);
+	shader->setValue("projection", mat_projection);
 
-	glm::mat4 view = m_demo.camera->GetViewMatrix();
+	mat_view = m_demo.camera->GetViewMatrix();
 	//if (CameraNumber < 0)
-		shader->setValue("view", view);
-
-	
+		shader->setValue("view", mat_view);
 
 
-	// render the loaded model
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, translation);
-	model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1, 0, 0));
-	model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0, 1, 0));
-	model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0, 0, 1));
-	model = glm::scale(model, scale);
-	my_model->modelTransform = model;
+	// render the loaded scene
+	mat_model = glm::mat4(1.0f);
+	mat_model = glm::translate(mat_model, translation);
+	mat_model = glm::rotate(mat_model, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+	mat_model = glm::rotate(mat_model, glm::radians(rotation.y), glm::vec3(0, 1, 0));
+	mat_model = glm::rotate(mat_model, glm::radians(rotation.z), glm::vec3(0, 0, 1));
+	mat_model = glm::scale(mat_model, scale);
+	model->modelTransform = mat_model;
 
 	// For MotionBlur
-	shader->setValue("prev_projection", prev_projection);
+	shader->setValue("prev_projection", mat_prev_projection);
 	//if (CameraNumber < 0)
-		shader->setValue("prev_view", prev_view);
-	shader->setValue("prev_model", prev_model);
+		shader->setValue("prev_view", mat_prev_view);
+	shader->setValue("prev_model", mat_prev_model);
 
-	prev_projection = projection;
+	mat_prev_projection = mat_projection;
 	//if (CameraNumber < 0)
-		prev_view = view;
-	prev_model = model;
+		mat_prev_view = mat_view;
+	mat_prev_model = mat_model;
 	// End MotionBlur
 
 	// Set the other shader variable values
 	vars->setValues();
 
-	my_model->Draw(shader->ID, AnimationTime);
+	model->Draw(shader->ID, AnimationTime);
 
 	glUseProgram(0);
 	if (drawWireframe)
@@ -215,25 +234,23 @@ void sDrawScene::end() {
 
 std::string sDrawScene::debug()
 {
-	Model* my_model = m_demo.modelManager.model[model];
-
 	std::string msg;
 	msg = "[ drawScene id: " + this-> identifier + " layer:" + std::to_string(this->layer) + " ]\n";
-	msg += " file: " + my_model->filename + "\n";
-	msg += " meshes: " + std::to_string(my_model->meshes.size()) + "\n";
+	msg += " file: " + model->filename + "\n";
+	msg += " meshes: " + std::to_string(model->meshes.size()) + "\n";
 /*	for (int i=0; i<my_model->meshes.size(); i++) {
 		msg += "  mesh: " + std::to_string(i) + "\n";
-		msg += "    Num vertices: " + std::to_string(my_model->meshes[i].vertices.size()) + "\n";
-		msg += "    Num textures: " + std::to_string(my_model->meshes[i].material.textures.size()) + "\n";
-		msg += "    Color Diffuse [" +	std::to_string(my_model->meshes[i].material.colDiffuse.r) + " / " +
-										std::to_string(my_model->meshes[i].material.colDiffuse.g) + " / " +
-										std::to_string(my_model->meshes[i].material.colDiffuse.b) + " ] " + "\n";
-		msg += "    Color Ambient [" + std::to_string(my_model->meshes[i].material.colAmbient.r) + " / " +
-										std::to_string(my_model->meshes[i].material.colAmbient.g) + " / " +
-										std::to_string(my_model->meshes[i].material.colAmbient.b) + " ] " + "\n";
-		msg += "    Color Specular [" + std::to_string(my_model->meshes[i].material.colSpecular.r) + " / " +
-										std::to_string(my_model->meshes[i].material.colSpecular.g) + " / " +
-										std::to_string(my_model->meshes[i].material.colSpecular.b) + " ] " + "\n";
+		msg += "    Num vertices: " + std::to_string(model->meshes[i].vertices.size()) + "\n";
+		msg += "    Num textures: " + std::to_string(model->meshes[i].material.textures.size()) + "\n";
+		msg += "    Color Diffuse [" +	std::to_string(model->meshes[i].material.colDiffuse.r) + " / " +
+										std::to_string(model->meshes[i].material.colDiffuse.g) + " / " +
+										std::to_string(model->meshes[i].material.colDiffuse.b) + " ] " + "\n";
+		msg += "    Color Ambient [" + std::to_string(model->meshes[i].material.colAmbient.r) + " / " +
+										std::to_string(model->meshes[i].material.colAmbient.g) + " / " +
+										std::to_string(model->meshes[i].material.colAmbient.b) + " ] " + "\n";
+		msg += "    Color Specular [" + std::to_string(model->meshes[i].material.colSpecular.r) + " / " +
+										std::to_string(model->meshes[i].material.colSpecular.g) + " / " +
+										std::to_string(model->meshes[i].material.colSpecular.b) + " ] " + "\n";
 	}
 */	
 	return msg;

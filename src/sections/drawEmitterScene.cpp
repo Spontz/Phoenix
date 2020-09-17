@@ -14,8 +14,7 @@ public:
 	std::string debug();
 
 private:
-	// 3D Model
-	int			model;
+	Model*			model;
 
 	// Particle engine variables
 	unsigned int	numMaxParticles;
@@ -57,7 +56,7 @@ static float RandomFloat()
 
 bool sDrawEmitterScene::load() {
 	// script validation
-	if ((param.size() != 3) || (strings.size() != 9)) {
+	if ((param.size() != 3) || (strings.size() < 9)) {
 		LOG->Error("Draw Emitter Scene [%s]: 3 param (emission time, Particle Life Time & Randomness) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", identifier.c_str());
 		return false;
 	}
@@ -66,10 +65,10 @@ bool sDrawEmitterScene::load() {
 	std::string pathShaders;
 	pathShaders = m_demo.dataFolder + strings[0];
 
-	// Load the model scene
+	// Load the model
 	model = m_demo.modelManager.addModel(m_demo.dataFolder + strings[1]);
 
-	if (model < 0)
+	if (model == nullptr)
 		return false;
 
 	exprPosition = new mathDriver(this);
@@ -102,14 +101,10 @@ bool sDrawEmitterScene::load() {
 
 	exprPosition->SymbolTable.add_variable("nE", currentEmitter);
 
-	// Load model properties
-	Model *my_model;
-	my_model = m_demo.modelManager.model[model];
-
 	// Load the particle generator parameters
 	int numEmitters = 0;
-	for (int i = 0; i < my_model->meshes.size(); i++) {
-		numEmitters += (int)my_model->meshes[i].unique_vertices_pos.size();
+	for (int i = 0; i < model->meshes.size(); i++) {
+		numEmitters += (int)model->meshes[i].unique_vertices_pos.size();
 	}
 
 	numEmitters = numEmitters;
@@ -144,11 +139,11 @@ bool sDrawEmitterScene::load() {
 	// Load the emitters, based in our model vertexes
 	int numEmitter = 0;
 	currentEmitter = 0;
-	for (int i = 0; i < my_model->meshes.size(); i++) {
-		for (int j = 0; j < my_model->meshes[i].unique_vertices_pos.size(); j++) {
+	for (int i = 0; i < model->meshes.size(); i++) {
+		for (int j = 0; j < model->meshes[i].unique_vertices_pos.size(); j++) {
 			exprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 			Emitter[numEmitter].Type = PARTICLE_TYPE_EMITTER;
-			Emitter[numEmitter].Pos = my_model->meshes[i].unique_vertices_pos[j];
+			Emitter[numEmitter].Pos = model->meshes[i].unique_vertices_pos[j];
 			Emitter[numEmitter].Vel = velocity + (emitterRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat()));
 			Emitter[numEmitter].Col = color;
 			Emitter[numEmitter].lifeTime = 0.0f;

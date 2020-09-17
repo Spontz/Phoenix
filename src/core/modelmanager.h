@@ -14,7 +14,7 @@ public:
 
 	ModelManager();
 	virtual ~ModelManager();
-	int addModel(std::string path);
+	Model* addModel(std::string path);
 private:
 
 

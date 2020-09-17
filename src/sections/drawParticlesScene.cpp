@@ -13,8 +13,8 @@ public:
 	std::string debug();
 
 private:
-	// 3D Model
-	int				model;
+	// 3D Scene
+	Model*			model;
 
 	// Particle engine variables
 	int				numParticles;
@@ -52,20 +52,16 @@ bool sDrawParticlesScene::load() {
 	if (!shader)
 		return false;
 
-	// Load the model scene
+	// Load the model model
 	model = m_demo.modelManager.addModel(m_demo.dataFolder + strings[1]);
 
-	if (model <0)
+	if (model == nullptr)
 		return false;
-
-	// Load model properties
-	Model* my_model;
-	my_model = m_demo.modelManager.model[model];
 
 	// Calculate particles number
 	numParticles = 0;
-	for (int i = 0; i < my_model->meshes.size(); i++) {
-		numParticles += (int)my_model->meshes[i].unique_vertices_pos.size();
+	for (int i = 0; i < model->meshes.size(); i++) {
+		numParticles += (int)model->meshes[i].unique_vertices_pos.size();
 	}
 	if (numParticles == 0) {
 		LOG->Error("Draw Particles Scene [%s]: No vertex found in the model", identifier.c_str());
@@ -75,9 +71,9 @@ bool sDrawParticlesScene::load() {
 	std::vector<glm::vec3> Pos;
 	Pos.resize(numParticles);
 	int cnt = 0;
-	for (int i = 0; i < my_model->meshes.size(); i++) {
-		for (int j = 0; j < my_model->meshes[i].unique_vertices_pos.size(); j++) {
-			Pos[cnt] = my_model->meshes[i].unique_vertices_pos[j];
+	for (int i = 0; i < model->meshes.size(); i++) {
+		for (int j = 0; j < model->meshes[i].unique_vertices_pos.size(); j++) {
+			Pos[cnt] = model->meshes[i].unique_vertices_pos[j];
 			cnt++;
 		}
 	}

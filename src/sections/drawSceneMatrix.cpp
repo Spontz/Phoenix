@@ -12,8 +12,8 @@ public:
 	std::string debug();
 
 private:
-	int			model_ref;	// Reference model to be use to store positions
-	int			model;		// Model to draw
+	Model*		model_ref;	// Reference model to be use to store positions
+	Model*		model;		// Model to draw
 	Shader*		shader;
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
@@ -50,8 +50,8 @@ Section* instance_drawSceneMatrix() {
 
 sDrawSceneMatrix::sDrawSceneMatrix()
 	:
-	model_ref(-1),
-	model(-1),
+	model_ref(nullptr),
+	model(nullptr),
 	shader(nullptr),
 	enableDepthBufferClearing(1),
 	drawWireframe(0),
@@ -69,12 +69,12 @@ sDrawSceneMatrix::sDrawSceneMatrix()
 	m_mObjRotation({ 0,0,0 }),
 	m_mObjScale({ 1,1,1 }),
 	prev_model (nullptr),
-	prev_projection({0}),
-	prev_view({ 0 }),
+	prev_projection(glm::mat4(1.0f)),
+	prev_view(glm::mat4(1.0f)),
 	exprPosition(nullptr),
 	vars (nullptr)
 {
-	type = SectionType::DrawScene;
+	type = SectionType::DrawSceneMatrix;
 }
 
 bool sDrawSceneMatrix::load() {
@@ -99,7 +99,7 @@ bool sDrawSceneMatrix::load() {
 	// Load ref. model, model and shader
 	model_ref = m_demo.modelManager.addModel(m_demo.dataFolder + strings[0]);
 	model = m_demo.modelManager.addModel(m_demo.dataFolder + strings[1]);
-	if (model_ref < 0 || model < 0)
+	if (!model_ref || model < 0)
 		return false;
 
 	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[2]);
@@ -107,27 +107,19 @@ bool sDrawSceneMatrix::load() {
 		return false;
 
 	// Calculate the number of matrices that we need to store
-	Model *my_model_ref;
-	my_model_ref = m_demo.modelManager.model[model_ref];
-	// Get the number of objects
-	m_numObjects = 0;
-	m_cObjID = 0;
-
 	int num_matrices = 0;
-	for (int i = 0; i < my_model_ref->meshes.size(); i++)
+	for (int i = 0; i < model_ref->meshes.size(); i++)
 	{
-		num_matrices += (int)my_model_ref->meshes[i].unique_vertices_pos.size();
+		num_matrices += (int)model_ref->meshes[i].unique_vertices_pos.size();
 	}
 	m_numObjects = (float)num_matrices; // Number of objects to draw is the total amount of unique_vertices to draw
 	prev_model = new std::vector<glm::mat4>;
 	prev_model->resize(num_matrices);
 
 	// Load model properties
-	Model *my_model;
-	my_model = m_demo.modelManager.model[model];
-	my_model->playAnimation = playAnimation;
-	if (my_model->playAnimation)
-		my_model->setAnimation(AnimationNumber);
+	model->playAnimation = playAnimation;
+	if (model->playAnimation)
+		model->setAnimation(AnimationNumber);
 
 
 	exprPosition = new mathDriver(this);
@@ -185,9 +177,7 @@ void sDrawSceneMatrix::init() {
 }
 
 void sDrawSceneMatrix::exec() {
-	Model *my_model_ref = m_demo.modelManager.model[model_ref];
-	Model *my_model = m_demo.modelManager.model[model];
-	
+
 	// Start evaluating blending
 	EvalBlendingStart();
 
@@ -197,9 +187,9 @@ void sDrawSceneMatrix::exec() {
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 	// Set model properties
-	my_model->playAnimation = playAnimation;
-	if (my_model->playAnimation)
-		my_model->setAnimation(AnimationNumber);
+	model->playAnimation = playAnimation;
+	if (model->playAnimation)
+		model->setAnimation(AnimationNumber);
 
 	// Load shader
 	shader->use();
@@ -230,7 +220,7 @@ void sDrawSceneMatrix::exec() {
 	m_cObjID = 0;
 	int object = 0;
 	
-		// Evaluate the expression
+	// Evaluate the expression
 	exprPosition->Expression.value();
 	shader->setValue("n_total", m_numObjects);	// Send total objects to draw to the shader
 
@@ -242,12 +232,12 @@ void sDrawSceneMatrix::exec() {
 	matrixModel = glm::rotate(matrixModel, glm::radians(m_mObjRotation.z), glm::vec3(0, 0, 1));
 	matrixModel = glm::scale(matrixModel, m_mObjScale);
 
-	for (int i = 0; i < my_model_ref->meshes.size(); i++)
+	for (int i = 0; i < model_ref->meshes.size(); i++)
 	{
-		for (int j = 0; j < my_model_ref->meshes[i].unique_vertices_pos.size(); j++)
+		for (int j = 0; j < model_ref->meshes[i].unique_vertices_pos.size(); j++)
 		{
-			m_cObjPos = my_model_ref->meshes[i].unique_vertices_pos[j];
-			m_cObjDistance = my_model_ref->meshes[i].unique_vertices_dist[j];
+			m_cObjPos = model_ref->meshes[i].unique_vertices_pos[j];
+			m_cObjDistance = model_ref->meshes[i].unique_vertices_dist[j];
 			// Evaluate the expression
 			exprPosition->Expression.value();
 			shader->setValue("n", m_cObjID);			// Send the number of object to the shader
@@ -255,7 +245,7 @@ void sDrawSceneMatrix::exec() {
 			shader->setValue("n_pos", m_cObjPos);		// Send the object relative position to the shader
 
 			objModel = matrixModel;
-			objModel = glm::translate(objModel, my_model_ref->meshes[i].unique_vertices_pos[j]);
+			objModel = glm::translate(objModel, model_ref->meshes[i].unique_vertices_pos[j]);
 
 			// Now render the object using the "model_ref" as a model matrix start position
 			objModel = glm::translate(objModel, m_cObjTranslation);
@@ -263,13 +253,13 @@ void sDrawSceneMatrix::exec() {
 			objModel = glm::rotate(objModel, glm::radians(m_cObjRotation.y), glm::vec3(0, 1, 0));
 			objModel = glm::rotate(objModel, glm::radians(m_cObjRotation.z), glm::vec3(0, 0, 1));
 			objModel = glm::scale(objModel, m_cObjScale);
-			my_model->modelTransform = objModel;
+			model->modelTransform = objModel;
 
 			// For MotionBlur, we send the previous model matrix, and then store it for later use
 			shader->setValue("prev_model", prev_model[0][object]);
 			prev_model[0][object] = objModel;
 
-			my_model->Draw(shader->ID, AnimationTime);
+			model->Draw(shader->ID, AnimationTime);
 
 			object++; 
 			m_cObjID = (float)object;
@@ -294,14 +284,11 @@ void sDrawSceneMatrix::end() {
 
 std::string sDrawSceneMatrix::debug()
 {
-	Model *my_model_ref = m_demo.modelManager.model[model_ref];
-	Model *my_model = m_demo.modelManager.model[model];
-
 	std::string msg;
 	msg = "[ drawSceneMatrix id: " +  identifier + " layer:" + std::to_string(layer) + " ]\n";
-	msg += " Matrix file: " + my_model_ref->filename + "\n";
-	msg += " file: " + my_model->filename + "\n";
-	msg += " objects drawn: " + std::to_string((int)(m_numObjects)) + "\n";
-	msg += " meshes in each object: " + std::to_string(my_model->meshes.size()) + "\n";
+	msg += " Matrix file: " + model_ref->filename + "\n";
+	msg += " objects in matrix to be drawn: " + std::to_string((int)(m_numObjects)) + "\n";
+	msg += " Model file: " + model->filename + "\n";
+	msg += " meshes in each model: " + std::to_string(model->meshes.size()) + "\n";
 	return msg;
 }

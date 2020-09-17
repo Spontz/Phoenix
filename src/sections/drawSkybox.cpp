@@ -35,7 +35,7 @@ sDrawSkybox::sDrawSkybox() {
 }
 
 bool sDrawSkybox::load() {
-	if ((param.size() != 2) || (strings.size() != 8)) {
+	if ((param.size() != 2) || (strings.size() < 8)) {
 		LOG->Error("DrawSkybox [%s]: 2 param and 8 strings needed: enable depthBuffer, drawWireframe + 6 strings with skybox faces, 2 strings with rot and scale", identifier.c_str());
 		return false;
 	}
@@ -60,8 +60,10 @@ bool sDrawSkybox::load() {
 
 	// Read variables for traslation, rotation and scaling
 	exprPosition = new mathDriver(this);
-	// Load positions, process constants and compile expression
-	exprPosition->expression = std::string(strings[6]) + strings[7]; // Concatenate the 2 positioning strings (rotation+scale)
+	// Load all the other strings
+	for (int i = 6; i < strings.size(); i++)
+		exprPosition->expression += strings[i];
+
 	exprPosition->SymbolTable.add_variable("rx", rotation.x);
 	exprPosition->SymbolTable.add_variable("ry", rotation.y);
 	exprPosition->SymbolTable.add_variable("rz", rotation.z);
