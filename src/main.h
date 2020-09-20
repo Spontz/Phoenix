@@ -6,7 +6,7 @@
 
 #define PHOENIX_MAJOR_VERSION 1
 #define PHOENIX_MINOR_VERSION 1
-#define PHOENIX_BUILD_VERSION 0
+#define PHOENIX_BUILD_VERSION 2
 
 #ifdef PHOENIX_MAIN
 	#define STB_IMAGE_IMPLEMENTATION
@@ -28,6 +28,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/polar_coordinates.hpp>
 
 #include <exprtk.hpp>
 

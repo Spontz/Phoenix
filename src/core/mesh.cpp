@@ -68,11 +68,13 @@ void Mesh::loadUniqueVerticesPos()
 		}
 		if (vertexFound == false) {
 			unique_vertices_pos.push_back(m_vertices[i].Position);
-			// Calculate distance to the center
-			float d = std::sqrtf(	m_vertices[i].Position.x * m_vertices[i].Position.x +
+			float r = std::sqrtf(	m_vertices[i].Position.x * m_vertices[i].Position.x +
 									m_vertices[i].Position.y * m_vertices[i].Position.y +
 									m_vertices[i].Position.z * m_vertices[i].Position.z);
-			unique_vertices_dist.push_back(d);
+			float a = atan2f(m_vertices[i].Position.y , m_vertices[i].Position.x);
+			float b = acosf(m_vertices[i].Position.z / r);
+			unique_vertices_polar.push_back(glm::vec3(a,b,r));
+			//unique_vertices_polar.push_back(glm::polar(m_vertices[i].Position));
 		}
 			
 	}

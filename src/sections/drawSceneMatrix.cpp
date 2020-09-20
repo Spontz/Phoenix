@@ -23,8 +23,8 @@ private:
 
 	float		m_numObjects;		// Total number of object to draw
 	float		m_cObjID;			// Current object to draw
-	float		m_cObjDistance;		// Distance to the center of the current object
 	glm::vec3	m_cObjPos;			// Current position of our object
+	glm::vec3	m_cObjPosPolar;		// Current position of our object (in polar coordinates)
 	glm::vec3	m_cObjTranslation;	// Current object translation
 	glm::vec3	m_cObjRotation;		// Current object rotation
 	glm::vec3	m_cObjScale;		// Current object scale
@@ -60,8 +60,8 @@ sDrawSceneMatrix::sDrawSceneMatrix()
 	AnimationTime(0),
 	m_numObjects(0),
 	m_cObjID(0),
-	m_cObjDistance(0),
 	m_cObjPos({0,0,0}),
+	m_cObjPosPolar({ 0,0,0 }),
 	m_cObjTranslation({ 0,0,0 }),
 	m_cObjRotation({ 0,0,0 }),
 	m_cObjScale({ 1,1,1 }),
@@ -130,10 +130,12 @@ bool sDrawSceneMatrix::load() {
 	exprPosition->SymbolTable.add_variable("aTime", AnimationTime);
 	exprPosition->SymbolTable.add_variable("n", m_cObjID);
 	exprPosition->SymbolTable.add_variable("n_total", m_numObjects);
-	exprPosition->SymbolTable.add_variable("n_d", m_cObjDistance);
-	exprPosition->SymbolTable.add_variable("n_posx", m_cObjPos.x);
-	exprPosition->SymbolTable.add_variable("n_posy", m_cObjPos.y);
-	exprPosition->SymbolTable.add_variable("n_posz", m_cObjPos.z);
+	exprPosition->SymbolTable.add_variable("x", m_cObjPos.x);
+	exprPosition->SymbolTable.add_variable("y", m_cObjPos.y);
+	exprPosition->SymbolTable.add_variable("z", m_cObjPos.z);
+	exprPosition->SymbolTable.add_variable("a", m_cObjPosPolar.x);
+	exprPosition->SymbolTable.add_variable("b", m_cObjPosPolar.y);
+	exprPosition->SymbolTable.add_variable("r", m_cObjPosPolar.z);
 	exprPosition->SymbolTable.add_variable("tx", m_cObjTranslation.x);
 	exprPosition->SymbolTable.add_variable("ty", m_cObjTranslation.y);
 	exprPosition->SymbolTable.add_variable("tz", m_cObjTranslation.z);
@@ -237,12 +239,12 @@ void sDrawSceneMatrix::exec() {
 		for (int j = 0; j < model_ref->meshes[i].unique_vertices_pos.size(); j++)
 		{
 			m_cObjPos = model_ref->meshes[i].unique_vertices_pos[j];
-			m_cObjDistance = model_ref->meshes[i].unique_vertices_dist[j];
+			m_cObjPosPolar = model_ref->meshes[i].unique_vertices_polar[j];
 			// Evaluate the expression
 			exprPosition->Expression.value();
-			shader->setValue("n", m_cObjID);			// Send the number of object to the shader
-			shader->setValue("n_d", m_cObjDistance);	// Send the distance of object to the shader
-			shader->setValue("n_pos", m_cObjPos);		// Send the object relative position to the shader
+			shader->setValue("n", m_cObjID);				// Send the number of object to the shader
+			shader->setValue("n_pos", m_cObjPos);			// Send the object relative position to the shader
+			shader->setValue("n_polar", m_cObjPosPolar);	// Send the object relative position to the shader (in polar format: x=alpha, y=beta, z=distance)
 
 			objModel = matrixModel;
 			objModel = glm::translate(objModel, model_ref->meshes[i].unique_vertices_pos[j]);
