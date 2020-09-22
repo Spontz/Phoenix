@@ -171,8 +171,6 @@ void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, in
 				demo.camera->MovementSpeed *= 2.0f;
 			else if (key == KEY_DIVIDER) {
 				demo.camera->MovementSpeed /= 2.0f;
-				if (demo.camera->MovementSpeed < 0.01f)
-					demo.camera->MovementSpeed = 0.01f;
 			}
 
 		}
