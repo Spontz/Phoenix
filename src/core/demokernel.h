@@ -119,6 +119,7 @@ public:
 
 	void getArguments(int argc, char *argv[]);
 	bool initDemo();
+	void initNetwork();
 	void mainLoop();
 	void closeDemo();
 	const std::string getEngineVersion();

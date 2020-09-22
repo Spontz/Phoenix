@@ -39,6 +39,7 @@ int main(int argc, char* argv[]) {
 	log.Info(LogLevel::MED, "Loading Scripts...");
 	if (!demo.load_config())
 		return 0;
+	demo.initNetwork(); // After loading config, we init the network
 	demo.load_spos();
 	PX_PROFILE_END_SESSION();
 

@@ -99,13 +99,6 @@ bool demokernel::initDemo() {
 	// Start loading Basic resources
 	res->loadAllResources();
 
-	if (slaveMode) {
-		LOG->Info(LogLevel::HIGH, "Running in network slave mode");
-		NETDRV->init();
-		
-	}
-	else
-		LOG->Info(LogLevel::HIGH, "Running in standalone mode");
 	// initialize global control variables
 	initControlVars();
 
@@ -116,6 +109,17 @@ bool demokernel::initDemo() {
 	initTimer();
 
 	return true;
+}
+
+
+void demokernel::initNetwork()
+{
+	if (slaveMode) {
+		LOG->Info(LogLevel::HIGH, "Running in network slave mode");
+		NETDRV->init();
+	}
+	else
+		LOG->Info(LogLevel::HIGH, "Running in standalone mode");
 }
 
 void demokernel::mainLoop() {
