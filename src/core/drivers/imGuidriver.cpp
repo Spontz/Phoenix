@@ -181,7 +181,7 @@ void imGuiDriver::drawInfo() {
 		ImGui::Text("Time: %.2f/%.2f", m_demo.demo_runTime, m_demo.demo_endTime);
 		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->sound_cpu());
 		ImGui::Text("Texture mem used: %.2fmb", m_demo.textureManager.mem + m_demo.fboManager.mem + m_demo.efxBloomFbo.mem + m_demo.efxAccumFbo.mem);
-		ImGui::Text("Cam Speed: %.0f", m_demo.camera->MovementSpeed);
+		ImGui::Text("Cam Speed: %.2f", m_demo.camera->MovementSpeed);
 		ImGui::Text("Cam Pos: %.1f,%.1f,%.1f", m_demo.camera->Position.x, m_demo.camera->Position.y, m_demo.camera->Position.z);
 		ImGui::Text("Cam Front: %.1f,%.1f,%.1f", m_demo.camera->Front.x, m_demo.camera->Front.y, m_demo.camera->Front.z);
 		ImGui::Text("Cam Yaw: %.1f, Pitch: %.1f, Roll: %.1f, Zoom: %.1f", m_demo.camera->Yaw, m_demo.camera->Pitch, m_demo.camera->Roll, m_demo.camera->Zoom);
