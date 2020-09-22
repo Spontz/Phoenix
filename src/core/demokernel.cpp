@@ -117,6 +117,7 @@ void demokernel::initNetwork()
 	if (slaveMode) {
 		LOG->Info(LogLevel::HIGH, "Running in network slave mode");
 		NETDRV->init();
+		NETDRV->update();
 	}
 	else
 		LOG->Info(LogLevel::HIGH, "Running in standalone mode");
