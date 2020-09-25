@@ -129,8 +129,7 @@ void Mesh::setupMesh()
 }
 
 
-// render the mesh
-void Mesh::Draw(GLuint shaderID)
+void Mesh::DrawMaterials(GLuint shaderID)
 {
 	// Send material properties
 	glUniform3fv(glGetUniformLocation(shaderID, "color_ambient"), 1, &m_material.colAmbient[0]);
@@ -151,6 +150,13 @@ void Mesh::Draw(GLuint shaderID)
 		// and finally bind the texture
 		m_material.textures[i].tex->bind(i);
 	}
+}
+
+// render the mesh
+void Mesh::Draw(GLuint shaderID)
+{
+	// Setup materials for drawing
+	DrawMaterials(shaderID);
 
 	// draw mesh
 	glBindVertexArray(m_VAO);

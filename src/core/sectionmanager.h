@@ -27,6 +27,7 @@ enum SectionType {
 	DrawFbo,
 	DrawScene,
 	DrawSceneMatrix,
+	DrawSceneMatrixInstanced,
 	DrawParticles,
 	DrawParticlesScene,
 	DrawEmitters,

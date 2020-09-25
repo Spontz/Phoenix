@@ -70,19 +70,24 @@ public:
 	Mesh(std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial *pMaterial, std::string directory, std::string filename);
 	// render the mesh
 	void Draw(GLuint shaderID);
-	
+
 private:
+	friend class ModelInstance;			// We allod ModelInstance class to access private memebers
+
 	GLuint						m_VAO;	// Vertex Array object
 	GLuint						m_VBO;	// Vertex Buffer Object
 	GLuint						m_EBO;	// Element Buffer Object
 	const aiMesh				*m_pMesh;	// ASSIMP mesh object
-	std::vector<Vertex>			m_vertices;	// Vertices
 	std::vector<unsigned int>	m_indices;	// Indices
+	std::vector<Vertex>			m_vertices;	// Vertices
 	Material					m_material;	// Material
 
 
 	// initializes all the buffer objects/arrays
 	void setupMesh();
+
+	// Setup materials for drawing
+	void DrawMaterials(GLuint shaderID);
 
 	// Loads the unique vertices positions
 	void loadUniqueVerticesPos();

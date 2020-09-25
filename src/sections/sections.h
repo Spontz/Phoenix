@@ -21,6 +21,7 @@ Section* instance_drawVideo();
 Section* instance_drawQuad();
 Section* instance_drawScene();
 Section* instance_drawSceneMatrix();
+Section* instance_drawSceneMatrixInstanced();
 Section* instance_drawParticles();
 Section* instance_drawParticlesScene();
 Section* instance_drawEmitters();
