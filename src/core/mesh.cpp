@@ -84,23 +84,21 @@ void Mesh::loadUniqueVerticesPos()
 // initializes all the buffer objects/arrays
 void Mesh::setupMesh()
 {
-	// create VAO, VBO and ElementBuffer
+	// Create VAO
 	glGenVertexArrays(1, &m_VAO);
-	glGenBuffers(1, &m_VBO);
-	glGenBuffers(1, &m_EBO);
-
 	glBindVertexArray(m_VAO);
-	// load data into vertex buffers
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	// A great thing about structs is that their memory layout is sequential for all its items.
-	// The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
-	// again translates to 3/2 floats which translates to a byte array.
+
+	// Load data into vertex buffers
+	glGenBuffers(1, &m_vertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+	// Load data into index buffers (element buffer)
+	glGenBuffers(1, &m_indicesBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indicesBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(unsigned int), &m_indices[0], GL_STATIC_DRAW);
 
-	// set the vertex attribute pointers
+	// Set the vertex attribute pointers
 	// vertex Positions
 	glEnableVertexAttribArray(POSITION_LOCATION);
 	glVertexAttribPointer(POSITION_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
@@ -160,7 +158,7 @@ void Mesh::Draw(GLuint shaderID)
 
 	// draw mesh
 	glBindVertexArray(m_VAO);
-	glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, NULL);
 	glBindVertexArray(0);
 
 	// always good practice to set everything back to defaults once configured.

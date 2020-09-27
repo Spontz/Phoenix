@@ -24,7 +24,7 @@ public:
 	Model*			model;			// Model to draw
 	unsigned int	amount;			// Amount of instances to draw
 	glm::mat4*		modelMatrices;	// Model matrice of each instance
-	unsigned int matricesBuffer;
+	unsigned int	matricesBuffer;
 
 	ModelInstance(Model* model, unsigned int amount);
 	virtual ~ModelInstance();

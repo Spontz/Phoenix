@@ -75,8 +75,8 @@ private:
 	friend class ModelInstance;			// We allod ModelInstance class to access private memebers
 
 	GLuint						m_VAO;	// Vertex Array object
-	GLuint						m_VBO;	// Vertex Buffer Object
-	GLuint						m_EBO;	// Element Buffer Object
+	GLuint						m_vertexBuffer;	// Vertex Buffer Object
+	GLuint						m_indicesBuffer;	// Element Buffer Object
 	const aiMesh				*m_pMesh;	// ASSIMP mesh object
 	std::vector<unsigned int>	m_indices;	// Indices
 	std::vector<Vertex>			m_vertices;	// Vertices
