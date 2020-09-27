@@ -54,6 +54,8 @@ namespace Phoenix {
 
 		std::pair<std::string, std::string> splitIn2Lines(const std::string& line);
 		std::vector<std::string> splitInMultipleLines(const std::string& line);
+		std::string& removeDoubleSpaces(std::string& line);
+
 		int scriptCommandFound(const std::string& command);
 		
 		const std::map<std::string, SectionCommand_> spoSectionCommand_ = {

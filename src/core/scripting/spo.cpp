@@ -260,6 +260,9 @@ namespace Phoenix {
 				continue;
 			}
 
+			// Remove double spaces
+			line = removeDoubleSpaces(line);
+
 			// If its a section
 			if (line[0] == '[') {
 				char c_sec_type[512];
@@ -465,6 +468,23 @@ namespace Phoenix {
 			strings.push_back(s);
 		}
 		return strings;
+	}
+
+	std::string& SpoReader::removeDoubleSpaces(std::string& line)
+	{
+		std::string::size_type pos = line.find("  ");
+
+		while (pos != std::string::npos) {
+
+			// replace BOTH spaces with one space
+			line.replace(pos, 2, " ");
+
+			// start searching again, where you left off
+			// rather than going back to the beginning
+			pos = line.find("  ", pos);
+		}
+
+		return line;
 	}
 
 	int SpoReader::scriptCommandFound(const std::string& command)
