@@ -36,15 +36,36 @@ bool Cubemap::load(std::vector<std::string> faces_file_name, bool flip)
 	glGenTextures(1, &cubemapID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapID);
 
-	int Width, Height, nrChannels;
+	int Width, Height, components;
 	for (unsigned int i = 0; i < faces_file_name.size(); i++)
 	{
 		filename.push_back(faces_file_name[i]);
-		unsigned char *data = stbi_load(faces_file_name[i].c_str(), &Width, &Height, &nrChannels, 0);
+		unsigned char *data = stbi_load(faces_file_name[i].c_str(), &Width, &Height, &components, 0);
 		this->width.push_back(Width);
 		this->height.push_back(Height);
 		if (data)
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		{
+			GLenum internalFormat = 0;
+			GLenum dataFormat = 0;
+			if (components == 1) {
+				internalFormat = GL_R8;
+				dataFormat = GL_RED;
+			}
+			else if (components == 2) {
+				internalFormat = GL_RG8;
+				dataFormat = GL_RG;
+			}
+			else if (components == 3) {
+				internalFormat = GL_RGB8;
+				dataFormat = GL_RGB;
+			}
+			else if (components == 4) {
+				internalFormat = GL_RGBA8;
+				dataFormat = GL_RGBA;
+			}
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, Width, Height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
+		}
+			
 		else {
 			LOG->Error("Failed loading cubemap from file: %s", faces_file_name[i].c_str());
 			is_loaded = false;
