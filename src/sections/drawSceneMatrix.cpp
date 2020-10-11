@@ -84,11 +84,6 @@ sDrawSceneMatrix::sDrawSceneMatrix()
 }
 
 
-void updatePositions() {
-
-}
-
-
 bool sDrawSceneMatrix::load() {
 	if ((param.size() != 5) || (strings.size() < 7)) {
 		LOG->Error("DrawSceneMatrix [%s]: 5 param (Enable Depth buffer, enable wireframe, update object positions on each frame, enable animation and animation number) and 7 strings needed", identifier.c_str());
