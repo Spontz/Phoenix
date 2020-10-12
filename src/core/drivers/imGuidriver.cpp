@@ -228,7 +228,7 @@ void imGuiDriver::drawFbo() {
 	float fbo_w_size = static_cast<float>(m_vp.width) / 5.0f; // 4 fbo's per row
 	float fbo_h_size = static_cast<float>(m_vp.height) / 5.0f; // height is 1/3 screensize
 
-	if(!ImGui::Begin("Fbo info (press '5' to change attachment)", &show_fbo))
+	if(!ImGui::Begin("Fbo info (press '4' to change attachment)", &show_fbo))
 	{
 		// Early out if the window is collapsed, as an optimization.
 		ImGui::End();
