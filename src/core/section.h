@@ -61,8 +61,8 @@ public:
 	virtual bool		load()		{ return true; };	// load data from disk
 	virtual void		init()		{};	// set up local variables before execution
 	virtual void		exec()		{};	// render a new frame
-	virtual void		end ()		{};	// destroy allocated memory
-	virtual std::string	debug()		{ return std::string(); };	// outputs a message for debugging
+	virtual void		end()		{};	// destroy allocated memory
+	virtual std::string	debug()		{ return {}; };	// outputs a message for debugging
 			
 protected:
 	demokernel&			m_demo;

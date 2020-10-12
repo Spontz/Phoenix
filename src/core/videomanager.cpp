@@ -1,48 +1,39 @@
 // videomanager.cpp
 // Spontz Demogroup
 
-#include "main.h"
 #include "videomanager.h"
-
-
-// Init vars
-VideoManager::VideoManager() {
-	video.clear();
-}
+#include "main.h"
 
 VideoManager::~VideoManager()
 {
-	video.clear();
+	for (auto const& pVideo : videos_)
+		delete pVideo;
 }
 
 // Adds a Texture into the queue, returns the Number of the texture added
-int VideoManager::addVideo(std::string path) {
-	
-	unsigned int i;
-	int video_num = -1;
-
-	// check if video is already loaded, then we just return the ID of our video
-	for (i = 0; i < video.size(); i++) {
-		if (video[i]->fileName.compare(path) == 0) {
+int VideoManager::addVideo(std::string const& path)
+{
+	// Return ID if the video has already been loaded
+	for (auto i = 0; i < videos_.size(); ++i)
+		if (videos_[i]->getFileName().compare(path) == 0)
 			return i;
-		}
+
+	// Otherwise load the video
+	const auto pNewVideo = new Video();
+	if (pNewVideo->load(path)) {
+		videos_.push_back(pNewVideo);
+		const int videoNum = static_cast<int>(videos_.size()) - 1;
+		LOG->Info(LogLevel::MED, "Video \"%s\" [id: %d] loaded OK.", path.c_str(), videoNum);
+		return videoNum;
 	}
-	// if we must load the video...
-	Video *new_vid = new Video();
-	if (new_vid->load(path)) {
-		video.push_back(new_vid);
-		video_num = (int)video.size() - 1;
-		LOG->Info(LogLevel::MED, "Video %s [id: %d] loaded OK.", path.c_str(), video_num);
+	else {
+		LOG->Error("Could not load video: \"%s\"", path.c_str());
+		delete pNewVideo;
+		return -1;
 	}
-	else
-		LOG->Error("Could not load vido: %s", path.c_str());
-	
-	return video_num;
 }
 
-int VideoManager::getOpenGLTextureID(int index)
+Video* VideoManager::getVideo(int videoIndex) const
 {
-	if (index < video.size())
-		return video[index]->texID;
-	return -1;
+	return videos_[videoIndex]; 
 }

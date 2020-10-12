@@ -1,24 +1,18 @@
 // videonmanager.h
 // Spontz Demogroup
 
-#ifndef VIDEOMANAGER_H
-#define VIDEOMANAGER_H
-#include <string>
-#include <vector>
+#pragma once
+
 #include "core/video.h"
 
 class VideoManager {
 public:
-	std::vector<Video*> video;	// Video list
+	~VideoManager();
 
-	VideoManager();
-	virtual ~VideoManager();
-
-	int addVideo(std::string path);
-	int	getOpenGLTextureID(int index);
+public:
+	int addVideo(std::string const& path);
+	Video* getVideo(int videoIndex) const;
 
 private:
-	
+	std::vector<Video*> videos_; // Video list
 };
-
-#endif

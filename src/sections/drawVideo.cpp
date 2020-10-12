@@ -69,7 +69,7 @@ void sDrawVideo::init() {
 }
 
 void sDrawVideo::exec() {
-	Video *my_video = m_demo.videoManager.video[videoNum];
+	Video *my_video = m_demo.videoManager.getVideo(videoNum);
 	my_video->renderVideo(runTime);
 
 
@@ -80,7 +80,7 @@ void sDrawVideo::exec() {
 	glDisable(GL_DEPTH_TEST);
 	{
 		// Texture and View aspect ratio, stored for Keeping image proportions
-		float tex_aspect = (float)my_video->width / (float)my_video->height;
+		float tex_aspect = (float)my_video->getWidth() / (float)my_video->getHeight();
 		float view_aspect = GLDRV->GetCurrentViewport().GetAspectRatio();
 		
 		// Put orthogonal mode
@@ -118,10 +118,10 @@ void sDrawVideo::end() {
 }
 
 std::string sDrawVideo::debug() {
-	Video *my_video = m_demo.videoManager.video[videoNum];
+	Video *my_video = m_demo.videoManager.getVideo(videoNum);
 
 	std::string msg;
 	msg = "[ drawVideo id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
-	msg += " filename: " + my_video->fileName + "\n";
+	msg += " filename: " + my_video->getFileName() + "\n";
 	return msg;
 }

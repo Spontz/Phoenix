@@ -1,48 +1,13 @@
 // main.h
 // Spontz Demogroup
 
-#ifndef MAIN_H
-#define MAIN_H
+#pragma once
+
+#include "libs.h"
 
 #define PHOENIX_MAJOR_VERSION 1
 #define PHOENIX_MINOR_VERSION 1
 #define PHOENIX_BUILD_VERSION 7
-
-#ifdef PHOENIX_MAIN
-	#define STB_IMAGE_IMPLEMENTATION
-#endif
-
-#define GLM_FORCE_RADIANS
-#define GLM_ENABLE_EXPERIMENTAL
-
-#include "core/drivers/net/dyad.h"
-#include <windows.h>
-#include <glad/glad.h>
-#include "core/drivers/imGui/imgui_impl_glfw.h"
-#include "core/drivers/imGui/imgui_impl_opengl3.h"
-#include <imgui.h>
-
-#include <GLFW/glfw3.h>
-//#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/string_cast.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/polar_coordinates.hpp>
-
-#include <exprtk.hpp>
-
-
-#include <stb_image.h>
-
-#include <assimp/version.h>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-#include <bass.h>
-
-// ******************************************************************
 
 #define FBO_BUFFERS				25
 #define EFXBLOOM_FBO_BUFFERS	2
@@ -82,5 +47,3 @@ class mathDriver;
 
 #include "debug/instrumentor.h"
 */
-
-#endif

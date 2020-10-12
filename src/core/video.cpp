@@ -1,29 +1,30 @@
 // video.cpp
 // Spontz Demogroup
 
-#include <main.h>
-#include <io.h>
-extern "C" {
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libswscale/swscale.h>
-#include <libavutil/imgutils.h>
-}
 #include "video.h"
 
+#include <main.h>
+
 Video::Video()
+	:
+	pGLFrame(nullptr),
+	pCodecContext(nullptr),
+	pFormatContext(nullptr),
+	pFrame(nullptr),
+	pPacket(nullptr),
+	fileName("Video not loaded"),
+	pCodec(nullptr),
+	pCodecParameters(nullptr),
+	VideoStreamIndex(-1),
+	pConvertContext(nullptr),
+	framerate(0),
+	width(0),
+	height(0),
+	intervalFrame(0),
+	lastRenderTime(0),
+	loaded(false),
+	texID(0)
 {
-	fileName = "Video not loaded";
-	pCodec = NULL;
-	pCodecParameters = NULL;
-	video_stream_index = -1;
-	conv_ctx = NULL;
-	framerate = 0;
-	width = height = 0;
-	intervalFrame = 0;
-	lastRenderTime = 0;
-	loaded = false;
-	texID = 0;
 }
 
 Video::~Video()
@@ -32,23 +33,24 @@ Video::~Video()
 		glDeleteTextures(1, &texID);
 		texID = 0;
 	}
+
 	avformat_close_input(&pFormatContext);
 	avformat_free_context(pFormatContext);
-	
+
 	av_packet_unref(pPacket);
 	av_packet_free(&pPacket);
 
 	av_frame_unref(pFrame);
-	av_frame_unref(glFrame);
+	av_frame_unref(pGLFrame);
 	av_frame_free(&pFrame);
-	av_frame_free(&glFrame);
+	av_frame_free(&pGLFrame);
 
 	avcodec_free_context(&pCodecContext);
 }
 
-bool Video::load(const std::string & filename)
+bool Video::load(const std::string& filename)
 {
-	this->fileName = filename;
+	fileName = filename;
 	// Allocate memory for the Context: http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html
 	pFormatContext = avformat_alloc_context();
 
@@ -78,7 +80,7 @@ bool Video::load(const std::string & filename)
 
 	// loop though all the streams and print its main information
 	for (unsigned int i = 0; i < pFormatContext->nb_streams; i++) {
-		AVCodecParameters *pLocalCodecParameters = NULL;
+		AVCodecParameters* pLocalCodecParameters = NULL;
 		pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
 		//LOG->Info(LogLevel::LOW, "Video: AVStream->time_base before open coded %d/%d", pFormatContext->streams[i]->time_base.num, pFormatContext->streams[i]->time_base.den);
 		//LOG->Info(LogLevel::LOW, "Video: AVStream->r_frame_rate before open coded %d/%d", pFormatContext->streams[i]->r_frame_rate.num, pFormatContext->streams[i]->r_frame_rate.den);
@@ -86,7 +88,7 @@ bool Video::load(const std::string & filename)
 		//LOG->Info(LogLevel::LOW, "Video: AVStream->duration %" PRId64, pFormatContext->streams[i]->duration);
 		//LOG->Info(LogLevel::LOW, "Video: finding the proper decoder (CODEC)");
 
-		AVCodec *pLocalCodec = NULL;
+		AVCodec* pLocalCodec = NULL;
 
 		// finds the registered decoder for a codec ID
 		// https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga19a0ca553277f019dd5b0fec6e1f9dca
@@ -99,8 +101,8 @@ bool Video::load(const std::string & filename)
 
 		// when the stream is a video we store its index, codec parameters and codec
 		if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
-			if (video_stream_index == -1) {
-				video_stream_index = i;
+			if (VideoStreamIndex == -1) {
+				VideoStreamIndex = i;
 				framerate = (float)av_q2d(pFormatContext->streams[i]->avg_frame_rate);
 				intervalFrame = 1.0f / framerate;
 				pCodec = pLocalCodec;
@@ -141,22 +143,21 @@ bool Video::load(const std::string & filename)
 
 	// https://ffmpeg.org/doxygen/trunk/structAVFrame.html
 	pFrame = av_frame_alloc();
-	glFrame = av_frame_alloc();
+	pGLFrame = av_frame_alloc();
 	// Allocate te data buffer for the glFrame
 	int size = av_image_get_buffer_size(AV_PIX_FMT_RGB24, pCodecContext->width, pCodecContext->height, 1);
-	uint8_t *internal_buffer = (uint8_t *)av_malloc(size * sizeof(uint8_t));
-	av_image_fill_arrays((uint8_t**)((AVPicture *)glFrame->data), (int*)((AVPicture *)glFrame->linesize), internal_buffer, AV_PIX_FMT_RGB24, pCodecContext->width, pCodecContext->height, 1);
-	if ((!pFrame) || (!glFrame)) {
+	uint8_t* internal_buffer = (uint8_t*)av_malloc(size * sizeof(uint8_t));
+	av_image_fill_arrays((uint8_t**)((AVPicture*)pGLFrame->data), (int*)((AVPicture*)pGLFrame->linesize), internal_buffer, AV_PIX_FMT_RGB24, pCodecContext->width, pCodecContext->height, 1);
+	if ((!pFrame) || (!pGLFrame)) {
 		LOG->Error("Video: failed to allocated memory for AVFrame");
 		return false;
 	}
 
-
 	// Create the convert Context, used by the OpenGLFrame
-	conv_ctx = sws_getContext(pCodecContext->width, pCodecContext->height, pCodecContext->pix_fmt,	// Source
+	pConvertContext = sws_getContext(pCodecContext->width, pCodecContext->height, pCodecContext->pix_fmt,	// Source
 		pCodecContext->width, pCodecContext->height, AV_PIX_FMT_RGB24,				// Destiny (we change the format only)
 		SWS_BICUBIC, NULL, NULL, NULL);
-	if (!conv_ctx) {
+	if (!pConvertContext) {
 		LOG->Error("Could not create the convert context for OpenGL");
 		return false;
 	}
@@ -167,7 +168,6 @@ bool Video::load(const std::string & filename)
 		LOG->Error("Video: failed to allocated memory for AVPacket");
 		return false;
 	}
-
 
 	// Allocate the OpenGL texture
 	glActiveTexture(GL_TEXTURE0);
@@ -208,7 +208,7 @@ void Video::renderVideo(float time)
 			// https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61
 			if (av_read_frame(pFormatContext, pPacket) >= 0) {
 				// if it's the video stream
-				if (pPacket->stream_index == video_stream_index) {
+				if (pPacket->stream_index == VideoStreamIndex) {
 					response = decodePacket();
 					if (response < 0)
 						LOG->Error("Video: Packet cannot be decoded");
@@ -221,9 +221,7 @@ void Video::renderVideo(float time)
 			// https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
 			av_packet_unref(pPacket);
 		}
-
 	}
-	
 }
 
 void Video::bind(int texUnit) const
@@ -235,10 +233,10 @@ void Video::seekTime(float time)
 {
 	int timeMs = (int)(time * 1000.0f);
 	int64_t DesiredFrameNumber;
-	DesiredFrameNumber = av_rescale(timeMs, pFormatContext->streams[video_stream_index]->time_base.den, pFormatContext->streams[video_stream_index]->time_base.num);
+	DesiredFrameNumber = av_rescale(timeMs, pFormatContext->streams[VideoStreamIndex]->time_base.den, pFormatContext->streams[VideoStreamIndex]->time_base.num);
 	DesiredFrameNumber /= 1000;
 
-	if (av_seek_frame(pFormatContext, video_stream_index, DesiredFrameNumber, 0) < 0) {
+	if (av_seek_frame(pFormatContext, VideoStreamIndex, DesiredFrameNumber, 0) < 0) {
 		LOG->Error("Video: Could not reach position: %f, frame: %d", time, DesiredFrameNumber);
 	}
 }
@@ -275,10 +273,10 @@ int Video::decodePacket()
 				pFrame->pts, pFrame->key_frame, pFrame->coded_picture_number );
 			*/
 			// Scale the image (pFrame) to the OpenGL image (glFrame), using the Convertex cotext
-			sws_scale(conv_ctx, pFrame->data, pFrame->linesize, 0, pCodecContext->height, glFrame->data, glFrame->linesize);
+			sws_scale(pConvertContext, pFrame->data, pFrame->linesize, 0, pCodecContext->height, pGLFrame->data, pGLFrame->linesize);
 
 			glBindTextureUnit(0, texID);
-			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pCodecContext->width, pCodecContext->height, GL_RGB, GL_UNSIGNED_BYTE, glFrame->data[0]);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pCodecContext->width, pCodecContext->height, GL_RGB, GL_UNSIGNED_BYTE, pGLFrame->data[0]);
 
 			//av_frame_unref(pFrame);
 			//av_frame_unref(glFrame);
