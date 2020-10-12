@@ -13,12 +13,14 @@ public:
 	std::string debug();
 
 private:
+	void		updateMatrices(bool initPrevMatrix);
+
 	Model*		model_ref;	// Reference model to be use to store positions
-	//Model*		model;		// Model to draw
 	ModelInstance* model;	// Model to draw instanced
 	Shader*		shader;
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
+	int			updateFormulas;	// Update positions on each frame?
 	int			playAnimation;		// Do we want to play the animation?
 	int			AnimationNumber;	// Number of animation to play
 	float		AnimationTime;		// Animation time (in seconds)
@@ -36,13 +38,16 @@ private:
 	glm::vec3	m_mObjScale;		// Matrix object scale
 
 	// Previous model, projection and view matrix, for being used in effects like motion blur
-	std::vector<glm::mat4>	*prev_model;		// The model needs to be stored on a vector because we need to store the previous model matrix of each object
-	glm::mat4				prev_projection;
-	glm::mat4				prev_view;
+	glm::mat4	prev_projection;
+	glm::mat4	prev_view;
 
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
 	ShaderVars	*vars;			// For storing any other shader variables
 };
+
+// TODO:
+// 1- Pasar las coordenadas polares y cartesianas al shader (tiene sentido?)
+// 2- Pasar el "previous model matix al shader para poderlo usar con efectos como el motion blur
 
 // ******************************************************************
 
@@ -57,6 +62,7 @@ sDrawSceneMatrixInstanced::sDrawSceneMatrixInstanced()
 	shader(nullptr),
 	enableDepthBufferClearing(1),
 	drawWireframe(0),
+	updateFormulas(1),
 	playAnimation(0),
 	AnimationNumber(0),
 	AnimationTime(0),
@@ -70,7 +76,6 @@ sDrawSceneMatrixInstanced::sDrawSceneMatrixInstanced()
 	m_mObjTranslation({ 0,0,0 }),
 	m_mObjRotation({ 0,0,0 }),
 	m_mObjScale({ 1,1,1 }),
-	prev_model (nullptr),
 	prev_projection(glm::mat4(1.0f)),
 	prev_view(glm::mat4(1.0f)),
 	exprPosition(nullptr),
@@ -80,8 +85,8 @@ sDrawSceneMatrixInstanced::sDrawSceneMatrixInstanced()
 }
 
 bool sDrawSceneMatrixInstanced::load() {
-	if ((param.size() != 4) || (strings.size() < 7)) {
-		LOG->Error("DrawSceneMatrix [%s]: 4 param (Enable Depth buffer, enable wireframe, enable animation and animation number) and 7 strings needed", identifier.c_str());
+	if ((param.size() != 5) || (strings.size() < 7)) {
+		LOG->Error("DrawSceneMatrix [%s]: 5 param (Enable Depth buffer, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier.c_str());
 		return false;
 	}
 
@@ -94,9 +99,12 @@ bool sDrawSceneMatrixInstanced::load() {
 	enableDepthBufferClearing = (int)param[0];
 	drawWireframe= (int)param[1];
 
+	// Update formulas on each frame
+	updateFormulas = (int)param[2];
+
 	// Animation parameters
-	playAnimation = (int)param[2];
-	AnimationNumber = (int)param[3];
+	playAnimation = (int)param[3];
+	AnimationNumber = (int)param[4];
 	
 	// Load ref. model, model and shader
 	model_ref = m_demo.modelManager.addModel(m_demo.dataFolder + strings[0]);
@@ -109,17 +117,20 @@ bool sDrawSceneMatrixInstanced::load() {
 		return false;
 
 	// Calculate the amount of objects to draw
-	unsigned int amount = 0;
+	unsigned int num_obj_instances = 0;
 	for (int i = 0; i < model_ref->meshes.size(); i++)
 	{
-		amount += (int)model_ref->meshes[i].unique_vertices_pos.size();
+		num_obj_instances += (int)model_ref->meshes[i].unique_vertices_pos.size();
 	}
-	m_numObjects = (float)amount; // Number of objects to draw is the total amount of unique_vertices to draw
-	prev_model = new std::vector<glm::mat4>; // Todo - prev matrices could be stored in modelInstance object
-	prev_model->resize(amount);
+	if (num_obj_instances == 0) {
+		LOG->Error("DrawSceneMatrix: No vertex found in the reference model");
+		return false;
+	}
+
+	m_numObjects = (float)num_obj_instances; // Number of objects to draw is the total amount of unique_vertices to draw
 
 	// Load model properties
-	model = new ModelInstance(model_to_draw, amount);
+	model = new ModelInstance(model_to_draw, num_obj_instances);
 	model->model->playAnimation = playAnimation;
 	if (model->model->playAnimation)
 		model->model->setAnimation(AnimationNumber);
@@ -174,6 +185,9 @@ bool sDrawSceneMatrixInstanced::load() {
 	// Set shader variables values
 	vars->setValues();
 
+	// Update object matrices
+	updateMatrices(true);
+
 	return true;
 }
 
@@ -220,22 +234,21 @@ void sDrawSceneMatrixInstanced::exec() {
 	// Set the other shader variable values
 	vars->setValues();
 
-	glm::mat4 matrixModel;	// Model matrix to be used on matrix object
-	glm::mat4 instanceModel;	// Model matrix to be used on each instance object
-	m_cObjID = 0;
-	int object = 0;
-	
 	// Evaluate the expression
 	exprPosition->Expression.value();
+
+	// Update Matrices with objects positions, if required
+	if (updateFormulas)
+		updateMatrices(false);
+
+	// Draw Objects
+	int object = 0;
+	m_cObjID = 0;
 	shader->setValue("n_total", m_numObjects);	// Send total objects to draw to the shader
-
-	matrixModel = glm::mat4(1.0f);
-	matrixModel = glm::translate(matrixModel, m_mObjTranslation);
-	matrixModel = glm::rotate(matrixModel, glm::radians(m_mObjRotation.x), glm::vec3(1, 0, 0));
-	matrixModel = glm::rotate(matrixModel, glm::radians(m_mObjRotation.y), glm::vec3(0, 1, 0));
-	matrixModel = glm::rotate(matrixModel, glm::radians(m_mObjRotation.z), glm::vec3(0, 0, 1));
-	matrixModel = glm::scale(matrixModel, m_mObjScale);
-
+	
+	// TODO: We should send the Position of each object (in Cartesian ad Polar coordinates) to the shader, as we do in "drawSceneMatrix"
+	// Does it makes sense to do this? we never used...
+	/*
 	for (int i = 0; i < model_ref->meshes.size(); i++)
 	{
 		for (int j = 0; j < model_ref->meshes[i].unique_vertices_pos.size(); j++)
@@ -248,29 +261,12 @@ void sDrawSceneMatrixInstanced::exec() {
 			shader->setValue("n_pos", m_cObjPos);			// Send the object relative position to the shader
 			shader->setValue("n_polar", m_cObjPosPolar);	// Send the object relative position to the shader (in polar format: x=alpha, y=beta, z=distance)
 
-			// Set the matrice of the instance object
-			instanceModel = matrixModel;
-			instanceModel = glm::translate(instanceModel, model_ref->meshes[i].unique_vertices_pos[j]);
-
-			// Now render the object using the "model_ref" as a model matrix start position
-			instanceModel = glm::translate(instanceModel, m_cObjTranslation);
-			instanceModel = glm::rotate(instanceModel, glm::radians(m_cObjRotation.x), glm::vec3(1, 0, 0));
-			instanceModel = glm::rotate(instanceModel, glm::radians(m_cObjRotation.y), glm::vec3(0, 1, 0));
-			instanceModel = glm::rotate(instanceModel, glm::radians(m_cObjRotation.z), glm::vec3(0, 0, 1));
-			instanceModel = glm::scale(instanceModel, m_cObjScale);
-			model->modelMatrices[object] = instanceModel;
-
-			// TODO: Borrar estas matrices de aqui y dejarlas en la clase modelInstance
-			// For MotionBlur, we send the previous model matrix, and then store it for later use
-			shader->setValue("prev_model", prev_model[0][object]);
-			prev_model[0][object] = instanceModel;
 			object++; 
 			m_cObjID = (float)object;
 		}
 	}
-
+	*/
 	model->DrawInstanced(shader->ID);
-
 
 	// For MotionBlur: store the previous matrix
 	prev_projection = projection;
@@ -285,7 +281,6 @@ void sDrawSceneMatrixInstanced::exec() {
 }
 
 void sDrawSceneMatrixInstanced::end() {
-	
 }
 
 std::string sDrawSceneMatrixInstanced::debug()
@@ -297,4 +292,58 @@ std::string sDrawSceneMatrixInstanced::debug()
 	msg += " Model file: " + model->model->filename + "\n";
 	msg += " meshes in each model: " + std::to_string(model->model->meshes.size()) + "\n";
 	return msg;
+}
+
+void sDrawSceneMatrixInstanced::updateMatrices(bool initPrevMatrix)
+{
+	glm::mat4 matrixModel; // Model matrix to be used on matrix object
+
+	m_cObjID = 0;
+	int object = 0;
+
+	// Evaluate the expression
+	exprPosition->Expression.value();
+
+	matrixModel = glm::mat4(1.0f);
+	matrixModel = glm::translate(matrixModel, m_mObjTranslation);
+	matrixModel = glm::rotate(matrixModel, glm::radians(m_mObjRotation.x), glm::vec3(1, 0, 0));
+	matrixModel = glm::rotate(matrixModel, glm::radians(m_mObjRotation.y), glm::vec3(0, 1, 0));
+	matrixModel = glm::rotate(matrixModel, glm::radians(m_mObjRotation.z), glm::vec3(0, 0, 1));
+	matrixModel = glm::scale(matrixModel, m_mObjScale);
+
+
+	glm::mat4* my_obj_model;
+
+	for (int i = 0; i < model_ref->meshes.size(); i++)
+	{
+		for (int j = 0; j < model_ref->meshes[i].unique_vertices_pos.size(); j++)
+		{
+			m_cObjPos = model_ref->meshes[i].unique_vertices_pos[j];
+			m_cObjPosPolar = model_ref->meshes[i].unique_vertices_polar[j];
+			// Evaluate the expression
+			exprPosition->Expression.value();
+
+			// Copy previous model object matrix, before model matrix changes
+			model->copyMatrices(object);
+
+			my_obj_model = &(model->modelMatrix[object]);
+			*my_obj_model = matrixModel;
+			*my_obj_model = glm::translate(*my_obj_model, model_ref->meshes[i].unique_vertices_pos[j]);
+
+			// Now render the object using the "model_ref" as a model matrix start position
+			*my_obj_model = glm::translate(*my_obj_model, m_cObjTranslation);
+			*my_obj_model = glm::rotate(*my_obj_model, glm::radians(m_cObjRotation.x), glm::vec3(1, 0, 0));
+			*my_obj_model = glm::rotate(*my_obj_model, glm::radians(m_cObjRotation.y), glm::vec3(0, 1, 0));
+			*my_obj_model = glm::rotate(*my_obj_model, glm::radians(m_cObjRotation.z), glm::vec3(0, 0, 1));
+			*my_obj_model = glm::scale(*my_obj_model, m_cObjScale);
+
+			// In case we set this flag, the previous matrix is loaded again
+			// This is required on the first call of this function, where the prev_model and obj_model matrix are not initilized
+			if (initPrevMatrix)
+				model->copyMatrices(object);
+
+			object++;
+			m_cObjID = (float)object;
+		}
+	}
 }

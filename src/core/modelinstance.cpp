@@ -24,20 +24,26 @@ ModelInstance::ModelInstance(Model* model, unsigned int amount)
     :
     model(model),
     amount(amount),
-    modelMatrices(nullptr),
+    modelMatrix(nullptr),
+    prev_modelMatrix(nullptr),
     matricesBuffer(0)
 {
 	if (!model)
 		return;
 	
     // Init model matrices
-    if (modelMatrices)
-		delete[] modelMatrices;
+    if (modelMatrix)
+		delete[] modelMatrix;
 
-	modelMatrices = new glm::mat4[amount];
+    if (prev_modelMatrix)
+        delete[] prev_modelMatrix;
+
+	modelMatrix = new glm::mat4[amount];
+    prev_modelMatrix = new glm::mat4[amount];
     for (unsigned int i = 0; i < amount; i++)
     {
-        modelMatrices[i] = glm::mat4(1.0f);
+        modelMatrix[i] = glm::mat4(1.0f);
+        prev_modelMatrix[i] = glm::mat4(1.0f);
     }
 
 
@@ -45,7 +51,7 @@ ModelInstance::ModelInstance(Model* model, unsigned int amount)
     // -------------------------
     glGenBuffers(1, &matricesBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, matricesBuffer);
-    glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_DYNAMIC_DRAW);// GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrix[0], GL_DYNAMIC_DRAW);// GL_STATIC_DRAW);
 
     // set transformation matrices as an instance vertex attribute (with divisor 1)
     // note: we're cheating a little by taking the, now publicly declared, VAO of the model's mesh(es) and adding new vertexAttribPointers
@@ -76,6 +82,11 @@ ModelInstance::ModelInstance(Model* model, unsigned int amount)
 
 ModelInstance::~ModelInstance()
 {
+    if (modelMatrix)
+        delete[] modelMatrix;
+    if (prev_modelMatrix)
+        delete[] prev_modelMatrix;
+
 }
 
 void ModelInstance::DrawInstanced(GLuint shaderID)
@@ -88,7 +99,7 @@ void ModelInstance::DrawInstanced(GLuint shaderID)
 
         // Update matrices buffers to GPU
         glBindBuffer(GL_ARRAY_BUFFER, matricesBuffer);
-        glBufferData(GL_ARRAY_BUFFER, amount*sizeof(glm::mat4), &modelMatrices[0], GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, amount*sizeof(glm::mat4), &modelMatrix[0], GL_DYNAMIC_DRAW);
 
         // draw mesh
         glBindVertexArray(model->meshes[i].m_VAO);
@@ -104,5 +115,10 @@ void ModelInstance::DrawInstanced(GLuint shaderID)
         //glDrawElementsInstanced(GL_TRIANGLES, model->meshes[i].m_indices.size(), GL_UNSIGNED_INT, 0, amount);
         //glBindVertexArray(0);
     }
+}
+
+void ModelInstance::copyMatrices(int instance)
+{
+    prev_modelMatrix[instance] = modelMatrix[instance];
 }
 

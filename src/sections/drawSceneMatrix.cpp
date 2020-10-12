@@ -19,7 +19,7 @@ private:
 	Shader*		shader;
 	int			enableDepthBufferClearing;
 	int			drawWireframe;
-	int			updatePositions;	// Update positions on each frame?
+	int			updateFormulas;	// Update positions on each frame?
 	int			playAnimation;		// Do we want to play the animation?
 	int			AnimationNumber;	// Number of animation to play
 	float		AnimationTime;		// Animation time (in seconds)
@@ -39,8 +39,8 @@ private:
 
 	// Previous model, projection and view matrix, for being used in effects like motion blur
 	glm::mat4	*prev_model;		// The model needs to be stored on a vector because we need to store the previous model matrix of each object
-	glm::mat4				prev_projection;
-	glm::mat4				prev_view;
+	glm::mat4	prev_projection;
+	glm::mat4	prev_view;
 
 	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
 	ShaderVars	*vars;			// For storing any other shader variables
@@ -58,8 +58,8 @@ sDrawSceneMatrix::sDrawSceneMatrix()
 	model(nullptr),
 	shader(nullptr),
 	enableDepthBufferClearing(1),
-	updatePositions(1),
 	drawWireframe(0),
+	updateFormulas(1),
 	playAnimation(0),
 	AnimationNumber(0),
 	AnimationTime(0),
@@ -86,7 +86,7 @@ sDrawSceneMatrix::sDrawSceneMatrix()
 
 bool sDrawSceneMatrix::load() {
 	if ((param.size() != 5) || (strings.size() < 7)) {
-		LOG->Error("DrawSceneMatrix [%s]: 5 param (Enable Depth buffer, enable wireframe, update object positions on each frame, enable animation and animation number) and 7 strings needed", identifier.c_str());
+		LOG->Error("DrawSceneMatrix [%s]: 5 param (Enable Depth buffer, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier.c_str());
 		return false;
 	}
 
@@ -99,7 +99,8 @@ bool sDrawSceneMatrix::load() {
 	enableDepthBufferClearing = (int)param[0];
 	drawWireframe = (int)param[1];
 
-	updatePositions = (int)param[2];
+	// Update formulas on each frame
+	updateFormulas = (int)param[2];
 
 	// Animation parameters
 	playAnimation = (int)param[3];
@@ -116,17 +117,22 @@ bool sDrawSceneMatrix::load() {
 		return false;
 
 	// Calculate the number of matrices that we need to store
-	int num_matrices = 0;
+	int num_obj_instances = 0;
 	for (int i = 0; i < model_ref->meshes.size(); i++)
 	{
-		num_matrices += (int)model_ref->meshes[i].unique_vertices_pos.size();
+		num_obj_instances += (int)model_ref->meshes[i].unique_vertices_pos.size();
 	}
-	m_numObjects = (float)num_matrices; // Number of objects to draw is the total amount of unique_vertices to draw
+	if (num_obj_instances == 0) {
+		LOG->Error("DrawSceneMatrix: No vertex found in the reference model");
+		return false;
+	}
+
+	m_numObjects = (float)num_obj_instances; // Number of objects to draw is the total amount of unique_vertices to draw
 	// Object Model Matrix
-	obj_model = new glm::mat4[num_matrices];
+	obj_model = new glm::mat4[num_obj_instances];
 	
 	// Previous Object model Matrix
-	prev_model = new glm::mat4[num_matrices];
+	prev_model = new glm::mat4[num_obj_instances];
 
 	// Load model properties
 	model->playAnimation = playAnimation;
@@ -186,9 +192,6 @@ bool sDrawSceneMatrix::load() {
 	// Update object matrices
 	updateMatrices(true);
 
-	///////////////
-	// TODO- Actualizar el drawSceneMatrixInstanced
-
 	return true;
 }
 
@@ -235,20 +238,18 @@ void sDrawSceneMatrix::exec() {
 	// Set the other shader variable values
 	vars->setValues();
 
-	m_cObjID = 0;
-	int object = 0;
-	
 	// Evaluate the expression
 	exprPosition->Expression.value();
-	shader->setValue("n_total", m_numObjects);	// Send total objects to draw to the shader
-
 
 	// Update Matrices with objects positions, if required
-	if (updatePositions)
+	if (updateFormulas)
 		updateMatrices(false);
 
 	// Draw Objects
-	object = 0;
+	int object = 0;
+	m_cObjID = 0;
+	shader->setValue("n_total", m_numObjects);	// Send total objects to draw to the shader
+
 	for (int i = 0; i < model_ref->meshes.size(); i++)
 	{
 		for (int j = 0; j < model_ref->meshes[i].unique_vertices_pos.size(); j++)
@@ -305,15 +306,12 @@ std::string sDrawSceneMatrix::debug()
 void sDrawSceneMatrix::updateMatrices(bool initPrevMatrix)
 {
 	glm::mat4 matrixModel; // Model matrix to be used on matrix object
-	//glm::mat4 objModel; // Model matrix to be used on each object
 
 	m_cObjID = 0;
 	int object = 0;
 
 	// Evaluate the expression
 	exprPosition->Expression.value();
-	shader->setValue("n_total", m_numObjects);	// Send total objects to draw to the shader
-
 
 	matrixModel = glm::mat4(1.0f);
 	matrixModel = glm::translate(matrixModel, m_mObjTranslation);
@@ -321,7 +319,6 @@ void sDrawSceneMatrix::updateMatrices(bool initPrevMatrix)
 	matrixModel = glm::rotate(matrixModel, glm::radians(m_mObjRotation.y), glm::vec3(0, 1, 0));
 	matrixModel = glm::rotate(matrixModel, glm::radians(m_mObjRotation.z), glm::vec3(0, 0, 1));
 	matrixModel = glm::scale(matrixModel, m_mObjScale);
-
 
 	glm::mat4* my_obj_model;
 

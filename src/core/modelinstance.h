@@ -23,13 +23,15 @@ class ModelInstance
 public:
 	Model*			model;			// Model to draw
 	unsigned int	amount;			// Amount of instances to draw
-	glm::mat4*		modelMatrices;	// Model matrice of each instance
+	glm::mat4*		modelMatrix;	// Model matrice of each instance
+	glm::mat4*		prev_modelMatrix;	// Previous model matrice of each instance (useful for effects like motion blur)
 	unsigned int	matricesBuffer;
 
 	ModelInstance(Model* model, unsigned int amount);
 	virtual ~ModelInstance();
 
 	void DrawInstanced(GLuint shaderID);
+	void copyMatrices(int instance);
 	
 private:
 
