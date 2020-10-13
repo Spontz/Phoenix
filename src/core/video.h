@@ -45,8 +45,10 @@ private:
 	double m_dNextFrameTime_;				// Last time we rendered a frame
 
 	bool m_shutdown_ = false;
+	double m_dTime_ = 0.0;
 
 public:
-	std::mutex mutex_;
-	std::thread* m_pThread_;
+	std::mutex m_mutex_;
+	std::thread* m_pThread_ = nullptr;
+	bool m_newFrame_ = false;
 };

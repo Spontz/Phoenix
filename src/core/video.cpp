@@ -5,6 +5,8 @@
 
 #include <main.h>
 
+#include <chrono>
+
 const bool kDebug = false;
 
 Video::Video()
@@ -34,6 +36,7 @@ Video::~Video()
 	m_shutdown_ = true;
 
 	m_pThread_->join();
+	delete m_pThread_;
 
 	if (m_texID_ != 0) {
 		glDeleteTextures(1, &m_texID_);
@@ -186,6 +189,8 @@ bool Video::load(std::string const& fileName)
 		return false;
 	}
 
+	m_pCodecContext_->thread_count = 10; // hack
+
 	// Fill the codec context based on the values from the supplied codec parameters
 	// https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
 	if (avcodec_parameters_to_context(m_pCodecContext_, m_pCodecParameters_) < 0) {
@@ -233,7 +238,7 @@ bool Video::load(std::string const& fileName)
 		m_pCodecContext_->width,
 		m_pCodecContext_->height,
 		AV_PIX_FMT_RGB24,			// Destiny (we change the format only)
-		SWS_BICUBIC,
+		0,							// No interpolation
 		nullptr,
 		nullptr,
 		nullptr
@@ -276,25 +281,24 @@ bool Video::load(std::string const& fileName)
 	return true;
 }
 
-double dTime = 0.0;
 
-void Video::renderVideo(double ddTime)
+
+void Video::renderVideo(double dTime)
 {
 	if (!m_loaded_)
 		return;
 
-	dTime = ddTime;
+	m_dTime_ = dTime;
 
 	static auto funcDecode = [this](){
-		const std::lock_guard _(mutex_);
 
-		if (dTime < m_dNextFrameTime_ - m_dIntervalFrame_ || dTime > m_dNextFrameTime_ + m_dIntervalFrame_) {
+		if (m_dTime_ < m_dNextFrameTime_ - m_dIntervalFrame_ || m_dTime_ > m_dNextFrameTime_ + m_dIntervalFrame_) {
 			LOG->Info(LogLevel::LOW, "Seek needed!");
 			OutputDebugString(TEXT("Seek\n"));
 			// seekTime(dTime); // hack
-			m_dNextFrameTime_ = dTime;
+			m_dNextFrameTime_ = m_dTime_;
 		}
-		else if (dTime < m_dNextFrameTime_) {
+		else if (m_dTime_ < m_dNextFrameTime_) {
 			return;
 		}
 
@@ -302,7 +306,7 @@ void Video::renderVideo(double ddTime)
 			LOG->Info(
 				LogLevel::LOW,
 				"Time: %.4f, Next Frame time: %.4f",
-				dTime,
+				m_dTime_,
 				m_dNextFrameTime_
 			);
 		}
@@ -311,48 +315,57 @@ void Video::renderVideo(double ddTime)
 		m_dNextFrameTime_ += m_dIntervalFrame_;
 		int response = 0;
 
-		// fill the Packet with data from the Stream
-		// https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61
-		if (av_read_frame(m_pFormatContext_, m_pAVPacket_) >= 0) {
-			// if it's the video stream
-			if (m_pAVPacket_->stream_index == m_videoStreamIndex_) {
-				response = decodePacket();
-				if (response < 0)
-					LOG->Error("Video: Packet cannot be decoded");
+		{
+			const std::lock_guard _(m_mutex_);
+
+			// fill the Packet with data from the Stream
+			// https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61
+			if (av_read_frame(m_pFormatContext_, m_pAVPacket_) >= 0) {
+				// if it's the video stream
+				if (m_pAVPacket_->stream_index == m_videoStreamIndex_) {
+					response = decodePacket();
+					if (response < 0)
+						LOG->Error("Video: Packet cannot be decoded");
+					else
+						m_newFrame_ = true;
+				}
 			}
+			else {
+				// Loop: Start the video again
+				OutputDebugString(TEXT("Seek (0)\n"));
+				seekTime(0); //av_seek_frame(pFormatContext, video_stream_index, 0, 0);
+			}
+			// https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
+			av_packet_unref(m_pAVPacket_);
 		}
-		else {
-			// Loop: Start the video again
-			OutputDebugString(TEXT("Seek (0)\n"));
-			seekTime(0); //av_seek_frame(pFormatContext, video_stream_index, 0, 0);
-		}
-		// https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
-		av_packet_unref(m_pAVPacket_);
 		};
 
-	m_pThread_ = new std::thread([&] {
-		
-		while (!m_shutdown_) {
-			Sleep(16);
-			funcDecode();
-		}
+	if (m_pThread_ == nullptr)
+		m_pThread_ = new std::thread([&] {
 
-		});
+			while (!m_shutdown_) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(1)); // hack
+				funcDecode();
+			}
+
+			});
 
 	if (m_pCodecContext_) {
-		glBindTextureUnit(0, m_texID_);
-
-		glTexSubImage2D(
-			GL_TEXTURE_2D,
-			0,
-			0,
-			0,
-			m_pCodecContext_->width,
-			m_pCodecContext_->height,
-			GL_RGB,
-			GL_UNSIGNED_BYTE,
-			m_pGLFrame_->data[0]
-		);
+		if (m_newFrame_) {
+			glBindTextureUnit(0, m_texID_);
+			glTexSubImage2D(
+				GL_TEXTURE_2D,
+				0,
+				0,
+				0,
+				m_pCodecContext_->width,
+				m_pCodecContext_->height,
+				GL_RGB,
+				GL_UNSIGNED_BYTE,
+				m_pGLFrame_->data[0]
+			);
+			m_newFrame_ = false;
+		}
 	}
 
 }
@@ -423,26 +436,6 @@ int Video::decodePacket()
 				m_pGLFrame_->data,
 				m_pGLFrame_->linesize
 			);
-
-			/*
-			glBindTextureUnit(0, m_texID_);
-
-			
-			glTexSubImage2D(
-				GL_TEXTURE_2D,
-				0,
-				0,
-				0,
-				m_pCodecContext_->width,
-				m_pCodecContext_->height,
-				GL_RGB,
-				GL_UNSIGNED_BYTE,
-				m_pGLFrame_->data[0]
-			);
-			*/
-
-			//av_frame_unref(pFrame);
-			//av_frame_unref(glFrame);
 		}
 	}
 
