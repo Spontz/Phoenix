@@ -5,6 +5,8 @@
 
 #include "libs.h"
 
+#include <mutex>
+
 class Video {
 public:
 	Video();
@@ -41,4 +43,10 @@ private:
 	AVPacket* m_pAVPacket_;					// Packet
 	double m_dIntervalFrame_;				// Time between frames (1/frameRate)
 	double m_dNextFrameTime_;				// Last time we rendered a frame
+
+	bool m_shutdown_ = false;
+
+public:
+	std::mutex mutex_;
+	std::thread* m_pThread_;
 };

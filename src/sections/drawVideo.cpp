@@ -80,6 +80,7 @@ void sDrawVideo::init()
 
 void sDrawVideo::exec()
 {
+	// std::lock_guard _(m_pVideo_->mutex_);
 	m_pVideo_->renderVideo(runTime);
 
 	if (m_clearScreen_)
