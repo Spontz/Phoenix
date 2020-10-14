@@ -27,7 +27,7 @@ private:
 
 private:
 	std::string	m_fileName_;				// Video file name
-	double m_dFramerate_;						// Video framerate
+	double m_dFramerate_;					// Video framerate
 	int m_width_;							// Video width
 	int m_height_;							// Video height
 	GLuint m_texID_;						// OpenGL texture ID where the video is displayed
@@ -43,12 +43,9 @@ private:
 	AVPacket* m_pAVPacket_;					// Packet
 	double m_dIntervalFrame_;				// Time between frames (1/frameRate)
 	double m_dNextFrameTime_;				// Last time we rendered a frame
-
-	bool m_shutdown_ = false;
-	double m_dTime_ = 0.0;
-
-public:
-	std::mutex m_mutex_;
-	std::thread* m_pThread_ = nullptr;
-	bool m_newFrame_ = false;
+	std::thread* m_pWorkerThread_;			// Video decoding thread
+	bool m_newFrame_;
+	double m_dTime_;
+	bool m_stopWorkerThread_;
+	// std::mutex m_mutex_;
 };

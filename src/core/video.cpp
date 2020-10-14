@@ -27,16 +27,21 @@ Video::Video()
 	m_dIntervalFrame_(0),
 	m_dNextFrameTime_(0),
 	m_loaded_(false),
-	m_texID_(0)
+	m_texID_(0),
+	m_stopWorkerThread_(false),
+	m_dTime_(0.0),
+	m_pWorkerThread_(nullptr),
+	m_newFrame_(false)
 {
 }
 
 Video::~Video()
 {
-	m_shutdown_ = true;
-
-	m_pThread_->join();
-	delete m_pThread_;
+	if (m_pWorkerThread_) {
+		m_stopWorkerThread_ = true;
+		m_pWorkerThread_->join();
+		delete m_pWorkerThread_;
+	}
 
 	if (m_texID_ != 0) {
 		glDeleteTextures(1, &m_texID_);
@@ -56,11 +61,6 @@ Video::~Video()
 
 	avcodec_free_context(&m_pCodecContext_);
 }
-
-std::string const& Video::getFileName() const { return m_fileName_; }
-GLuint Video::getTexID() const { return m_texID_; }
-int Video::getWidth() const { return m_width_; }
-int Video::getHeight() const { return m_height_; }
 
 bool Video::load(std::string const& fileName)
 {
@@ -189,7 +189,7 @@ bool Video::load(std::string const& fileName)
 		return false;
 	}
 
-	m_pCodecContext_->thread_count = 10; // hack
+	m_pCodecContext_->thread_count = 20; // hack
 
 	// Fill the codec context based on the values from the supplied codec parameters
 	// https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
@@ -281,8 +281,6 @@ bool Video::load(std::string const& fileName)
 	return true;
 }
 
-
-
 void Video::renderVideo(double dTime)
 {
 	if (!m_loaded_)
@@ -290,12 +288,12 @@ void Video::renderVideo(double dTime)
 
 	m_dTime_ = dTime;
 
-	static auto funcDecode = [this](){
+	static auto funcDecode = [this]() {
 
 		if (m_dTime_ < m_dNextFrameTime_ - m_dIntervalFrame_ || m_dTime_ > m_dNextFrameTime_ + m_dIntervalFrame_) {
 			LOG->Info(LogLevel::LOW, "Seek needed!");
 			OutputDebugString(TEXT("Seek\n"));
-			// seekTime(dTime); // hack
+			seekTime(m_dTime_); // hack
 			m_dNextFrameTime_ = m_dTime_;
 		}
 		else if (m_dTime_ < m_dNextFrameTime_) {
@@ -312,11 +310,11 @@ void Video::renderVideo(double dTime)
 		}
 
 		// Retrieve new frame
-		m_dNextFrameTime_ += m_dIntervalFrame_;
+		m_dNextFrameTime_ += m_dIntervalFrame_ * .75;
 		int response = 0;
 
 		{
-			const std::lock_guard _(m_mutex_);
+			// const std::lock_guard _(m_mutex_);
 
 			// fill the Packet with data from the Stream
 			// https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61
@@ -338,36 +336,32 @@ void Video::renderVideo(double dTime)
 			// https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
 			av_packet_unref(m_pAVPacket_);
 		}
-		};
+	};
 
-	if (m_pThread_ == nullptr)
-		m_pThread_ = new std::thread([&] {
-
-			while (!m_shutdown_) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(1)); // hack
+	if (m_pWorkerThread_ == nullptr) {
+		m_pWorkerThread_ = new std::thread([&] {
+			while (!m_stopWorkerThread_) {
+				// std::this_thread::sleep_for(std::chrono::milliseconds(1)); // hack
 				funcDecode();
 			}
-
 			});
-
-	if (m_pCodecContext_) {
-		if (m_newFrame_) {
-			glBindTextureUnit(0, m_texID_);
-			glTexSubImage2D(
-				GL_TEXTURE_2D,
-				0,
-				0,
-				0,
-				m_pCodecContext_->width,
-				m_pCodecContext_->height,
-				GL_RGB,
-				GL_UNSIGNED_BYTE,
-				m_pGLFrame_->data[0]
-			);
-			m_newFrame_ = false;
-		}
 	}
 
+	if (m_pCodecContext_ && m_newFrame_) {
+		glBindTextureUnit(0, m_texID_);
+		glTexSubImage2D(
+			GL_TEXTURE_2D,
+			0,
+			0,
+			0,
+			m_pCodecContext_->width,
+			m_pCodecContext_->height,
+			GL_RGB,
+			GL_UNSIGNED_BYTE,
+			m_pGLFrame_->data[0]
+		);
+		m_newFrame_ = false;
+	}
 }
 
 void Video::bind(int texUnit) const
@@ -440,4 +434,24 @@ int Video::decodePacket()
 	}
 
 	return 0;
+}
+
+std::string const& Video::getFileName() const
+{
+	return m_fileName_;
+}
+
+GLuint Video::getTexID() const
+{
+	return m_texID_;
+}
+
+int Video::getWidth() const
+{
+	return m_width_;
+}
+
+int Video::getHeight() const
+{
+	return m_height_;
 }
