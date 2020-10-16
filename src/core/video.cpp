@@ -109,7 +109,7 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 	// Read Packets from AVFormatContext to get stream information
 	// avformat_find_stream_info populates m_pFormatContext_->streams (of size equals to pFormatContext->nb_streams)
 	if (m_debug_)
-		LOG->Info(LogLevel::LOW, "Video: Finding stream info from format");
+		LOG->Info(LogLevel::LOW, "%s: Finding stream info from format", __FILE__);
 	if (avformat_find_stream_info(m_pFormatContext_, nullptr) < 0) {
 		LOG->Error("%s: Could not get the stream info.", __FILE__);
 		return false;
@@ -146,7 +146,7 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 				__FILE__,
 				pAVStream->duration
 			);
-			LOG->Info(LogLevel::LOW, "%d: finding the proper decoder (CODEC)", __FILE__);
+			LOG->Info(LogLevel::LOW, "%s: finding the proper decoder (CODEC)", __FILE__);
 		}
 
 		// Find AVCodec given an AVCodecID
@@ -223,14 +223,14 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 	// Fill the codec context based on the values from the supplied codec parameters
 	// https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
 	if (avcodec_parameters_to_context(m_pCodecContext_, m_pAVCodecParameters_) < 0) {
-		LOG->Error("Video: failed to copy codec params to codec context");
+		LOG->Error("%s: failed to copy codec params to codec context", __FILE__);
 		return false;
 	}
 
 	// Initialize the AVCodecContext to use the given AVCodec.
 	// https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
 	if (avcodec_open2(m_pCodecContext_, m_pAVCodec_, nullptr) < 0) {
-		LOG->Error("Video: failed to open codec through avcodec_open2");
+		LOG->Error("%s: failed to open codec through avcodec_open2", __FILE__);
 		return false;
 	}
 
@@ -255,7 +255,7 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 		1
 	);
 	if ((!m_pFrame_) || (!m_pGLFrame_)) {
-		LOG->Error("Video: failed to allocated memory for AVFrame");
+		LOG->Error("%s: failed to allocated memory for AVFrame", __FILE__);
 		return false;
 	}
 
@@ -274,14 +274,14 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 	);
 
 	if (!m_pConvertContext_) {
-		LOG->Error("Could not create the convert context for OpenGL");
+		LOG->Error("%s: Could not create the convert context for OpenGL", __FILE__);
 		return false;
 	}
 
 	// https://ffmpeg.org/doxygen/trunk/structAVPacket.html
 	m_pAVPacket_ = av_packet_alloc();
 	if (!m_pAVPacket_) {
-		LOG->Error("Video: failed to allocated memory for AVPacket");
+		LOG->Error("%s: Video: failed to allocated memory for AVPacket", __FILE__);
 		return false;
 	}
 
@@ -315,7 +315,7 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 			return;
 
 		if (m_dTime_ < m_dNextFrameTime_ - renderInterval() || m_dTime_ > m_dNextFrameTime_ + renderInterval()) {
-			LOG->Info(LogLevel::MED, "WARNING: FFmpeg video stream seek needed.");
+			LOG->Info(LogLevel::MED, "%s: WARNING: FFmpeg video stream seek needed.", __FILE__);
 
 			//const auto a = std::chrono::high_resolution_clock::now();
 			seekTime(m_dTime_); // hack
@@ -332,7 +332,8 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 		if (m_debug_) {
 			LOG->Info(
 				LogLevel::LOW,
-				"Time: %.4f, Next Frame time: %.4f",
+				"%s: Time: %.4f, Next Frame time: %.4f",
+				__FILE__,
 				m_dTime_,
 				m_dNextFrameTime_
 			);
@@ -352,12 +353,12 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 				if (m_pAVPacket_->stream_index == m_videoStreamIndex_) {
 					response = decodePacket();
 					if (response < 0)
-						LOG->Error("Video: Packet cannot be decoded");
+						LOG->Error("%s: Packet cannot be decoded", __FILE__);
 				}
 			}
 			else {
 				// Loop: Start the video again
-				OutputDebugString(TEXT("Seek (0)\n"));
+				// OutputDebugString(TEXT("Seek (0)\n"));
 				seekTime(0); //av_seek_frame(pFormatContext, video_stream_index, 0, 0);
 			}
 			// https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
@@ -417,7 +418,7 @@ void Video::seekTime(double dTime)
 	) / 1000;
 
 	if (av_seek_frame(m_pFormatContext_, m_videoStreamIndex_, iFrameNumber, 0) < 0)
-		LOG->Error("Video: Could not reach position: %f, frame: %d", dTime, iFrameNumber);
+		LOG->Error("%s: Could not reach position: %f, frame: %d", __FILE__, dTime, iFrameNumber);
 }
 
 int Video::decodePacket()
@@ -427,7 +428,7 @@ int Video::decodePacket()
 	int response = avcodec_send_packet(m_pCodecContext_, m_pAVPacket_);
 
 	if (response < 0) {
-		LOG->Error("Video::decodePacket Error while sending a packet to the decoder"); // : %s", av_err2str(response));
+		LOG->Error("%s: decodePacket Error while sending a packet to the decoder", __FILE__); // : %s", av_err2str(response));
 		return response;
 	}
 
@@ -439,7 +440,7 @@ int Video::decodePacket()
 		if (response == AVERROR(EAGAIN) || response == AVERROR_EOF)
 			break;
 		else if (response < 0) {
-			LOG->Error("Error while receiving a frame from the decoder"); // : %s", av_err2str(response));
+			LOG->Error("%s: Error while receiving a frame from the decoder", __FILE__); // : %s", av_err2str(response));
 			return response;
 		}
 
@@ -447,7 +448,8 @@ int Video::decodePacket()
 			if (m_debug_) {
 				LOG->Info(
 					LogLevel::LOW,
-					"Frame %d (type=%c, size=%d bytes) pts %d key_frame %d [DTS %d]",
+					"%s: Frame %d (type=%c, size=%d bytes) pts %d key_frame %d [DTS %d]",
+					__FILE__,
 					m_pCodecContext_->frame_number,
 					av_get_picture_type_char(m_pFrame_->pict_type),
 					m_pFrame_->pkt_size,
