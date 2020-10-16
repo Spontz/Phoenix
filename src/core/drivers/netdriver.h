@@ -6,6 +6,8 @@
 
 #include "core/drivers/net/dyad.h"
 
+#include <string>
+
 #define NETDRV (&netDriver::GetInstance())
 
 class netDriver {

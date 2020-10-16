@@ -1,12 +1,11 @@
 // resouce.h
 // Spontz Demogroup
 
-#ifndef RESOURCE_H
-#define RESOURCE_H
+#pragma once
 
-#include "main.h"
-
-#include <string>
+#include <core/texture.h>
+#include <core/cubemap.h>
+#include <core/shader.h>
 
 class Resource {
 public:
@@ -47,9 +46,6 @@ public:
 	GLuint obj_qube;
 	
 private:
-
-
-
 	void Load_Obj_QuadFullscreen();
 	void Load_Obj_Skybox();
 	void Load_Obj_Qube();
@@ -59,4 +55,3 @@ private:
 
 	void Load_Lights();
 };
-#endif

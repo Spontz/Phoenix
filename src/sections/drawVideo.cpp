@@ -2,6 +2,8 @@
 #include "core/video.h"
 #include "core/shadervars.h"
 
+int kVideoStreamIndex = -1; // TODO: allow selecting the video stream index
+
 struct sDrawVideo : public Section {
 public:
 	sDrawVideo();
@@ -49,7 +51,7 @@ bool sDrawVideo::load()
 	m_clearDepth_ = static_cast<bool>(param[1]);
 	m_fitToContent_ = static_cast<bool>(param[2]);
 
-	const auto videoIndex = m_demo.videoManager.addVideo(m_demo.dataFolder + strings[0]);
+	const auto videoIndex = m_demo.videoManager.addVideo(m_demo.dataFolder + strings[0], kVideoStreamIndex);
 	if (videoIndex == -1)
 		return false;
 

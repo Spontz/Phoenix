@@ -2,7 +2,9 @@
 // Spontz Demogroup
 
 
-#include "main.h"
+#include "netdriver.h"
+
+#include <core/demokernel.h>
 
 #define DELIMITER '\x1f'
 #define DELIMITER_SEND "\x1f"

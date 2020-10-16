@@ -22,6 +22,7 @@
 #include "core/font.h"
 #include "core/camera.h"
 #include "core/light.h"
+#include "core/utils/logger.h"
 
 #include "core/resource/resource.h"
 
@@ -51,7 +52,7 @@ public:
 	char*		demoName;
 	int			debug;
 	float		debug_fontSize;
-	char		log_detail;
+	LogLevel	log_detail;
 
 	// misc
 	int			loop;

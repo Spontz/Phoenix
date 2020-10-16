@@ -10,9 +10,9 @@ public:
 	~VideoManager();
 
 public:
-	int addVideo(std::string const& path);
+	int addVideo(std::string const& path, int videoStreamIndex);
 	Video* getVideo(int videoIndex) const;
 
 private:
-	std::vector<Video*> videos_; // Video list
+	std::vector<Video*> m_videos_; // Video list
 };

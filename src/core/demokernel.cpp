@@ -22,18 +22,18 @@ demokernel& demokernel::GetInstance() {
 
 demokernel::demokernel()
 	:
-	text (nullptr),
-	camera (nullptr),
+	text(nullptr),
+	camera(nullptr),
 	state(-1),
 	demoName("Phoneix Spontz Demoengine"),
-	debug (false),
+	debug(false),
 	debug_fontSize(1.0f),
-	log_detail (LogLevel::HIGH),
-	loop (true),
-	sound (true),
-	demo_runTime (0),
-	demo_startTime (0),
-	demo_endTime (20.0f),
+	log_detail(LogLevel::HIGH),
+	loop(true),
+	sound(true),
+	demo_runTime(0),
+	demo_startTime(0),
+	demo_endTime(20.0f),
 	realFrameTime(0),
 	frameTime(0),
 	afterFrameTime(0),
@@ -42,22 +42,22 @@ demokernel::demokernel()
 	accumFrameCount(0),
 	fps(0),
 	frameCount(0),
-	slaveMode (false),
-	beat (0),
-	beat_ratio (1.4f),
-	beat_fadeout (4.0f),
+	slaveMode(false),
+	beat(0),
+	beat_ratio(1.4f),
+	beat_fadeout(4.0f),
 	mouseX(0),
 	mouseY(0),
 	mouseXvar(0),
 	mouseYvar(0),
 	loadedSections(0),
 	exitDemo(false),
-	res (nullptr)
+	res(nullptr)
 {
-	#ifdef _DEBUG
+#ifdef _DEBUG
 	debug = TRUE;
 	log_detail = LogLevel::LOW;
-	#endif
+#endif
 	for (int i = 0; i < MULTIPURPOSE_VARS; i++)
 		var[i] = 0;
 }
@@ -78,7 +78,7 @@ bool demokernel::initDemo() {
 	if (!GLDRV->initGraphics())
 		return false;
 	LOG->Info(LogLevel::HIGH, "OpenGL environment created");
-	
+
 	// initialize sound driver
 	if (sound)
 		BASSDRV->init();
@@ -142,7 +142,7 @@ void demokernel::mainLoop() {
 			PX_PROFILE_SCOPE("glfwPollEvents");
 			glfwPollEvents();
 		}
-		
+
 	}
 }
 
@@ -292,7 +292,7 @@ const std::string demokernel::getEngineVersion()
 
 const std::string demokernel::getLibAssimpVersion()
 {
-	return std::string(std::to_string(aiGetVersionMajor()) +"."+ std::to_string(aiGetVersionMinor()) + "." + std::to_string(aiGetVersionRevision()));
+	return std::string(std::to_string(aiGetVersionMajor()) + "." + std::to_string(aiGetVersionMinor()) + "." + std::to_string(aiGetVersionRevision()));
 }
 
 const std::string demokernel::getLibDyadVersion()
@@ -331,7 +331,7 @@ bool demokernel::load_config()
 		do {
 			ScriptRelativePath = dataFolder + "/config/" + FindData.name;
 			LOG->Info(LogLevel::LOW, "Reading file: %s", ScriptRelativePath.c_str());
-			
+
 			Phoenix::SpoReader spo;
 			spo.readAsciiFromFile(ScriptRelativePath);
 			spo.loadScriptData();
@@ -372,7 +372,7 @@ void demokernel::load_spos()
 			LOG->Info(LogLevel::LOW, "Reading file: %s", ScriptRelativePath.c_str());
 			Phoenix::SpoReader spo;
 			spo.readAsciiFromFile(ScriptRelativePath);
-			spo.loadScriptData();			
+			spo.loadScriptData();
 			LOG->Info(LogLevel::LOW, "Finished loading file!");
 		} while (_findnext(hFile, &FindData) == 0);
 		_findclose(hFile);
@@ -660,5 +660,5 @@ void demokernel::processSectionQueues() {
 		PX_PROFILE_SCOPE("GLDRV::swapBuffers");
 		GLDRV->swapBuffers();
 	}
-	
+
 }

@@ -1,37 +1,47 @@
 // video.cpp
 // Spontz Demogroup
 
+// FFmpeg refence: https://ffmpeg.org/doxygen/trunk
+// TODO: proper sync
+// TODO: double buffer
+
 #include "video.h"
 
 #include <main.h>
 
 #include <chrono>
 
-const bool kDebug = false;
 
-Video::Video()
+Video::Video(
+	bool debug,
+	uint32_t decodingThreadCount, // ideally logical cores - 1
+	double playbackSpeed // 1.0 means normal speed, 2.0 double speed, etc. 
+)
 	:
-	m_pGLFrame_(nullptr),
-	m_pCodecContext_(nullptr),
-	m_pFormatContext_(nullptr),
-	m_pFrame_(nullptr),
-	m_pAVPacket_(nullptr),
+	m_debug_(debug),
+	m_decodingThreadCount_(decodingThreadCount),
+	m_playbackSpeed_(playbackSpeed),
 	m_fileName_("Video not loaded"),
-	m_pCodec_(nullptr),
-	m_pCodecParameters_(nullptr),
 	m_videoStreamIndex_(-1),
-	m_pConvertContext_(nullptr),
+	m_loaded_(false),
+	m_stopWorkerThread_(false),
+	m_bNewFrame_(false),
+	m_dTime_(0.0),
 	m_dFramerate_(0),
 	m_width_(0),
 	m_height_(0),
 	m_dIntervalFrame_(0),
 	m_dNextFrameTime_(0),
-	m_loaded_(false),
 	m_texID_(0),
-	m_stopWorkerThread_(false),
-	m_dTime_(0.0),
-	m_pWorkerThread_(nullptr),
-	m_newFrame_(false)
+	m_pGLFrame_(nullptr),
+	m_pCodecContext_(nullptr),
+	m_pFormatContext_(nullptr),
+	m_pFrame_(nullptr),
+	m_pAVPacket_(nullptr),
+	m_pAVCodec_(nullptr),
+	m_pAVCodecParameters_(nullptr),
+	m_pConvertContext_(nullptr),
+	m_pWorkerThread_(nullptr)
 {
 }
 
@@ -62,145 +72,164 @@ Video::~Video()
 	avcodec_free_context(&m_pCodecContext_);
 }
 
-bool Video::load(std::string const& fileName)
+
+double Video::renderInterval() const {
+	return m_dIntervalFrame_ / m_playbackSpeed_;
+};
+
+bool Video::load(std::string const& fileName, int videoStreamIndex)
 {
 	m_fileName_ = fileName;
-	// Allocate memory for the Context: http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html
+
 	m_pFormatContext_ = avformat_alloc_context();
-
 	if (!m_pFormatContext_) {
-		LOG->Error("Video: could not allocate memory for Format Context");
+		LOG->Error("%s: could not allocate memory for AVFormatContext.", __FILE__);
 		return false;
 	}
 
-	if (kDebug)
-		LOG->Info(LogLevel::LOW, "Video: Opening the input file (%s) and loading format (container) header", fileName.c_str());
-
-	// Open the file and read its header.
-	// The codecs are not opened:
-	// http://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga31d601155e9035d5b0e7efedc894ee49
+	// Open file and read header
+	// Codecs are not opened
+	if (m_debug_)
+		LOG->Info(LogLevel::LOW, "%s: Opening \"%s\" and loading format (container) header.", __FILE__, fileName.c_str());
 	if (avformat_open_input(&m_pFormatContext_, m_fileName_.c_str(), nullptr, nullptr) != 0) {
-		LOG->Error("Video: could not open the file %s", m_fileName_.c_str());
+		LOG->Error("%s: Error opening \"%s\".", __FILE__, m_fileName_.c_str());
 		return false;
 	}
 
-	// Show info file
+	// Show info
 	LOG->Info(
 		LogLevel::LOW,
-		"Video: Format %s, duration %lld us, bit_rate %lld",
+		"%s: %s, %dms, %dbits/s.",
+		__FILE__,
 		m_pFormatContext_->iformat->name,
-		m_pFormatContext_->duration,
+		m_pFormatContext_->duration / (AV_TIME_BASE / 1000),
 		m_pFormatContext_->bit_rate
 	);
 
-	// LOG->Info(LogLevel::LOW, "Video: Finding stream info from format");
-	// Read Packets from the Format to get stream information
-	// this function populates pFormatContext->streams (of size equals to pFormatContext->nb_streams)
-	// https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gad42172e27cddafb81096939783b157bb
+	// Read Packets from AVFormatContext to get stream information
+	// avformat_find_stream_info populates m_pFormatContext_->streams (of size equals to pFormatContext->nb_streams)
+	if (m_debug_)
+		LOG->Info(LogLevel::LOW, "Video: Finding stream info from format");
 	if (avformat_find_stream_info(m_pFormatContext_, nullptr) < 0) {
-		LOG->Error("Video: could not get the stream info");
+		LOG->Error("%s: Could not get the stream info.", __FILE__);
 		return false;
 	}
 
-	// loop though all the streams and print its main information
 	for (unsigned int i = 0; i < m_pFormatContext_->nb_streams; ++i) {
-		const auto pLocalCodecParameters = m_pFormatContext_->streams[i]->codecpar;
+		const auto pAVStream = m_pFormatContext_->streams[i];
+		const auto pAVCodecParameters = pAVStream->codecpar;
 
-		if (kDebug) {
+		if (m_debug_) {
 			LOG->Info(
 				LogLevel::LOW,
-				"Video: AVStream->time_base before open coded %d/%d",
-				m_pFormatContext_->streams[i]->time_base.num,
-				m_pFormatContext_->streams[i]->time_base.den
+				"%s: AVStream->time_base before open coded %d/%d",
+				__FILE__,
+				pAVStream->time_base.num,
+				pAVStream->time_base.den
 			);
 			LOG->Info(
 				LogLevel::LOW,
-				"Video: AVStream->r_frame_rate before open coded %d/%d",
-				m_pFormatContext_->streams[i]->r_frame_rate.num,
-				m_pFormatContext_->streams[i]->r_frame_rate.den
+				"%s: AVStream->r_frame_rate before open coded %d/%d",
+				__FILE__,
+				pAVStream->r_frame_rate.num,
+				pAVStream->r_frame_rate.den
 			);
 			LOG->Info(
 				LogLevel::LOW,
-				"Video: AVStream->start_time %" PRId64,
-				m_pFormatContext_->streams[i]->start_time
+				"%s: AVStream->start_time %lld",
+				__FILE__,
+				pAVStream->start_time
 			);
 			LOG->Info(
 				LogLevel::LOW,
-				"Video: AVStream->duration %" PRId64,
-				m_pFormatContext_->streams[i]->duration
+				"%s: AVStream->duration %lld",
+				__FILE__,
+				pAVStream->duration
 			);
-			LOG->Info(LogLevel::LOW, "Video: finding the proper decoder (CODEC)");
+			LOG->Info(LogLevel::LOW, "%d: finding the proper decoder (CODEC)", __FILE__);
 		}
 
-		// finds the registered decoder for a codec ID
-		// https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga19a0ca553277f019dd5b0fec6e1f9dca
-		const auto pLocalCodec = avcodec_find_decoder(pLocalCodecParameters->codec_id);
-
-		if (pLocalCodec == nullptr) {
-			LOG->Error("Video: unsupported codec!");
+		// Find AVCodec given an AVCodecID
+		const auto pAVCodec = avcodec_find_decoder(pAVCodecParameters->codec_id);
+		if (pAVCodec == nullptr) {
+			LOG->Error("%s: Unsupported codec.", __FILE__);
 			return false;
 		}
 
-		// when the stream is a video we store its index, codec parameters and codec
-		if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
-			if (m_videoStreamIndex_ == -1) {
-				m_videoStreamIndex_ = i;
-				m_dFramerate_ = av_q2d(m_pFormatContext_->streams[i]->avg_frame_rate);
-				m_dIntervalFrame_ = 1.0 / m_dFramerate_;
-				m_pCodec_ = pLocalCodec;
-				m_pCodecParameters_ = pLocalCodecParameters;
-				m_width_ = pLocalCodecParameters->width;
-				m_height_ = pLocalCodecParameters->height;
-			}
+		switch (pAVCodecParameters->codec_type) {
+		case AVMEDIA_TYPE_VIDEO:
+			// Show video stream info
 			LOG->Info(
 				LogLevel::LOW,
-				"Video Codec: resolution %dx%d",
-				pLocalCodecParameters->width,
-				pLocalCodecParameters->height
+				"%s: #%d Video stream[CodecID:%d], %s, %d channels, %dx%d, %dhz, %dbps.",
+				__FILE__,
+				i,
+				pAVCodec->id,
+				pAVCodec->name,
+				pAVCodecParameters->channels,
+				pAVCodecParameters->width,
+				pAVCodecParameters->height,
+				pAVCodecParameters->sample_rate,
+				pAVCodecParameters->bit_rate
 			);
-		}
-		else {
-			if (kDebug) {
-				// There is no need to play audio
-				if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_AUDIO)
+
+			// Store video stream index, codec parameters and codec
+			if (m_videoStreamIndex_ == -1)
+				if (videoStreamIndex == -1 || videoStreamIndex == i) {
 					LOG->Info(
 						LogLevel::LOW,
-						"Audio Codec: %d channels, sample rate %d",
-						pLocalCodecParameters->channels,
-						pLocalCodecParameters->sample_rate
+						"%s: Using video stream #%d.",
+						__FILE__,
+						i
 					);
-			}
-		}
 
-		// print its name, id and bitrate
-		LOG->Info(
-			LogLevel::LOW,
-			"Video: Codec %s ID %d bit_rate %lld",
-			pLocalCodec->name,
-			pLocalCodec->id,
-			m_pCodecParameters_->bit_rate
-		);
+					m_videoStreamIndex_ = i;
+					m_dFramerate_ = av_q2d(pAVStream->avg_frame_rate);
+					m_dIntervalFrame_ = 1.0 / m_dFramerate_;
+					m_pAVCodec_ = pAVCodec;
+					m_pAVCodecParameters_ = pAVCodecParameters;
+					m_width_ = pAVCodecParameters->width;
+					m_height_ = pAVCodecParameters->height;
+				}
+
+			break;
+
+		default:
+			// Show extra stream info
+			LOG->Info(
+				LogLevel::LOW,
+				"%s: #%d %s stream[CodecID:%d], %s, %d channels, %dhz, %d, %dbps.",
+				__FILE__,
+				i,
+				pAVCodecParameters->codec_type == AVMEDIA_TYPE_AUDIO ? "Audio" : "Extra",
+				pAVCodec->id,
+				pAVCodec->name,
+				pAVCodecParameters->channels,
+				pAVCodecParameters->sample_rate,
+				pAVCodecParameters->bit_rate
+			);
+
+			break;
+		}
 	}
 
-	// https://ffmpeg.org/doxygen/trunk/structAVCodecContext.html
-	m_pCodecContext_ = avcodec_alloc_context3(m_pCodec_);
+	m_pCodecContext_ = avcodec_alloc_context3(m_pAVCodec_);
 	if (!m_pCodecContext_) {
-		LOG->Error("Video: failed to allocated memory for AVCodecContext");
+		LOG->Error("%s: failed to allocated memory for AVCodecContext", __FILE__);
 		return false;
 	}
-
-	m_pCodecContext_->thread_count = 20; // hack
+	m_pCodecContext_->thread_count = m_decodingThreadCount_;
 
 	// Fill the codec context based on the values from the supplied codec parameters
 	// https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
-	if (avcodec_parameters_to_context(m_pCodecContext_, m_pCodecParameters_) < 0) {
+	if (avcodec_parameters_to_context(m_pCodecContext_, m_pAVCodecParameters_) < 0) {
 		LOG->Error("Video: failed to copy codec params to codec context");
 		return false;
 	}
 
 	// Initialize the AVCodecContext to use the given AVCodec.
 	// https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
-	if (avcodec_open2(m_pCodecContext_, m_pCodec_, nullptr) < 0) {
+	if (avcodec_open2(m_pCodecContext_, m_pAVCodec_, nullptr) < 0) {
 		LOG->Error("Video: failed to open codec through avcodec_open2");
 		return false;
 	}
@@ -269,8 +298,8 @@ bool Video::load(std::string const& fileName)
 		GL_TEXTURE_2D,
 		0,
 		GL_RGB,
-		m_pCodecParameters_->width,
-		m_pCodecParameters_->height,
+		m_pAVCodecParameters_->width,
+		m_pAVCodecParameters_->height,
 		0,
 		GL_RGB,
 		GL_UNSIGNED_BYTE,
@@ -278,29 +307,29 @@ bool Video::load(std::string const& fileName)
 	);
 
 	m_loaded_ = true;
-	return true;
-}
 
-void Video::renderVideo(double dTime)
-{
-	if (!m_loaded_)
-		return;
-
-	m_dTime_ = dTime;
 
 	static auto funcDecode = [this]() {
 
-		if (m_dTime_ < m_dNextFrameTime_ - m_dIntervalFrame_ || m_dTime_ > m_dNextFrameTime_ + m_dIntervalFrame_) {
-			LOG->Info(LogLevel::LOW, "Seek needed!");
-			OutputDebugString(TEXT("Seek\n"));
-			seekTime(m_dTime_); // hack
-			m_dNextFrameTime_ = m_dTime_;
-		}
-		else if (m_dTime_ < m_dNextFrameTime_) {
+		if (m_dTime_ < m_dNextFrameTime_)
 			return;
+
+		if (m_dTime_ < m_dNextFrameTime_ - renderInterval() || m_dTime_ > m_dNextFrameTime_ + renderInterval()) {
+			LOG->Info(LogLevel::MED, "WARNING: FFmpeg video stream seek needed.");
+
+			//const auto a = std::chrono::high_resolution_clock::now();
+			seekTime(m_dTime_); // hack
+			//const auto b = std::chrono::high_resolution_clock::now();
+
+			m_dNextFrameTime_ = static_cast<double>(m_pCodecContext_->frame_number) * renderInterval();
 		}
 
-		if (kDebug) {
+		/*
+		if (m_bNewFrame_)
+			return;
+		*/
+
+		if (m_debug_) {
 			LOG->Info(
 				LogLevel::LOW,
 				"Time: %.4f, Next Frame time: %.4f",
@@ -310,9 +339,9 @@ void Video::renderVideo(double dTime)
 		}
 
 		// Retrieve new frame
-		m_dNextFrameTime_ += m_dIntervalFrame_ * .75;
 		int response = 0;
 
+		while (m_dNextFrameTime_ <= m_dTime_)
 		{
 			// const std::lock_guard _(m_mutex_);
 
@@ -324,8 +353,6 @@ void Video::renderVideo(double dTime)
 					response = decodePacket();
 					if (response < 0)
 						LOG->Error("Video: Packet cannot be decoded");
-					else
-						m_newFrame_ = true;
 				}
 			}
 			else {
@@ -338,16 +365,27 @@ void Video::renderVideo(double dTime)
 		}
 	};
 
-	if (m_pWorkerThread_ == nullptr) {
-		m_pWorkerThread_ = new std::thread([&] {
-			while (!m_stopWorkerThread_) {
-				// std::this_thread::sleep_for(std::chrono::milliseconds(1)); // hack
-				funcDecode();
-			}
-			});
-	}
+	while (!m_bNewFrame_)
+		funcDecode();
 
-	if (m_pCodecContext_ && m_newFrame_) {
+	m_pWorkerThread_ = new std::thread([&] {
+		while (!m_stopWorkerThread_) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(1)); // hack
+			funcDecode();
+		}
+		});
+
+	return true;
+}
+
+void Video::renderVideo(double dTime)
+{
+	if (!m_loaded_)
+		return;
+
+	m_dTime_ = dTime;
+
+	if (m_pCodecContext_ && m_bNewFrame_) {
 		glBindTextureUnit(0, m_texID_);
 		glTexSubImage2D(
 			GL_TEXTURE_2D,
@@ -360,7 +398,7 @@ void Video::renderVideo(double dTime)
 			GL_UNSIGNED_BYTE,
 			m_pGLFrame_->data[0]
 		);
-		m_newFrame_ = false;
+		m_bNewFrame_ = false;
 	}
 }
 
@@ -398,16 +436,15 @@ int Video::decodePacket()
 		// Return decoded output data (into a frame) from a decoder
 		// https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga11e6542c4e66d3028668788a1a74217c
 		response = avcodec_receive_frame(m_pCodecContext_, m_pFrame_);
-		if (response == AVERROR(EAGAIN) || response == AVERROR_EOF) {
+		if (response == AVERROR(EAGAIN) || response == AVERROR_EOF)
 			break;
-		}
 		else if (response < 0) {
 			LOG->Error("Error while receiving a frame from the decoder"); // : %s", av_err2str(response));
 			return response;
 		}
 
 		if (response >= 0) {
-			if (kDebug) {
+			if (m_debug_) {
 				LOG->Info(
 					LogLevel::LOW,
 					"Frame %d (type=%c, size=%d bytes) pts %d key_frame %d [DTS %d]",
@@ -430,6 +467,9 @@ int Video::decodePacket()
 				m_pGLFrame_->data,
 				m_pGLFrame_->linesize
 			);
+
+			m_bNewFrame_ = true;
+			m_dNextFrameTime_ = static_cast<double>(m_pCodecContext_->frame_number) * renderInterval();
 		}
 	}
 

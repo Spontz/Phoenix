@@ -11,9 +11,10 @@ Logger& Logger::GetInstance() {
 
 Logger::Logger()
 	:
-	m_netDriver(netDriver::GetInstance())
+	m_netDriver_(netDriver::GetInstance()),
+	m_outputFile_("demo_log.txt"),
+	m_logLevel_(LogLevel::HIGH)
 {
-	log_level_ = LogLevel::HIGH;
 	if (DEMO->debug)
 		OpenLogFile();
 }
@@ -21,12 +22,12 @@ Logger::Logger()
 void Logger::setLogLevel(const LogLevel level)
 {
 	if (level <= LogLevel::LOW)
-		log_level_ = level;
+		m_logLevel_ = level;
 }
 
 void Logger::Info(const LogLevel level, const char* message, ...) const {
 	// write down the trace to the standard output
-	if (DEMO->debug && this->log_level_ >= level) {
+	if (DEMO->debug && this->m_logLevel_ >= level) {
 		va_list argptr;
 		char* Text_;	// Formatted text
 		char* Chain_;	// Text chain to be written to file
@@ -45,7 +46,10 @@ void Logger::Info(const LogLevel level, const char* message, ...) const {
 		iLen++;
 		Chain_ = new char[iLen];
 		snprintf(Chain_, iLen, cPrefix, dTime, Text_);
-		log_ofstream_ << Chain_;
+		m_ofstream_ << Chain_;
+#if defined(_DEBUG) && defined(WIN32)
+		OutputDebugStringA(Chain_);
+#endif
 		delete[] Text_;
 		delete[] Chain_;
 	}
@@ -72,14 +76,14 @@ void Logger::SendEditor(const char* message, ...) const {
 		iLen++;
 		Chain_ = new char[iLen];
 		snprintf(Chain_, iLen, cPrefix, dTime, Text_);
-		log_ofstream_ << Chain_;
-#ifdef _DEBUG
+		m_ofstream_ << Chain_;
+#if defined(_DEBUG) && defined(WIN32)
 		OutputDebugStringA(Chain_);
 #endif
 		if (DEMO->slaveMode == 1) {
 			std::string message = "INFO::";
 			message += Chain_;
-			m_netDriver.sendMessage(message);
+			m_netDriver_.sendMessage(message);
 		}
 		delete[] Text_;
 		delete[] Chain_;
@@ -107,14 +111,14 @@ void Logger::Error(const char* message, ...) const {
 		iLen++;
 		Chain_ = new char[iLen];
 		snprintf(Chain_, iLen, cPrefix, dTime, Text_);
-		log_ofstream_ << Chain_;
-#ifdef _DEBUG
+		m_ofstream_ << Chain_;
+#if defined(_DEBUG) && defined(WIN32)
 		OutputDebugStringA(Chain_);
 #endif
 		if (DEMO->slaveMode == 1) {
 			std::string message = "ERROR::";
 			message += Chain_;
-			m_netDriver.sendMessage(message);
+			m_netDriver_.sendMessage(message);
 		}
 		delete[] Text_;
 		delete[] Chain_;
@@ -122,11 +126,11 @@ void Logger::Error(const char* message, ...) const {
 }
 
 void Logger::OpenLogFile() const {
-	if (!log_ofstream_.is_open())
-		log_ofstream_.open(output_file_.c_str(), std::ios::out | std::ios::trunc);
+	if (!m_ofstream_.is_open())
+		m_ofstream_.open(m_outputFile_.c_str(), std::ios::out | std::ios::trunc);
 }
 
 void Logger::CloseLogFile() const {
-	if (log_ofstream_.is_open())
-		log_ofstream_.close();
+	if (m_ofstream_.is_open())
+		m_ofstream_.close();
 }
