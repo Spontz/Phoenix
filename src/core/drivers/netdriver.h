@@ -25,7 +25,7 @@ public:
 
 public:
 	int32_t m_iPortReceive;
-	int32_t m_iPortSend_;
+	int32_t m_iPortSend;
 
 private:
 	// Dyad Callbacks

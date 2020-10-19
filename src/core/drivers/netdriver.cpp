@@ -27,7 +27,7 @@ netDriver& netDriver::GetInstance() {
 netDriver::netDriver()
 	:
 	m_iPortReceive(28000),
-	m_iPortSend_(28001),
+	m_iPortSend(28001),
 	m_bInitialized_(false),
 	m_bConnectedToEditor_(false),
 	m_pServConnect_(nullptr)
@@ -66,12 +66,12 @@ void netDriver::connectToEditor()
 	LOG->Info(
 		LogLevel::MED,
 		"Network: outgoing messages will be done through port: %d",
-		m_iPortSend_
+		m_iPortSend
 	);
 
 	m_pServConnect_ = dyad_newStream();
 	dyad_addListener(m_pServConnect_, DYAD_EVENT_CONNECT, dyadOnConnect, nullptr);
-	dyad_connect(m_pServConnect_, "127.0.0.1", m_iPortSend_);
+	dyad_connect(m_pServConnect_, "127.0.0.1", m_iPortSend);
 }
 
 void netDriver::update() const

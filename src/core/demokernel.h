@@ -42,7 +42,7 @@ enum DemoStatus : char const {
 };
 
 // ******************************************************************
-class demokernel {
+class demokernel final {
 private:
 	demokernel();
 public:
@@ -123,9 +123,9 @@ public:
 	void initNetwork();
 	void mainLoop();
 	void closeDemo();
-	const std::string getEngineVersion();
-	const std::string getLibAssimpVersion();
-	const std::string getLibDyadVersion();
+	static std::string getEngineVersion();
+	static std::string getLibAssimpVersion();
+	static std::string getLibDyadVersion();
 
 	// Data folder operations
 	bool checkDataFolder();

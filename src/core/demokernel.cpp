@@ -117,8 +117,8 @@ void demokernel::initNetwork()
 {
 	if (slaveMode) {
 		LOG->Info(LogLevel::HIGH, "Running in network slave mode");
-		NETDRV->init();
-		NETDRV->update();
+		netDriver::GetInstance().init();
+		netDriver::GetInstance().update();
 	}
 	else
 		LOG->Info(LogLevel::HIGH, "Running in standalone mode");
@@ -208,7 +208,7 @@ void demokernel::doExec() {
 
 	// Update network driver
 	if (slaveMode)
-		NETDRV->update();
+		netDriver::GetInstance().update();
 }
 
 void demokernel::playDemo()
@@ -286,19 +286,23 @@ void demokernel::closeDemo() {
 	GLDRV->close();
 }
 
-const std::string demokernel::getEngineVersion()
+std::string demokernel::getEngineVersion()
 {
-	return std::string(std::to_string(PHOENIX_MAJOR_VERSION) + "." + std::to_string(PHOENIX_MINOR_VERSION) + "." + std::to_string(PHOENIX_BUILD_VERSION));
+	std::stringstream ss;
+	ss << PHOENIX_MAJOR_VERSION << "." << PHOENIX_MINOR_VERSION << "." << PHOENIX_BUILD_VERSION;
+	return ss.str();
 }
 
-const std::string demokernel::getLibAssimpVersion()
+std::string demokernel::getLibAssimpVersion()
 {
-	return std::string(std::to_string(aiGetVersionMajor()) + "." + std::to_string(aiGetVersionMinor()) + "." + std::to_string(aiGetVersionRevision()));
+	std::stringstream ss;
+	ss << aiGetVersionMajor() << "." << aiGetVersionMinor() << "." << aiGetVersionRevision();
+	return ss.str();
 }
 
-const std::string demokernel::getLibDyadVersion()
+std::string demokernel::getLibDyadVersion()
 {
-	return NETDRV->getVersion();
+	return netDriver::GetInstance().getVersion();
 }
 
 bool demokernel::checkDataFolder()
@@ -355,7 +359,7 @@ bool demokernel::load_config()
 		LOG->Info(LogLevel::MED, "Engine is in slave mode, therefore, enabling force loads for shaders and textures!");
 		textureManager.forceLoad = true;
 		shaderManager.forceLoad	= true;
-		videoManager.forceLoad	= true;
+		videoManager.m_forceReload	= true;
 	}
 	return true;
 }

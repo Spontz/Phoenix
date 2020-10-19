@@ -5,16 +5,17 @@
 
 #include "core/video.h"
 
-class VideoManager {
+class VideoManager final {
 public:
 	~VideoManager();
 
 public:
-	Video* addVideo(std::string const& path, int videoStreamIndex);
-	Video* getVideo(int videoIndex) const;
+	Video* addVideo(std::string const& sPath, int32_t iVideoStreamIndex);
+	Video* getVideo(int32_t iVideoIndex) const;
 
 public:
-	bool				forceLoad;	// Force video loading each time we add a video (should be enabled when working on slave mode)
+	// Force video loading each time we add a video (should be enabled when working on slave mode)
+	bool				m_forceReload;
 
 private:
 	std::vector<Video*> m_videos_;	// Video list
