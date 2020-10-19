@@ -4,7 +4,7 @@
 
 int kVideoStreamIndex = -1; // TODO: allow selecting the video stream index
 
-struct sDrawVideo : public Section {
+class sDrawVideo final : public Section {
 public:
 	sDrawVideo();
 
@@ -16,12 +16,12 @@ public:
 	std::string debug();
 
 private:
-	bool		m_clearScreen_	= false;	// Clear Screen buffer
-	bool		m_clearDepth_	= false;	// Clear Depth buffer
-	bool		m_fitToContent_ = false;	// Fit to content: true:respect video aspect ratio, false:stretch to viewport.
-	Video*		m_pVideo_		= nullptr;
-	Shader*		m_pShader_		= nullptr;
-	ShaderVars* m_pShaderVars_	= nullptr;	// Shader variables
+	bool		m_bClearScreen_  = false;	// Clear Screen buffer
+	bool		m_bClearDepth_   = false;	// Clear Depth buffer
+	bool		m_bFitToContent_ = false;	// Fit to content: true:respect video aspect ratio, false:stretch to viewport.
+	Video*		m_pVideo_        = nullptr;
+	Shader*		m_pShader_       = nullptr;
+	ShaderVars* m_pShaderVars_   = nullptr;	// Shader variables
 };
 
 // ******************************************************************
@@ -47,9 +47,9 @@ bool sDrawVideo::load()
 		return false;
 	}
 
-	m_clearScreen_ = static_cast<bool>(param[0]);
-	m_clearDepth_ = static_cast<bool>(param[1]);
-	m_fitToContent_ = static_cast<bool>(param[2]);
+	m_bClearScreen_ = static_cast<bool>(param[0]);
+	m_bClearDepth_ = static_cast<bool>(param[1]);
+	m_bFitToContent_ = static_cast<bool>(param[2]);
 
 	m_pVideo_ = m_demo.videoManager.addVideo(m_demo.dataFolder + strings[0], kVideoStreamIndex);
 	if (m_pVideo_ == nullptr)
@@ -82,32 +82,32 @@ void sDrawVideo::exec()
 {
 	m_pVideo_->renderVideo(runTime);
 
-	if (m_clearScreen_)
+	if (m_bClearScreen_)
 		glClear(GL_COLOR_BUFFER_BIT);
 
-	if (m_clearDepth_)
+	if (m_bClearDepth_)
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
 		// Texture and View aspect ratio, stored for Keeping image proportions
-		const auto texAspect = static_cast<float>(m_pVideo_->getWidth()) / static_cast<float>(m_pVideo_->getHeight());
-		const auto viewportAspect = GLDRV->GetCurrentViewport().GetAspectRatio();
+		const auto fTexAspect = static_cast<float>(m_pVideo_->getWidth()) / static_cast<float>(m_pVideo_->getHeight());
+		const auto fViewportAspect = GLDRV->GetCurrentViewport().GetAspectRatio();
 
 		// Change the model matrix, in order to scale the image and keep proportions of the image
-		float xScale = 1.0f;
-		float yScale = 1.0f;
-		if (m_fitToContent_) {
-			if (texAspect > viewportAspect)
-				yScale = viewportAspect / texAspect;
+		float fXScale = 1.0f;
+		float fYScale = 1.0f;
+		if (m_bFitToContent_) {
+			if (fTexAspect > fViewportAspect)
+				fYScale = fViewportAspect / fTexAspect;
 			else
-				xScale = texAspect / viewportAspect;
+				fXScale = fTexAspect / fViewportAspect;
 		}
 
 		const auto modelMatrix = glm::scale(
 			glm::identity<glm::mat4>(),
-			glm::vec3(xScale, yScale, 0.0f)
+			glm::vec3(fXScale, fYScale, 0.0f)
 		);
 
 		m_pShader_->use();

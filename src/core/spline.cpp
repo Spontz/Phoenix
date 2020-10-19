@@ -159,7 +159,7 @@ bool Spline::load()
 		if ((line[0] == ';') || (line[0] == '\n') || (line[0] == '\r')) continue;
 
 		KeyFrame *new_key = new KeyFrame;
-		chan = Util::getFloatVector(line, new_key->cv, NUM_CHAN);
+		chan = Util::getFloatVector(line, new_key->cv, kszKeyFrameNumChannels);
 
 		if (chan == -1) {
 			LOG->Error("Spline load error: too many floats in file: %s, line: '%s'", this->filename.c_str(), line);

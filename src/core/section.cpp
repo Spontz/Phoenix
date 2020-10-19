@@ -79,3 +79,10 @@ void Section::EvalBlendingEnd()
 			glBlendEquation(GL_FUNC_ADD);
 	}
 }
+
+
+bool		Section::load() { return true; };
+void		Section::init() {};
+void		Section::exec() {};
+void		Section::end() {};
+std::string	Section::debug() { return {}; };

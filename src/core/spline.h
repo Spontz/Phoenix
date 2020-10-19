@@ -1,8 +1,8 @@
 // spline.h
 // Spontz Demogroup
 
-#ifndef SPLINE_H
-#define SPLINE_H
+#pragma once
+
 #include <vector>
 #include <string>
 
@@ -12,24 +12,25 @@
 // and x, y, z scale), although this number can vary.  Envelopes work the
 // same way but track only one channel.
 
-#define NUM_CHAN 32
-typedef float ChanVec[NUM_CHAN];
+static const size_t kszKeyFrameNumChannels = 32;
+
+using ChanVec = float[kszKeyFrameNumChannels];
 
 // Each KeyFrame in a motion has the value of the channels at that key,
 // tension, continuity and bias spline controls, a linear flag and the
 // frame at which the key is located (step).
-typedef struct st_KeyFrame {
+struct KeyFrame final {
 	ChanVec cv;
 	float   tens, cont, bias;
 	int     linear;
 	float   step;
-} KeyFrame;
+};
 
 // ******************************************************************
 
 // A spline is just an array of `keys' KeyFrames and the total number of
 // steps in the motion
-class Spline {
+class Spline final {
 public:
 	std::vector<KeyFrame*>	key;
 	int						keys;		// KeyNumber
@@ -40,14 +41,9 @@ public:
 	float					duration;	// Spline duration in seconds
 
 	Spline();
-	virtual ~Spline();
+	~Spline();
 	
 	static void Hermite(float t, float *h1, float *h2, float *h3, float *h4);
 	void MotionCalcStep(ChanVec resVec, float step);
 	bool load();
-
-private:
-
 };
-
-#endif
