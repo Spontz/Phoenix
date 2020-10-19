@@ -108,7 +108,13 @@ bool Video::load(
 	// Open file and read header
 	// Codecs are not opened
 	if (m_bDebug_)
-		LOG->Info(LogLevel::LOW, "%s: Opening \"%s\" and loading format (container) header.", __FILE__, sFileName.c_str());
+		LOG->Info(
+			LogLevel::LOW,
+			"%s: Opening \"%s\" and loading format (container) header.",
+			__FILE__,
+			sFileName.c_str()
+		);
+
 	if (avformat_open_input(&m_pFormatContext_, m_sFileName_.c_str(), nullptr, nullptr) != 0) {
 		LOG->Error("%s: Error opening \"%s\".", __FILE__, m_sFileName_.c_str());
 		return false;
@@ -239,22 +245,20 @@ bool Video::load(
 	m_pCodecContext_->thread_count = m_uiDecodingThreadCount_;
 
 	// Fill the codec context based on the values from the supplied codec parameters
-	// https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
 	if (avcodec_parameters_to_context(m_pCodecContext_, m_pAVCodecParameters_) < 0) {
 		LOG->Error("%s: failed to copy codec params to codec context", __FILE__);
 		return false;
 	}
 
 	// Initialize the AVCodecContext to use the given AVCodec.
-	// https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
 	if (avcodec_open2(m_pCodecContext_, m_pAVCodec_, nullptr) < 0) {
 		LOG->Error("%s: failed to open codec through avcodec_open2", __FILE__);
 		return false;
 	}
 
-	// https://ffmpeg.org/doxygen/trunk/structAVFrame.html
 	m_pFrame_ = av_frame_alloc();
 	m_pGLFrame_ = av_frame_alloc();
+	
 	// Allocate te data buffer for the glFrame
 	const int size = av_image_get_buffer_size(
 		AV_PIX_FMT_RGB24,
@@ -262,17 +266,19 @@ bool Video::load(
 		m_pCodecContext_->height,
 		1
 	);
-	uint8_t* internal_buffer = (uint8_t*)av_malloc(size * sizeof(uint8_t));
+
+	auto puiInternalBuffer = static_cast<uint8_t*>(av_malloc(size * sizeof(uint8_t)));
 	av_image_fill_arrays(
 		(uint8_t**)((AVPicture*)m_pGLFrame_->data),
 		(int*)((AVPicture*)m_pGLFrame_->linesize),
-		internal_buffer,
+		puiInternalBuffer,
 		AV_PIX_FMT_RGB24,
 		m_pCodecContext_->width,
 		m_pCodecContext_->height,
 		1
 	);
-	if ((!m_pFrame_) || (!m_pGLFrame_)) {
+
+	if (!m_pFrame_ || !m_pGLFrame_) {
 		LOG->Error("%s: failed to allocated memory for AVFrame", __FILE__);
 		return false;
 	}
@@ -296,7 +302,6 @@ bool Video::load(
 		return false;
 	}
 
-	// https://ffmpeg.org/doxygen/trunk/structAVPacket.html
 	m_pAVPacket_ = av_packet_alloc();
 	if (!m_pAVPacket_) {
 		LOG->Error("%s: Video: failed to allocated memory for AVPacket", __FILE__);
@@ -327,11 +332,11 @@ bool Video::load(
 	m_bLoaded_ = true;
 
 
-	static auto funcDecode = [this]() {
+	static auto fnDecode = [this]() {
 		if (m_dTime_ < m_dNextFrameTime_ - renderInterval() || m_dTime_ > m_dNextFrameTime_ + renderInterval() * 2) {
 			LOG->Info(
 				LogLevel::HIGH,
-				"%s: Seeking %s[stream %d] @ %.2f [desynced by %.2f]...",
+				"%s: Seeking %s[stream %d] @ %.4fs [desynced by %.4fs]...",
 				__FILE__,
 				m_sFileName_.c_str(),
 				m_iVideoStreamIndex_,
@@ -350,7 +355,7 @@ bool Video::load(
 		if (m_bDebug_) {
 			LOG->Info(
 				LogLevel::LOW,
-				"%s: Time: %.4f, Next Frame time: %.4f",
+				"%s: Time: %.4fs, Next Frame time: %.4fs",
 				__FILE__,
 				m_dTime_,
 				m_dNextFrameTime_
@@ -358,37 +363,34 @@ bool Video::load(
 		}
 
 		// Retrieve new frame
-		int response = 0;
-
 		while (m_dNextFrameTime_ <= m_dTime_)
 		{
 			// fill the Packet with data from the Stream
-			// https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61
 			if (av_read_frame(m_pFormatContext_, m_pAVPacket_) >= 0) {
 				// if it's the video stream
 				if (m_pAVPacket_->stream_index == m_iVideoStreamIndex_) {
-					response = decodePacket();
+					auto response = decodePacket();
 					if (response < 0)
 						LOG->Error("%s: Packet cannot be decoded", __FILE__);
 				}
 			}
 			else {
 				// Loop: Start the video again
-				// OutputDebugString(TEXT("Seek (0)\n"));
-				seekTime(0); //av_seek_frame(pFormatContext, video_stream_index, 0, 0);
+				seekTime(0);
+				// av_seek_frame(pFormatContext, video_stream_index, 0, 0);
 			}
-			// https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
+
 			av_packet_unref(m_pAVPacket_);
 		}
 	};
 
 	while (!m_bNewFrame_)
-		funcDecode();
+		fnDecode();
 
 	m_pWorkerThread_ = new std::thread([&] {
 		while (!m_bStopWorkerThread_) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1)); // hack
-			funcDecode();
+			fnDecode();
 		}
 		});
 
@@ -434,7 +436,7 @@ int64_t Video::seekTime(double dTime)
 	) / 1000;
 
 	if (av_seek_frame(m_pFormatContext_, m_iVideoStreamIndex_, iFrameNumber, 0) < 0)
-		LOG->Error("%s: Could not reach position: %f, frame: %d", __FILE__, dTime, iFrameNumber);
+		LOG->Error("%s: Could not reach position: %.4fs, frame: %d", __FILE__, dTime, iFrameNumber);
 
 	return iFrameNumber;
 }
@@ -442,27 +444,25 @@ int64_t Video::seekTime(double dTime)
 int32_t Video::decodePacket()
 {
 	// Supply raw packet data as input to a decoder
-	// https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga58bc4bf1e0ac59e27362597e467efff3
-	int response = avcodec_send_packet(m_pCodecContext_, m_pAVPacket_);
+	auto iResponse = avcodec_send_packet(m_pCodecContext_, m_pAVPacket_);
 
-	if (response < 0) {
+	if (iResponse < 0) {
 		LOG->Error("%s: decodePacket Error while sending a packet to the decoder", __FILE__); // : %s", av_err2str(response));
-		return response;
+		return iResponse;
 	}
 
-	while (response >= 0)
+	while (iResponse >= 0)
 	{
 		// Return decoded output data (into a frame) from a decoder
-		// https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga11e6542c4e66d3028668788a1a74217c
-		response = avcodec_receive_frame(m_pCodecContext_, m_pFrame_);
-		if (response == AVERROR(EAGAIN) || response == AVERROR_EOF)
+		iResponse = avcodec_receive_frame(m_pCodecContext_, m_pFrame_);
+		if (iResponse == AVERROR(EAGAIN) || iResponse == AVERROR_EOF)
 			break;
-		else if (response < 0) {
+		else if (iResponse < 0) {
 			LOG->Error("%s: Error while receiving a frame from the decoder", __FILE__); // : %s", av_err2str(response));
-			return response;
+			return iResponse;
 		}
 
-		if (response >= 0) {
+		if (iResponse >= 0) {
 			if (m_bDebug_) {
 				LOG->Info(
 					LogLevel::LOW,
