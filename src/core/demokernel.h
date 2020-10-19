@@ -48,11 +48,11 @@ private:
 public:
 	// ******************************************************************
 	// VARIABLES
-	std::string dataFolder;	// Path to "data" folder
-	char*		demoName;
-	int			debug;
-	float		debug_fontSize;
-	LogLevel	log_detail;
+	std::string		dataFolder;	// Path to "data" folder
+	char*			demoName;
+	const bool		debug;
+	const float		debug_fontSize;
+	const LogLevel	m_logLevel;
 
 	// misc
 	int			loop;

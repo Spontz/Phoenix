@@ -23,10 +23,10 @@ private:
 	Logger();
 
 public:
-	void setLogLevel(const LogLevel level);
+	void setLogLevel(LogLevel level);
 
 public:
-	void Info(const LogLevel level, const char* message, ...) const;
+	void Info(LogLevel level, const char* message, ...) const;
 	void SendEditor(const char* message, ...) const;
 	void Error(const char* message, ...) const;
 	void OpenLogFile() const;
@@ -37,8 +37,8 @@ private:
 
 private:
 	LogLevel				m_logLevel_;
-	std::string				m_outputFile_;
-	netDriver&				m_netDriver_;
+	const std::string		m_outputFile_;
+	const netDriver&		m_netDriver_;
 };
 
 // HACK: 0 macros

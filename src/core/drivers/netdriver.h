@@ -1,48 +1,49 @@
 // netdriver.h
 // Spontz Demogroup
 
-#ifndef NETDRIVER_H
-#define NETDRIVER_H
+#pragma once
 
 #include "core/drivers/net/dyad.h"
 
 #include <string>
 
-#define NETDRV (&netDriver::GetInstance())
-
-class netDriver {
-	
+class netDriver final {
 public:
-	int		portReceive_;
-	int		portSend_;
-	
 	static netDriver& GetInstance();
 
+public:
 	netDriver();
+	~netDriver();
+
+public:
 	void init();
 	void connectToEditor();
-	void update();
-	virtual ~netDriver();
+	void update() const;
+	const char* getVersion() const;
+	char* processMessage(const char* pszMessage) const;
+	void sendMessage(std::string const& sMessage) const;
 
-	const char *getVersion();
-	char * processMessage(const char *message);
-	void sendMessage(std::string message);
+public:
+	int32_t m_iPortReceive;
+	int32_t m_iPortSend_;
 
 private:
-	bool	inited_;
-	bool	connectedToEditor_;
-	dyad_Stream *serv_connect;
-	
-	char * getParamString(const char *message, int requestedParameter);
-	float getParamFloat(const char *message, int requestedParameter);
+	// Dyad Callbacks
+	static void dyadOnData(dyad_Event* const pDyadEvent);
+	static void dyadOnAccept(dyad_Event* const pDyadEvent);
+	static void dyadOnListen(dyad_Event* const pDyadEvent);
+	static void dyadOnError(dyad_Event* const pDyadEvent);
+	static void dyadOnConnect(dyad_Event* const pDyadEvent);
 
-	// Callbacks
-	static void onData_SendResponse(dyad_Event* e);
-	static void onAccept(dyad_Event* e);
-	static void onListen(dyad_Event* e);
-	static void onError(dyad_Event* e);
-	static void onConnectToEngine(dyad_Event* e);
+private:
+	// Returns the requested parameter from the passed message (first parameter is 1) as a string
+	std::string getParamString(const char* pszMessage, int32_t iRequestedParameter) const;
 
+	// Returns the requested parameter from the passed message (first parameter is 1) as a floating point number
+	float getParamFloat(const char* pszMessage, int32_t iRequestedParameter) const;
+
+private:
+	bool m_bInitialized_;
+	bool m_bConnectedToEditor_;
+	dyad_Stream* m_pServConnect_;
 };
-
-#endif

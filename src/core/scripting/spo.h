@@ -111,14 +111,14 @@ namespace Phoenix {
 
 
 		// Script command structure
-		typedef struct {
-			std::string cName;
-			SectionVar vType;
-			void* vAddr;
-		} tScriptCommand;
+		struct ScriptCommand {
+			const std::string cName;
+			const SectionVar vType;
+			const void* vAddr;
+		};
 
 		// Script commands
-		const std::vector<tScriptCommand> scriptCommand;
+		const std::vector<ScriptCommand> scriptCommand;
 	};
 
 }

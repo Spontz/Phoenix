@@ -1,122 +1,37 @@
 // netdriver.cpp
 // Spontz Demogroup
 
+// includes ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "netdriver.h"
 
 #include <core/demokernel.h>
 
-#define DELIMITER '\x1f'
-#define DELIMITER_SEND "\x1f"
 
-// ***********************************
+// globals /////////////////////////////////////////////////////////////////////////////////////////
 
-#define SPZ_STL(a) _##a
+auto const kDelimiterChar = '\x1f';
+auto const kDelimiterString = "\x1f";
+
+
+// public static ///////////////////////////////////////////////////////////////////////////////////
 
 netDriver& netDriver::GetInstance() {
 	static netDriver obj;
 	return obj;
 }
 
-// Returns the requested parameter from the passed message (first parameter is 1) as a string
-char * netDriver::getParamString(const char *message, int requestedParameter) {
-	char *theParameter;
-	int counter = 1;
 
-	theParameter = SPZ_STL(strdup)(message);
-
-	for (theParameter = strtok(theParameter, DELIMITER_SEND);	counter < requestedParameter; theParameter = strtok(NULL, DELIMITER_SEND))
-		counter++;
-
-	return theParameter;
-}
-
-// Returns the requested parameter from the passed message (first parameter is 1) as a floating point number
-float netDriver::getParamFloat(const char *message, int requestedParameter) {
-	float theFloatResult;
-	char *theStringResult;
-
-	theStringResult = getParamString(message, requestedParameter);
-
-	// Search for the parameter and transform it in a float
-	if (sscanf(theStringResult, "%f", &theFloatResult) != 1)
-		throw std::exception();
-
-	// Return the result
-	return theFloatResult;
-}
-
-void netDriver::onData_SendResponse(dyad_Event *e) {
-	auto theResponse = NETDRV->processMessage(e->data);
-
-	// Send the response and close the connection
-	dyad_write(e->stream, theResponse, int(strlen(theResponse)));
-	dyad_end(e->stream);
-
-	delete[] theResponse;
-}
-
-void netDriver::onAccept(dyad_Event *e) {
-	dyad_addListener(e->remote, DYAD_EVENT_DATA, onData_SendResponse, NULL);
-}
-
-void netDriver::onListen(dyad_Event *e) {
-	LOG->Info(LogLevel::MED, "Network listener started in port: %d", dyad_getPort(e->stream));
-}
-
-void netDriver::onError(dyad_Event *e) {
-	LOG->Error("Network server error: %s", e->msg);
-}
-
-void netDriver::onConnectToEngine(dyad_Event *e) {
-	LOG->Info(LogLevel::MED, "Network: Connected to editor through port: %d", dyad_getPort(e->stream));
-	NETDRV->connectedToEditor_ = true;
-}
-
-
+// constructors/destructor /////////////////////////////////////////////////////////////////////////
 
 netDriver::netDriver()
 	:
-	portReceive_(28000),
-	portSend_(28001),
-	inited_(false),
-	connectedToEditor_(false),
-	serv_connect(nullptr)
+	m_iPortReceive(28000),
+	m_iPortSend_(28001),
+	m_bInitialized_(false),
+	m_bConnectedToEditor_(false),
+	m_pServConnect_(nullptr)
 {
-}
-
-
-
-void netDriver::init()
-{
-	dyad_init();
-
-	dyad_Stream *serv = dyad_newStream();
-	//dyad_setNoDelay(serv, 1); // Disable Nagle's algorithm
-	dyad_setUpdateTimeout(0);	// Disable waiting
-	// Listeners for answering responses from the editor
-	dyad_addListener(serv, DYAD_EVENT_ERROR, onError, NULL);
-	dyad_addListener(serv, DYAD_EVENT_ACCEPT, onAccept, NULL);
-	dyad_addListener(serv, DYAD_EVENT_LISTEN, onListen, NULL);
-	dyad_listenEx(serv, "0.0.0.0", portReceive_, 511);
-	
-	this->connectToEditor();
-
-	inited_ = true;
-}
-
-void netDriver::connectToEditor()
-{
-	// Listener for sending messages to the editor
-	LOG->Info(LogLevel::MED, "Network: outgoing messages will be done through port: %d", this->portSend_);
-	serv_connect = dyad_newStream();
-	dyad_addListener(serv_connect, DYAD_EVENT_CONNECT, onConnectToEngine, NULL);
-	dyad_connect(serv_connect, "127.0.0.1", portSend_);
-}
-
-void netDriver::update()
-{
-	dyad_update();
 }
 
 netDriver::~netDriver()
@@ -124,93 +39,244 @@ netDriver::~netDriver()
 	dyad_shutdown();
 }
 
-const char * netDriver::getVersion()
+
+// public
+
+void netDriver::init()
+{
+	dyad_init();
+
+	dyad_Stream* serv = dyad_newStream();
+	//dyad_setNoDelay(serv, 1); // Disable Nagle's algorithm
+	dyad_setUpdateTimeout(0);	// Disable waiting
+	// Listeners for answering responses from the editor
+	dyad_addListener(serv, DYAD_EVENT_ERROR, dyadOnError, nullptr);
+	dyad_addListener(serv, DYAD_EVENT_ACCEPT, dyadOnAccept, nullptr);
+	dyad_addListener(serv, DYAD_EVENT_LISTEN, dyadOnListen, nullptr);
+	dyad_listenEx(serv, "0.0.0.0", m_iPortReceive, 511);
+
+	connectToEditor();
+
+	m_bInitialized_ = true;
+}
+
+void netDriver::connectToEditor()
+{
+	// Listener for sending messages to the editor
+	LOG->Info(
+		LogLevel::MED,
+		"Network: outgoing messages will be done through port: %d",
+		m_iPortSend_
+	);
+
+	m_pServConnect_ = dyad_newStream();
+	dyad_addListener(m_pServConnect_, DYAD_EVENT_CONNECT, dyadOnConnect, nullptr);
+	dyad_connect(m_pServConnect_, "127.0.0.1", m_iPortSend_);
+}
+
+void netDriver::update() const
+{
+	dyad_update();
+}
+
+const char* netDriver::getVersion() const
 {
 	return dyad_getVersion();
 }
 
-char * netDriver::processMessage(const char * message)
+char* netDriver::processMessage(const char* pszMessage) const
 {
-	// Incoming information
-	char *identifier, *type, *action;
-
 	// Outcoming information
-	auto theResponse = new char[4096];
-	char *theResult;
+	auto pszResponse = new char[4096];
+	char* pszResult;
 
-	identifier = getParamString(message, 1);
-	type = getParamString(message, 2);
-	action = getParamString(message, 3);
+	auto const sIdentifier = getParamString(pszMessage, 1);
+	auto const sType = getParamString(pszMessage, 2);
+	auto const sAction = getParamString(pszMessage, 3);
 
-	theResult = "OK";
-	char theInformation[1024];
+	pszResult = "OK";
+	char pszInfo[1024];
 
-	LOG->Info(LogLevel::LOW, "Message received: [identifier: %s] [type: %s] [action: %s]", identifier, type, action);
+	LOG->Info(
+		LogLevel::LOW,
+		"Message received: [identifier: %s] [type: %s] [action: %s]",
+		sIdentifier.c_str(),
+		sType.c_str(),
+		sAction.c_str()
+	);
 
-	// Commands processing
-	if (strcmp(type, "command") == 0) {
-		if		(strcmp(action, "pause") == 0)			{ DEMO->pauseDemo();								theResult = "OK"; }
-		else if (strcmp(action, "play") == 0)			{ DEMO->playDemo();									theResult = "OK"; }
-		else if (strcmp(action, "restart") == 0)		{ DEMO->restartDemo();								theResult = "OK"; }
-		else if (strcmp(action, "startTime") == 0)		{ DEMO->setStartTime(getParamFloat(message, 4));	theResult = "OK"; }
-		else if (strcmp(action, "currentTime") == 0)	{ DEMO->setCurrentTime(getParamFloat(message, 4));	theResult = "OK"; }
-		else if (strcmp(action, "endTime") == 0)		{ DEMO->setEndTime(getParamFloat(message, 4));		theResult = "OK"; }
-		else if (strcmp(action, "ping") == 0)			{ theResult = "OK"; }
-		else if (strcmp(action, "end") == 0)			{ DEMO->exitDemo = true;							theResult = "OK"; }
+	if (sType == "command") {
+		// Commands processing
+		if (sAction == "pause") {
+			DEMO->pauseDemo();
+		}
+		else if (sAction == "play") {
+			DEMO->playDemo();
+		}
+		else if (sAction == "restart") {
+			DEMO->restartDemo();
+		}
+		else if (sAction == "startTime") {
+			DEMO->setStartTime(getParamFloat(pszMessage, 4));
+		}
+		else if (sAction == "currentTime") {
+			DEMO->setCurrentTime(getParamFloat(pszMessage, 4));
+		}
+		else if (sAction == "endTime") {
+			DEMO->setEndTime(getParamFloat(pszMessage, 4));
+		}
+		else if (sAction == "ping") {
+		}
+		else if (sAction == "end") {
+			DEMO->exitDemo = true;
+		}
 		else {
-			theResult = "NOK";
-			sprintf((char *)theInformation, "Unknown command (%s)", message);
+			pszResult = "NOK";
+			sprintf(pszInfo, "Unknown command (%s)", pszMessage);
 		}
 	}
-	// Sections processing
-	else if (strcmp(type, "section") == 0) {
-		if (strcmp(action, "new") == 0)	{
-			char *data = getParamString(message, 4);
-			int res = DEMO->load_scriptFromNetwork(data);
-			if (res) {
-				theResult = "OK";
-			}
-			else {
-				theResult = "NOK";
-				sprintf((char *)theInformation, "Section load failed");
+	else if (sType == "section") {
+		// Sections processing
+		if (sAction == "new") {
+			if (DEMO->load_scriptFromNetwork(getParamString(pszMessage, 4)) != 0) {
+				pszResult = "NOK";
+				sprintf(pszInfo, "Section load failed");
 			}
 		}
-		
-		else if (strcmp(action, "toggle") == 0)			{ DEMO->sectionManager.toggleSection(getParamString(message, 4));										theResult = "OK"; }
-		else if (strcmp(action, "delete") == 0)			{ DEMO->sectionManager.deleteSection(getParamString(message, 4));										theResult = "OK"; }
-		else if (strcmp(action, "update") == 0)			{ DEMO->sectionManager.updateSection(getParamString(message, 4),getParamString(message, 5));			theResult = "OK"; }
-		else if (strcmp(action, "setStartTime") == 0)	{ DEMO->sectionManager.setSectionsStartTime(getParamString(message, 4), getParamString(message, 5));	theResult = "OK"; }
-		else if (strcmp(action, "setEndTime") == 0)		{ DEMO->sectionManager.setSectionsEndTime(getParamString(message, 4), getParamString(message, 5));		theResult = "OK"; }
-		else if (strcmp(action, "setLayer") == 0)		{ DEMO->sectionManager.setSectionLayer(getParamString(message, 4), getParamString(message, 5));		theResult = "OK"; }
+		else if (sAction == "toggle") {
+			DEMO->sectionManager.toggleSection(getParamString(pszMessage, 4));
+		}
+		else if (sAction == "delete") {
+			DEMO->sectionManager.deleteSection(getParamString(pszMessage, 4));
+		}
+		else if (sAction == "update") {
+			DEMO->sectionManager.updateSection(
+				getParamString(pszMessage, 4),
+				getParamString(pszMessage, 5)
+			);
+		}
+		else if (sAction == "setStartTime") {
+			DEMO->sectionManager.setSectionsStartTime(
+				getParamString(pszMessage, 4),
+				getParamString(pszMessage, 5)
+			);
+		}
+		else if (sAction == "setEndTime") {
+			DEMO->sectionManager.setSectionsEndTime(
+				getParamString(pszMessage, 4),
+				getParamString(pszMessage, 5)
+			);
+		}
+		else if (sAction == "setLayer") {
+			DEMO->sectionManager.setSectionLayer(
+				getParamString(pszMessage, 4),
+				getParamString(pszMessage, 5)
+			);
+		}
 		else {
-			theResult = "NOK";
-			sprintf((char *)theInformation, "Unknown section (%s)", message);
+			pszResult = "NOK";
+			sprintf(pszInfo, "Unknown section referenced in network message (%s)", pszMessage);
 		}
 	}
-
-	// Check for non-processed messages (If the result has not been set, the message has not been processed)
-	if (strcmp(theResult, "") == 0) {
-		theResult = "NOK";
-		sprintf((char *)theInformation, "Unknown message (%s)", message);
+	else {
+		pszResult = "NOK";
+		sprintf(pszInfo, "Unknown network message type (%s)", pszMessage);
 	}
 
-	// Create the response
-	sprintf((char *)theResponse, "%s%c%s%c%f%c%d%c%f%c%s",	identifier, DELIMITER,
-															theResult, DELIMITER,
-															DEMO->fps, DELIMITER,
-															DEMO->state, DELIMITER,
-															DEMO->demo_runTime, DELIMITER,
-															(char *)theInformation);
-	
-	//LOG->Info(LogLevel::LOW, "Sending response: [%s]", theResponse);
-		
-	// and return the response (will be freed later)
-	return theResponse;
+	// Create response
+	sprintf(
+		pszResponse, "%s%c%s%c%f%c%d%c%f%c%s",
+
+		sIdentifier.c_str(), kDelimiterChar,
+		pszResult, kDelimiterChar,
+		DEMO->fps, kDelimiterChar,
+		DEMO->state, kDelimiterChar,
+		DEMO->demo_runTime, kDelimiterChar,
+		pszInfo
+	);
+
+	LOG->Info(LogLevel::LOW, "Sending response: [%s]", pszResponse);
+
+	// return response (to be deleted later)
+	return pszResponse;
 }
 
-void netDriver::sendMessage(std::string message)
+void netDriver::sendMessage(std::string const& message) const
 {
-	if (this->connectedToEditor_) {
-		dyad_write(serv_connect, message.c_str(), (int)message.length());
-	}
+	if (!m_bConnectedToEditor_)
+		return;
+
+	dyad_write(
+		m_pServConnect_,
+		message.c_str(),
+		static_cast<int>(message.length())
+	);
+}
+
+
+// private static //////////////////////////////////////////////////////////////////////////////////
+
+void netDriver::dyadOnData(dyad_Event* const pDyadEvent) {
+	const auto pszResponse = netDriver::GetInstance().processMessage(pDyadEvent->data);
+
+	// Send the response and close the connection
+	dyad_write(pDyadEvent->stream, pszResponse, int(strlen(pszResponse)));
+	dyad_end(pDyadEvent->stream);
+
+	delete[] pszResponse;
+}
+
+void netDriver::dyadOnAccept(dyad_Event* const pDyadEvent)
+{
+	dyad_addListener(pDyadEvent->remote, DYAD_EVENT_DATA, dyadOnData, nullptr);
+}
+
+void netDriver::dyadOnListen(dyad_Event* const pDyadEvent)
+{
+	LOG->Info(
+		LogLevel::MED,
+		"Network listener started in port: %d",
+		dyad_getPort(pDyadEvent->stream)
+	);
+}
+
+void netDriver::dyadOnError(dyad_Event* const pDyadEvent)
+{
+	LOG->Error("Network server error: %s", pDyadEvent->msg);
+}
+
+void netDriver::dyadOnConnect(dyad_Event* const pDyadEvent)
+{
+	netDriver::GetInstance().m_bConnectedToEditor_ = true;
+
+	LOG->Info(
+		LogLevel::MED,
+		"Network: Connected to editor through port: %d",
+		dyad_getPort(pDyadEvent->stream)
+	);
+}
+
+
+// private /////////////////////////////////////////////////////////////////////////////////////////
+
+std::string netDriver::getParamString(const char* pszMessage, int32_t iRequestedParameter) const
+{
+	int32_t iCounter = 1;
+	auto pszParameter = _strdup(pszMessage);
+
+	for (
+		pszParameter = strtok(pszParameter, kDelimiterString);
+		iCounter < iRequestedParameter;
+		pszParameter = strtok(nullptr, kDelimiterString)
+		)
+		++iCounter;
+
+	std::string r(pszParameter);
+	delete[] pszParameter;
+	return r;
+}
+
+float netDriver::getParamFloat(const char* pszMessage, int32_t iRequestedParameter) const
+{
+	return std::stof(getParamString(pszMessage, iRequestedParameter));
 }

@@ -9,30 +9,28 @@
 
 #include <main.h>
 
-#include <chrono>
-
 
 Video::Video(
-	bool debug,
-	uint32_t decodingThreadCount, // ideally logical cores - 1
-	double playbackSpeed // 1.0 means normal speed, 2.0 double speed, etc. 
+	bool bDebug,
+	uint32_t uiDecodingThreadCount,
+	double dPlaybackSpeed
 )
 	:
-	m_debug_(debug),
-	m_decodingThreadCount_(decodingThreadCount),
-	m_playbackSpeed_(playbackSpeed),
-	m_fileName_("Video not loaded"),
-	m_videoStreamIndex_(-1),
-	m_loaded_(false),
-	m_stopWorkerThread_(false),
+	m_bDebug_(bDebug),
+	m_uiDecodingThreadCount_(uiDecodingThreadCount),
+	m_dPlaybackSpeed_(dPlaybackSpeed),
+	m_sFileName_("Video not loaded"),
+	m_iVideoStreamIndex_(-1),
+	m_bLoaded_(false),
+	m_bStopWorkerThread_(false),
 	m_bNewFrame_(false),
 	m_dTime_(0.0),
 	m_dFramerate_(0),
-	m_width_(0),
-	m_height_(0),
+	m_iWidth_(0),
+	m_iHeight_(0),
 	m_dIntervalFrame_(0),
 	m_dNextFrameTime_(0),
-	m_texID_(0),
+	m_uiTexID_(0),
 	m_pGLFrame_(nullptr),
 	m_pCodecContext_(nullptr),
 	m_pFormatContext_(nullptr),
@@ -50,18 +48,17 @@ Video::~Video()
 	clearData();
 }
 
-
 void Video::clearData()
 {
 	if (m_pWorkerThread_) {
-		m_stopWorkerThread_ = true;
+		m_bStopWorkerThread_ = true;
 		m_pWorkerThread_->join();
 		delete m_pWorkerThread_;
 	}
 
-	if (m_texID_ != 0) {
-		glDeleteTextures(1, &m_texID_);
-		m_texID_ = 0;
+	if (m_uiTexID_ != 0) {
+		glDeleteTextures(1, &m_uiTexID_);
+		m_uiTexID_ = 0;
 	}
 
 	if (m_pFormatContext_) {
@@ -73,12 +70,12 @@ void Video::clearData()
 		av_packet_unref(m_pAVPacket_);
 		av_packet_free(&m_pAVPacket_);
 	}
-	
+
 	if (m_pFrame_) {
 		av_frame_unref(m_pFrame_);
 		av_frame_free(&m_pFrame_);
 	}
-	
+
 	if (m_pGLFrame_) {
 		av_frame_unref(m_pGLFrame_);
 		av_frame_free(&m_pGLFrame_);
@@ -89,12 +86,15 @@ void Video::clearData()
 }
 
 double Video::renderInterval() const {
-	return m_dIntervalFrame_ / m_playbackSpeed_;
+	return m_dIntervalFrame_ / m_dPlaybackSpeed_;
 };
 
-bool Video::load(std::string const& fileName, int videoStreamIndex)
+bool Video::load(
+	std::string const& sFileName,
+	int32_t iVideoStreamIndex
+)
 {
-	m_fileName_ = fileName;
+	m_sFileName_ = sFileName;
 
 	// Delete data, in case video has been already loaded
 	clearData();
@@ -107,10 +107,10 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 
 	// Open file and read header
 	// Codecs are not opened
-	if (m_debug_)
-		LOG->Info(LogLevel::LOW, "%s: Opening \"%s\" and loading format (container) header.", __FILE__, fileName.c_str());
-	if (avformat_open_input(&m_pFormatContext_, m_fileName_.c_str(), nullptr, nullptr) != 0) {
-		LOG->Error("%s: Error opening \"%s\".", __FILE__, m_fileName_.c_str());
+	if (m_bDebug_)
+		LOG->Info(LogLevel::LOW, "%s: Opening \"%s\" and loading format (container) header.", __FILE__, sFileName.c_str());
+	if (avformat_open_input(&m_pFormatContext_, m_sFileName_.c_str(), nullptr, nullptr) != 0) {
+		LOG->Error("%s: Error opening \"%s\".", __FILE__, m_sFileName_.c_str());
 		return false;
 	}
 
@@ -126,7 +126,7 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 
 	// Read Packets from AVFormatContext to get stream information
 	// avformat_find_stream_info populates m_pFormatContext_->streams (of size equals to pFormatContext->nb_streams)
-	if (m_debug_)
+	if (m_bDebug_)
 		LOG->Info(LogLevel::LOW, "%s: Finding stream info from format", __FILE__);
 	if (avformat_find_stream_info(m_pFormatContext_, nullptr) < 0) {
 		LOG->Error("%s: Could not get the stream info.", __FILE__);
@@ -137,7 +137,7 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 		const auto pAVStream = m_pFormatContext_->streams[i];
 		const auto pAVCodecParameters = pAVStream->codecpar;
 
-		if (m_debug_) {
+		if (m_bDebug_) {
 			LOG->Info(
 				LogLevel::LOW,
 				"%s: AVStream->time_base before open coded %d/%d",
@@ -192,8 +192,8 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 			);
 
 			// Store video stream index, codec parameters and codec
-			if (m_videoStreamIndex_ == -1)
-				if (videoStreamIndex == -1 || videoStreamIndex == i) {
+			if (m_iVideoStreamIndex_ == -1)
+				if (iVideoStreamIndex == -1 || iVideoStreamIndex == i) {
 					LOG->Info(
 						LogLevel::LOW,
 						"%s: Using video stream #%d.",
@@ -201,13 +201,13 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 						i
 					);
 
-					m_videoStreamIndex_ = i;
+					m_iVideoStreamIndex_ = i;
 					m_dFramerate_ = av_q2d(pAVStream->avg_frame_rate);
 					m_dIntervalFrame_ = 1.0 / m_dFramerate_;
 					m_pAVCodec_ = pAVCodec;
 					m_pAVCodecParameters_ = pAVCodecParameters;
-					m_width_ = pAVCodecParameters->width;
-					m_height_ = pAVCodecParameters->height;
+					m_iWidth_ = pAVCodecParameters->width;
+					m_iHeight_ = pAVCodecParameters->height;
 				}
 
 			break;
@@ -236,7 +236,7 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 		LOG->Error("%s: failed to allocated memory for AVCodecContext", __FILE__);
 		return false;
 	}
-	m_pCodecContext_->thread_count = m_decodingThreadCount_;
+	m_pCodecContext_->thread_count = m_uiDecodingThreadCount_;
 
 	// Fill the codec context based on the values from the supplied codec parameters
 	// https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
@@ -305,8 +305,8 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 
 	// Allocate the OpenGL texture
 	glActiveTexture(GL_TEXTURE0);
-	glGenTextures(1, &m_texID_);
-	glBindTexture(GL_TEXTURE_2D, m_texID_);
+	glGenTextures(1, &m_uiTexID_);
+	glBindTexture(GL_TEXTURE_2D, m_uiTexID_);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -324,30 +324,30 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 		nullptr
 	);
 
-	m_loaded_ = true;
+	m_bLoaded_ = true;
 
 
 	static auto funcDecode = [this]() {
+		if (m_dTime_ < m_dNextFrameTime_ - renderInterval() || m_dTime_ > m_dNextFrameTime_ + renderInterval() * 2) {
+			LOG->Info(
+				LogLevel::HIGH,
+				"%s: Seeking %s[stream %d] @ %.2f [desynced by %.2f]...",
+				__FILE__,
+				m_sFileName_.c_str(),
+				m_iVideoStreamIndex_,
+				m_dTime_,
+				m_dTime_ - m_dNextFrameTime_
+			);
 
-		if (m_dTime_ < m_dNextFrameTime_)
+			seekTime(m_dTime_);
+			m_dNextFrameTime_ = 0.0f;
+		}
+		else if (m_dTime_ < m_dNextFrameTime_)
+		{
 			return;
-
-		if (m_dTime_ < m_dNextFrameTime_ - renderInterval() || m_dTime_ > m_dNextFrameTime_ + renderInterval()) {
-			LOG->Info(LogLevel::MED, "%s: WARNING: FFmpeg video stream seek needed.", __FILE__);
-
-			//const auto a = std::chrono::high_resolution_clock::now();
-			seekTime(m_dTime_); // hack
-			//const auto b = std::chrono::high_resolution_clock::now();
-
-			m_dNextFrameTime_ = static_cast<double>(m_pCodecContext_->frame_number) * renderInterval();
 		}
 
-		/*
-		if (m_bNewFrame_)
-			return;
-		*/
-
-		if (m_debug_) {
+		if (m_bDebug_) {
 			LOG->Info(
 				LogLevel::LOW,
 				"%s: Time: %.4f, Next Frame time: %.4f",
@@ -362,13 +362,11 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 
 		while (m_dNextFrameTime_ <= m_dTime_)
 		{
-			// const std::lock_guard _(m_mutex_);
-
 			// fill the Packet with data from the Stream
 			// https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61
 			if (av_read_frame(m_pFormatContext_, m_pAVPacket_) >= 0) {
 				// if it's the video stream
-				if (m_pAVPacket_->stream_index == m_videoStreamIndex_) {
+				if (m_pAVPacket_->stream_index == m_iVideoStreamIndex_) {
 					response = decodePacket();
 					if (response < 0)
 						LOG->Error("%s: Packet cannot be decoded", __FILE__);
@@ -388,7 +386,7 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 		funcDecode();
 
 	m_pWorkerThread_ = new std::thread([&] {
-		while (!m_stopWorkerThread_) {
+		while (!m_bStopWorkerThread_) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1)); // hack
 			funcDecode();
 		}
@@ -399,13 +397,13 @@ bool Video::load(std::string const& fileName, int videoStreamIndex)
 
 void Video::renderVideo(double dTime)
 {
-	if (!m_loaded_)
+	if (!m_bLoaded_)
 		return;
 
 	m_dTime_ = dTime;
 
 	if (m_pCodecContext_ && m_bNewFrame_) {
-		glBindTextureUnit(0, m_texID_);
+		glBindTextureUnit(0, m_uiTexID_);
 		glTexSubImage2D(
 			GL_TEXTURE_2D,
 			0,
@@ -421,25 +419,27 @@ void Video::renderVideo(double dTime)
 	}
 }
 
-void Video::bind(int texUnit) const
+void Video::bind(GLuint uiTexUnit) const
 {
-	glBindTextureUnit(texUnit, m_texID_);
+	glBindTextureUnit(uiTexUnit, m_uiTexID_);
 }
 
-void Video::seekTime(double dTime)
+int64_t Video::seekTime(double dTime)
 {
 	const auto iTimeMs = static_cast<int64_t>(dTime * 1000.);
 	const auto iFrameNumber = av_rescale(
 		iTimeMs,
-		m_pFormatContext_->streams[m_videoStreamIndex_]->time_base.den,
-		m_pFormatContext_->streams[m_videoStreamIndex_]->time_base.num
+		m_pFormatContext_->streams[m_iVideoStreamIndex_]->time_base.den,
+		m_pFormatContext_->streams[m_iVideoStreamIndex_]->time_base.num
 	) / 1000;
 
-	if (av_seek_frame(m_pFormatContext_, m_videoStreamIndex_, iFrameNumber, 0) < 0)
+	if (av_seek_frame(m_pFormatContext_, m_iVideoStreamIndex_, iFrameNumber, 0) < 0)
 		LOG->Error("%s: Could not reach position: %f, frame: %d", __FILE__, dTime, iFrameNumber);
+
+	return iFrameNumber;
 }
 
-int Video::decodePacket()
+int32_t Video::decodePacket()
 {
 	// Supply raw packet data as input to a decoder
 	// https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga58bc4bf1e0ac59e27362597e467efff3
@@ -463,7 +463,7 @@ int Video::decodePacket()
 		}
 
 		if (response >= 0) {
-			if (m_debug_) {
+			if (m_bDebug_) {
 				LOG->Info(
 					LogLevel::LOW,
 					"%s: Frame %d (type=%c, size=%d bytes) pts %d key_frame %d [DTS %d]",
@@ -489,7 +489,8 @@ int Video::decodePacket()
 			);
 
 			m_bNewFrame_ = true;
-			m_dNextFrameTime_ = static_cast<double>(m_pCodecContext_->frame_number) * renderInterval();
+			//m_dNextFrameTime_ = static_cast<double>(m_pCodecContext_->frame_number) * renderInterval();
+			m_dNextFrameTime_ = m_dTime_ + renderInterval();
 		}
 	}
 
@@ -498,20 +499,20 @@ int Video::decodePacket()
 
 std::string const& Video::getFileName() const
 {
-	return m_fileName_;
+	return m_sFileName_;
 }
 
 GLuint Video::getTexID() const
 {
-	return m_texID_;
+	return m_uiTexID_;
 }
 
-int Video::getWidth() const
+int32_t Video::getWidth() const
 {
-	return m_width_;
+	return m_iWidth_;
 }
 
-int Video::getHeight() const
+int32_t Video::getHeight() const
 {
-	return m_height_;
+	return m_iHeight_;
 }

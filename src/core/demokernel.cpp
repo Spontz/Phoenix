@@ -26,9 +26,14 @@ demokernel::demokernel()
 	camera(nullptr),
 	state(-1),
 	demoName("Phoneix Spontz Demoengine"),
-	debug(false),
 	debug_fontSize(1.0f),
-	log_detail(LogLevel::HIGH),
+#ifdef _DEBUG
+	debug(true),
+	m_logLevel(LogLevel::LOW),
+#else
+	debug(false),
+	m_logLevel(LogLevel::HIGH),
+#endif
 	loop(true),
 	sound(true),
 	demo_runTime(0),
@@ -54,12 +59,8 @@ demokernel::demokernel()
 	exitDemo(false),
 	res(nullptr)
 {
-#ifdef _DEBUG
-	debug = TRUE;
-	log_detail = LogLevel::LOW;
-#endif
-	for (int i = 0; i < MULTIPURPOSE_VARS; i++)
-		var[i] = 0;
+	for (uint32_t i = 0; i < MULTIPURPOSE_VARS; ++i)
+		var[i] = 0.0f;
 }
 
 void demokernel::getArguments(int argc, char* argv[]) {
@@ -348,7 +349,7 @@ bool demokernel::load_config()
 	// Log file
 	if (debug)
 		LOG->OpenLogFile();
-	LOG->setLogLevel(static_cast<LogLevel>(log_detail));
+	LOG->setLogLevel(m_logLevel);
 
 	if (slaveMode) {
 		LOG->Info(LogLevel::MED, "Engine is in slave mode, therefore, enabling force loads for shaders and textures!");
