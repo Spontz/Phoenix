@@ -22,6 +22,7 @@ public:
 	int getHeight() const;
 
 private:
+	void clearData();
 	double renderInterval() const;
 	void seekTime(double dTime);
 	int decodePacket();

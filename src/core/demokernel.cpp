@@ -353,7 +353,8 @@ bool demokernel::load_config()
 	if (slaveMode) {
 		LOG->Info(LogLevel::MED, "Engine is in slave mode, therefore, enabling force loads for shaders and textures!");
 		textureManager.forceLoad = true;
-		shaderManager.forceLoad = true;
+		shaderManager.forceLoad	= true;
+		videoManager.forceLoad	= true;
 	}
 	return true;
 }

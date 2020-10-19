@@ -40,8 +40,11 @@ Texture* TextureManager::addTexture(std::string path, bool flip, std::string typ
 			p_tex = new_tex;
 			LOG->Info(LogLevel::MED, "Texture %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path.c_str(), texture.size()-1, mem);
 		}
-		else
+		else {
 			LOG->Error("Could not load texture: %s", path.c_str());
+			delete new_tex;
+		}
+			
 	}
 	else { // If the texture is catched we should not do anything, unless we have been told to upload it again
 		if (forceLoad) {

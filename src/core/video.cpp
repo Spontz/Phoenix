@@ -47,6 +47,12 @@ Video::Video(
 
 Video::~Video()
 {
+	clearData();
+}
+
+
+void Video::clearData()
+{
 	if (m_pWorkerThread_) {
 		m_stopWorkerThread_ = true;
 		m_pWorkerThread_->join();
@@ -58,20 +64,29 @@ Video::~Video()
 		m_texID_ = 0;
 	}
 
-	avformat_close_input(&m_pFormatContext_);
-	avformat_free_context(m_pFormatContext_);
+	if (m_pFormatContext_) {
+		avformat_close_input(&m_pFormatContext_);
+		avformat_free_context(m_pFormatContext_);
+	}
 
-	av_packet_unref(m_pAVPacket_);
-	av_packet_free(&m_pAVPacket_);
+	if (m_pAVPacket_) {
+		av_packet_unref(m_pAVPacket_);
+		av_packet_free(&m_pAVPacket_);
+	}
+	
+	if (m_pFrame_) {
+		av_frame_unref(m_pFrame_);
+		av_frame_free(&m_pFrame_);
+	}
+	
+	if (m_pGLFrame_) {
+		av_frame_unref(m_pGLFrame_);
+		av_frame_free(&m_pGLFrame_);
+	}
 
-	av_frame_unref(m_pFrame_);
-	av_frame_unref(m_pGLFrame_);
-	av_frame_free(&m_pFrame_);
-	av_frame_free(&m_pGLFrame_);
-
-	avcodec_free_context(&m_pCodecContext_);
+	if (m_pCodecContext_)
+		avcodec_free_context(&m_pCodecContext_);
 }
-
 
 double Video::renderInterval() const {
 	return m_dIntervalFrame_ / m_playbackSpeed_;
@@ -80,6 +95,9 @@ double Video::renderInterval() const {
 bool Video::load(std::string const& fileName, int videoStreamIndex)
 {
 	m_fileName_ = fileName;
+
+	// Delete data, in case video has been already loaded
+	clearData();
 
 	m_pFormatContext_ = avformat_alloc_context();
 	if (!m_pFormatContext_) {

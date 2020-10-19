@@ -51,11 +51,9 @@ bool sDrawVideo::load()
 	m_clearDepth_ = static_cast<bool>(param[1]);
 	m_fitToContent_ = static_cast<bool>(param[2]);
 
-	const auto videoIndex = m_demo.videoManager.addVideo(m_demo.dataFolder + strings[0], kVideoStreamIndex);
-	if (videoIndex == -1)
+	m_pVideo_ = m_demo.videoManager.addVideo(m_demo.dataFolder + strings[0], kVideoStreamIndex);
+	if (m_pVideo_ == nullptr)
 		return false;
-
-	m_pVideo_ = m_demo.videoManager.getVideo(videoIndex);
 
 	m_pShader_ = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[1]);
 	if (m_pShader_ == nullptr)
