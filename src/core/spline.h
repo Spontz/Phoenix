@@ -12,7 +12,7 @@
 // and x, y, z scale), although this number can vary.  Envelopes work the
 // same way but track only one channel.
 
-static const size_t kszKeyFrameNumChannels = 32;
+static constexpr size_t kszKeyFrameNumChannels = 32;
 
 using ChanVec = float[kszKeyFrameNumChannels];
 

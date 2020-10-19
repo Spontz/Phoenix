@@ -4,7 +4,7 @@
 #ifndef DEMOKERNEL_H
 #define DEMOKERNEL_H
 
-#include <iostream>
+class demokernel;
 
 #include "drivers/gldriver.h"
 
