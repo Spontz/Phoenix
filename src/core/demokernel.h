@@ -82,7 +82,7 @@ public:
 	int loadedSections;
 
 	// realtime information
-	float demo_runTime;								// seconds ellapsed since 0.0 <- demo init, not SDL init
+	float demo_runTime;							// seconds ellapsed since 0.0 <- demo init
 	float beforeFrameTime;						// time before render the actual frame
 	float afterFrameTime;						// time after render the actual frame
 	float frameTime;							// last frame time (used by sections)

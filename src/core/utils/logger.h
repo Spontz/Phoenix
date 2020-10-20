@@ -7,6 +7,7 @@
 
 #include <string>
 #include <fstream>
+#include <iomanip>
 
 enum class LogLevel {
 	NONE = 0,
