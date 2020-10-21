@@ -21,7 +21,7 @@ public:
 	void connectToEditor();
 	void update() const;
 	const char* getVersion() const;
-	std::string processMessage(const std::string& pszMessage) const;
+	std::string processMessage(const std::string& sMessage) const;
 	void sendMessage(std::string const& sMessage) const;
 
 public:

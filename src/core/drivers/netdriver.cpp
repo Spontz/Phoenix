@@ -84,23 +84,19 @@ const char* netDriver::getVersion() const
 	return dyad_getVersion();
 }
 
-//char* netDriver::processMessage(const char* pszMessage) const
-std::string netDriver::processMessage(const std::string& pszMessage) const
+std::string netDriver::processMessage(const std::string& sMessage) const
 {
 	// Outcoming information
-	std::string pszResult;			// Result of the operation
-	std::string pszInfo;			// Information message
-	std::string pszResponse = "";	// Final response message
+	std::string sResult = "OK";		// Result of the operation
+	std::string sInfo = "";			// Information message
+	std::string sResponse = "";		// Final response message
 
-	const std::vector<std::string> Message = splitMessage(pszMessage);
+	const std::vector<std::string> Message = splitMessage(sMessage);
 
 	const std::string sIdentifier = Message[0];
 	const std::string sType = Message[1];
 	const std::string sAction = Message[2];
 	
-	pszResult = "OK";
-	
-
 	LOG->Info(
 		LogLevel::LOW,
 		"Message received: [identifier: %s] [type: %s] [action: %s]",
@@ -138,16 +134,16 @@ std::string netDriver::processMessage(const std::string& pszMessage) const
 			DEMO->exitDemo = true;
 		}
 		else {
-			pszResult = "NOK";
-			pszInfo = "Unknown command (" + sAction + "): " + pszMessage;
+			sResult = "NOK";
+			sInfo = "Unknown command (" + sAction + "): " + sMessage;
 		}
 	}
 	else if (sType == "section") {
 		// Sections processing
 		if (sAction == "new") {
 			if (DEMO->load_scriptFromNetwork(Message[3]) != 0) {
-				pszResult = "NOK";
-				pszInfo = "Section load failed";
+				sResult = "NOK";
+				sInfo = "Section load failed";
 			}
 		}
 		else if (sAction == "toggle") {
@@ -169,49 +165,45 @@ std::string netDriver::processMessage(const std::string& pszMessage) const
 			DEMO->sectionManager.setSectionLayer(Message[3], Message[4]);
 		}
 		else {
-			pszResult = "NOK";
-			pszInfo = "Unknown section command (" + sAction + "): " + pszMessage;
+			sResult = "NOK";
+			sInfo = "Unknown section command (" + sAction + "): " + sMessage;
 		}
 	}
 	else {
-		pszResult = "NOK";
-		pszInfo = "Unknown network message type (" + sType + "): " + pszMessage;
+		sResult = "NOK";
+		sInfo = "Unknown network message type (" + sType + "): " + sMessage;
 	}
 
 	// Create response
-	pszResponse = sIdentifier + kDelimiterChar +
-		pszResult + kDelimiterChar +
+	sResponse = sIdentifier + kDelimiterChar +
+		sResult + kDelimiterChar +
 		std::to_string(DEMO->fps) + kDelimiterChar +
 		std::to_string(DEMO->state) + kDelimiterChar +
 		std::to_string(DEMO->demo_runTime) + kDelimiterChar +
-		pszInfo;
+		sInfo;
 	
-	LOG->Info(LogLevel::LOW, "Sending response: [%s]", pszResponse.c_str());
+	LOG->Info(LogLevel::LOW, "Sending response: %s", sResponse.c_str());
 
-	// return response (to be deleted later)
-	return pszResponse;
+	// return response
+	return sResponse;
 }
 
-void netDriver::sendMessage(std::string const& message) const
+void netDriver::sendMessage(std::string const& sMessage) const
 {
 	if (!m_bConnectedToEditor_)
 		return;
 
-	dyad_write(
-		m_pServConnect_,
-		message.c_str(),
-		static_cast<int>(message.size())
-	);
+	dyad_write(m_pServConnect_, sMessage.c_str(), static_cast<int>(sMessage.size()));
 }
 
 
 // private static //////////////////////////////////////////////////////////////////////////////////
 
 void netDriver::dyadOnData(dyad_Event* const pDyadEvent) {
-	const auto pszResponse = netDriver::GetInstance().processMessage(pDyadEvent->data);
+	const std::string sResponse = netDriver::GetInstance().processMessage(pDyadEvent->data);
 
 	// Send the response and close the connection
-	dyad_write(pDyadEvent->stream, pszResponse.c_str(), static_cast<int>(pszResponse.size()));
+	dyad_write(pDyadEvent->stream, sResponse.c_str(), static_cast<int>(sResponse.size()));
 	dyad_end(pDyadEvent->stream);
 }
 
