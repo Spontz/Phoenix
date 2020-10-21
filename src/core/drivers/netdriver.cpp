@@ -84,18 +84,22 @@ const char* netDriver::getVersion() const
 	return dyad_getVersion();
 }
 
-char* netDriver::processMessage(const char* pszMessage) const
+//char* netDriver::processMessage(const char* pszMessage) const
+std::string netDriver::processMessage(const std::string& pszMessage) const
 {
 	// Outcoming information
-	auto pszResponse = new char[4096];
-	char* pszResult;
+	std::string pszResult;			// Result of the operation
+	std::string pszInfo;			// Information message
+	std::string pszResponse = "";	// Final response message
 
-	auto const sIdentifier = getParamString(pszMessage, 1);
-	auto const sType = getParamString(pszMessage, 2);
-	auto const sAction = getParamString(pszMessage, 3);
+	const std::vector<std::string> Message = splitMessage(pszMessage);
 
+	const std::string sIdentifier = Message[0];
+	const std::string sType = Message[1];
+	const std::string sAction = Message[2];
+	
 	pszResult = "OK";
-	char pszInfo[1024];
+	
 
 	LOG->Info(
 		LogLevel::LOW,
@@ -117,13 +121,16 @@ char* netDriver::processMessage(const char* pszMessage) const
 			DEMO->restartDemo();
 		}
 		else if (sAction == "startTime") {
-			DEMO->setStartTime(getParamFloat(pszMessage, 4));
+			float time = std::stof(Message[3]);
+			DEMO->setStartTime(time);
 		}
 		else if (sAction == "currentTime") {
-			DEMO->setCurrentTime(getParamFloat(pszMessage, 4));
+			float time = std::stof(Message[3]);
+			DEMO->setCurrentTime(time);
 		}
 		else if (sAction == "endTime") {
-			DEMO->setEndTime(getParamFloat(pszMessage, 4));
+			float time = std::stof(Message[3]);
+			DEMO->setEndTime(time);
 		}
 		else if (sAction == "ping") {
 		}
@@ -132,70 +139,56 @@ char* netDriver::processMessage(const char* pszMessage) const
 		}
 		else {
 			pszResult = "NOK";
-			sprintf(pszInfo, "Unknown command (%s)", pszMessage);
+			pszInfo = "Unknown command (" + sAction + "): " + pszMessage;
 		}
 	}
 	else if (sType == "section") {
 		// Sections processing
 		if (sAction == "new") {
-			if (DEMO->load_scriptFromNetwork(getParamString(pszMessage, 4)) != 0) {
+			if (DEMO->load_scriptFromNetwork(Message[3]) != 0) {
 				pszResult = "NOK";
-				sprintf(pszInfo, "Section load failed");
+				pszInfo = "Section load failed";
 			}
 		}
 		else if (sAction == "toggle") {
-			DEMO->sectionManager.toggleSection(getParamString(pszMessage, 4));
+			pszResult = "NOK";
+			pszInfo = "toggle command (" + sAction + "): " + pszMessage;
+			//DEMO->sectionManager.toggleSection(Message[3]);
 		}
 		else if (sAction == "delete") {
-			DEMO->sectionManager.deleteSection(getParamString(pszMessage, 4));
+			DEMO->sectionManager.deleteSection(Message[3]);
 		}
 		else if (sAction == "update") {
-			DEMO->sectionManager.updateSection(
-				getParamString(pszMessage, 4),
-				getParamString(pszMessage, 5)
-			);
+			DEMO->sectionManager.updateSection(Message[3],Message[4]);
 		}
 		else if (sAction == "setStartTime") {
-			DEMO->sectionManager.setSectionsStartTime(
-				getParamString(pszMessage, 4),
-				getParamString(pszMessage, 5)
-			);
+			DEMO->sectionManager.setSectionsStartTime(Message[3], Message[4]);
 		}
 		else if (sAction == "setEndTime") {
-			DEMO->sectionManager.setSectionsEndTime(
-				getParamString(pszMessage, 4),
-				getParamString(pszMessage, 5)
-			);
+			DEMO->sectionManager.setSectionsEndTime(Message[3], Message[4]);
 		}
 		else if (sAction == "setLayer") {
-			DEMO->sectionManager.setSectionLayer(
-				getParamString(pszMessage, 4),
-				getParamString(pszMessage, 5)
-			);
+			DEMO->sectionManager.setSectionLayer(Message[3], Message[4]);
 		}
 		else {
 			pszResult = "NOK";
-			sprintf(pszInfo, "Unknown section referenced in network message (%s)", pszMessage);
+			pszInfo = "Unknown section command (" + sAction + "): " + pszMessage;
 		}
 	}
 	else {
 		pszResult = "NOK";
-		sprintf(pszInfo, "Unknown network message type (%s)", pszMessage);
+		pszInfo = "Unknown network message type (" + sType + "): " + pszMessage;
 	}
 
 	// Create response
-	sprintf(
-		pszResponse, "%s%c%s%c%f%c%d%c%f%c%s",
-
-		sIdentifier.c_str(), kDelimiterChar,
-		pszResult, kDelimiterChar,
-		DEMO->fps, kDelimiterChar,
-		DEMO->state, kDelimiterChar,
-		DEMO->demo_runTime, kDelimiterChar,
-		pszInfo
-	);
-
-	LOG->Info(LogLevel::LOW, "Sending response: [%s]", pszResponse);
+	pszResponse = sIdentifier + kDelimiterChar +
+		pszResult + kDelimiterChar +
+		std::to_string(DEMO->fps) + kDelimiterChar +
+		std::to_string(DEMO->state) + kDelimiterChar +
+		std::to_string(DEMO->demo_runTime) + kDelimiterChar +
+		pszInfo;
+	
+	LOG->Info(LogLevel::LOW, "Sending response: [%s]", pszResponse.c_str());
 
 	// return response (to be deleted later)
 	return pszResponse;
@@ -209,7 +202,7 @@ void netDriver::sendMessage(std::string const& message) const
 	dyad_write(
 		m_pServConnect_,
 		message.c_str(),
-		static_cast<int>(message.length())
+		static_cast<int>(message.size())
 	);
 }
 
@@ -220,10 +213,8 @@ void netDriver::dyadOnData(dyad_Event* const pDyadEvent) {
 	const auto pszResponse = netDriver::GetInstance().processMessage(pDyadEvent->data);
 
 	// Send the response and close the connection
-	dyad_write(pDyadEvent->stream, pszResponse, int(strlen(pszResponse)));
+	dyad_write(pDyadEvent->stream, pszResponse.c_str(), static_cast<int>(pszResponse.size()));
 	dyad_end(pDyadEvent->stream);
-
-	delete[] pszResponse;
 }
 
 void netDriver::dyadOnAccept(dyad_Event* const pDyadEvent)
@@ -259,24 +250,14 @@ void netDriver::dyadOnConnect(dyad_Event* const pDyadEvent)
 
 // private /////////////////////////////////////////////////////////////////////////////////////////
 
-std::string netDriver::getParamString(const char* pszMessage, int32_t iRequestedParameter) const
+std::vector<std::string> netDriver::splitMessage(const std::string& message) const
 {
-	int32_t iCounter = 1;
-	auto pszParameter = _strdup(pszMessage);
-
-	for (
-		pszParameter = strtok(pszParameter, kDelimiterString);
-		iCounter < iRequestedParameter;
-		pszParameter = strtok(nullptr, kDelimiterString)
-		)
-		++iCounter;
-
-	std::string r(pszParameter);
-	delete[] pszParameter;
-	return r;
-}
-
-float netDriver::getParamFloat(const char* pszMessage, int32_t iRequestedParameter) const
-{
-	return std::stof(getParamString(pszMessage, iRequestedParameter));
+	std::vector<std::string> strings;
+	std::istringstream f(message);
+	std::string s;
+	// Split the string by spaces
+	while (std::getline(f, s, kDelimiterChar)) {
+		strings.push_back(s);
+	}
+	return strings;
 }
