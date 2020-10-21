@@ -151,9 +151,7 @@ std::string netDriver::processMessage(const std::string& pszMessage) const
 			}
 		}
 		else if (sAction == "toggle") {
-			pszResult = "NOK";
-			pszInfo = "toggle command (" + sAction + "): " + pszMessage;
-			//DEMO->sectionManager.toggleSection(Message[3]);
+			DEMO->sectionManager.toggleSection(Message[3]);
 		}
 		else if (sAction == "delete") {
 			DEMO->sectionManager.deleteSection(Message[3]);
