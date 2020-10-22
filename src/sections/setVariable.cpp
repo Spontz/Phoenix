@@ -11,7 +11,7 @@ public:
 	std::string debug();
 
 private:
-	mathDriver	*expr;	// The equations with the variabale changes
+	mathDriver	*m_pExpr	= nullptr;	// The equations with the variabale changes
 };
 
 // ******************************************************************
@@ -27,13 +27,13 @@ sSetVariable::sSetVariable() {
 
 bool sSetVariable::load() {
 	// Register the variables
-	expr = new mathDriver(this);
+	m_pExpr = new mathDriver(this);
 	std::string string_expr;
 	for (int i = 0; i < strings.size(); i++)
 		string_expr += strings[i];
-	expr->expression = string_expr;															// Loads the expression, properly composed
-	expr->Expression.register_symbol_table(expr->SymbolTable);
-	if (!expr->compileFormula())
+	m_pExpr->expression = string_expr;															// Loads the expression, properly composed
+	m_pExpr->Expression.register_symbol_table(m_pExpr->SymbolTable);
+	if (!m_pExpr->compileFormula())
 		return false;
 
 	return true;
@@ -44,15 +44,15 @@ void sSetVariable::init() {
 
 void sSetVariable::exec() {
 	// Evaluate the expression
-	expr->Expression.value();
+	m_pExpr->Expression.value();
 }
 
 void sSetVariable::end() {
 }
 
 std::string sSetVariable::debug() {
-	std::string msg;
-	msg = "[ setVariable id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
-	msg += " " + expr->expression + "\n";
-	return msg;
+	std::stringstream ss;
+	ss << "+ setVariable id: " << identifier << " layer: " << layer << std::endl;
+	ss << "  expression: " << m_pExpr->expression << std::endl;
+	return ss.str();
 }

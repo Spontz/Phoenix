@@ -10,9 +10,9 @@ public:
 	std::string debug();
 
 private:
-	int		fbo;
-	char	clearScreen;	// Clear Screen buffer
-	char	clearDepth;		// Clear Depth buffer
+	unsigned int	m_uiFboNum		= 0;
+	bool			m_bClearScreen	= true;		// Clear Screen buffer
+	bool			m_bClearDepth	= false;	// Clear Depth buffer
 };
 
 // ******************************************************************
@@ -33,12 +33,12 @@ bool sFboBind::load() {
 	}
 
 	// load parameters
-	fbo = (int)param[0];
-	clearScreen = (int)param[1];
-	clearDepth = (int)param[2];
+	m_uiFboNum = static_cast<unsigned int>(param[0]);
+	m_bClearScreen = static_cast<bool>(param[1]);
+	m_bClearDepth = static_cast<bool>(param[2]);
 
-	if (fbo >= m_demo.fboManager.fbo.size()) {
-		LOG->Error("FboBind [%s]: The fbo number %i cannot be accessed, check graphics.spo file", identifier.c_str(), fbo);
+	if (m_uiFboNum >= m_demo.fboManager.fbo.size()) {
+		LOG->Error("FboBind [%s]: The fbo number %i cannot be accessed, check graphics.spo file", identifier.c_str(), m_uiFboNum);
 		return false;
 	}
 
@@ -51,10 +51,8 @@ void sFboBind::init() {
 
 void sFboBind::exec() {
 
-	if (fbo == -1)
-		return;
 	// Enable the buffer in which we are going to paint
-	m_demo.fboManager.bind(fbo, clearScreen, clearDepth);
+	m_demo.fboManager.bind(m_uiFboNum, m_bClearScreen, m_bClearDepth);
 }
 
 void sFboBind::end() {
@@ -62,8 +60,8 @@ void sFboBind::end() {
 }
 
 std::string sFboBind::debug() {
-	std::string msg;
-	msg = "[ fboBind id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
-	msg += " fbo: " + std::to_string(fbo) + "\n";
-	return msg;
+	std::stringstream ss;
+	ss << "+ FboBind id: " << identifier << " layer: " << layer << std::endl;
+	ss << "  fbo: " << m_uiFboNum << std::endl;
+	return ss.str();
 }

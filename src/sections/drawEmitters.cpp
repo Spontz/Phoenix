@@ -13,29 +13,31 @@ public:
 	std::string debug();
 
 private:
-	Model*			model;
+	Model*			m_pModel				= nullptr;
 
 	// Particle engine variables
-	unsigned int	numMaxParticles;
-	unsigned int	numEmitters;
-	float			currentEmitter;
-	float			emissionTime;
-	float			particleLifeTime;
-	float			particleSpeed;
-	float			emitterRandomness;
-	ParticleSystem *pSystem;
+	unsigned int	m_uiNumMaxParticles		= 0;
+	unsigned int	m_uiNumEmitters			= 0;
+	float			m_fCurrentEmitter		= 0;
+	float			m_fEmissionTime			= 0;
+	float			m_fParticleLifeTime		= 0;
+	float			m_fParticleSpeed		= 0;
+	float			m_fEmitterRandomness	= 0;
+	ParticleSystem *m_pPartSystem			= nullptr;
 
 	// Particles positioning (for all the model)
-	glm::vec3	translation;
-	glm::vec3	rotation;
-	glm::vec3	scale;
+	glm::vec3		m_vTranslation			= { 0, 0, 0 };
+	glm::vec3		m_vRotation				= { 0, 0, 0 };
+	glm::vec3		m_vScale				= { 1, 1, 1 };
 
-	glm::vec3	velocity;
-	glm::vec3	force;
-	glm::vec3	color;
-	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
-
+	glm::vec3		m_vVelocity				= { 0, 0, 0 };
+	glm::vec3		m_vForce				= { 0, 0, 0 };
+	glm::vec3		m_vColor				= { 0, 0, 0 };
+	mathDriver		*m_pExprPosition		= nullptr;	// A equation containing the calculations to position the object
 };
+
+// TODO: This section needs to be reworked, we should remove the model, and position the emitters by code
+// For putting emitters on a model position we already have the "drawEmittersScene" section
 
 Section* instance_drawEmitters() {
 	return new sDrawEmitters();
@@ -63,80 +65,74 @@ bool sDrawEmitters::load() {
 	pathShaders = m_demo.dataFolder + strings[0];
 
 	// Load the model
-	model = m_demo.modelManager.addModel(m_demo.dataFolder + strings[1]);
+	m_pModel = m_demo.modelManager.addModel(m_demo.dataFolder + strings[1]);
 
-	if (!model)
+	if (!m_pModel)
 		return false;
 
-	exprPosition = new mathDriver(this);
-	// Load all the other strings
-	for (int i = 2; i < strings.size(); i++)
-		exprPosition->expression += strings[i];
+	// Load Emitters and Particles config
+	m_fEmissionTime	= param[0];
+	m_fParticleLifeTime = param[1];
+	m_fEmitterRandomness = param[2];
 
-	exprPosition->SymbolTable.add_variable("tx", translation.x);
-	exprPosition->SymbolTable.add_variable("ty", translation.y);
-	exprPosition->SymbolTable.add_variable("tz", translation.z);
-	exprPosition->SymbolTable.add_variable("rx", rotation.x);
-	exprPosition->SymbolTable.add_variable("ry", rotation.y);
-	exprPosition->SymbolTable.add_variable("rz", rotation.z);
-	exprPosition->SymbolTable.add_variable("sx", scale.x);
-	exprPosition->SymbolTable.add_variable("sy", scale.y);
-	exprPosition->SymbolTable.add_variable("sz", scale.z);
-
-	exprPosition->SymbolTable.add_variable("partSpeed", particleSpeed);
-	exprPosition->SymbolTable.add_variable("velX", velocity.x);
-	exprPosition->SymbolTable.add_variable("velY", velocity.y);
-	exprPosition->SymbolTable.add_variable("velZ", velocity.z);
-
-	exprPosition->SymbolTable.add_variable("forceX", force.x);
-	exprPosition->SymbolTable.add_variable("forceY", force.y);
-	exprPosition->SymbolTable.add_variable("forceZ", force.z);
-
-	exprPosition->SymbolTable.add_variable("colorR", color.r);
-	exprPosition->SymbolTable.add_variable("colorG", color.g);
-	exprPosition->SymbolTable.add_variable("colorB", color.b);
-
-	exprPosition->SymbolTable.add_variable("nE", currentEmitter);
-
-	// Load the particle generator parameters
-	int numEmitters = 0;
-	for (int i = 0; i < model->meshes.size(); i++) {
-		numEmitters += (int)model->meshes[i].unique_vertices_pos.size();
-	}
-
-	numEmitters = numEmitters;
-	if (numEmitters <= 0) {
-		LOG->Error("Draw Emitters [%s]: No emitters found in the 3D model", identifier.c_str());
-		return false;
-	}
-
-	exprPosition->SymbolTable.add_constant("TnE", (float)numEmitters);
-	
-	exprPosition->Expression.register_symbol_table(exprPosition->SymbolTable);
-	if (!exprPosition->compileFormula())
-		return false;
-
-	emissionTime = param[0];
-	if (emissionTime <= 0) {
+	if (m_fEmissionTime <= 0) {
 		LOG->Error("Draw Emitters [%s]: Emission time should be greater than 0", identifier.c_str());
 		return false;
 	}
 
-	//TODO: Hack to remove
-	numEmitters = 1;
+	m_pExprPosition = new mathDriver(this);
+	// Load all the other strings
+	for (int i = 2; i < strings.size(); i++)
+		m_pExprPosition->expression += strings[i];
 
-	particleLifeTime = param[1];
-	numMaxParticles = numEmitters + static_cast<unsigned int>(static_cast<float>(numEmitters)*particleLifeTime*(1.0f / emissionTime));
+	m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
+	m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
+	m_pExprPosition->SymbolTable.add_variable("tz", m_vTranslation.z);
+	m_pExprPosition->SymbolTable.add_variable("rx", m_vRotation.x);
+	m_pExprPosition->SymbolTable.add_variable("ry", m_vRotation.y);
+	m_pExprPosition->SymbolTable.add_variable("rz", m_vRotation.z);
+	m_pExprPosition->SymbolTable.add_variable("sx", m_vScale.x);
+	m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
+	m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
+
+	m_pExprPosition->SymbolTable.add_variable("partSpeed", m_fParticleSpeed);
+	m_pExprPosition->SymbolTable.add_variable("velX", m_vVelocity.x);
+	m_pExprPosition->SymbolTable.add_variable("velY", m_vVelocity.y);
+	m_pExprPosition->SymbolTable.add_variable("velZ", m_vVelocity.z);
+
+	m_pExprPosition->SymbolTable.add_variable("forceX", m_vForce.x);
+	m_pExprPosition->SymbolTable.add_variable("forceY", m_vForce.y);
+	m_pExprPosition->SymbolTable.add_variable("forceZ", m_vForce.z);
+
+	m_pExprPosition->SymbolTable.add_variable("colorR", m_vColor.r);
+	m_pExprPosition->SymbolTable.add_variable("colorG", m_vColor.g);
+	m_pExprPosition->SymbolTable.add_variable("colorB", m_vColor.b);
+
+	m_pExprPosition->SymbolTable.add_variable("nE", m_fCurrentEmitter);
+
+	// Read the number of emmitters
+	for (int i = 0; i < m_pModel->meshes.size(); i++) {
+		m_uiNumEmitters += (int)m_pModel->meshes[i].unique_vertices_pos.size();
+	}
+
+	if (m_uiNumEmitters <= 0) {
+		LOG->Error("Draw Emitters [%s]: No emitters found in the 3D model", identifier.c_str());
+		return false;
+	}
+	m_pExprPosition->SymbolTable.add_constant("TnE", static_cast<float>(m_uiNumEmitters));
 	
-	// Emitter Ramdomness
-	emitterRandomness = param[2];
+	m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
+	if (!m_pExprPosition->compileFormula())
+		return false;
 
-	LOG->Info(LogLevel::LOW, "Draw Emitters [%s]: Num max of particles will be: %d", identifier.c_str(), numMaxParticles);
+	
+	m_uiNumMaxParticles = m_uiNumEmitters + static_cast<unsigned int>(static_cast<float>(m_uiNumEmitters)*m_fParticleLifeTime*(1.0f / m_fEmissionTime));
+	LOG->Info(LogLevel::LOW, "Draw Emitters [%s]: Num max of particles will be: %d", identifier.c_str(), m_uiNumMaxParticles);
 
 	std::vector<Particle> Emitter;
-	Emitter.resize(numEmitters);
+	Emitter.resize(m_uiNumEmitters);
 
-	currentEmitter = 0;
+	m_fCurrentEmitter = 0;
 	Emitter[0].Type = PARTICLE_TYPE_EMITTER;
 	Emitter[0].Pos = glm::vec3(0 ,0 ,0);
 	Emitter[0].Vel = glm::vec3(0, 0, 0);
@@ -160,8 +156,8 @@ bool sDrawEmitters::load() {
 	}
 	*/
 	// Create the particle system
-	pSystem = new ParticleSystem(pathShaders, numMaxParticles, numEmitters, emissionTime, particleLifeTime);
-	if (!pSystem->InitParticleSystem(this, Emitter, uniform))
+	m_pPartSystem = new ParticleSystem(pathShaders, m_uiNumMaxParticles, m_uiNumEmitters, m_fEmissionTime, m_fParticleLifeTime);
+	if (!m_pPartSystem->InitParticleSystem(this, Emitter, uniform))
 		return false;
 
 	Emitter.clear();
@@ -180,7 +176,7 @@ void sDrawEmitters::exec() {
 	EvalBlendingStart();
 
 	// Evaluate the expression
-	exprPosition->Expression.value();
+	m_pExprPosition->Expression.value();
 	
 	glDepthMask(GL_FALSE); // Disable depth buffer writting
 
@@ -189,24 +185,24 @@ void sDrawEmitters::exec() {
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, translation);
-	model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1, 0, 0));
-	model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0, 1, 0));
-	model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0, 0, 1));
-	model = glm::scale(model, scale);
+	model = glm::translate(model, m_vTranslation);
+	model = glm::rotate(model, glm::radians(m_vRotation.x), glm::vec3(1, 0, 0));
+	model = glm::rotate(model, glm::radians(m_vRotation.y), glm::vec3(0, 1, 0));
+	model = glm::rotate(model, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
+	model = glm::scale(model, m_vScale);
 	
 	glm::mat4 vp = projection * view;	//TODO: This mutliplication should be done in the shader, by passing the 2 matrix
 	
 	// Render particles
 	float deltaTime = runTime - lastTime;
-	deltaTime = deltaTime * particleSpeed;
+	deltaTime = deltaTime * m_fParticleSpeed;
 	lastTime = runTime;
 	if (deltaTime < 0) {
 		deltaTime = -deltaTime;	// In case we rewind the demo
 	}
-	pSystem->force = force;
+	m_pPartSystem->force = m_vForce;
 	
-	pSystem->Render(deltaTime, vp, model, m_demo.camera->Position);
+	m_pPartSystem->Render(deltaTime, vp, model, m_demo.camera->Position);
 
 
 	// End evaluating blending
@@ -219,9 +215,9 @@ void sDrawEmitters::end() {
 }
 
 std::string sDrawEmitters::debug() {
-	std::string msg;
-	msg += "[ drawEmitters id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
-	msg += " numEmitters: " + std::to_string(numEmitters) + "\n";
-	msg += " numMaxParticles: " + std::to_string(numMaxParticles) + "\n";
-	return msg;
+	std::stringstream ss;
+	ss << "+ DrawEmitters id: " << identifier << " layer: " << layer << std::endl;
+	ss << "  numEmitters: " << m_uiNumEmitters << std::endl;
+	ss << "  numMaxParticles: " << m_uiNumMaxParticles << std::endl;
+	return ss.str();
 }

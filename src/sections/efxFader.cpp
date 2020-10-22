@@ -11,8 +11,8 @@ public:
 	std::string debug();
 
 private:
-	Shader*			shader;			// Fader Shader to apply
-	ShaderVars		*shaderVars;	// Shader variables
+	Shader		*m_pShader	= nullptr;	// Fader Shader to apply
+	ShaderVars	*p_Vars		= nullptr;	// Shader variables
 };
 
 // ******************************************************************
@@ -28,26 +28,26 @@ sEfxFader::sEfxFader() {
 
 bool sEfxFader::load() {
 	// script validation
-	if ((param.size()) != 0 || (strings.size() != 1)) {
+	if (strings.size() < 1) {
 		LOG->Error("EfxFader [%s]: 1 shader file required", identifier.c_str());
 		return false;
 	}
 	
 	// Load Fader shader
-	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
-	if (!shader)
+	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
+	if (!m_pShader)
 		return false;
 
 	// Configure Fader shader
-	shader->use();
-	shaderVars = new ShaderVars(this, shader);
+	m_pShader->use();
+	p_Vars = new ShaderVars(this, m_pShader);
 	// Read the shader variables
 	for (int i = 0; i < uniform.size(); i++) {
-		shaderVars->ReadString(uniform[i].c_str());
+		p_Vars->ReadString(uniform[i].c_str());
 	}
 	
 	// Set shader variables values
-	shaderVars->setValues();
+	p_Vars->setValues();
 
 	return true;
 }
@@ -60,9 +60,9 @@ void sEfxFader::exec() {
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
-		shader->use();
+		m_pShader->use();
 		// Set shader variables values
-		shaderVars->setValues();
+		p_Vars->setValues();
 		// Render scene
 		m_demo.res->Draw_QuadFS();
 	}		
@@ -76,5 +76,7 @@ void sEfxFader::end() {
 }
 
 std::string sEfxFader::debug() {
-	return "[ efxFader id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
+	std::stringstream ss;
+	ss << "+ EfxFader id: " << identifier << " layer: " << layer << std::endl;
+	return ss.str();
 }

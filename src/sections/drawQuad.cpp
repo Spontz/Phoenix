@@ -11,10 +11,10 @@ public:
 	std::string debug();
 
 private:
-	char		clearScreen;	// Clear Screen buffer
-	char		clearDepth;		// Clear Depth buffer
-	Shader*		shader;			// Shader to apply
-	ShaderVars	*shaderVars;	// Shader variables
+	bool		m_bClearScreen	= true;		// Clear Screen buffer
+	bool		m_bClearDepth	= true;		// Clear Depth buffer
+	Shader		*m_pShader		= nullptr;	// Shader to apply
+	ShaderVars	*m_pVars		= nullptr;	// Shader variables
 };
 
 // ******************************************************************
@@ -36,25 +36,25 @@ bool sDrawQuad::load() {
 	}
 
 	// Load parameters
-	clearScreen = (int)param[0];
-	clearDepth = (int)param[1];
+	m_bClearScreen = static_cast<bool>(param[0]);
+	m_bClearDepth = static_cast<bool>(param[1]);
 	
 	// Load shader
-	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
-	if (!shader)
+	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
+	if (!m_pShader)
 		return false;
 
 	// Create Shader variables
-	shader->use();
-	shaderVars = new ShaderVars(this, shader);
+	m_pShader->use();
+	m_pVars = new ShaderVars(this, m_pShader);
 
 	// Read the shader variables
 	for (int i = 0; i < uniform.size(); i++) {
-		shaderVars->ReadString(uniform[i].c_str());
+		m_pVars->ReadString(uniform[i].c_str());
 	}
 
 	// Set shader variables values
-	shaderVars->setValues();
+	m_pVars->setValues();
 	
 	return true;
 }
@@ -64,13 +64,13 @@ void sDrawQuad::init() {
 }
 
 void sDrawQuad::exec() {
-	shader->use();
+	m_pShader->use();
 	// Clear the screen and depth buffers depending of the parameters passed by the user
-	if (clearScreen) glClear(GL_COLOR_BUFFER_BIT);
-	if (clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
+	if (m_bClearScreen) glClear(GL_COLOR_BUFFER_BIT);
+	if (m_bClearDepth) glClear(GL_DEPTH_BUFFER_BIT);
 	
 	// Set new shader variables values
-	shaderVars->setValues();
+	m_pVars->setValues();
 
 	// Render scene
 	EvalBlendingStart();
@@ -89,5 +89,7 @@ void sDrawQuad::end() {
 }
 
 std::string sDrawQuad::debug() {
-	return "[ drawQuad id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
+	std::stringstream ss;
+	ss << "+ DrawQuad id: " << identifier << " layer: " << layer << std::endl;
+	return ss.str();
 }

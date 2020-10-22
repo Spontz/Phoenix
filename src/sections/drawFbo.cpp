@@ -10,10 +10,10 @@ public:
 	std::string debug();
 
 private:
-	int		fbo;
-	int		fboAttachment;
-	char	clearScreen;	// Clear Screen buffer
-	char	clearDepth;		// Clear Depth buffer
+	int		m_iFboNum			= 0;
+	int		m_iFboAttachment	= 0;
+	bool	m_bClearScreen		= true;	// Clear Screen buffer
+	bool	m_bClearDepth		= true;	// Clear Depth buffer
 };
 
 // ******************************************************************
@@ -26,7 +26,6 @@ sDrawFbo::sDrawFbo() {
 	type = SectionType::DrawFbo;
 }
 
-
 bool sDrawFbo::load() {
 	// script validation
 	if (param.size() != 4) {
@@ -35,19 +34,19 @@ bool sDrawFbo::load() {
 	}
 
 	// load parameters
-	fbo = (int)param[0];
-	fboAttachment = (int)param[1];
-	clearScreen = (int)param[2];
-	clearDepth = (int)param[3];
+	m_iFboNum = static_cast<int>(param[0]);
+	m_iFboAttachment = static_cast<int>(param[1]);
+	m_bClearScreen = static_cast<bool>(param[2]);
+	m_bClearDepth = static_cast<bool>(param[3]);
 
 	// Check for the right parameter values
-	if ((fbo < 0) || (fbo > (float)FBO_BUFFERS)) {
-		LOG->Error("DrawFbo [%s]: Invalid texture fbo number: %i", identifier.c_str(), fbo);
+	if ((m_iFboNum < 0) || (m_iFboNum > (float)FBO_BUFFERS)) {
+		LOG->Error("DrawFbo [%s]: Invalid texture fbo number: %i", identifier.c_str(), m_iFboNum);
 		return false;
 	}
 
-	if ((fboAttachment < 0) || (fboAttachment > (float)GLDRV_MAX_COLOR_ATTACHMENTS)) {
-		LOG->Error("DrawFbo [%s]: Invalid texture fbo attachment: %i", identifier.c_str(), fboAttachment);
+	if ((m_iFboAttachment < 0) || (m_iFboAttachment > (float)GLDRV_MAX_COLOR_ATTACHMENTS)) {
+		LOG->Error("DrawFbo [%s]: Invalid texture fbo attachment: %i", identifier.c_str(), m_iFboAttachment);
 		return false;
 	}
 
@@ -60,14 +59,14 @@ void sDrawFbo::init() {
 
 void sDrawFbo::exec() {
 	// Clear the screen and depth buffers depending of the parameters passed by the user
-	if (clearScreen) glClear(GL_COLOR_BUFFER_BIT);
-	if (clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
+	if (m_bClearScreen) glClear(GL_COLOR_BUFFER_BIT);
+	if (m_bClearDepth) glClear(GL_DEPTH_BUFFER_BIT);
 	
 	EvalBlendingStart();
 
 	glDisable(GL_DEPTH_TEST);
 	{
-		m_demo.res->Draw_QuadFBOFS(fbo, fboAttachment);
+		m_demo.res->Draw_QuadFBOFS(m_iFboNum, m_iFboAttachment);
 	}
 	glEnable(GL_DEPTH_TEST);
 
@@ -79,8 +78,8 @@ void sDrawFbo::end() {
 }
 
 std::string sDrawFbo::debug() {
-	std::string msg;
-	msg = "[ drawFbo id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
-	msg += " fbo: " + std::to_string(fbo) + "\n";
-	return msg;
+	std::stringstream ss;
+	ss << "+ DrawFbo id: " << identifier << " layer: " << layer << std::endl;
+	ss << "  fbo: " << m_iFboNum << std::endl;
+	return ss.str();
 }

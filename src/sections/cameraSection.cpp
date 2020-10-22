@@ -12,14 +12,14 @@ public:
 	std::string debug();
 
 private:
-	int			freeCam;
-	glm::vec3	cam_pos;
-	float		cam_yaw;
-	float		cam_pitch;
-	float		cam_roll;
-	float		cam_zoom;
+	bool		m_bFreeCam		= false;
+	glm::vec3	m_vCamPos		= {0, 0, 0};
+	float		m_fCamYaw		= 0;
+	float		m_fCamPitch		= 0;
+	float		m_fCamRoll		= 0;
+	float		m_fCamZoom		= 0;
 
-	mathDriver* exprCamera;	// A equation containing the calculations of the camera
+	mathDriver* m_pExprCamera	= nullptr;	// A equation containing the calculations of the camera
 } camera_section;
 
 // ******************************************************************
@@ -39,7 +39,7 @@ bool sCamera::load() {
 	}
 
 	// Load parameters
-	freeCam = static_cast<int>(param[0]);
+	m_bFreeCam = static_cast<bool>(param[0]);
 
 
 	// Load the camera splines
@@ -50,32 +50,27 @@ bool sCamera::load() {
 		}
 	}
 
-	// init cam modifiers
-	cam_pos = glm::vec3(0);
-	cam_yaw = cam_pitch = cam_zoom = cam_roll = 0.0f;
-
 	// Load the camera modifiers (based in formulas)
-	exprCamera = new mathDriver(this);
-	exprCamera->expression += "var zzz:=0;"; // Hack: We set up a basic string, just in case no string is given
+	m_pExprCamera = new mathDriver(this);
+	m_pExprCamera->expression += "var zzz:=0;"; // Hack: We set up a basic string, just in case no string is given
 
 	for (int i = 0; i < strings.size(); i++) {
-		exprCamera->expression += strings[i];
+		m_pExprCamera->expression += strings[i];
 	}
 
-	exprCamera->SymbolTable.add_variable("PosX", cam_pos.x);
-	exprCamera->SymbolTable.add_variable("PosY", cam_pos.y);
-	exprCamera->SymbolTable.add_variable("PosZ", cam_pos.z);
+	m_pExprCamera->SymbolTable.add_variable("PosX", m_vCamPos.x);
+	m_pExprCamera->SymbolTable.add_variable("PosY", m_vCamPos.y);
+	m_pExprCamera->SymbolTable.add_variable("PosZ", m_vCamPos.z);
 
-	exprCamera->SymbolTable.add_variable("Yaw", cam_yaw);
-	exprCamera->SymbolTable.add_variable("Pitch", cam_pitch);
-	exprCamera->SymbolTable.add_variable("Roll", cam_roll);
-	exprCamera->SymbolTable.add_variable("Zoom", cam_zoom);
+	m_pExprCamera->SymbolTable.add_variable("Yaw", m_fCamYaw);
+	m_pExprCamera->SymbolTable.add_variable("Pitch", m_fCamPitch);
+	m_pExprCamera->SymbolTable.add_variable("Roll", m_fCamRoll);
+	m_pExprCamera->SymbolTable.add_variable("Zoom", m_fCamZoom);
 
 
-	if (!exprCamera->compileFormula())
+	if (!m_pExprCamera->compileFormula())
 		return false;
-	exprCamera->Expression.value();
-
+	m_pExprCamera->Expression.value();
 
 	return true;
 }
@@ -85,7 +80,7 @@ void sCamera::init() {
 
 void sCamera::exec() {
 	// If freeCam is active, we do nothing
-	if (freeCam)
+	if (m_bFreeCam)
 		return;
 
 	if (!spline.empty()) {
@@ -95,11 +90,11 @@ void sCamera::exec() {
 		spline[0]->MotionCalcStep(new_pos, runTime);
 
 		// apply formula modifications
-		exprCamera->Expression.value();
+		m_pExprCamera->Expression.value();
 
-		m_demo.camera->setCamera(glm::vec3(new_pos[0], new_pos[1], new_pos[2]) + cam_pos,
+		m_demo.camera->setCamera(glm::vec3(new_pos[0], new_pos[1], new_pos[2]) + m_vCamPos,
 			glm::vec3(new_pos[3], new_pos[4], new_pos[5]),
-			new_pos[6] + cam_yaw, new_pos[7] + cam_pitch, new_pos[8] + cam_roll, new_pos[9] + cam_zoom);
+			new_pos[6] + m_fCamYaw, new_pos[7] + m_fCamPitch, new_pos[8] + m_fCamRoll, new_pos[9] + m_fCamZoom);
 	}
 	
 	
@@ -109,5 +104,7 @@ void sCamera::end() {
 }
 
 std::string sCamera::debug() {
-	return "[ cameraSection id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
+	std::stringstream ss;
+	ss << "+ Camera id: " << this->identifier << " layer: " + this->layer << std::endl;
+	return ss.str();
 }

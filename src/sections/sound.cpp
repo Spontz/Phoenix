@@ -18,16 +18,16 @@ public:
 	std::string debug();
 
 private:
-	HSTREAM str;	// Music Stream
+	HSTREAM m_hMusicStream;	// Music Stream
 
 	// Beat parameters
-	float	energy[BUFFER_SAMPLES];
-	float	beat_ratio;
-	float	fade_out;
-	float	intensity;
-	int		position;
-	float	volume;
-	float	prev_volume;	// Previous volume value
+	float	m_fEnergy[BUFFER_SAMPLES] = {0.0f};
+	float	m_fBeatRatio	= m_demo.beat_ratio;
+	float	m_fFadeOut		= m_demo.beat_fadeout;
+	float	m_fIntensity	= 0;
+	int		m_iPosition		= 1;
+	float	m_fVolume		= 1;
+	float	m_fPrevVolume	= 1;	// Previous volume value
 };
 
 Section* instance_sound() {
@@ -49,23 +49,23 @@ bool sSound::load() {
 		return false;
 	}
 
-	volume = param[0];
-	prev_volume = volume;
+	m_fVolume = param[0];
+	m_fPrevVolume = m_fVolume;
 
 	// Beat detection - Init variables
-	beat_ratio = m_demo.beat_ratio;
-	fade_out = m_demo.beat_fadeout;
+	m_fBeatRatio = m_demo.beat_ratio;
+	m_fFadeOut = m_demo.beat_fadeout;
 
 	// Clean variables
 	for (auto i = 0; i < BUFFER_SAMPLES; i++) {
-		energy[i] = DEFAULT_ENERGY;
+		m_fEnergy[i] = DEFAULT_ENERGY;
 	}
-	intensity = 0;
-	position = 1;
+	m_fIntensity = 0;
+	m_iPosition = 1;
 
 	std::string file = m_demo.dataFolder + strings[0];
-	str = BASS_StreamCreateFile(FALSE, file.c_str(), 0, 0, BASS_STREAM_PRESCAN);
-	if (str == 0) {
+	m_hMusicStream = BASS_StreamCreateFile(FALSE, file.c_str(), 0, 0, BASS_STREAM_PRESCAN);
+	if (m_hMusicStream == 0) {
 		LOG->Error("Sound [%s]: Cannot read file: %s - Error Code: %i", identifier.c_str(), file.c_str(), BASS_ErrorGetCode());
 		return false;
 	}
@@ -82,18 +82,18 @@ void sSound::init() {
 		return;
 
 	// Beat detection - Init variables
-	beat_ratio = m_demo.beat_ratio;
-	fade_out = m_demo.beat_fadeout;
+	m_fBeatRatio = m_demo.beat_ratio;
+	m_fFadeOut = m_demo.beat_fadeout;
 
 	// Clean variables
 	for (auto i = 0; i < BUFFER_SAMPLES; i++) {
-		energy[i] = DEFAULT_ENERGY;
+		m_fEnergy[i] = DEFAULT_ENERGY;
 	}
-	intensity = 0;
-	position = 1;
+	m_fIntensity = 0;
+	m_iPosition = 1;
 
-	QWORD bytes = BASS_ChannelSeconds2Bytes(str, runTime);		// convert seconds to bytes
-	if (FALSE == BASS_ChannelSetPosition(str, bytes, BASS_POS_BYTE)) { // seek there
+	QWORD bytes = BASS_ChannelSeconds2Bytes(m_hMusicStream, runTime);		// convert seconds to bytes
+	if (FALSE == BASS_ChannelSetPosition(m_hMusicStream, bytes, BASS_POS_BYTE)) { // seek there
 		BASS_err = BASS_ErrorGetCode();
 		if (BASS_err > 0 && BASS_err != BASS_ERROR_POSITION)
 			LOG->Error("Sound [%s]: BASS_ChannelSetPosition returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
@@ -102,10 +102,10 @@ void sSound::init() {
 	if (FALSE == BASS_Start())
 		LOG->Error("Sound [%s]: BASS_Start returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
 
-	if (FALSE == BASS_ChannelPlay(str, FALSE))
+	if (FALSE == BASS_ChannelPlay(m_hMusicStream, FALSE))
 		LOG->Error("Sound [%s]: BASS_ChannelPlay returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
 		
-	BASS_ChannelSetAttribute(str, BASS_ATTRIB_VOL, volume);
+	BASS_ChannelSetAttribute(m_hMusicStream, BASS_ATTRIB_VOL, m_fVolume);
 }
 
 void sSound::exec() {
@@ -114,16 +114,16 @@ void sSound::exec() {
 	float fft[BUFFER_SAMPLES] = {0.0f}; // 512 samples, because we have used "BASS_DATA_FFT1024", and this returns 512 values
 
 	// Update local values with the ones defined by the demosystem
-	beat_ratio = m_demo.beat_ratio;
-	fade_out = m_demo.beat_fadeout;
+	m_fBeatRatio = m_demo.beat_ratio;
+	m_fFadeOut = m_demo.beat_fadeout;
 
 	// Adjust volume if necessary
-	if (volume != prev_volume) {
-		BASS_ChannelSetAttribute(str, BASS_ATTRIB_VOL, volume);
-		prev_volume = volume;
+	if (m_fVolume != m_fPrevVolume) {
+		BASS_ChannelSetAttribute(m_hMusicStream, BASS_ATTRIB_VOL, m_fVolume);
+		m_fPrevVolume = m_fVolume;
 	}
 
-	if (-1 == BASS_ChannelGetData(str, fft, BASS_DATA_FFT1024)) {	// get the FFT data
+	if (-1 == BASS_ChannelGetData(m_hMusicStream, fft, BASS_DATA_FFT1024)) {	// get the FFT data
 		int BASS_err = BASS_ErrorGetCode();
 		if ((BASS_err > 0) && (BASS_err != BASS_ERROR_ENDED))
 			LOG->Error("Sound [%s]: BASS_ChannelGetData returned error: %i", identifier.c_str(), BASS_err);
@@ -138,33 +138,33 @@ void sSound::exec() {
 	// calculate average energy in last samples
 	avg = 0;
 	for (i = 0; i < BUFFER_SAMPLES; i++) {
-		avg += energy[i];
+		avg += m_fEnergy[i];
 	}
-	avg /= (float)position;
+	avg /= (float)m_iPosition;
 
 	// instant sample is a beat?
-	if ((instant / avg) > beat_ratio) {
-		intensity = 1.0f;
+	if ((instant / avg) > m_fBeatRatio) {
+		m_fIntensity = 1.0f;
 	}
-	else if (intensity > 0) {
-		intensity -= fade_out * m_demo.frameTime;
-		if (intensity < 0) intensity = 0;
+	else if (m_fIntensity > 0) {
+		m_fIntensity -= m_fFadeOut * m_demo.frameTime;
+		if (m_fIntensity < 0) m_fIntensity = 0;
 	}
 
 	// updated kernel shared variable
 	// to be used by kernel itself or another sections
-	m_demo.beat = intensity;
+	m_demo.beat = m_fIntensity;
 
 	// update energy buffer
-	if (position < BUFFER_SAMPLES) {
-		energy[position - 1] = instant;
-		position++;
+	if (m_iPosition < BUFFER_SAMPLES) {
+		m_fEnergy[m_iPosition - 1] = instant;
+		m_iPosition++;
 	}
 	else {
 		for (i = 1; i < BUFFER_SAMPLES; i++) {
-			energy[i - 1] = energy[i];
+			m_fEnergy[i - 1] = m_fEnergy[i];
 		}
-		energy[BUFFER_SAMPLES - 1] = instant;
+		m_fEnergy[BUFFER_SAMPLES - 1] = instant;
 	}
 }
 
@@ -172,16 +172,14 @@ void sSound::end() {
 	if (!m_demo.sound)
 		return;
 
-	BOOL r = BASS_ChannelStop(str);
+	BOOL r = BASS_ChannelStop(m_hMusicStream);
 	if (r != TRUE)
 		LOG->Error("Sound [%s]: BASS_ChannelStop returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
 }
 
 std::string sSound::debug() {
-	std::string msg;
-	msg = "[ sound id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
-	msg += " beat: " + std::to_string(intensity) + "\n";
-	return msg;
-
-
+	std::stringstream ss;
+	ss << "+ Sound id: " << identifier << " layer: " << layer << std::endl;
+	ss << "  beat: " << m_fIntensity << std::endl;
+	return ss.str();
 }
