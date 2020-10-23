@@ -17,6 +17,7 @@ public:
 private:
 	e_background_drawing_mode m_eMode		= e_background_drawing_mode::fit_to_viewport;
 
+	float		m_fTexAspectRatio = 1.0f;
 	Texture*	m_pTexture					= nullptr;
 	Shader*		m_pShader					= nullptr;
 };
@@ -59,6 +60,8 @@ bool sBackground::load() {
 	m_pTexture = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[0]);
 	if (!m_pTexture)
 		return false;
+	m_fTexAspectRatio = static_cast<float>(m_pTexture->width) / static_cast<float>(m_pTexture->height);
+
 	return true;
 }
 
@@ -69,25 +72,22 @@ void sBackground::exec() {
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
-		// Texture and View aspect ratio, stored for Keeping image proportions
-		const float tex_aspect = static_cast<float>(m_pTexture->width) / static_cast<float>(m_pTexture->height);
-		const float viewport_aspect = GLDRV->GetCurrentViewport().GetAspectRatio();
-
-		// Put orthogonal mode
+		// View aspect ratio, stored for Keeping image proportions
+		const float fViewportAspect = GLDRV->GetCurrentViewport().GetAspectRatio();
 
 		// Change the model matrix, in order to scale the image and keep proportions of the image
-		float new_tex_width_scaled = 1;
-		float new_tex_height_scaled = 1;
+		float fXScale = 1;
+		float fYScale = 1;
 		if (m_eMode == e_background_drawing_mode::fit_to_content) {
-			if (tex_aspect > viewport_aspect)
-				new_tex_height_scaled = viewport_aspect / tex_aspect;
+			if (m_fTexAspectRatio > fViewportAspect)
+				fYScale = fViewportAspect / m_fTexAspectRatio;
 			else
-				new_tex_width_scaled = tex_aspect / viewport_aspect;
+				fXScale = m_fTexAspectRatio / fViewportAspect;
 		}
-		const glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(new_tex_width_scaled, new_tex_height_scaled, 0.0f));
+		const glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(fXScale, fYScale, 0.0f));
 
 		m_pShader->use();
-		m_pShader->setValue("model", model);
+		m_pShader->setValue("model", modelMatrix);
 		m_pShader->setValue("screenTexture", 0);
 		m_pTexture->bind(0);
 		m_demo.res->Draw_QuadFS();

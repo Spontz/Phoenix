@@ -22,14 +22,9 @@ out vec4 FragColor;
 in vec2 TexCoords;
 
 uniform sampler2D screenTexture;
-uniform float displace;
 
 void main()
 {
-	vec3 col;
-	col.r = texture(screenTexture, vec2(TexCoords.s+displace, TexCoords.t)).r;
-	col.g = texture(screenTexture, vec2(TexCoords.s-displace, TexCoords.t)).g;
-	col.b = texture(screenTexture, TexCoords).b;
-
-    FragColor = vec4(col, 1.0);
+    vec4 col = texture(screenTexture, TexCoords).rgba;
+	FragColor = vec4(col);
 }
