@@ -40,7 +40,7 @@ float character(float n, vec2 p) // some compilers have the word "char" reserved
 
 void main(void)
 {
-	vec2 uv = vec2(TexCoords.x, 1.0 - TexCoords.y);
+	vec2 uv = vec2(TexCoords.x, TexCoords.y);
 	uv = uv * iResolution;
 	
 	vec3 col = texture(screenTexture, floor(uv/sample)*sample/iResolution).rgb;

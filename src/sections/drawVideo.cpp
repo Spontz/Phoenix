@@ -50,9 +50,8 @@ bool sDrawVideo::load()
 	if ((param.size() != 4) || (strings.size() < 5)) {
 		LOG->Error(
 			"DrawVideo [%s]: 4 param needed (Clear screen buffer, clear depth buffer, fullscreen &"
-			"fit to content) and 5 strings needed (Video to play, shader and 3 strings more the positon)",
-			identifier.c_str()
-		);
+			"fit to content) and 5 strings needed (Video & shader paths and 3 for positon)",
+			identifier.c_str());
 		return false;
 	}
 
@@ -61,13 +60,15 @@ bool sDrawVideo::load()
 	m_bFullscreen = static_cast<bool>(param[2]);
 	m_bFitToContent = static_cast<bool>(param[3]);
 
+	// Load the Video
 	m_pVideo = m_demo.videoManager.addVideo(m_demo.dataFolder + strings[0], kVideoStreamIndex);
-	if (m_pVideo == nullptr)
+	if (!m_pVideo)
 		return false;
 	m_fVideoAspectRatio = static_cast<float>(m_pVideo->getWidth()) / static_cast<float>(m_pVideo->getHeight());
 
+	// Load the Shader
 	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[1]);
-	if (m_pShader == nullptr)
+	if (!m_pShader)
 		return false;
 
 	// Load the formmula containing the Image position and scale
@@ -84,6 +85,10 @@ bool sDrawVideo::load()
 	m_pExprPosition->SymbolTable.add_variable("sx", m_vScale.x);
 	m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
 	m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
+	// Add constants
+	m_pExprPosition->SymbolTable.add_constant("vidWidth", static_cast<float>(m_pVideo->getWidth()));
+	m_pExprPosition->SymbolTable.add_constant("vidHeight", static_cast<float>(m_pVideo->getHeight()));
+
 	m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 	if (!m_pExprPosition->compileFormula())
 		return false;
@@ -173,7 +178,7 @@ void sDrawVideo::exec()
 		m_pShader->setValue("screenTexture", 0);
 		// Set other shader variables values
 		m_pVars->setValues();
-		m_pVideo->bind(0);
+		m_pVideo->bind();
 		m_demo.res->Draw_QuadFS(); // Draw a quad with the video
 
 	}

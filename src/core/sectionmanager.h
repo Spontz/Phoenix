@@ -13,8 +13,6 @@ enum SectionType {
 
 	Loading,
 
-	Background,
-	VideoSec,
 	CameraSec,
 	CameraAbsSec,
 	LightSec, 

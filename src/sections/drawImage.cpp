@@ -12,44 +12,59 @@ public:
 	std::string debug();
 
 private:
-	float		m_fTexAspectRatio	= 1.0f;
+	bool		m_bClearScreen			= false;	// Clear Screen buffer
+	bool		m_bClearDepth			= false;	// Clear Depth buffer
+	bool		m_bFullscreen			= true;		// Draw image at fullscreen?
+	bool		m_bFitToContent			= false;	// Fit to content: true:respect image aspect ratio, false:stretch to viewport/quad
 
-	glm::vec3	m_vTranslation		= { 0, 0, 0 };
-	glm::vec3	m_vRotation			= { 0, 0, 0 };
-	glm::vec3	m_vScale			= { 1, 1, 1 };
 
-	Texture		*m_pTexture			= nullptr;
-	Shader		*m_pShader			= nullptr;
-	mathDriver	*m_pExprPosition	= nullptr;	// A equation containing the calculations to position the object
-	ShaderVars	*m_pVars			= nullptr;	// For storing any other shader variables
+	glm::vec3	m_vTranslation			= { 0, 0, 0 };
+	glm::vec3	m_vRotation				= { 0, 0, 0 };
+	glm::vec3	m_vScale				= { 1, 1, 1 };
+
+	float		m_fTexAspectRatio		= 1.0f;
+	float		m_fRenderAspectRatio	= 1.0f;
+	Texture		*m_pTexture				= nullptr;
+	Shader		*m_pShader				= nullptr;
+	mathDriver	*m_pExprPosition		= nullptr;	// A equation containing the calculations to position the object
+	ShaderVars	*m_pVars				= nullptr;	// For storing any other shader variables
 } drawImage_section;
 
 // ******************************************************************
 
-Section* instance_drawImage() {
+Section* instance_drawImage()
+{
 	return new sDrawImage();
 }
 
-sDrawImage::sDrawImage() {
+sDrawImage::sDrawImage()
+{
 	type = SectionType::DrawImage;
 }
 
 
-bool sDrawImage::load() {
-	if (strings.size() < 5) {
-		LOG->Error("Draw Image [%s]: 5 strings required (image path, shader and 3 por image positioning)", identifier.c_str());
+bool sDrawImage::load()
+{
+	if ((param.size() != 4) || (strings.size() < 5)) {
+		LOG->Error(
+			"DrawImage [%s]: 4 param needed (Clear screen buffer, clear depth buffer, fullscreen &"
+			"fit to content) and 5 strings needed (Image & shader paths and 3 for position)",
+			identifier.c_str());
 		return false;
 	}
 
-	// Texture load
-	m_pTexture = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[0]);
+	m_bClearScreen = static_cast<bool>(param[0]);
+	m_bClearDepth = static_cast<bool>(param[1]);
+	m_bFullscreen = static_cast<bool>(param[2]);
+	m_bFitToContent = static_cast<bool>(param[3]);
 
+	// Load the Image
+	m_pTexture = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[0]);
 	if (!m_pTexture)
 		return false;
-	// Load the background texture
-	m_fTexAspectRatio = (float)m_pTexture->height / (float)m_pTexture->width;
+	m_fTexAspectRatio = static_cast<float>(m_pTexture->width) / static_cast<float>(m_pTexture->height);
 
-	// Load the shader to apply
+	// Load the Shader
 	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[1]);
 	if (!m_pShader)
 		return false;
@@ -68,6 +83,10 @@ bool sDrawImage::load() {
 	m_pExprPosition->SymbolTable.add_variable("sx", m_vScale.x);
 	m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
 	m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
+	// Add constants
+	m_pExprPosition->SymbolTable.add_constant("texWidth", m_pTexture->width);
+	m_pExprPosition->SymbolTable.add_constant("texHeight", m_pTexture->height);
+
 	m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 	if (!m_pExprPosition->compileFormula())
 		return false;
@@ -77,9 +96,8 @@ bool sDrawImage::load() {
 	m_pVars = new ShaderVars(this, m_pShader);
 
 	// Read the shader variables
-	for (int i = 0; i < uniform.size(); i++) {
-		m_pVars->ReadString(uniform[i].c_str());
-	}
+	for (std::string const& s : uniform)
+		m_pVars->ReadString(s.c_str());
 
 	// Set shader variables values
 	m_pVars->setValues();
@@ -91,13 +109,72 @@ void sDrawImage::init() {
 	
 }
 
-void sDrawImage::exec() {
-	// Evaluate the expression
-	m_pExprPosition->Expression.value();
+void sDrawImage::exec()
+{
+	if (m_bClearScreen)
+		glClear(GL_COLOR_BUFFER_BIT);
+
+	if (m_bClearDepth)
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+	// Evaluate the expression if we are not in fullscreen
+	if (!m_bFullscreen)
+		m_pExprPosition->Expression.value();
 
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
+		m_pShader->use();
+		glm::mat4 mModel = glm::identity<glm::mat4>();
+
+		// Render aspect ratio, stored for Keeping image proportions
+		if (m_bFullscreen)
+			m_fRenderAspectRatio = GLDRV->GetCurrentViewport().GetAspectRatio();
+		else
+			m_fRenderAspectRatio = m_vScale.x / m_vScale.y;
+
+		// Calculate Scale factors
+		float fXScale = 1;
+		float fYScale = 1;
+		if (m_bFitToContent) {
+			if (m_fTexAspectRatio > m_fRenderAspectRatio)
+				fYScale = m_fRenderAspectRatio / m_fTexAspectRatio;
+			else
+				fXScale = m_fTexAspectRatio / m_fRenderAspectRatio;
+		}
+
+		// Calculate Matrix depending if we are on fullscreen or not
+		if (m_bFullscreen)
+		{
+			m_pShader->setValue("projection", glm::identity<glm::mat4>());
+			m_pShader->setValue("view", glm::identity<glm::mat4>());
+		}
+		else
+		{
+			glm::mat4 mView = m_demo.camera->GetViewMatrix();
+			float zoom = m_demo.camera->Zoom;
+			glm::mat4 mProjection = glm::perspective(glm::radians(zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
+
+			mModel = glm::translate(mModel, m_vTranslation);
+			mModel = glm::rotate(mModel, glm::radians(m_vRotation.x), glm::vec3(1, 0, 0));
+			mModel = glm::rotate(mModel, glm::radians(m_vRotation.y), glm::vec3(0, 1, 0));
+			mModel = glm::rotate(mModel, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
+			// Calc the new scale factors
+			fXScale *= m_vScale.x * m_fRenderAspectRatio;
+			fYScale *= m_vScale.y * m_fRenderAspectRatio;
+			m_pShader->setValue("projection", mProjection);
+			m_pShader->setValue("view", mView);
+		}
+
+		mModel = glm::scale(mModel, glm::vec3(fXScale, fYScale, 0.0f));
+		m_pShader->setValue("model", mModel);
+		m_pShader->setValue("screenTexture", 0);
+		// Set other shader variables values
+		m_pVars->setValues();
+		m_pTexture->bind();
+		m_demo.res->Draw_QuadFS(); // Draw a quad with the video
+
+		/*
 		// View / projection / model Matrixes
 		glm::mat4 view = m_demo.camera->GetViewMatrix();
 		float zoom = m_demo.camera->Zoom;
@@ -123,6 +200,7 @@ void sDrawImage::exec() {
 		m_pVars->setValues();
 
 		m_demo.res->Draw_QuadFS();
+		*/
 	}
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();

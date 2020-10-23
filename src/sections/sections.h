@@ -11,7 +11,6 @@ Section* instance_sound();
 Section* instance_camera();
 Section* instance_cameraAbsSection();
 Section* instance_light();
-Section* instance_background();
 Section* instance_fboBind();
 Section* instance_fboUnbind();
 Section* instance_drawImage();

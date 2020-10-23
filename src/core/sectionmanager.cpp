@@ -16,7 +16,6 @@ tSectionID sectionID[] = {
 	{"loading", SectionType::Loading },
 
 	// built-in sections
-	{"background",			SectionType::Background},
 	{"camera",				SectionType::CameraSec},
 	{"cameraAbs",			SectionType::CameraAbsSec},
 	{"light",				SectionType::LightSec},
@@ -87,9 +86,6 @@ int SectionManager::addSection(const std::string& key, const std::string& DataSo
 		break;
 	case SectionType::LightSec:
 		mySection = instance_light();
-		break;
-	case SectionType::Background:
-		mySection = instance_background();
 		break;
 	case SectionType::FboBind:
 		mySection = instance_fboBind();
