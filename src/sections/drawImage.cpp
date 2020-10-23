@@ -84,8 +84,8 @@ bool sDrawImage::load()
 	m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
 	m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
 	// Add constants
-	m_pExprPosition->SymbolTable.add_constant("texWidth", m_pTexture->width);
-	m_pExprPosition->SymbolTable.add_constant("texHeight", m_pTexture->height);
+	m_pExprPosition->SymbolTable.add_constant("texWidth", static_cast<float>(m_pTexture->width));
+	m_pExprPosition->SymbolTable.add_constant("texHeight", static_cast<float>(m_pTexture->height));
 
 	m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 	if (!m_pExprPosition->compileFormula())
