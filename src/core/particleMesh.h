@@ -13,7 +13,6 @@ public:
 
 	struct PARTICLE
 	{
-		int			ID;		// Particle number
 		glm::vec3	Pos;	// Particle initial position
 	};
 

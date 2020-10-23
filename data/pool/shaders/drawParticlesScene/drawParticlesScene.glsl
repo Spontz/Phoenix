@@ -1,6 +1,5 @@
 #type vertex
 #version 440 core
-layout (location = 0) in int ID;
 layout (location = 1) in vec3 Position;
 
 uniform float gTime;
@@ -14,9 +13,9 @@ out vec3 Color0;
 
 void main(void)
 {
-	ID0 = ID; // Send the particle ID to Geometry shader
+	ID0 = gl_VertexID; // Send the particle ID to Geometry shader
 	
-	float zero_to_one = ID / gNumParticles;
+	float zero_to_one = gl_VertexID / gNumParticles;
 	float sphere = 2.0* PI * zero_to_one;
 	
 	// Calculate the color of the particle

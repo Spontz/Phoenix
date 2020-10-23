@@ -20,8 +20,7 @@ ParticleMesh::~ParticleMesh()
 }
 
 #define BINDING			0
-#define LOC_ID	        0
-#define LOC_POSITION	1
+#define LOC_POSITION	0
 
 bool ParticleMesh::startup(std::vector<glm::vec3> Pos)
 {
@@ -41,10 +40,6 @@ bool ParticleMesh::startup(std::vector<glm::vec3> Pos)
 
     glBindVertexBuffer(BINDING, m_particleBuffer, 0, sizeof(PARTICLE));
 
-    glEnableVertexAttribArray(LOC_ID);
-    glVertexAttribIFormat(LOC_ID, 1, GL_INT, offsetof(PARTICLE, ID));
-    glVertexAttribBinding(LOC_ID, BINDING);
-
 	glEnableVertexAttribArray(LOC_POSITION);
 	glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(PARTICLE, Pos));
 	glVertexAttribBinding(LOC_POSITION, BINDING);
@@ -57,7 +52,6 @@ void ParticleMesh::initialize_particles(std::vector<glm::vec3> Pos)
 	if (Pos.empty()) {
 		for (int i = 0; i < m_numParticles; i++)
 		{
-            m_particles[i].ID = i;
 			m_particles[i].Pos = glm::vec3(0.0f);
 		}
 
@@ -68,7 +62,6 @@ void ParticleMesh::initialize_particles(std::vector<glm::vec3> Pos)
 		else {
 			for (int i = 0; i < m_numParticles; i++)
 			{
-                m_particles[i].ID = i;
 				m_particles[i].Pos = Pos[i];
 			}
 		}
