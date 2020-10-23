@@ -117,8 +117,9 @@ void sDrawVideo::exec()
 	if (m_bClearDepth)
 		glClear(GL_DEPTH_BUFFER_BIT);
 
-	// Evaluate the expression
-	m_pExprPosition->Expression.value();
+	// Evaluate the expression if we are not in fullscreen
+	if (!m_bFullscreen)
+		m_pExprPosition->Expression.value();
 
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
@@ -147,7 +148,6 @@ void sDrawVideo::exec()
 		// Calculate Matrix depending if we are on fullscreen or not
 		if (m_bFullscreen)
 		{
-			mModel = glm::scale(mModel, glm::vec3(fXScale, fYScale, 0.0f));
 			m_pShader->setValue("projection", glm::identity<glm::mat4>());
 			m_pShader->setValue("view", glm::identity<glm::mat4>());
 		}
@@ -161,13 +161,14 @@ void sDrawVideo::exec()
 			mModel = glm::rotate(mModel, glm::radians(m_vRotation.x), glm::vec3(1, 0, 0));
 			mModel = glm::rotate(mModel, glm::radians(m_vRotation.y), glm::vec3(0, 1, 0));
 			mModel = glm::rotate(mModel, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
-			mModel = glm::scale(mModel, glm::vec3(m_vScale.x * fXScale * m_fRenderAspectRatio	, m_vScale.y * m_fRenderAspectRatio * fYScale, m_vScale.z));
-
-			// Send the Projection and view matrix
+			// Calc the new scale factors
+			fXScale *= m_vScale.x * m_fRenderAspectRatio;
+			fYScale *= m_vScale.y * m_fRenderAspectRatio;
 			m_pShader->setValue("projection", mProjection);
 			m_pShader->setValue("view", mView);
 		}
-				
+
+		mModel = glm::scale(mModel, glm::vec3(fXScale, fYScale, 0.0f));
 		m_pShader->setValue("model", mModel);
 		m_pShader->setValue("screenTexture", 0);
 		// Set other shader variables values
