@@ -14,12 +14,13 @@ public:
 	struct PARTICLE
 	{
 		glm::vec3	Pos;	// Particle initial position
+		glm::vec4	Col;	// Particle initial color
 	};
 
 	ParticleMesh(int numParticles);
 	~ParticleMesh();
 
-	bool startup(std::vector<glm::vec3> Pos = { });
+	bool startup(std::vector<PARTICLE> Pos = { });
 	void render(float currentTime);
 	void shutdown();
 
@@ -30,7 +31,7 @@ private:
 	PARTICLE*   m_particles;
 	GLuint      m_vao;
 
-	void initialize_particles(std::vector<glm::vec3> Pos = { });
+	void initialize_particles(std::vector<PARTICLE> Pos = { });
 };
 
 #endif

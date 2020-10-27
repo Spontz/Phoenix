@@ -12,7 +12,7 @@ Texture::Texture()
 	m_textureID = 0;
 	m_mipmapLevels = 1;
 	mem = 0;
-
+	textureData = nullptr;
 }
 
 Texture::~Texture()
@@ -23,6 +23,7 @@ Texture::~Texture()
 		m_mipmapLevels = 1;
 		mem = 0;
 	}
+	freeData();
 }
 
 bool Texture::load(const std::string & file_name, bool flip)
@@ -107,7 +108,47 @@ bool Texture::load(const std::string & file_name, bool flip)
 	return is_loaded;
 }
 
+bool Texture::keepData()
+{
+	freeData();
+	textureData = stbi_load((filename).c_str(), &width, &height, &components, 0);
+	if (textureData)
+		return true;
+	else
+		return false;
+}
+
+void Texture::freeData()
+{
+	if (textureData)
+		stbi_image_free(textureData);
+	textureData = nullptr;
+}
+
 void Texture::bind(GLuint TexUnit) const
 {
 	glBindTextureUnit(TexUnit, m_textureID);
+}
+
+glm::vec4 Texture::getColor(int x, int y)
+{
+	if (!textureData || x < 0 || x >= width || y < 0 || y >= height )
+		return glm::vec4(0);
+	else
+	{
+		// Hack: stb_image stores data flipped
+		int coord_x = x;// width - x;
+		int coord_y = height - y;
+		unsigned bytePerPixel = components;
+		unsigned char* pixelOffset = textureData + (coord_x + width * coord_y) * bytePerPixel;
+		unsigned char r = pixelOffset[0];
+		unsigned char g = pixelOffset[1];
+		unsigned char b = pixelOffset[2];
+		unsigned char a = components >= 4 ? pixelOffset[3] : 0xff;
+		glm::vec4 color = glm::vec4(static_cast<float>(r) / 255.0f,
+			static_cast<float>(g) / 255.0f,
+			static_cast<float>(b) / 255.0f,
+			static_cast<float>(a) / 255.0f);
+		return color;
+	}
 }

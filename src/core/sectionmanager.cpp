@@ -28,6 +28,7 @@ tSectionID sectionID[] = {
 	{"drawQuad",			SectionType::DrawQuad},
 	{"drawFbo",				SectionType::DrawFbo},
 	{"drawParticles",		SectionType::DrawParticles},
+	{"drawParticlesImage",	SectionType::DrawParticlesImage},
 	{"drawParticlesScene",	SectionType::DrawParticlesScene},
 	{"drawEmitters",		SectionType::DrawEmitters},
 	{"drawEmitterScene",	SectionType::DrawEmitterScene},
@@ -119,6 +120,9 @@ int SectionManager::addSection(const std::string& key, const std::string& DataSo
 		break;
 	case SectionType::DrawParticles:
 		mySection = instance_drawParticles();
+		break;
+	case SectionType::DrawParticlesImage:
+		mySection = instance_drawParticlesImage();
 		break;
 	case SectionType::DrawParticlesScene:
 		mySection = instance_drawParticlesScene();

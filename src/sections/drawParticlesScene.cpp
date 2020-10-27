@@ -43,7 +43,7 @@ sDrawParticlesScene::sDrawParticlesScene() {
 bool sDrawParticlesScene::load() {
 	// script validation
 	if (strings.size() != 5) {
-		LOG->Error("Draw Particles Scene [%s]: 5 strings needed (1 for shader files, 1 for 3D model, 3 for positioning)", identifier.c_str());
+		LOG->Error("Draw Particles Scene [%s]: 5 strings needed (1 for shader file, 1 for 3D model, 3 for positioning)", identifier.c_str());
 		return false;
 	}
 
@@ -68,12 +68,13 @@ bool sDrawParticlesScene::load() {
 		return false;
 	}
 	// Load the particles position
-	std::vector<glm::vec3> Pos;
-	Pos.resize(m_iNumParticles);
+	std::vector<ParticleMesh::PARTICLE> Part;
+	Part.resize(m_iNumParticles);
 	int cnt = 0;
 	for (int i = 0; i < m_pModel->meshes.size(); i++) {
 		for (int j = 0; j < m_pModel->meshes[i].unique_vertices_pos.size(); j++) {
-			Pos[cnt] = m_pModel->meshes[i].unique_vertices_pos[j];
+			Part[cnt].Pos = m_pModel->meshes[i].unique_vertices_pos[j];
+			Part[cnt].Col = glm::vec4(0.0);	// Todo: Inited with black color... should be initied with vertex color
 			cnt++;
 		}
 	}
@@ -100,10 +101,10 @@ bool sDrawParticlesScene::load() {
 
 	// Create the particle system
 	m_pParticleMesh = new ParticleMesh(m_iNumParticles);
-	if (!m_pParticleMesh->startup(Pos))
+	if (!m_pParticleMesh->startup(Part))
 		return false;
 	// Delete all temporarly elements
-	Pos.clear();
+	Part.clear();
 
 	// Create Shader variables
 	m_pShader->use();
