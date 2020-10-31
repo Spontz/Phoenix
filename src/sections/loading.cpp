@@ -10,14 +10,15 @@ public:
 	std::string debug();
 
 private:
-	Texture* tex_front;
-	Texture* tex_back;
-	Texture* tex_bar;
+	Texture	*m_pTexFront		= nullptr;
+	Texture	*m_pTexBack			= nullptr;
+	Texture	*m_pTexBar			= nullptr;
 	
-	float	tx, ty;// Bar Translation
-	float	sy;// Bar Scale
+	float	m_fTX				= 0;		// Bar Translation
+	float	m_fTY				= 0;
+	float	m_fSY				= 1;		// Bar Scale
 
-	bool byDefault;
+	bool	m_bDefaultLoader	= false;	// Use the default loader?
 };
 
 // ******************************************************************
@@ -34,31 +35,31 @@ bool sLoading::load() {
 	// script validation
 	if ((this->param.size() != 3) || (this->strings.size() != 3)) {
 		LOG->Error("Loading [%s]: 3 strings and 3 params needed. Using default values.", this->identifier.c_str());
-		byDefault = true;
+		m_bDefaultLoader = true;
 	}
 	else {
-		byDefault = false;
+		m_bDefaultLoader = false;
 	}
 
-	if (!byDefault) {
-		tex_back = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[0]);
-		tex_front = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[1]);
-		tex_bar = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[2]);
-		tx = param[0];
-		ty = param[1];
-		sy = param[2];
+	if (!m_bDefaultLoader) {
+		m_pTexBack = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[0]);
+		m_pTexFront = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[1]);
+		m_pTexBar = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[2]);
+		m_fTX = param[0];
+		m_fTY = param[1];
+		m_fSY = param[2];
 	}
 	else {
 		// Deault values
-		tex_back = m_demo.textureManager.addTexture(m_demo.dataFolder + "/resources/loading/loadingback.jpg");
-		tex_front = m_demo.textureManager.addTexture(m_demo.dataFolder + "/resources/loading/loadingfront.jpg");
-		tex_bar = m_demo.textureManager.addTexture(m_demo.dataFolder + "/resources/loading/loadingbar.jpg");
-		tx = 0.0f;
-		ty = -0.4f;
-		sy = 0.1f;
+		m_pTexBack = m_demo.textureManager.addTexture(m_demo.dataFolder + "/resources/loading/loadingback.jpg");
+		m_pTexFront = m_demo.textureManager.addTexture(m_demo.dataFolder + "/resources/loading/loadingfront.jpg");
+		m_pTexBar = m_demo.textureManager.addTexture(m_demo.dataFolder + "/resources/loading/loadingbar.jpg");
+		m_fTX = 0.0f;
+		m_fTY = -0.4f;
+		m_fSY = 0.1f;
 	}
 
-	if (tex_bar == nullptr || tex_back == nullptr || tex_front == nullptr) {
+	if (m_pTexBar == nullptr || m_pTexBack == nullptr || m_pTexFront == nullptr) {
 		LOG->Error("Loading [%s]: Could not load some of the loading textures", identifier.c_str());
 	}
 
@@ -71,7 +72,7 @@ void sLoading::init() {
 
 void sLoading::exec() {
 	// Prevent a crash if any texture is not found
-	if (tex_bar == nullptr || tex_back == nullptr || tex_front == nullptr) {
+	if (m_pTexBar == nullptr || m_pTexBack == nullptr || m_pTexFront == nullptr) {
 		return;
 	}
 
@@ -87,9 +88,9 @@ void sLoading::exec() {
 	glBlendFunc(GL_ONE, GL_ONE);
 	glDisable(GL_DEPTH_TEST);
 		// Background
-		m_demo.res->Draw_QuadFS(tex_back, 1 - zero2one);
+		m_demo.res->Draw_QuadFS(m_pTexBack, 1 - zero2one);
 		// Foreground
-		m_demo.res->Draw_QuadFS(tex_front, zero2one);
+		m_demo.res->Draw_QuadFS(m_pTexFront, zero2one);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
@@ -97,9 +98,9 @@ void sLoading::exec() {
 	// Draw the Loading bar
 	glm::mat4 model = glm::mat4(1.0f);
 
-	model = glm::translate(model, glm::vec3(tx, ty, 0));  // Move the bar
-	model = glm::scale(model, glm::vec3(zero2one, sy, 0));		// Scale the bar
-	m_demo.res->Draw_Obj_QuadTex(tex_bar, &model);
+	model = glm::translate(model, glm::vec3(m_fTX, m_fTY, 0));  // Move the bar
+	model = glm::scale(model, glm::vec3(zero2one, m_fSY, 0));		// Scale the bar
+	m_demo.res->Draw_Obj_QuadTex(m_pTexBar, &model);
 
 	GLDRV->swapBuffers();
 }

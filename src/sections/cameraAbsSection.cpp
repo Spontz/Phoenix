@@ -13,22 +13,23 @@ public:
 	std::string debug();
 
 private:
-	int			freeCam;
+	bool			m_bFreeCam	= false;
+
 	// Spline cam variables
-	glm::vec3	cam_pos;
-	float	cam_yaw;
-	float	cam_pitch;
-	float	cam_roll;
-	float	cam_zoom;
+	glm::vec3	m_vCamPos		= {0, 0, 0};
+	float		m_fCamYaw		= 0;
+	float		m_fCamPitch		= 0;
+	float		m_fCamRoll		= 0;
+	float		m_fCamZoom		= 0;
 
 	// Final cam position variables
-	glm::vec3	finalCam_pos;
-	float	finalCam_yaw;
-	float	finalCam_pitch;
-	float	finalCam_roll;
-	float	finalCam_zoom;
+	glm::vec3	m_vCamFinalPos	= { 0, 0, 0 };
+	float		m_fCamFinalYaw	= 0;
+	float		m_fCamFinalPitch= 0;
+	float		m_fCamFinalRoll	= 0;
+	float		m_fCamFinalZoom	= 0;
 
-	mathDriver* exprCamera;	// A equation containing the calculations of the camera
+	mathDriver* m_pExprCamera	= nullptr;	// A equation containing the calculations of the camera
 };
 
 // ******************************************************************
@@ -50,8 +51,7 @@ bool sCameraAbs::load() {
 	}
 
 	// Load parameters
-	freeCam = static_cast<int>(this->param[0]);
-
+	m_bFreeCam = static_cast<bool>(this->param[0]);
 
 	// Load the camera splines
 	for (int i=0; i < spline.size(); i++) {
@@ -61,42 +61,34 @@ bool sCameraAbs::load() {
 		}
 	}
 
-	// init cam modifiers
-	cam_pos = glm::vec3(0);
-	cam_yaw = cam_pitch = cam_zoom = cam_roll =  0.0f;
-
-	finalCam_pos = glm::vec3(0);
-	finalCam_yaw = finalCam_pitch = finalCam_zoom = finalCam_roll = 0.0f;
-
-
 	// Load the camera modifiers (based in formulas)
-	exprCamera = new mathDriver(this);
+	m_pExprCamera = new mathDriver(this);
 
 	for (int i = 0; i < strings.size(); i++) {
-		exprCamera->expression += this->strings[i];
+		m_pExprCamera->expression += this->strings[i];
 	}
 
-	exprCamera->SymbolTable.add_variable("c_posX", cam_pos.x);
-	exprCamera->SymbolTable.add_variable("c_posY", cam_pos.y);
-	exprCamera->SymbolTable.add_variable("c_posZ", cam_pos.z);
+	m_pExprCamera->SymbolTable.add_variable("c_posX", m_vCamPos.x);
+	m_pExprCamera->SymbolTable.add_variable("c_posY", m_vCamPos.y);
+	m_pExprCamera->SymbolTable.add_variable("c_posZ", m_vCamPos.z);
 
-	exprCamera->SymbolTable.add_variable("c_yaw", cam_yaw);
-	exprCamera->SymbolTable.add_variable("c_pitch", cam_pitch);
-	exprCamera->SymbolTable.add_variable("c_roll", cam_roll);
-	exprCamera->SymbolTable.add_variable("c_zoom", cam_zoom);
+	m_pExprCamera->SymbolTable.add_variable("c_yaw", m_fCamYaw);
+	m_pExprCamera->SymbolTable.add_variable("c_pitch", m_fCamPitch);
+	m_pExprCamera->SymbolTable.add_variable("c_roll", m_fCamRoll);
+	m_pExprCamera->SymbolTable.add_variable("c_zoom", m_fCamZoom);
 
-	exprCamera->SymbolTable.add_variable("PosX", finalCam_pos.x);
-	exprCamera->SymbolTable.add_variable("PosY", finalCam_pos.y);
-	exprCamera->SymbolTable.add_variable("PosZ", finalCam_pos.z);
+	m_pExprCamera->SymbolTable.add_variable("PosX", m_vCamFinalPos.x);
+	m_pExprCamera->SymbolTable.add_variable("PosY", m_vCamFinalPos.y);
+	m_pExprCamera->SymbolTable.add_variable("PosZ", m_vCamFinalPos.z);
 
-	exprCamera->SymbolTable.add_variable("Yaw", finalCam_yaw);
-	exprCamera->SymbolTable.add_variable("Pitch", finalCam_pitch);
-	exprCamera->SymbolTable.add_variable("Roll", finalCam_roll);
-	exprCamera->SymbolTable.add_variable("Zoom", finalCam_zoom);
+	m_pExprCamera->SymbolTable.add_variable("Yaw", m_fCamFinalYaw);
+	m_pExprCamera->SymbolTable.add_variable("Pitch", m_fCamFinalPitch);
+	m_pExprCamera->SymbolTable.add_variable("Roll", m_fCamFinalRoll);
+	m_pExprCamera->SymbolTable.add_variable("Zoom", m_fCamFinalZoom);
 
-	if (!exprCamera->compileFormula())
+	if (!m_pExprCamera->compileFormula())
 		return false;
-	exprCamera->Expression.value();
+	m_pExprCamera->Expression.value();
 
 	return true;
 }
@@ -106,7 +98,7 @@ void sCameraAbs::init() {
 
 void sCameraAbs::exec() {
 	// If freeCam is active, we do nothing
-	if (freeCam)
+	if (m_bFreeCam)
 		return;
 
 	if (!this->spline.empty()) {
@@ -115,26 +107,26 @@ void sCameraAbs::exec() {
 		// Calculate the motion step of the first spline and set it to "new_pos"
 		this->spline[0]->MotionCalcStep(new_pos, this->runTime);
 
-		cam_pos = glm::vec3(new_pos[0], new_pos[1], new_pos[2]);
-		cam_yaw = new_pos[6];
-		cam_pitch = new_pos[7];
-		cam_roll = new_pos[8];
-		cam_zoom = new_pos[9];
+		m_vCamPos = glm::vec3(new_pos[0], new_pos[1], new_pos[2]);
+		m_fCamYaw = new_pos[6];
+		m_fCamPitch = new_pos[7];
+		m_fCamRoll = new_pos[8];
+		m_fCamZoom = new_pos[9];
 
 		// apply formula modifications
-		exprCamera->Expression.value();
+		m_pExprCamera->Expression.value();
 		
-		DEMO->camera->setCamera(finalCam_pos,
+		DEMO->camera->setCamera(m_vCamFinalPos,
 			glm::vec3(new_pos[3], new_pos[4], new_pos[5]),
-			finalCam_yaw, finalCam_pitch, finalCam_roll, finalCam_zoom);
+			m_fCamFinalYaw, m_fCamFinalPitch, m_fCamFinalRoll, m_fCamFinalZoom);
 	}
-	
-	
 }
 
 void sCameraAbs::end() {
 }
 
 std::string sCameraAbs::debug() {
-	return "[ cameraAbsSection id: " + this->identifier + " layer:" + std::to_string(this->layer) + " ]\n";
+	std::stringstream ss;
+	ss << "+ CameraAbs id: " << this->identifier << " layer: " + this->layer << std::endl;
+	return ss.str();
 }

@@ -5,6 +5,7 @@
 
 #include "core/drivers/net/dyad.h"
 
+#include <vector>
 #include <string>
 
 class netDriver final {
@@ -20,7 +21,7 @@ public:
 	void connectToEditor();
 	void update() const;
 	const char* getVersion() const;
-	char* processMessage(const char* pszMessage) const;
+	std::string processMessage(const std::string& sMessage) const;
 	void sendMessage(std::string const& sMessage) const;
 
 public:
@@ -36,11 +37,7 @@ private:
 	static void dyadOnConnect(dyad_Event* const pDyadEvent);
 
 private:
-	// Returns the requested parameter from the passed message (first parameter is 1) as a string
-	std::string getParamString(const char* pszMessage, int32_t iRequestedParameter) const;
-
-	// Returns the requested parameter from the passed message (first parameter is 1) as a floating point number
-	float getParamFloat(const char* pszMessage, int32_t iRequestedParameter) const;
+	std::vector<std::string> splitMessage(const std::string& message) const;
 
 private:
 	bool m_bInitialized_;

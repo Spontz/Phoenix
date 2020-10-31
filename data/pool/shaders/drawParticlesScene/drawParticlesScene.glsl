@@ -1,7 +1,6 @@
 #type vertex
 #version 440 core
-layout (location = 0) in int ID;
-layout (location = 1) in vec3 Position;
+layout (location = 0) in vec3 Position;
 
 uniform float gTime;
 uniform mat4 gModel;
@@ -14,21 +13,22 @@ out vec3 Color0;
 
 void main(void)
 {
-	ID0 = ID; // Send the particle ID to Geometry shader
+	ID0 = gl_VertexID; // Send the particle ID to Geometry shader
 	
-	float zero_to_one = ID / gNumParticles;
+	float zero_to_one = gl_VertexID / gNumParticles;
 	float sphere = 2.0* PI * zero_to_one;
 	
 	// Calculate the color of the particle
-	//Color0 = vec3(1.0, 0.5+0.5*sin(gTime), 1.0);
-	Color0 = vec3(1+sin(((sphere-PI)/2.0)+gTime), 0.0, 0.0);//0.5+0.5*sin(gTime), 1.0);
+	Color0 = vec3(0.5+0.5*sin(sphere+gTime), 0.0, 0.0);
 
 	// Calculate the new position of the particle
-	vec3 new_position = Position;
+	vec3 rand = vec3(sin(gTime*1.43*zero_to_one), cos(gTime*8383*(1+zero_to_one)), sin(gTime*1.99)*cos(gTime*99*(1+zero_to_one)));
+	vec3 new_position = Position+0.2*rand;
 
 
 	gl_Position = gModel * vec4(new_position, 1.0);
 }
+
 
 #type geometry
 #version 440 core

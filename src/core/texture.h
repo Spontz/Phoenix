@@ -28,11 +28,14 @@ public:
 	virtual ~Texture();
 
 	bool load(const std::string & file_name, bool flip);
+	bool keepData();	// Stores data texture in memory
+	void freeData();	// Frees data texture from memory
 	void bind(GLuint TexUnit = 0) const;
+	glm::vec4 getColor(int x, int y);
 			
 private:
 	GLsizei m_mipmapLevels;
-
+	unsigned char* textureData;
 };
 
 #endif

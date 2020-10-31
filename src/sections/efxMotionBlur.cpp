@@ -11,13 +11,12 @@ public:
 	std::string debug();
 
 private:
-	unsigned int	FboNum;				// Fbo to use (must have 2 color attachments!)
-	unsigned int	FPSScale;			// Scale FPS's
-	GLuint			bufferColor;		// Attcahment 0 of our FBO
-	GLuint			bufferVelocity;		// Attachment 1 of our FBO
-	Shader*			shader;				// Motionblur Shader to apply
-
-	ShaderVars		*shaderVars;	// Shader variables
+	unsigned int	m_uiFboNum			= 0;		// Fbo to use (must have 2 color attachments!)
+	unsigned int	m_uiFPSScale		= 0;		// Scale FPS's
+	GLuint			m_uiBufferColor		= 0;		// Attcahment 0 of our FBO
+	GLuint			m_uiBufferVelocity	= 0;		// Attachment 1 of our FBO
+	Shader			*m_pShader			= nullptr;	// Motionblur Shader to apply
+	ShaderVars		*m_pVars			= nullptr;	// Shader variables
 };
 
 // ******************************************************************
@@ -36,33 +35,33 @@ bool sEfxMotionBlur::load() {
 		return false;
 	}
 
-	FboNum = (int)param[0];
-	FPSScale = (int)param[1];
+	m_uiFboNum = static_cast<unsigned int>(param[0]);
+	m_uiFPSScale = static_cast<unsigned int>(param[1]);
 
-	if (FPSScale == 0)
-		FPSScale = 1;
+	if (m_uiFPSScale == 0)
+		m_uiFPSScale = 1;
 
-	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
-	if (!shader)
+	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
+	if (!m_pShader)
 		return false;
 
 	// Configure Blur shader
-	shader->use();
+	m_pShader->use();
 
-	shaderVars = new ShaderVars(this, shader);
+	m_pVars = new ShaderVars(this, m_pShader);
 	// Read the shader variables
 	for (int i = 0; i < uniform.size(); i++) {
-		shaderVars->ReadString(uniform[i].c_str());
+		m_pVars->ReadString(uniform[i].c_str());
 	}
 	// Set shader variables values
-	shaderVars->setValues();
+	m_pVars->setValues();
 
-	shader->setValue("scene", 0);		// The scene is in the Tex unit 0
-	shader->setValue("velocity", 1);	// The velocity is in the Tex unit 1
+	m_pShader->setValue("scene", 0);		// The scene is in the Tex unit 0
+	m_pShader->setValue("velocity", 1);		// The velocity is in the Tex unit 1
 
 	// Store the buffers of our FBO (we assume that in Attachment 0 we have the color and in Attachment 1 we have the brights)
-	bufferColor = m_demo.fboManager.fbo[FboNum]->m_colorAttachment[0];
-	bufferVelocity = m_demo.fboManager.fbo[FboNum]->m_colorAttachment[1];
+	m_uiBufferColor = m_demo.fboManager.fbo[m_uiFboNum]->m_colorAttachment[0];
+	m_uiBufferVelocity = m_demo.fboManager.fbo[m_uiFboNum]->m_colorAttachment[1];
 
 	return true;
 }
@@ -76,14 +75,14 @@ void sEfxMotionBlur::exec() {
 	glDisable(GL_DEPTH_TEST);
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		shader->use();
+		m_pShader->use();
 
 		// Set new shader variables values
-		shader->setValue("uVelocityScale", m_demo.fps/FPSScale); //uVelocityScale = currentFps / targetFps;
-		shaderVars->setValues();
+		m_pShader->setValue("uVelocityScale", m_demo.fps/m_uiFPSScale); //uVelocityScale = currentFps / targetFps;
+		m_pVars->setValues();
 
-		glBindTextureUnit(0, bufferColor);
-		glBindTextureUnit(1, bufferVelocity);
+		glBindTextureUnit(0, m_uiBufferColor);
+		glBindTextureUnit(1, m_uiBufferVelocity);
 		m_demo.res->Draw_QuadFS();
 	}
 	glEnable(GL_DEPTH_TEST);
@@ -94,8 +93,8 @@ void sEfxMotionBlur::end() {
 }
 
 std::string sEfxMotionBlur::debug() {
-	std::string msg;
-	msg = "[ efxMotionBlur id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
-	msg += " fbo: " + std::to_string(FboNum) + " fps Scale: " + std::to_string(FPSScale) + "\n";
-	return msg;
+	std::stringstream ss;
+	ss << "+ EfxMotionBlur id: " << identifier << " layer: " << layer << std::endl;
+	ss << "  fbo: " << m_uiFboNum << " fps Scale: " << m_uiFPSScale << std::endl;
+	return ss.str();
 }

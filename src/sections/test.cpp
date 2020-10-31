@@ -40,5 +40,7 @@ void sTest::end() {
 }
 
 std::string sTest::debug() {
-	return "[ testSection id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
+	std::stringstream ss;
+	ss << "+ Test id: " << identifier << " layer: " << layer << std::endl;
+	return ss.str();
 }

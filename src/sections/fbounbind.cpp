@@ -10,8 +10,8 @@ public:
 	std::string debug();
 
 private:
-	char	clearScreen;	// Clear Screen buffer
-	char	clearDepth;		// Clear Depth buffer
+	bool	m_bClearScreen	= true;		// Clear Screen buffer
+	bool	m_bClearDepth	= false;	// Clear Depth buffer
 } fbounbind_section;
 
 // ******************************************************************
@@ -32,8 +32,8 @@ bool sFboUnbind::load() {
 	}
 
 	// load parameters
-	clearScreen = (int)param[0];
-	clearDepth = (int)param[1];
+	m_bClearScreen = static_cast<bool>(param[0]);
+	m_bClearDepth = static_cast<bool>(param[1]);
 	return true;
 }
 
@@ -43,7 +43,7 @@ void sFboUnbind::init() {
 
 void sFboUnbind::exec() {
 	// Unbind the fbo
-	m_demo.fboManager.unbind(clearScreen, clearDepth);
+	m_demo.fboManager.unbind(m_bClearScreen, m_bClearDepth);
 }
 
 void sFboUnbind::end() {
@@ -51,5 +51,8 @@ void sFboUnbind::end() {
 }
 
 std::string sFboUnbind::debug() {
-	return "[ fboUnbind id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
+	std::stringstream ss;
+	ss << "+ FboUnbind id: " << identifier << " layer: " << layer << std::endl;
+	return ss.str();
+
 }

@@ -12,31 +12,31 @@ public:
 	std::string debug();
 
 private:
-	Model*		model;
-	Shader*		shader;
-	int			enableDepthBufferClearing;
-	int			drawWireframe;
-	float		CameraNumber;		// Number of the camera to use (-1 = means to not use camera)
-	bool		playAnimation;		// Do we want to play the animation?
-	int			AnimationNumber;	// Number of animation to play
-	float		AnimationTime;		// Animation time (in seconds)
+	bool		m_bClearDepth		= true;
+	bool		m_bDrawWireframe	= false;
+	bool		m_bPlayAnimation	= false;	// Do we want to play the animation?
+	float		m_fCameraNumber		= -1;		// Number of the camera to use (-1 = means to not use camera)
+	int			m_iAnimationNumber	= 0;		// Number of animation to play
+	float		m_fAnimationTime	= 0;		// Animation time (in seconds)
 
-	glm::vec3	translation;
-	glm::vec3	rotation;
-	glm::vec3	scale;
+	glm::vec3	m_vTranslation		= { 0, 0, 0 };
+	glm::vec3	m_vRotation			= { 0, 0, 0 };
+	glm::vec3	m_vScale			= { 1, 1, 1 };
 
 	// Model, projection and view matrix
-	glm::mat4	mat_model;
-	glm::mat4	mat_projection;
-	glm::mat4	mat_view;
+	glm::mat4	m_mModel			= glm::mat4(1.0f);
+	glm::mat4	m_mProjection		= glm::mat4(1.0f);
+	glm::mat4	m_mView				= glm::mat4(1.0f);
 
 	// Previous model, projection and view matrix, for being used in effects like motion blur
-	glm::mat4	mat_prev_model;
-	glm::mat4	mat_prev_projection;
-	glm::mat4	mat_prev_view;
+	glm::mat4	m_mPrevModel		= glm::mat4(1.0f);
+	glm::mat4	m_mPrevProjection	= glm::mat4(1.0f);
+	glm::mat4	m_mPrevView			= glm::mat4(1.0f);
 
-	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
-	ShaderVars	*vars;			// For storing any other shader variables
+	Model*		m_pModel			= nullptr;
+	Shader*		m_pShader			= nullptr;
+	mathDriver* m_pExprPosition		= nullptr;	// A equation containing the calculations to position the object
+	ShaderVars*	m_pVars				= nullptr;	// For storing any other shader variables
 };
 
 // ******************************************************************
@@ -45,104 +45,78 @@ Section* instance_drawScene() {
 	return new sDrawScene();
 }
 
-sDrawScene::sDrawScene() 
-:
-	model (nullptr),
-	shader(nullptr),
-	enableDepthBufferClearing(1),
-	drawWireframe(0),
-	CameraNumber(-1),
-	playAnimation(0),
-	AnimationNumber(0),
-	AnimationTime(0),
-	translation({ 0,0,0 }),
-	rotation({ 0,0,0 }),
-	scale({ 1,1,1 }),
-	mat_model(glm::mat4(1.0f)),
-	mat_projection(glm::mat4(1.0f)),
-	mat_view(glm::mat4(1.0f)),
-	mat_prev_model(glm::mat4(1.0f)),
-	mat_prev_projection(glm::mat4(1.0f)),
-	mat_prev_view(glm::mat4(1.0f)),
-	exprPosition(nullptr),
-	vars(nullptr)
+sDrawScene::sDrawScene()
 {
 	type = SectionType::DrawScene;
 }
 
 bool sDrawScene::load() {
 	if ((this->param.size() != 4) || (this->strings.size() < 7)) {
-		LOG->Error("DrawScene [%s]: 4 param (Enable Depth buffer, enable wireframe, enable animation and animation number) and 7 strings needed (model, shader, CameraNumber, Time and 3 for object positioning)", this->identifier.c_str());
+		LOG->Error(
+			"DrawScene [%s]: 4 param (Enable Depth buffer, enable wireframe, enable animation & "
+			"animation number) and 7 strings needed (model, shader, CameraNumber, aTime & "
+			"three more for object positioning)",
+			identifier.c_str());
 		return false;
 	}
 
-
-
-	// Load default values
-	AnimationNumber = 0;
-	CameraNumber = -1;
-	playAnimation = false;
-	AnimationTime = 0;
-
-	// Depth Buffer Clearing Flag
-	enableDepthBufferClearing = (int)this->param[0];
-	drawWireframe= (int)this->param[1];
-
-	// Animation parameters
-	playAnimation = (int)this->param[2];
-	AnimationNumber = (int)this->param[3];
+	// Load parameters
+	m_bClearDepth = static_cast<bool>(param[0]);
+	m_bDrawWireframe= static_cast<bool>(param[1]);
+	m_bPlayAnimation = static_cast<bool>(param[2]);
+	m_iAnimationNumber = static_cast<int>(param[3]);
 	
 	// Load model and shader
-	model = m_demo.modelManager.addModel(m_demo.dataFolder + this->strings[0]);
-	if (!model)
+	m_pModel = m_demo.modelManager.addModel(m_demo.dataFolder + strings[0]);
+	if (!m_pModel)
 		return false;
-	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + this->strings[1]);
-	if (!shader)
+	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[1]);
+	if (!m_pShader)
 		return false;
 	
 	// Load model properties
-	model->playAnimation = playAnimation;
-	if (model->playAnimation)
-		model->setAnimation(AnimationNumber);
+	m_pModel->playAnimation = m_bPlayAnimation;
+	if (m_pModel->playAnimation)
+		m_pModel->setAnimation(m_iAnimationNumber);
 
-	exprPosition = new mathDriver(this);
+	m_pExprPosition = new mathDriver(this);
 	// Load all the other strings
 	for (int i = 2; i < strings.size(); i++)
-		exprPosition->expression += this->strings[i];
+		m_pExprPosition->expression += strings[i];
 
-	exprPosition->SymbolTable.add_variable("CameraNumber", CameraNumber);
-	exprPosition->SymbolTable.add_variable("aTime", AnimationTime);
-	exprPosition->SymbolTable.add_variable("tx", translation.x);
-	exprPosition->SymbolTable.add_variable("ty", translation.y);
-	exprPosition->SymbolTable.add_variable("tz", translation.z);
-	exprPosition->SymbolTable.add_variable("rx", rotation.x);
-	exprPosition->SymbolTable.add_variable("ry", rotation.y);
-	exprPosition->SymbolTable.add_variable("rz", rotation.z);
-	exprPosition->SymbolTable.add_variable("sx", scale.x);
-	exprPosition->SymbolTable.add_variable("sy", scale.y);
-	exprPosition->SymbolTable.add_variable("sz", scale.z);
-	exprPosition->Expression.register_symbol_table(exprPosition->SymbolTable);
-	if (!exprPosition->compileFormula())
+	m_pExprPosition->SymbolTable.add_variable("CameraNumber", m_fCameraNumber);
+	m_pExprPosition->SymbolTable.add_variable("aTime", m_fAnimationTime);
+	m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
+	m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
+	m_pExprPosition->SymbolTable.add_variable("tz", m_vTranslation.z);
+	m_pExprPosition->SymbolTable.add_variable("rx", m_vRotation.x);
+	m_pExprPosition->SymbolTable.add_variable("ry", m_vRotation.y);
+	m_pExprPosition->SymbolTable.add_variable("rz", m_vRotation.z);
+	m_pExprPosition->SymbolTable.add_variable("sx", m_vScale.x);
+	m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
+	m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
+	m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
+	if (!m_pExprPosition->compileFormula())
 		return false;
-	exprPosition->Expression.value();
+	m_pExprPosition->Expression.value();
 	// Set the camera number
-	if (CameraNumber < 0)
-		model->useCamera = false;
+	if (m_fCameraNumber < 0)
+		m_pModel->useCamera = false;
 	else
-		model->setCamera((unsigned int)CameraNumber);
+		m_pModel->setCamera((unsigned int)m_fCameraNumber);
 
 
 	// Create Shader variables
-	shader->use();
-	vars = new ShaderVars(this, shader);
+	m_pShader->use();
+	m_pVars = new ShaderVars(this, m_pShader);
 
 	// Read the shader variables
-	for (int i = 0; i < this->uniform.size(); i++) {
-		vars->ReadString(this->uniform[i].c_str());
+	for (int i = 0; i < uniform.size(); i++) {
+		m_pVars->ReadString(uniform[i].c_str());
 	}
 
 	// Set shader variables values
-	vars->setValues();
+	m_pVars->setValues();
 
 	return true;
 }
@@ -157,71 +131,71 @@ void sDrawScene::exec() {
 	EvalBlendingStart();
 
 	// Evaluate the expression
-	exprPosition->Expression.value();
+	m_pExprPosition->Expression.value();
 
-	if (drawWireframe)
+	if (m_bDrawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	if (enableDepthBufferClearing == 1)
+	if (m_bClearDepth)
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 	// Set model properties
-	model->playAnimation = playAnimation;
-	if (model->playAnimation)
-		model->setAnimation(AnimationNumber);
-	if (CameraNumber < 0)
-		model->useCamera = false;
+	m_pModel->playAnimation = m_bPlayAnimation;
+	if (m_pModel->playAnimation)
+		m_pModel->setAnimation(m_iAnimationNumber);
+	if (m_fCameraNumber < 0)
+		m_pModel->useCamera = false;
 	else
-		model->setCamera((unsigned int)CameraNumber);
+		m_pModel->setCamera((unsigned int)m_fCameraNumber);
 
 	// Load shader
-	shader->use();
+	m_pShader->use();
 
 	// For ShadowMapping
-	shader->setValue("lightSpaceMatrix", m_demo.lightManager.light[0]->spaceMatrix);
+	m_pShader->setValue("lightSpaceMatrix", m_demo.lightManager.light[0]->spaceMatrix);
 	// End ShadowMapping
 
 	// view/projection transformations
-	mat_projection = glm::perspective(
+	m_mProjection = glm::perspective(
 		glm::radians(m_demo.camera->Zoom),
 		GLDRV->GetFramebufferViewport().GetAspectRatio(),
 		0.1f, 10000.0f
 	);
 
-	shader->setValue("projection", mat_projection);
+	m_pShader->setValue("projection", m_mProjection);
 
-	mat_view = m_demo.camera->GetViewMatrix();
+	m_mView = m_demo.camera->GetViewMatrix();
 	//if (CameraNumber < 0)
-		shader->setValue("view", mat_view);
+		m_pShader->setValue("view", m_mView);
 
 
 	// render the loaded scene
-	mat_model = glm::mat4(1.0f);
-	mat_model = glm::translate(mat_model, translation);
-	mat_model = glm::rotate(mat_model, glm::radians(rotation.x), glm::vec3(1, 0, 0));
-	mat_model = glm::rotate(mat_model, glm::radians(rotation.y), glm::vec3(0, 1, 0));
-	mat_model = glm::rotate(mat_model, glm::radians(rotation.z), glm::vec3(0, 0, 1));
-	mat_model = glm::scale(mat_model, scale);
-	model->modelTransform = mat_model;
+	m_mModel = glm::mat4(1.0f);
+	m_mModel = glm::translate(m_mModel, m_vTranslation);
+	m_mModel = glm::rotate(m_mModel, glm::radians(m_vRotation.x), glm::vec3(1, 0, 0));
+	m_mModel = glm::rotate(m_mModel, glm::radians(m_vRotation.y), glm::vec3(0, 1, 0));
+	m_mModel = glm::rotate(m_mModel, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
+	m_mModel = glm::scale(m_mModel, m_vScale);
+	m_pModel->modelTransform = m_mModel;
 
 	// For MotionBlur
-	shader->setValue("prev_projection", mat_prev_projection);
+	m_pShader->setValue("prev_projection", m_mPrevProjection);
 	//if (CameraNumber < 0)
-		shader->setValue("prev_view", mat_prev_view);
-	shader->setValue("prev_model", mat_prev_model);
+		m_pShader->setValue("prev_view", m_mPrevView);
+	m_pShader->setValue("prev_model", m_mPrevModel);
 
-	mat_prev_projection = mat_projection;
+	m_mPrevProjection = m_mProjection;
 	//if (CameraNumber < 0)
-		mat_prev_view = mat_view;
-	mat_prev_model = mat_model;
+		m_mPrevView = m_mView;
+	m_mPrevModel = m_mModel;
 	// End MotionBlur
 
 	// Set the other shader variable values
-	vars->setValues();
+	m_pVars->setValues();
 
-	model->Draw(shader->ID, AnimationTime);
+	m_pModel->Draw(m_pShader->ID, m_fAnimationTime);
 
 	glUseProgram(0);
-	if (drawWireframe)
+	if (m_bDrawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
 	// End evaluating blending
@@ -234,24 +208,19 @@ void sDrawScene::end() {
 
 std::string sDrawScene::debug()
 {
-	std::string msg;
-	msg = "[ drawScene id: " + this-> identifier + " layer:" + std::to_string(this->layer) + " ]\n";
-	msg += " file: " + model->filename + "\n";
-	msg += " meshes: " + std::to_string(model->meshes.size()) + "\n";
-/*	for (int i=0; i<my_model->meshes.size(); i++) {
-		msg += "  mesh: " + std::to_string(i) + "\n";
-		msg += "    Num vertices: " + std::to_string(model->meshes[i].vertices.size()) + "\n";
-		msg += "    Num textures: " + std::to_string(model->meshes[i].material.textures.size()) + "\n";
-		msg += "    Color Diffuse [" +	std::to_string(model->meshes[i].material.colDiffuse.r) + " / " +
-										std::to_string(model->meshes[i].material.colDiffuse.g) + " / " +
-										std::to_string(model->meshes[i].material.colDiffuse.b) + " ] " + "\n";
-		msg += "    Color Ambient [" + std::to_string(model->meshes[i].material.colAmbient.r) + " / " +
-										std::to_string(model->meshes[i].material.colAmbient.g) + " / " +
-										std::to_string(model->meshes[i].material.colAmbient.b) + " ] " + "\n";
-		msg += "    Color Specular [" + std::to_string(model->meshes[i].material.colSpecular.r) + " / " +
-										std::to_string(model->meshes[i].material.colSpecular.g) + " / " +
-										std::to_string(model->meshes[i].material.colSpecular.b) + " ] " + "\n";
+	std::stringstream ss;
+	ss << "+ DrawScene id: " << identifier << " layer: " << layer << std::endl;
+	ss << "  file: " << m_pModel->filename << std::endl;
+	ss << "  meshes: " << m_pModel->meshes.size() << std::endl;
+	return ss.str();
+	/*
+	for (int i=0; i< m_pModel->meshes.size(); i++) {
+		ss << "  mesh: " << i << std::endl;
+		ss << "    Num vertices: " << m_pModel->meshes[i].unique_vertices_pos.size() << std::endl;
+		ss << "    Num textures: " << m_pModel->meshes[i].m_material.textures.size() << std::endl;
+		ss << "    Color Diffuse [" << m_pModel->meshes[i].m_material.colDiffuse.r << ", " << m_pModel->meshes[i].material.colDiffuse.g + ", " << m_pModel->meshes[i].m_material.colDiffuse.b << "]" << std::endl;
+		ss << "    Color Ambient [" << m_pModel->meshes[i].m_material.colAmbient.r << ", " << m_pModel->meshes[i].material.colAmbient.g + ", " << m_pModel->meshes[i].m_material.colAmbient.b << "]" << std::endl;
+		ss << "    Color Specular [" << m_pModel->meshes[i].m_material.colSpecular.r << ", " << m_pModel->meshes[i].material.colSpecular.g + ", " << m_pModel->meshes[i].m_material.colSpecular.b << "]" << std::endl;
 	}
-*/	
-	return msg;
+	*/
 }

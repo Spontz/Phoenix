@@ -13,8 +13,6 @@ enum SectionType {
 
 	Loading,
 
-	Background,
-	VideoSec,
 	CameraSec,
 	CameraAbsSec,
 	LightSec, 
@@ -29,6 +27,7 @@ enum SectionType {
 	DrawSceneMatrix,
 	DrawSceneMatrixInstanced,
 	DrawParticles,
+	DrawParticlesImage,
 	DrawParticlesScene,
 	DrawEmitters,
 	DrawEmitterScene,

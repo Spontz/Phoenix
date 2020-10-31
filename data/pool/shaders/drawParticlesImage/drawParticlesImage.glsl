@@ -1,34 +1,34 @@
 #type vertex
 #version 440 core
 layout (location = 0) in vec3 Position;
+layout (location = 1) in vec4 Color;
 
 uniform float gTime;
 uniform mat4 gModel;
 uniform float gNumParticles;
 
 out int ID0;
-out vec3 Color0;
+out vec4 Color0;
 
 #define PI 3.1415926535897932384626433832795
 
 void main(void)
 {
-	ID0 = gl_VertexID;	// Send the vertex ID (=particle ID) to Geometry shader
+	ID0 = gl_VertexID; // Send the particle ID to Geometry shader
 	
 	float zero_to_one = gl_VertexID / gNumParticles;
 	float sphere = 2.0* PI * zero_to_one;
 	
 	// Calculate the color of the particle
-	//Color0 = vec3(1.0, 0.5+0.5*sin(gTime), 1.0);
-	//Color0 = vec3(1+sin(((sphere-PI)/2.0)+gTime), 0.0, 0.0);//0.5+0.5*sin(gTime), 1.0);
-	Color0 = vec3(0.5+0.5*sin(sphere+gTime), 0.5+0.5*cos(sphere+gTime), 0.0);//0.5+0.5*sin(gTime), 1.0);
+	Color0 = Color;//vec3(zero_to_one, 1.0-zero_to_one, 0.0);
 
 	// Calculate the new position of the particle
-	vec3 new_position = 4*vec3(0.5 * sin(sphere), 0, 0.5 * cos(sphere));
+	vec3 new_position = Position;
 
 
 	gl_Position = gModel * vec4(new_position, 1.0);
 }
+
 
 #type geometry
 #version 440 core
@@ -43,18 +43,19 @@ uniform float fParticleSize;
 uniform float fParticlesDrawn;
 
 // Info from the VS
-in vec3 Color0[];
+in vec4 Color0[];
 in int ID0[];
 
 // Info sent to FS: Color and Texture Coords
-out vec3 Color1;
+out vec4 Color1;
 out vec2 TexCoord;
 
 void main()
 {
 	Color1 = Color0[0];
 
-	if (ID0[0]<fParticlesDrawn) {
+	// Only draw particles if are not alpha discarded
+	if (ID0[0]<fParticlesDrawn && Color1.a>0.01) {
 	
 		vec3 Pos = gl_in[0].gl_Position.xyz;
 		vec3 toCamera = normalize(gCameraPos - Pos);
@@ -86,18 +87,17 @@ void main()
 	}
 }
 
-
 #type fragment
 #version 440 core
 layout (location = 0) out vec4 FragColor;
 
 uniform sampler2D partTexture;
 
-in vec3 Color1;
+in vec4 Color1;
 in vec2 TexCoord;
 
 
 void main(void)
 {
-	FragColor = texture(partTexture, TexCoord) * vec4(Color1.rgb, 1.0f);
+	FragColor = texture(partTexture, TexCoord) * Color1;
 }

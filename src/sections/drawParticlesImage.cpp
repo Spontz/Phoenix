@@ -3,9 +3,9 @@
 #include "core/drivers/mathdriver.h"
 #include "core/shadervars.h"
 
-struct sDrawParticles : public Section{
+struct sDrawParticlesImage : public Section {
 public:
-	sDrawParticles();
+	sDrawParticlesImage();
 	bool		load();
 	void		init();
 	void		exec();
@@ -13,6 +13,9 @@ public:
 	std::string debug();
 
 private:
+	// Image
+	Texture			*m_pTexture			= nullptr;
+
 	// Particle engine variables
 	int				m_iNumParticles		= 0;
 	ParticleMesh	*m_pParticleMesh	= nullptr;
@@ -23,41 +26,65 @@ private:
 	glm::vec3		m_vRotation			= { 0, 0, 0 };
 	glm::vec3		m_vScale			= { 1, 1, 1 };
 
-	mathDriver		*m_pExprPosition	= nullptr;	// A equation containing the calculations to position the object
-	ShaderVars		*m_pVars			= nullptr;	// For storing any other shader variables
+	mathDriver* m_pExprPosition			= nullptr;	// A equation containing the calculations to position the object
+	ShaderVars* m_pVars					= nullptr;	// For storing any other shader variables
 };
 
 // ******************************************************************
 
-Section* instance_drawParticles() {
-	return new sDrawParticles();
+Section* instance_drawParticlesImage() {
+	return new sDrawParticlesImage();
 }
 
-sDrawParticles::sDrawParticles() {
-	type = SectionType::DrawParticles;
+sDrawParticlesImage::sDrawParticlesImage() {
+	type = SectionType::DrawParticlesImage;
 }
 
-bool sDrawParticles::load() {
+bool sDrawParticlesImage::load() {
 	// script validation
-	if ((param.size() != 1) || (strings.size() < 4)) {
-		LOG->Error("Draw Particles [%s]: 1 param (Particles number) and 4 strings needed (1 for shader files and 3 for positioning)", identifier.c_str());
+	if (strings.size() != 5) {
+		LOG->Error("Draw Particles Image [%s]: 5 strings needed (1 for shader file, 1 for image, 3 for positioning)", identifier.c_str());
 		return false;
 	}
-	
 
 	// Load the shader
 	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
-
 	if (!m_pShader)
 		return false;
 
-	// Particles number
-	m_iNumParticles = static_cast<int>(param[0]);
+	// Load the image
+	m_pTexture = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[1]);
+	if (m_pTexture == nullptr)
+		return false;
+	if (!m_pTexture->keepData()) {
+		LOG->Error("Draw Particles Image [%s]: Could not allocate data image", identifier.c_str());
+		return false;
+	}
+		
+
+	// Calculate particles number
+	m_iNumParticles = m_pTexture->width * m_pTexture->height;
+
+	if (m_iNumParticles == 0) {
+		LOG->Error("Draw Particles Image [%s]: Image size is zero, no particles to draw", identifier.c_str());
+		return false;
+	}
+	// Load the particles position and color
+	std::vector<ParticleMesh::PARTICLE> Part;
+	Part.resize(m_iNumParticles);
+	int cnt = 0;
+	for (int i = 0; i < m_pTexture->width; i++) {
+		for (int j = 0; j < m_pTexture->height; j++) {
+			Part[cnt].Pos = glm::vec3(i, j, 0);
+			Part[cnt].Col = m_pTexture->getColor(i, j);//glm::vec3(1, 0, 0); // Todo: Put here original image color
+			cnt++;
+		}
+	}
 
 	// Load particle positioning
 	m_pExprPosition = new mathDriver(this);
 	// Load all the other strings
-	for (int i = 1; i < strings.size(); i++)
+	for (int i = 2; i < strings.size(); i++)
 		m_pExprPosition->expression += strings[i];
 
 	m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
@@ -76,8 +103,10 @@ bool sDrawParticles::load() {
 
 	// Create the particle system
 	m_pParticleMesh = new ParticleMesh(m_iNumParticles);
-	if (!m_pParticleMesh->startup())
+	if (!m_pParticleMesh->startup(Part))
 		return false;
+	// Delete all temporarly elements
+	Part.clear();
 
 	// Create Shader variables
 	m_pShader->use();
@@ -94,13 +123,13 @@ bool sDrawParticles::load() {
 	return true;
 }
 
-void sDrawParticles::init() {
+void sDrawParticlesImage::init() {
 }
 
 
 static float lastTime = 0;
 
-void sDrawParticles::exec() {
+void sDrawParticlesImage::exec() {
 	// Start evaluating blending
 	EvalBlendingStart();
 
@@ -141,13 +170,14 @@ void sDrawParticles::exec() {
 
 }
 
-void sDrawParticles::end() {
+void sDrawParticlesImage::end() {
 	m_pParticleMesh->shutdown();
 }
 
-std::string sDrawParticles::debug() {
+std::string sDrawParticlesImage::debug() {
 	std::stringstream ss;
-	ss << "+ DrawParticles id: " << identifier << " layer: " << layer << std::endl;
+	ss << "+ DrawParticlesImage id: " << identifier << " layer: " << layer << std::endl;
+	ss << "  file: " << m_pTexture->filename << std::endl;
 	ss << "  numParticles: " << m_iNumParticles << std::endl;
 	return ss.str();
 }

@@ -16,7 +16,6 @@ tSectionID sectionID[] = {
 	{"loading", SectionType::Loading },
 
 	// built-in sections
-	{"background",			SectionType::Background},
 	{"camera",				SectionType::CameraSec},
 	{"cameraAbs",			SectionType::CameraAbsSec},
 	{"light",				SectionType::LightSec},
@@ -29,6 +28,7 @@ tSectionID sectionID[] = {
 	{"drawQuad",			SectionType::DrawQuad},
 	{"drawFbo",				SectionType::DrawFbo},
 	{"drawParticles",		SectionType::DrawParticles},
+	{"drawParticlesImage",	SectionType::DrawParticlesImage},
 	{"drawParticlesScene",	SectionType::DrawParticlesScene},
 	{"drawEmitters",		SectionType::DrawEmitters},
 	{"drawEmitterScene",	SectionType::DrawEmitterScene},
@@ -88,9 +88,6 @@ int SectionManager::addSection(const std::string& key, const std::string& DataSo
 	case SectionType::LightSec:
 		mySection = instance_light();
 		break;
-	case SectionType::Background:
-		mySection = instance_background();
-		break;
 	case SectionType::FboBind:
 		mySection = instance_fboBind();
 		break;
@@ -123,6 +120,9 @@ int SectionManager::addSection(const std::string& key, const std::string& DataSo
 		break;
 	case SectionType::DrawParticles:
 		mySection = instance_drawParticles();
+		break;
+	case SectionType::DrawParticlesImage:
+		mySection = instance_drawParticlesImage();
 		break;
 	case SectionType::DrawParticlesScene:
 		mySection = instance_drawParticlesScene();

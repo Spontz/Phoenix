@@ -12,14 +12,14 @@ public:
 	std::string debug();
 
 private:
-	unsigned int	FboNum;			// Fbo to use (must have 2 color attachments!)
-	float			blurAmount;		// Blur layers to apply
-	char			clearScreen;	// Clear Screen buffer
-	char			clearDepth;		// Clear Depth buffer
-	Shader*			shaderBlur;		// Blur Shader to apply
-	Shader*			shaderBloom;	// Bloom Shader to apply
-	mathDriver		*exprBloom;		// Equations for the Bloom effect
-	ShaderVars		*shaderVars;	// Shader variables
+	bool			m_bClearScreen	= true;		// Clear Screen buffer
+	bool			m_bClearDepth	= false;	// Clear Depth buffer
+	unsigned int	m_uiFboNum		= 0;		// Fbo to use (must have 2 color attachments!)
+	float			m_fBlurAmount	= 1;		// Blur layers to apply
+	Shader			*m_pShaderBlur	= nullptr;	// Blur Shader to apply
+	Shader			*m_pShaderBloom	= nullptr;	// Bloom Shader to apply
+	mathDriver		*m_pExprBloom	= nullptr;	// Equations for the Bloom effect
+	ShaderVars		*m_pVars		= nullptr;	// Shader variables
 };
 
 // ******************************************************************
@@ -41,53 +41,53 @@ bool sEfxBloom::load() {
 	}
 	
 	// Load parameters
-	clearScreen = (int)param[0];
-	clearDepth = (int)param[1];
-	FboNum = (int)param[2];
+	m_bClearScreen = static_cast<bool>(param[0]);
+	m_bClearDepth = static_cast<bool>(param[1]);
+	m_uiFboNum = static_cast<unsigned int>(param[2]);
 	
 	// Check if the fbo can be used for the effect
-	if (FboNum < 0 || FboNum >= m_demo.fboManager.fbo.size()) {
-		LOG->Error("EfxBloom [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), FboNum, m_demo.fboManager.fbo.size()-1);
+	if (m_uiFboNum < 0 || m_uiFboNum >= m_demo.fboManager.fbo.size()) {
+		LOG->Error("EfxBloom [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), m_uiFboNum, m_demo.fboManager.fbo.size()-1);
 		return false;
 	}
-	if (m_demo.fboManager.fbo[FboNum]->numAttachments < 2) {
-		LOG->Error("EfxBloom [%s]: The fbo specified [%d] has less than 2 attachments, so it cannot be used for bloom effect: Attahment 0 is the color image and Attachment 1 is the brights image", identifier.c_str(), FboNum);
+	if (m_demo.fboManager.fbo[m_uiFboNum]->numAttachments < 2) {
+		LOG->Error("EfxBloom [%s]: The fbo specified [%d] has less than 2 attachments, so it cannot be used for bloom effect: Attahment 0 is the color image and Attachment 1 is the brights image", identifier.c_str(), m_uiFboNum);
 		return false;
 	}
 	
 	// Load the Blur amount formula
-	exprBloom = new mathDriver(this);
+	m_pExprBloom = new mathDriver(this);
 	// Load positions, process constants and compile expression
-	exprBloom->expression = strings[0]; // The first string should contain the blur amount
-	exprBloom->SymbolTable.add_variable("blurAmount", blurAmount);
-	exprBloom->Expression.register_symbol_table(exprBloom->SymbolTable);
-	if (!exprBloom->compileFormula())
+	m_pExprBloom->expression = strings[0]; // The first string should contain the blur amount
+	m_pExprBloom->SymbolTable.add_variable("blurAmount", m_fBlurAmount);
+	m_pExprBloom->Expression.register_symbol_table(m_pExprBloom->SymbolTable);
+	if (!m_pExprBloom->compileFormula())
 		return false;
 
 	// Load Blur shader
-	shaderBlur = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[1]);
+	m_pShaderBlur = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[1]);
 	// Load Bloom shader
-	shaderBloom = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[2]);
-	if (!shaderBlur || !shaderBloom)
+	m_pShaderBloom = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[2]);
+	if (!m_pShaderBlur || !m_pShaderBloom)
 		return false;
 
 	// Create Shader variables
 	
 	// Configure Blur shader
-	shaderBlur->use();
-	shaderBlur->setValue("image", 0);	// The image is in the texture unit 0
+	m_pShaderBlur->use();
+	m_pShaderBlur->setValue("image", 0);	// The image is in the texture unit 0
 
 	// Configure Bloom shader (variables are for this shader)
-	shaderBloom->use();
-	shaderVars = new ShaderVars(this, shaderBloom);
+	m_pShaderBloom->use();
+	m_pVars = new ShaderVars(this, m_pShaderBloom);
 	// Read the shader variables
 	for (int i = 0; i < uniform.size(); i++) {
-		shaderVars->ReadString(uniform[i].c_str());
+		m_pVars->ReadString(uniform[i].c_str());
 	}
 	// Set shader variables values
-	shaderVars->setValues();
-	shaderBloom->setValue("scene", 0);		// The scene is in the Tex unit 0
-	shaderBloom->setValue("bloomBlur", 1);	// The bloom blur is in the Tex unit 1
+	m_pVars->setValues();
+	m_pShaderBloom->setValue("scene", 0);		// The scene is in the Tex unit 0
+	m_pShaderBloom->setValue("bloomBlur", 1);	// The bloom blur is in the Tex unit 1
 
 	return true;
 }
@@ -98,11 +98,11 @@ void sEfxBloom::init() {
 
 void sEfxBloom::exec() {
 	// Clear the screen and depth buffers depending of the parameters passed by the user
-	if (clearScreen) glClear(GL_COLOR_BUFFER_BIT);
-	if (clearDepth) glClear(GL_DEPTH_BUFFER_BIT);
+	if (m_bClearScreen) glClear(GL_COLOR_BUFFER_BIT);
+	if (m_bClearDepth) glClear(GL_DEPTH_BUFFER_BIT);
 
 	// Evaluate the expression
-	exprBloom->Expression.value();
+	m_pExprBloom->Expression.value();
 
 
 	EvalBlendingStart();
@@ -111,15 +111,15 @@ void sEfxBloom::exec() {
 		// First step: Blur the image from the "fbo attachment 1", and store it in our efxBloom fbo manager (efxBloomFbo)
 		bool horizontal = true;
 		bool first_iteration = true;
-		shaderBlur->use();
+		m_pShaderBlur->use();
 
 		// Prevent negative Blurs
-		if (blurAmount < 0)
-			blurAmount = 0;
-		unsigned int iBlurAmount = static_cast<unsigned int>(blurAmount);
+		if (m_fBlurAmount < 0)
+			m_fBlurAmount = 0;
+		unsigned int iBlurAmount = static_cast<unsigned int>(m_fBlurAmount);
 		for (unsigned int i = 0; i < iBlurAmount; i++)
 		{
-			shaderBlur->setValue("horizontal", horizontal);
+			m_pShaderBlur->setValue("horizontal", horizontal);
 			
 			// We always draw the First pass in the efxBloom FBO
 			m_demo.efxBloomFbo.bind(horizontal, false, false);
@@ -127,7 +127,7 @@ void sEfxBloom::exec() {
 			// If it's the first iteration, we pick the second attachment of our fbo
 			// if not, we pick the fbo of our efxBloom
 			if (first_iteration)
-				m_demo.fboManager.bind_tex(FboNum, 0, 1); //Use the second attachment of the fbo
+				m_demo.fboManager.bind_tex(m_uiFboNum, 0, 1); //Use the second attachment of the fbo
 			else
 				m_demo.efxBloomFbo.bind_tex(!horizontal, 0, 0);	// Use the texture from our efxBloom
 			
@@ -140,12 +140,12 @@ void sEfxBloom::exec() {
 		m_demo.efxBloomFbo.unbind(false, false); // Unbind drawing into an Fbo
 
 		// Second step: Merge the blurred image with the color image (fbo attachment 0)
-		shaderBloom->use();
+		m_pShaderBloom->use();
 		// Set new shader variables values
-		shaderVars->setValues();
+		m_pVars->setValues();
 
 		// Tex unit 0: scene
-		m_demo.fboManager.fbo[FboNum]->bind_tex(0);
+		m_demo.fboManager.fbo[m_uiFboNum]->bind_tex(0);
 		// Tex unit 1: Bloom blur
 		auto tmp = m_demo.efxBloomFbo.fbo;
 		m_demo.efxBloomFbo.fbo[!horizontal]->bind_tex(1);
@@ -164,8 +164,8 @@ void sEfxBloom::end() {
 }
 
 std::string sEfxBloom::debug() {
-	std::string msg;
-	msg = "[ efxBloom id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
-	msg += " fbo: " + std::to_string(FboNum) + " Blur Amount: " + std::to_string(blurAmount) + "\n";
-	return msg;
+	std::stringstream ss;
+	ss << "+ EfxBloom id: " << identifier << " layer: " << layer << std::endl;
+	ss << "  fbo: " << m_uiFboNum << " Blur Amount: " << m_fBlurAmount << std::endl;
+	return ss.str();
 }

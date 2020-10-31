@@ -12,16 +12,14 @@ public:
 	std::string debug();
 
 private:
-	Cubemap*	cubemap;
-	int			model;
-	int			shader;
-	int			enableDepthBufferClearing;
-	int			drawWireframe;
+	Cubemap		*m_pCubemap			= nullptr;
+	bool		m_bClearDepth		= true;
+	bool		m_bDrawWireframe	= false;
 
-	glm::vec3	rotation;
-	glm::vec3	scale;
+	glm::vec3	m_vRotation			= {0, 0, 0};
+	glm::vec3	m_vScale			= {1, 1, 1};
 	
-	mathDriver	*exprPosition;	// A equation containing the calculations to position the object
+	mathDriver	*m_pExprPosition	= nullptr;	// A equation containing the calculations to position the object
 };
 
 // ******************************************************************
@@ -46,32 +44,32 @@ bool sDrawSkybox::load() {
 		return false;
 	}
 
-	// Depth Buffer Clearing Flag
-	enableDepthBufferClearing = (int)param[0];
-	drawWireframe = (int)param[1];
+	// Load parameters
+	m_bClearDepth = static_cast<bool>(param[0]);
+	m_bDrawWireframe = static_cast<bool>(param[1]);
 	
 	// Load the 6 textures of our cubemap
 	std::vector<std::string> faces {	m_demo.dataFolder + strings[0], m_demo.dataFolder + strings[1], m_demo.dataFolder + strings[2],
 										m_demo.dataFolder + strings[3], m_demo.dataFolder + strings[4], m_demo.dataFolder + strings[5]};
 
-	cubemap = m_demo.textureManager.addCubemap(faces, false);
-	if (!cubemap)
+	m_pCubemap = m_demo.textureManager.addCubemap(faces, false);
+	if (!m_pCubemap)
 		return false;
 
 	// Read variables for traslation, rotation and scaling
-	exprPosition = new mathDriver(this);
+	m_pExprPosition = new mathDriver(this);
 	// Load all the other strings
 	for (int i = 6; i < strings.size(); i++)
-		exprPosition->expression += strings[i];
+		m_pExprPosition->expression += strings[i];
 
-	exprPosition->SymbolTable.add_variable("rx", rotation.x);
-	exprPosition->SymbolTable.add_variable("ry", rotation.y);
-	exprPosition->SymbolTable.add_variable("rz", rotation.z);
-	exprPosition->SymbolTable.add_variable("sx", scale.x);
-	exprPosition->SymbolTable.add_variable("sy", scale.y);
-	exprPosition->SymbolTable.add_variable("sz", scale.z);
-	exprPosition->Expression.register_symbol_table(exprPosition->SymbolTable);
-	if (!exprPosition->compileFormula())
+	m_pExprPosition->SymbolTable.add_variable("rx", m_vRotation.x);
+	m_pExprPosition->SymbolTable.add_variable("ry", m_vRotation.y);
+	m_pExprPosition->SymbolTable.add_variable("rz", m_vRotation.z);
+	m_pExprPosition->SymbolTable.add_variable("sx", m_vScale.x);
+	m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
+	m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
+	m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
+	if (!m_pExprPosition->compileFormula())
 		return false;
 
 	return true;
@@ -83,7 +81,7 @@ void sDrawSkybox::init() {
 
 void sDrawSkybox::exec() {
 	// Evaluate the expression
-	exprPosition->Expression.value();
+	m_pExprPosition->Expression.value();
 
 	// Start evaluating blending
 	EvalBlendingStart();
@@ -92,9 +90,9 @@ void sDrawSkybox::exec() {
 	glDepthFunc(GL_LEQUAL);
 
 
-	if (drawWireframe)
+	if (m_bDrawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	if (enableDepthBufferClearing)
+	if (m_bClearDepth)
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 	m_demo.res->shdr_Skybox->use(); // TODO: Do not use the Resource shader for skybox, and use our own shader!
@@ -108,17 +106,17 @@ void sDrawSkybox::exec() {
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1, 0, 0));
-	model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0, 1, 0));
-	model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0, 0, 1));
-	model = glm::scale(model, scale);
+	model = glm::rotate(model, glm::radians(m_vRotation.x), glm::vec3(1, 0, 0));
+	model = glm::rotate(model, glm::radians(m_vRotation.y), glm::vec3(0, 1, 0));
+	model = glm::rotate(model, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
+	model = glm::scale(model, m_vScale);
 	m_demo.res->shdr_Skybox->setValue("model", model);
 	
 	m_demo.res->shdr_Skybox->setValue("skybox", 0);
-	m_demo.res->Draw_Skybox(cubemap);
+	m_demo.res->Draw_Skybox(m_pCubemap);
 	
 
-	if (drawWireframe)
+	if (m_bDrawWireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
 	// End evaluating blending
@@ -130,5 +128,7 @@ void sDrawSkybox::end() {
 }
 
 std::string sDrawSkybox::debug() {
-	return "[ drawSkybox id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
+	std::stringstream ss;
+	ss << "+ DrawSkybox id: " << identifier << " layer: " << layer << std::endl;
+	return ss.str();
 }

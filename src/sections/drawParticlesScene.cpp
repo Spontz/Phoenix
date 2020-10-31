@@ -14,20 +14,20 @@ public:
 
 private:
 	// 3D Scene
-	Model*			model;
+	Model			*m_pModel			= nullptr;
 
 	// Particle engine variables
-	int				numParticles;
-	ParticleMesh*	pSystem;
-	Shader*			shader;
+	int				m_iNumParticles		= 0;
+	ParticleMesh	*m_pParticleMesh	= nullptr;
+	Shader			*m_pShader			= nullptr;
 
 	// Particle Matrix positioning (for all the model)
-	glm::vec3		translation;
-	glm::vec3		rotation;
-	glm::vec3		scale;
+	glm::vec3		m_vTranslation		= { 0, 0, 0 };
+	glm::vec3		m_vRotation			= { 0, 0, 0 };
+	glm::vec3		m_vScale			= { 1, 1, 1 };
 
-	mathDriver		*exprPosition;	// A equation containing the calculations to position the object
-	ShaderVars		*vars;			// For storing any other shader variables
+	mathDriver* m_pExprPosition			= nullptr;	// A equation containing the calculations to position the object
+	ShaderVars* m_pVars					= nullptr;	// For storing any other shader variables
 };
 
 // ******************************************************************
@@ -37,87 +37,86 @@ Section* instance_drawParticlesScene() {
 }
 
 sDrawParticlesScene::sDrawParticlesScene() {
-	type = SectionType::DrawParticles;
+	type = SectionType::DrawParticlesScene;
 }
 
 bool sDrawParticlesScene::load() {
 	// script validation
 	if (strings.size() != 5) {
-		LOG->Error("Draw Particles Scene [%s]: 5 strings needed (1 for shader files, 1 for 3D model, 3 for positioning)", identifier.c_str());
+		LOG->Error("Draw Particles Scene [%s]: 5 strings needed (1 for shader file, 1 for 3D model, 3 for positioning)", identifier.c_str());
 		return false;
 	}
 
 	// Load the shader
-	shader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
-	if (!shader)
+	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
+	if (!m_pShader)
 		return false;
 
 	// Load the model model
-	model = m_demo.modelManager.addModel(m_demo.dataFolder + strings[1]);
+	m_pModel = m_demo.modelManager.addModel(m_demo.dataFolder + strings[1]);
 
-	if (model == nullptr)
+	if (m_pModel == nullptr)
 		return false;
 
 	// Calculate particles number
-	numParticles = 0;
-	for (int i = 0; i < model->meshes.size(); i++) {
-		numParticles += (int)model->meshes[i].unique_vertices_pos.size();
+	m_iNumParticles = 0;
+	for (int i = 0; i < m_pModel->meshes.size(); i++) {
+		m_iNumParticles += (int)m_pModel->meshes[i].unique_vertices_pos.size();
 	}
-	if (numParticles == 0) {
+	if (m_iNumParticles == 0) {
 		LOG->Error("Draw Particles Scene [%s]: No vertex found in the model", identifier.c_str());
 		return false;
 	}
 	// Load the particles position
-	std::vector<glm::vec3> Pos;
-	Pos.resize(numParticles);
+	std::vector<ParticleMesh::PARTICLE> Part;
+	Part.resize(m_iNumParticles);
 	int cnt = 0;
-	for (int i = 0; i < model->meshes.size(); i++) {
-		for (int j = 0; j < model->meshes[i].unique_vertices_pos.size(); j++) {
-			Pos[cnt] = model->meshes[i].unique_vertices_pos[j];
+	for (int i = 0; i < m_pModel->meshes.size(); i++) {
+		for (int j = 0; j < m_pModel->meshes[i].unique_vertices_pos.size(); j++) {
+			Part[cnt].Pos = m_pModel->meshes[i].unique_vertices_pos[j];
+			Part[cnt].Col = glm::vec4(0.0);	// Todo: Inited with black color... should be initied with vertex color
 			cnt++;
 		}
 	}
 
-
-
 	// Load particle positioning
-	exprPosition = new mathDriver(this);
+	m_pExprPosition = new mathDriver(this);
 	// Load all the other strings
 	for (int i = 2; i < strings.size(); i++)
-		exprPosition->expression += strings[i];
+		m_pExprPosition->expression += strings[i];
 
-	exprPosition->SymbolTable.add_variable("tx", translation.x);
-	exprPosition->SymbolTable.add_variable("ty", translation.y);
-	exprPosition->SymbolTable.add_variable("tz", translation.z);
-	exprPosition->SymbolTable.add_variable("rx", rotation.x);
-	exprPosition->SymbolTable.add_variable("ry", rotation.y);
-	exprPosition->SymbolTable.add_variable("rz", rotation.z);
-	exprPosition->SymbolTable.add_variable("sx", scale.x);
-	exprPosition->SymbolTable.add_variable("sy", scale.y);
-	exprPosition->SymbolTable.add_variable("sz", scale.z);
+	m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
+	m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
+	m_pExprPosition->SymbolTable.add_variable("tz", m_vTranslation.z);
+	m_pExprPosition->SymbolTable.add_variable("rx", m_vRotation.x);
+	m_pExprPosition->SymbolTable.add_variable("ry", m_vRotation.y);
+	m_pExprPosition->SymbolTable.add_variable("rz", m_vRotation.z);
+	m_pExprPosition->SymbolTable.add_variable("sx", m_vScale.x);
+	m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
+	m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
 
-	exprPosition->Expression.register_symbol_table(exprPosition->SymbolTable);
-	if (!exprPosition->compileFormula())
+	m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
+	if (!m_pExprPosition->compileFormula())
 		return false;
 
 	// Create the particle system
-	pSystem = new ParticleMesh(numParticles);
-	if (!pSystem->startup(Pos))
+	m_pParticleMesh = new ParticleMesh(m_iNumParticles);
+	if (!m_pParticleMesh->startup(Part))
 		return false;
 	// Delete all temporarly elements
-	Pos.clear();
+	Part.clear();
 
 	// Create Shader variables
-	shader->use();
-	vars = new ShaderVars(this, shader);
+	m_pShader->use();
+	m_pVars = new ShaderVars(this, m_pShader);
 
 	// Read the shader variables
 	for (int i = 0; i < uniform.size(); i++) {
-		vars->ReadString(uniform[i].c_str());
+		m_pVars->ReadString(uniform[i].c_str());
 	}
 
 	// Set shader variables values
-	vars->setValues();
+	m_pVars->setValues();
 
 	return true;
 }
@@ -133,7 +132,7 @@ void sDrawParticlesScene::exec() {
 	EvalBlendingStart();
 
 	// Evaluate the expression
-	exprPosition->Expression.value();
+	m_pExprPosition->Expression.value();
 
 	glDepthMask(GL_FALSE); // Disable depth buffer writting
 
@@ -142,26 +141,26 @@ void sDrawParticlesScene::exec() {
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, translation);
-	model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1, 0, 0));
-	model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0, 1, 0));
-	model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0, 0, 1));
-	model = glm::scale(model, scale);
+	model = glm::translate(model, m_vTranslation);
+	model = glm::rotate(model, glm::radians(m_vRotation.x), glm::vec3(1, 0, 0));
+	model = glm::rotate(model, glm::radians(m_vRotation.y), glm::vec3(0, 1, 0));
+	model = glm::rotate(model, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
+	model = glm::scale(model, m_vScale);
 
 	
 	// Get the shader
-	shader->use();
-	shader->setValue("gTime", runTime);	// Send the Time
-	shader->setValue("gVP", projection * view);	// Set Projection x View matrix
-	shader->setValue("gModel", model);			// Set Model matrix
-	shader->setValue("gCameraPos", m_demo.camera->Position);		// Set camera position
-	shader->setValue("gNumParticles", (float)numParticles);	// Set the total number of particles
+	m_pShader->use();
+	m_pShader->setValue("gTime", runTime);	// Send the Time
+	m_pShader->setValue("gVP", projection * view);	// Set Projection x View matrix
+	m_pShader->setValue("gModel", model);			// Set Model matrix
+	m_pShader->setValue("gCameraPos", m_demo.camera->Position);		// Set camera position
+	m_pShader->setValue("gNumParticles", (float)m_iNumParticles);	// Set the total number of particles
 
 	// Set the other shader variable values
-	vars->setValues();
+	m_pVars->setValues();
 
 	// Render particles
-	pSystem->render(runTime);
+	m_pParticleMesh->render(runTime);
 
 	// End evaluating blending
 	glDepthMask(GL_TRUE); // Enable depth buffer writting
@@ -170,12 +169,13 @@ void sDrawParticlesScene::exec() {
 }
 
 void sDrawParticlesScene::end() {
-	pSystem->shutdown();
+	m_pParticleMesh->shutdown();
 }
 
 std::string sDrawParticlesScene::debug() {
-	std::string msg;
-	msg += "[ drawParticlesScene id: " + identifier + " layer:" + std::to_string(layer) + " ]\n";
-	msg += " numParticles: " + std::to_string(numParticles) + "\n";
-	return msg;
+	std::stringstream ss;
+	ss << "+ DrawParticlesScene id: " << identifier << " layer: " << layer << std::endl;
+	ss << "  file: " << m_pModel->filename << std::endl;
+	ss << "  numParticles: " << m_iNumParticles << std::endl;
+	return ss.str();
 }

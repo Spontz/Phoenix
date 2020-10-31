@@ -365,8 +365,7 @@ bool Video::load(std::string const& sFileName, int32_t iVideoStreamIndex)
 			if (av_read_frame(m_pFormatContext_, m_pAVPacket_) >= 0) {
 				// if it's the video stream
 				if (m_pAVPacket_->stream_index == m_iVideoStreamIndex_) {
-					auto response = decodePacket();
-					if (response < 0)
+					if (0 < decodePacket())
 						LOG->Error("%s: Packet cannot be decoded", __FILE__);
 				}
 			}

@@ -8,8 +8,8 @@
 ParticleMesh::ParticleMesh(int numParticles):
     m_numParticles(numParticles),
     m_particles (nullptr),
-    m_particleBuffer (-1),
-    m_vao(-1)
+    m_particleBuffer (0),
+    m_vao(0)
 {
     
 }
@@ -20,16 +20,16 @@ ParticleMesh::~ParticleMesh()
 }
 
 #define BINDING			0
-#define LOC_ID	        0
-#define LOC_POSITION	1
+#define LOC_POSITION	0
+#define LOC_COLOR   	1
 
-bool ParticleMesh::startup(std::vector<glm::vec3> Pos)
+bool ParticleMesh::startup(std::vector<PARTICLE> Part)
 {
     // Application memory particle buffers (double buffered)
     m_particles = new PARTICLE[m_numParticles];
 
     // Load the ID's of the particles
-    initialize_particles(Pos);
+    initialize_particles(Part);
 
     // Create GPU buffer in read-only mode (faster)
     glGenBuffers(1, &m_particleBuffer);
@@ -41,35 +41,36 @@ bool ParticleMesh::startup(std::vector<glm::vec3> Pos)
 
     glBindVertexBuffer(BINDING, m_particleBuffer, 0, sizeof(PARTICLE));
 
-    glEnableVertexAttribArray(LOC_ID);
-    glVertexAttribIFormat(LOC_ID, 1, GL_INT, offsetof(PARTICLE, ID));
-    glVertexAttribBinding(LOC_ID, BINDING);
-
+    // Position location
 	glEnableVertexAttribArray(LOC_POSITION);
 	glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(PARTICLE, Pos));
 	glVertexAttribBinding(LOC_POSITION, BINDING);
 
+    // Color location
+    glEnableVertexAttribArray(LOC_COLOR);
+    glVertexAttribFormat(LOC_COLOR, 4, GL_FLOAT, GL_FALSE, offsetof(PARTICLE, Col));
+    glVertexAttribBinding(LOC_COLOR, BINDING);
+
+    glBindVertexArray(0);
     return true;
 }
 
-void ParticleMesh::initialize_particles(std::vector<glm::vec3> Pos)
+void ParticleMesh::initialize_particles(std::vector<PARTICLE> Part)
 {
-	if (Pos.empty()) {
+	if (Part.empty()) {
 		for (int i = 0; i < m_numParticles; i++)
 		{
-            m_particles[i].ID = i;
 			m_particles[i].Pos = glm::vec3(0.0f);
+            m_particles[i].Col = glm::vec4(0.0f);
 		}
-
 	}
 	else {
-		if (Pos.size() != m_numParticles)
+		if (Part.size() != m_numParticles)
 			LOG->Error("ParticleMesh: The number of positions does not match the number of particles!");
 		else {
 			for (int i = 0; i < m_numParticles; i++)
 			{
-                m_particles[i].ID = i;
-				m_particles[i].Pos = Pos[i];
+                m_particles[i] = Part[i];
 			}
 		}
 	}

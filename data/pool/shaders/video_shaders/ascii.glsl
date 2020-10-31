@@ -4,12 +4,15 @@ layout (location = 0) in vec2 aPos;
 layout (location = 1) in vec2 aTexCoords;
 
 out vec2 TexCoords;
+
 uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
 void main (void)
 {
     TexCoords = aTexCoords;
-    gl_Position = model * vec4(aPos.x, aPos.y, 0.0, 1.0); 
+    gl_Position = projection * view * model * vec4(aPos.x, aPos.y, 0.0, 1.0); 
 }
 
 #type fragment
@@ -37,7 +40,7 @@ float character(float n, vec2 p) // some compilers have the word "char" reserved
 
 void main(void)
 {
-	vec2 uv = vec2(TexCoords.x, 1.0 - TexCoords.y);
+	vec2 uv = vec2(TexCoords.x, TexCoords.y);
 	uv = uv * iResolution;
 	
 	vec3 col = texture(screenTexture, floor(uv/sample)*sample/iResolution).rgb;
