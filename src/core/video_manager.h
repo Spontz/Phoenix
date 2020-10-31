@@ -1,4 +1,4 @@
-// videonmanager.h
+// video_manager.h
 // Spontz Demogroup
 
 #pragma once
@@ -19,7 +19,7 @@ public:
 	Video* getVideo(CVideoSource const& videoDesc);
 
 private:
-	CVideoMap m_videoMap_;
+	CVideoMap VideoMap_;
 	// Force video reloading on each getVideo call (required for slave mode)
-	const bool m_bForceReload_;
+	const bool bForceReload_;
 };
