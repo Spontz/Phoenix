@@ -10,32 +10,28 @@
 #include <main.h>
 
 
-Video::Video(bool bDebug, uint32_t uiDecodingThreadCount, double dPlaybackSpeed)
+Video::Video(bool bDebug)
 	:
-	m_sFileName_("Video not loaded"),
-	m_iVideoStreamIndex_(-1),
-	m_dFramerate_(0),
-	m_iWidth_(0),
-	m_iHeight_(0),
-	m_uiTexID_(0),
-	m_bLoaded_(false),
-	m_pFormatContext_(nullptr),
-	m_pAVCodec_(nullptr),
-	m_pAVCodecParameters_(nullptr),
-	m_pCodecContext_(nullptr),
-	m_pFrame_(nullptr),
-	m_pGLFrame_(nullptr),
-	m_pConvertContext_(nullptr),
-	m_pAVPacket_(nullptr),
-	m_dIntervalFrame_(0),
-	m_dNextFrameTime_(0),
-	m_pWorkerThread_(nullptr),
-	m_bNewFrame_(false),
-	m_dTime_(0.0),
-	m_bStopWorkerThread_(false),
-	m_bDebug_(bDebug),
-	m_uiDecodingThreadCount_(uiDecodingThreadCount),
-	m_dPlaybackSpeed_(dPlaybackSpeed)
+	dFramerate_(0.),
+	iWidth_(0),
+	iHeight_(0),
+	uiTextureOGLName_(0),
+	bLoaded_(false),
+	pFormatContext_(nullptr),
+	pAVCodec_(nullptr),
+	pAVCodecParameters_(nullptr),
+	pCodecContext_(nullptr),
+	pFrame_(nullptr),
+	pGLFrame_(nullptr),
+	pConvertContext_(nullptr),
+	pAVPacket_(nullptr),
+	dIntervalFrame_(0),
+	dNextFrameTime_(0),
+	pWorkerThread_(nullptr),
+	bNewFrame_(false),
+	dTime_(0.),
+	bStopWorkerThread_(false),
+	bDebug_(bDebug)
 {
 }
 
@@ -46,71 +42,71 @@ Video::~Video()
 
 void Video::clearData()
 {
-	if (m_pWorkerThread_) {
-		m_bStopWorkerThread_ = true;
-		m_pWorkerThread_->join();
-		delete m_pWorkerThread_;
+	if (pWorkerThread_) {
+		bStopWorkerThread_ = true;
+		pWorkerThread_->join();
+		delete pWorkerThread_;
 	}
 
-	if (m_uiTexID_ != 0) {
-		glDeleteTextures(1, &m_uiTexID_);
-		m_uiTexID_ = 0;
+	if (uiTextureOGLName_ != 0) {
+		glDeleteTextures(1, &uiTextureOGLName_);
+		uiTextureOGLName_ = 0;
 	}
 
-	if (m_pFormatContext_) {
-		avformat_close_input(&m_pFormatContext_);
-		avformat_free_context(m_pFormatContext_);
+	if (pFormatContext_) {
+		avformat_close_input(&pFormatContext_);
+		avformat_free_context(pFormatContext_);
 	}
 
-	if (m_pAVPacket_) {
-		av_packet_unref(m_pAVPacket_);
-		av_packet_free(&m_pAVPacket_);
+	if (pAVPacket_) {
+		av_packet_unref(pAVPacket_);
+		av_packet_free(&pAVPacket_);
 	}
 
-	if (m_pFrame_) {
-		av_frame_unref(m_pFrame_);
-		av_frame_free(&m_pFrame_);
+	if (pFrame_) {
+		av_frame_unref(pFrame_);
+		av_frame_free(&pFrame_);
 	}
 
-	if (m_pGLFrame_) {
-		av_frame_unref(m_pGLFrame_);
-		av_frame_free(&m_pGLFrame_);
+	if (pGLFrame_) {
+		av_frame_unref(pGLFrame_);
+		av_frame_free(&pGLFrame_);
 	}
 
-	if (m_pCodecContext_)
-		avcodec_free_context(&m_pCodecContext_);
+	if (pCodecContext_)
+		avcodec_free_context(&pCodecContext_);
 }
 
 double Video::renderInterval() const
 {
-	return m_dIntervalFrame_ / m_dPlaybackSpeed_;
+	return dIntervalFrame_ / VideoSource_.dPlaybackSpeed_;
 };
 
-bool Video::load(std::string const& sFileName, int32_t iVideoStreamIndex)
+bool Video::load(CVideoSource const& videoSource)
 {
-	m_sFileName_ = sFileName;
+	VideoSource_ = videoSource;
 
 	// Delete data, in case video has been already loaded
 	clearData();
 
-	m_pFormatContext_ = avformat_alloc_context();
-	if (!m_pFormatContext_) {
+	pFormatContext_ = avformat_alloc_context();
+	if (!pFormatContext_) {
 		LOG->Error("%s: could not allocate memory for AVFormatContext.", __FILE__);
 		return false;
 	}
 
 	// Open file and read header
 	// Codecs are not opened
-	if (m_bDebug_)
+	if (bDebug_)
 		LOG->Info(
 			LogLevel::LOW,
 			"%s: Opening \"%s\" and loading format (container) header.",
 			__FILE__,
-			sFileName.c_str()
+			VideoSource_.sPath_.c_str()
 		);
 
-	if (avformat_open_input(&m_pFormatContext_, m_sFileName_.c_str(), nullptr, nullptr) != 0) {
-		LOG->Error("%s: Error opening \"%s\".", __FILE__, m_sFileName_.c_str());
+	if (avformat_open_input(&pFormatContext_, VideoSource_.sPath_.c_str(), nullptr, nullptr) != 0) {
+		LOG->Error("%s: Error opening \"%s\".", __FILE__, VideoSource_.sPath_.c_str());
 		return false;
 	}
 
@@ -119,25 +115,25 @@ bool Video::load(std::string const& sFileName, int32_t iVideoStreamIndex)
 		LogLevel::LOW,
 		"%s: %s, %dms, %dbits/s.",
 		__FILE__,
-		m_pFormatContext_->iformat->name,
-		m_pFormatContext_->duration / (AV_TIME_BASE / 1000),
-		m_pFormatContext_->bit_rate
+		pFormatContext_->iformat->name,
+		pFormatContext_->duration / (AV_TIME_BASE / 1000),
+		pFormatContext_->bit_rate
 	);
 
 	// Read Packets from AVFormatContext to get stream information
-	// avformat_find_stream_info populates m_pFormatContext_->streams (of size equals to pFormatContext->nb_streams)
-	if (m_bDebug_)
+	// avformat_find_streainfo populates pFormatContext_->streams (of size equals to pFormatContext->nb_streams)
+	if (bDebug_)
 		LOG->Info(LogLevel::LOW, "%s: Finding stream info from format", __FILE__);
-	if (avformat_find_stream_info(m_pFormatContext_, nullptr) < 0) {
+	if (avformat_find_stream_info(pFormatContext_, nullptr) < 0) {
 		LOG->Error("%s: Could not get the stream info.", __FILE__);
 		return false;
 	}
 
-	for (unsigned int i = 0; i < m_pFormatContext_->nb_streams; ++i) {
-		const auto pAVStream = m_pFormatContext_->streams[i];
+	for (unsigned int i = 0; i < pFormatContext_->nb_streams; ++i) {
+		const auto pAVStream = pFormatContext_->streams[i];
 		const auto pAVCodecParameters = pAVStream->codecpar;
 
-		if (m_bDebug_) {
+		if (bDebug_) {
 			LOG->Info(
 				LogLevel::LOW,
 				"%s: AVStream->time_base before open coded %d/%d",
@@ -192,8 +188,8 @@ bool Video::load(std::string const& sFileName, int32_t iVideoStreamIndex)
 			);
 
 			// Store video stream index, codec parameters and codec
-			if (m_iVideoStreamIndex_ == -1)
-				if (iVideoStreamIndex == -1 || iVideoStreamIndex == i) {
+			if (VideoSource_.iVideoStreamIndex_ == -1)
+				if (videoSource.iVideoStreamIndex_ == -1 || videoSource.iVideoStreamIndex_ == i) {
 					LOG->Info(
 						LogLevel::LOW,
 						"%s: Using video stream #%d.",
@@ -201,13 +197,13 @@ bool Video::load(std::string const& sFileName, int32_t iVideoStreamIndex)
 						i
 					);
 
-					m_iVideoStreamIndex_ = i;
-					m_dFramerate_ = av_q2d(pAVStream->avg_frame_rate);
-					m_dIntervalFrame_ = 1.0 / m_dFramerate_;
-					m_pAVCodec_ = pAVCodec;
-					m_pAVCodecParameters_ = pAVCodecParameters;
-					m_iWidth_ = pAVCodecParameters->width;
-					m_iHeight_ = pAVCodecParameters->height;
+					VideoSource_.iVideoStreamIndex_ = i;
+					dFramerate_ = av_q2d(pAVStream->avg_frame_rate);
+					dIntervalFrame_ = 1.0 / dFramerate_;
+					pAVCodec_ = pAVCodec;
+					pAVCodecParameters_ = pAVCodecParameters;
+					iWidth_ = pAVCodecParameters->width;
+					iHeight_ = pAVCodecParameters->height;
 				}
 
 			break;
@@ -231,33 +227,33 @@ bool Video::load(std::string const& sFileName, int32_t iVideoStreamIndex)
 		}
 	}
 
-	m_pCodecContext_ = avcodec_alloc_context3(m_pAVCodec_);
-	if (!m_pCodecContext_) {
+	pCodecContext_ = avcodec_alloc_context3(pAVCodec_);
+	if (!pCodecContext_) {
 		LOG->Error("%s: failed to allocated memory for AVCodecContext", __FILE__);
 		return false;
 	}
-	m_pCodecContext_->thread_count = m_uiDecodingThreadCount_;
+	pCodecContext_->thread_count = VideoSource_.uiDecodingThreadCount_;
 
 	// Fill the codec context based on the values from the supplied codec parameters
-	if (avcodec_parameters_to_context(m_pCodecContext_, m_pAVCodecParameters_) < 0) {
+	if (avcodec_parameters_to_context(pCodecContext_, pAVCodecParameters_) < 0) {
 		LOG->Error("%s: failed to copy codec params to codec context", __FILE__);
 		return false;
 	}
 
 	// Initialize the AVCodecContext to use the given AVCodec.
-	if (avcodec_open2(m_pCodecContext_, m_pAVCodec_, nullptr) < 0) {
+	if (avcodec_open2(pCodecContext_, pAVCodec_, nullptr) < 0) {
 		LOG->Error("%s: failed to open codec through avcodec_open2", __FILE__);
 		return false;
 	}
 
-	m_pFrame_ = av_frame_alloc();
-	m_pGLFrame_ = av_frame_alloc();
+	pFrame_ = av_frame_alloc();
+	pGLFrame_ = av_frame_alloc();
 	
 	// Allocate te data buffer for the glFrame
 	const auto iSize = av_image_get_buffer_size(
 		AV_PIX_FMT_RGB24,
-		m_pCodecContext_->width,
-		m_pCodecContext_->height,
+		pCodecContext_->width,
+		pCodecContext_->height,
 		1
 	);
 
@@ -266,27 +262,27 @@ bool Video::load(std::string const& sFileName, int32_t iVideoStreamIndex)
 	);
 
 	av_image_fill_arrays(
-		m_pGLFrame_->data,
-		m_pGLFrame_->linesize,
+		pGLFrame_->data,
+		pGLFrame_->linesize,
 		puiInternalBuffer,
 		AV_PIX_FMT_RGB24,
-		m_pCodecContext_->width,
-		m_pCodecContext_->height,
+		pCodecContext_->width,
+		pCodecContext_->height,
 		1
 	);
 
-	if (!m_pFrame_ || !m_pGLFrame_) {
+	if (!pFrame_ || !pGLFrame_) {
 		LOG->Error("%s: failed to allocated memory for AVFrame", __FILE__);
 		return false;
 	}
 
 	// Create the convert Context, used by the OpenGLFrame
-	m_pConvertContext_ = sws_getContext(
-		m_pCodecContext_->width,
-		m_pCodecContext_->height,
-		m_pCodecContext_->pix_fmt,	// Source
-		m_pCodecContext_->width,
-		m_pCodecContext_->height,
+	pConvertContext_ = sws_getContext(
+		pCodecContext_->width,
+		pCodecContext_->height,
+		pCodecContext_->pix_fmt,	// Source
+		pCodecContext_->width,
+		pCodecContext_->height,
 		AV_PIX_FMT_RGB24,			// Destiny (we change the format only)
 		0,							// No interpolation
 		nullptr,
@@ -294,21 +290,21 @@ bool Video::load(std::string const& sFileName, int32_t iVideoStreamIndex)
 		nullptr
 	);
 
-	if (!m_pConvertContext_) {
+	if (!pConvertContext_) {
 		LOG->Error("%s: Could not create the convert context for OpenGL", __FILE__);
 		return false;
 	}
 
-	m_pAVPacket_ = av_packet_alloc();
-	if (!m_pAVPacket_) {
+	pAVPacket_ = av_packet_alloc();
+	if (!pAVPacket_) {
 		LOG->Error("%s: Video: failed to allocated memory for AVPacket", __FILE__);
 		return false;
 	}
 
 	// Allocate the OpenGL texture
 	glActiveTexture(GL_TEXTURE0);
-	glGenTextures(1, &m_uiTexID_);
-	glBindTexture(GL_TEXTURE_2D, m_uiTexID_);
+	glGenTextures(1, &uiTextureOGLName_);
+	glBindTexture(GL_TEXTURE_2D, uiTextureOGLName_);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -318,21 +314,21 @@ bool Video::load(std::string const& sFileName, int32_t iVideoStreamIndex)
 		GL_TEXTURE_2D,
 		0,
 		GL_RGB,
-		m_pAVCodecParameters_->width,
-		m_pAVCodecParameters_->height,
+		pAVCodecParameters_->width,
+		pAVCodecParameters_->height,
 		0,
 		GL_RGB,
 		GL_UNSIGNED_BYTE,
 		nullptr
 	);
 
-	m_bLoaded_ = true;
+	bLoaded_ = true;
 
-	while (!m_bNewFrame_)
+	while (!bNewFrame_)
 		decode();
 
-	m_pWorkerThread_ = new std::thread([&] {
-		while (!m_bStopWorkerThread_) {
+	pWorkerThread_ = new std::thread([&] {
+		while (!bStopWorkerThread_) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1)); // hack
 			decode();
 		}
@@ -344,44 +340,44 @@ bool Video::load(std::string const& sFileName, int32_t iVideoStreamIndex)
 void Video::decode()
 {
 	if (
-		m_dTime_ < m_dNextFrameTime_ - renderInterval() ||
-		m_dTime_ > m_dNextFrameTime_ + renderInterval() * 2
+		dTime_ < dNextFrameTime_ - renderInterval() ||
+		dTime_ > dNextFrameTime_ + renderInterval() * 2
 		) {
 		LOG->Info(
 			LogLevel::HIGH,
 			"%s: Seeking %s[stream %d] @ %.4fs [desynced by %.4fs]...",
 			__FILE__,
-			m_sFileName_.c_str(),
-			m_iVideoStreamIndex_,
-			m_dTime_,
-			m_dTime_ - m_dNextFrameTime_
+			VideoSource_.sPath_.c_str(),
+			VideoSource_.iVideoStreamIndex_,
+			dTime_,
+			dTime_ - dNextFrameTime_
 		);
 
-		seekTime(m_dTime_);
-		m_dNextFrameTime_ = 0.0f;
+		seekTime(dTime_);
+		dNextFrameTime_ = 0.0f;
 	}
-	else if (m_dTime_ < m_dNextFrameTime_)
+	else if (dTime_ < dNextFrameTime_)
 	{
 		return;
 	}
 
-	if (m_bDebug_) {
+	if (bDebug_) {
 		LOG->Info(
 			LogLevel::LOW,
 			"%s: Time: %.4fs, Next Frame time: %.4fs",
 			__FILE__,
-			m_dTime_,
-			m_dNextFrameTime_
+			dTime_,
+			dNextFrameTime_
 		);
 	}
 
 	// Retrieve new frame
-	while (m_dNextFrameTime_ <= m_dTime_)
+	while (dNextFrameTime_ <= dTime_)
 	{
 		// fill the Packet with data from the Stream
-		if (av_read_frame(m_pFormatContext_, m_pAVPacket_) >= 0) {
+		if (av_read_frame(pFormatContext_, pAVPacket_) >= 0) {
 			// if it's the video stream
-			if (m_pAVPacket_->stream_index == m_iVideoStreamIndex_) {
+			if (pAVPacket_->stream_index == VideoSource_.iVideoStreamIndex_) {
 				if (decodePacket() < 0)
 					LOG->Error("%s: Packet cannot be decoded", __FILE__);
 			}
@@ -389,40 +385,40 @@ void Video::decode()
 		else {
 			// Loop: Start the video again
 			seekTime(0);
-			// av_seek_frame(pFormatContext, video_stream_index, 0, 0);
+			// av_seek_frame(pFormatContext, video_streaindex, 0, 0);
 		}
 
-		av_packet_unref(m_pAVPacket_);
+		av_packet_unref(pAVPacket_);
 	}
 }
 
 void Video::renderVideo(double dTime)
 {
-	m_dTime_ = dTime;
+	dTime_ = dTime;
 
-	if (!m_bLoaded_)
+	if (!bLoaded_)
 		return;
 		
-	if (m_pCodecContext_ && m_bNewFrame_) {
-		glBindTextureUnit(0, m_uiTexID_);
+	if (pCodecContext_ && bNewFrame_) {
+		glBindTextureUnit(0, uiTextureOGLName_);
 		glTexSubImage2D(
 			GL_TEXTURE_2D,
 			0,
 			0,
 			0,
-			m_pCodecContext_->width,
-			m_pCodecContext_->height,
+			pCodecContext_->width,
+			pCodecContext_->height,
 			GL_RGB,
 			GL_UNSIGNED_BYTE,
-			m_pGLFrame_->data[0]
+			pGLFrame_->data[0]
 		);
-		m_bNewFrame_ = false;
+		bNewFrame_ = false;
 	}
 }
 
 void Video::bind(GLuint uiTexUnit) const
 {
-	glBindTextureUnit(uiTexUnit, m_uiTexID_);
+	glBindTextureUnit(uiTexUnit, uiTextureOGLName_);
 }
 
 int64_t Video::seekTime(double dSeconds) const
@@ -430,11 +426,11 @@ int64_t Video::seekTime(double dSeconds) const
 	const auto iTimeMs = static_cast<int64_t>(dSeconds * 1000.);
 	const auto iFrameNumber = av_rescale(
 		iTimeMs,
-		m_pFormatContext_->streams[m_iVideoStreamIndex_]->time_base.den,
-		m_pFormatContext_->streams[m_iVideoStreamIndex_]->time_base.num
+		pFormatContext_->streams[VideoSource_.iVideoStreamIndex_]->time_base.den,
+		pFormatContext_->streams[VideoSource_.iVideoStreamIndex_]->time_base.num
 	) / 1000;
 
-	if (av_seek_frame(m_pFormatContext_, m_iVideoStreamIndex_, iFrameNumber, 0) < 0)
+	if (av_seek_frame(pFormatContext_, VideoSource_.iVideoStreamIndex_, iFrameNumber, 0) < 0)
 		LOG->Error("%s: Could not reach position: %.4fs, frame: %d", __FILE__, dSeconds, iFrameNumber);
 
 	return iFrameNumber;
@@ -443,7 +439,7 @@ int64_t Video::seekTime(double dSeconds) const
 int32_t Video::decodePacket()
 {
 	// Supply raw packet data as input to a decoder
-	auto iResponse = avcodec_send_packet(m_pCodecContext_, m_pAVPacket_);
+	auto iResponse = avcodec_send_packet(pCodecContext_, pAVPacket_);
 
 	if (iResponse < 0) {
 		LOG->Error("%s: decodePacket Error while sending a packet to the decoder", __FILE__); // : %s", av_err2str(response));
@@ -453,7 +449,7 @@ int32_t Video::decodePacket()
 	while (iResponse >= 0)
 	{
 		// Return decoded output data (into a frame) from a decoder
-		iResponse = avcodec_receive_frame(m_pCodecContext_, m_pFrame_);
+		iResponse = avcodec_receive_frame(pCodecContext_, pFrame_);
 		if (iResponse == AVERROR(EAGAIN) || iResponse == AVERROR_EOF)
 			break;
 		else if (iResponse < 0) {
@@ -462,34 +458,34 @@ int32_t Video::decodePacket()
 		}
 
 		if (iResponse >= 0) {
-			if (m_bDebug_) {
+			if (bDebug_) {
 				LOG->Info(
 					LogLevel::LOW,
 					"%s: Frame %d (type=%c, size=%d bytes) pts %d key_frame %d [DTS %d]",
 					__FILE__,
-					m_pCodecContext_->frame_number,
-					av_get_picture_type_char(m_pFrame_->pict_type),
-					m_pFrame_->pkt_size,
-					m_pFrame_->pts,
-					m_pFrame_->key_frame,
-					m_pFrame_->coded_picture_number
+					pCodecContext_->frame_number,
+					av_get_picture_type_char(pFrame_->pict_type),
+					pFrame_->pkt_size,
+					pFrame_->pts,
+					pFrame_->key_frame,
+					pFrame_->coded_picture_number
 				);
 			}
 
 			// Scale the image (pFrame) to the OpenGL image (glFrame), using the Convertex cotext
 			sws_scale(
-				m_pConvertContext_,
-				m_pFrame_->data,
-				m_pFrame_->linesize,
+				pConvertContext_,
+				pFrame_->data,
+				pFrame_->linesize,
 				0,
-				m_pCodecContext_->height,
-				m_pGLFrame_->data,
-				m_pGLFrame_->linesize
+				pCodecContext_->height,
+				pGLFrame_->data,
+				pGLFrame_->linesize
 			);
 
-			m_bNewFrame_ = true;
-			//m_dNextFrameTime_ = static_cast<double>(m_pCodecContext_->frame_number) * renderInterval();
-			m_dNextFrameTime_ = m_dTime_ + renderInterval();
+			bNewFrame_ = true;
+			//dNextFrameTime_ = static_cast<double>(pCodecContext_->frame_number) * renderInterval();
+			dNextFrameTime_ = dTime_ + renderInterval();
 		}
 	}
 
@@ -498,20 +494,20 @@ int32_t Video::decodePacket()
 
 std::string const& Video::getFileName() const
 {
-	return m_sFileName_;
+	return VideoSource_.sPath_;
 }
 
 GLuint Video::getTexID() const
 {
-	return m_uiTexID_;
+	return uiTextureOGLName_;
 }
 
 int32_t Video::getWidth() const
 {
-	return m_iWidth_;
+	return iWidth_;
 }
 
 int32_t Video::getHeight() const
 {
-	return m_iHeight_;
+	return iHeight_;
 }

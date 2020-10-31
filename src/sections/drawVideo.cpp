@@ -2,8 +2,6 @@
 #include "core/video.h"
 #include "core/shadervars.h"
 
-int kVideoStreamIndex = -1; // TODO: allow selecting the video stream index
-
 class sDrawVideo final : public Section {
 public:
 	sDrawVideo();
@@ -61,7 +59,14 @@ bool sDrawVideo::load()
 	m_bFitToContent = static_cast<bool>(param[3]);
 
 	// Load the Video
-	m_pVideo = m_demo.m_videoManager_.addVideo(m_demo.dataFolder + strings[0], kVideoStreamIndex);
+	m_pVideo = m_demo.m_videoManager_.getVideo(
+		{
+			m_demo.dataFolder + strings[0],
+			-1, // hack: hardcoded, take from spo
+			10, // hack: hardcoded, take from spo
+			1.0 // hack: hardcoded, take from spo
+		}
+	);
 	if (!m_pVideo)
 		return false;
 	m_fVideoAspectRatio = static_cast<float>(m_pVideo->getWidth()) / static_cast<float>(m_pVideo->getHeight());
@@ -178,7 +183,7 @@ void sDrawVideo::exec()
 		m_pShader->setValue("screenTexture", 0);
 		// Set other shader variables values
 		m_pVars->setValues();
-		m_pVideo->bind();
+		m_pVideo->bind(0); // todo: from SPO maybe?
 		m_demo.res->Draw_QuadFS(); // Draw a quad with the video
 
 	}

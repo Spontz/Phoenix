@@ -12,49 +12,56 @@ VideoManager::VideoManager(bool bForceReload)
 
 VideoManager::~VideoManager()
 {
-	for (auto pVideo : m_videos_)
-		delete pVideo;
+	LOG->Info(LogLevel::MED, "Unloading videos...");
+	for (auto const& i : m_videoMap_)
+		delete i.second;
 }
 
-// Adds a Texture into the queue, returns the Number of the texture added
-Video* VideoManager::addVideo(std::string const& sPath, int32_t iVideoStreamIndex)
+Video* VideoManager::getVideo(CVideoSource const& videoDesc)
 {
-	// If video already exists return or reload and return it (acording to m_forceLoad)
-	for (auto const pVideo : m_videos_) {
-		if (pVideo->getFileName() == sPath) {
-			if (m_bForceReload_) {
-				// Reload video
-				if (!pVideo->load(sPath, iVideoStreamIndex)) {
-					// Handle reload error
-					LOG->Error("Could not reload video: \"%s\"", sPath.c_str());
-					return nullptr;
-				}
+	// If the video is already loaded just return it
+	// If the video is not loaded load and return it
+	auto it = m_videoMap_.find(videoDesc);
 
-				LOG->Info(
-					LogLevel::MED,
-					"Video \"%s\" [id: %d] force reload OK.",
-					sPath.c_str(),
-					m_videos_.size() - 1
-				);
-
-				return pVideo;
+	if (it != m_videoMap_.end()) {
+		auto pVideo = it->second;
+		if (m_bForceReload_) {
+			// Reload video acording to m_bForceReload_
+			if (!pVideo->load(videoDesc)) {
+				// Handle reload error
+				LOG->Error("Could not reload video: \"%s\"", videoDesc.sPath_.c_str());
+				return nullptr;
 			}
+
+			LOG->Info(
+				LogLevel::MED,
+				"Video \"%s\" [id: %d] force reload OK.",
+				videoDesc.sPath_.c_str(),
+				m_videoMap_.size() - 1
+			);
+
+			return pVideo;
 		}
 	}
 
 	// Create video
-	auto const pVideo = new Video(false, 10, 1.0); // hack: hardcoded pars
+	auto const pVideo = new Video(false);
 
 	// Load video
-	if (!pVideo->load(sPath, iVideoStreamIndex)) {
+	if (!pVideo->load(videoDesc)) {
 		// Handle load error
-		LOG->Error("Could not load video: \"%s\"", sPath.c_str());
+		LOG->Error("Could not load video: \"%s\"", videoDesc.sPath_.c_str());
 		delete pVideo;
 		return nullptr;
 	}
 
-	m_videos_.push_back(pVideo);
-	LOG->Info(LogLevel::MED, "Video \"%s\" [id: %d] loaded OK.", sPath.c_str(), m_videos_.size() - 1);
+	m_videoMap_.insert({ videoDesc, pVideo });
+	LOG->Info(
+		LogLevel::MED,
+		"Video \"%s\" [id: %d] loaded OK.",
+		videoDesc.sPath_.c_str(),
+		m_videoMap_.size() - 1
+	);
 
 	return pVideo;
 }
