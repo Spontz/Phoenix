@@ -10,36 +10,32 @@
 #include <main.h>
 
 
-Video::Video(
-	bool bDebug,
-	uint32_t uiDecodingThreadCount,
-	double dPlaybackSpeed
-)
+Video::Video(bool bDebug, uint32_t uiDecodingThreadCount, double dPlaybackSpeed)
 	:
-	m_bDebug_(bDebug),
-	m_uiDecodingThreadCount_(uiDecodingThreadCount),
-	m_dPlaybackSpeed_(dPlaybackSpeed),
 	m_sFileName_("Video not loaded"),
 	m_iVideoStreamIndex_(-1),
-	m_bLoaded_(false),
-	m_bStopWorkerThread_(false),
-	m_bNewFrame_(false),
-	m_dTime_(0.0),
 	m_dFramerate_(0),
 	m_iWidth_(0),
 	m_iHeight_(0),
-	m_dIntervalFrame_(0),
-	m_dNextFrameTime_(0),
 	m_uiTexID_(0),
-	m_pGLFrame_(nullptr),
-	m_pCodecContext_(nullptr),
+	m_bLoaded_(false),
 	m_pFormatContext_(nullptr),
-	m_pFrame_(nullptr),
-	m_pAVPacket_(nullptr),
 	m_pAVCodec_(nullptr),
 	m_pAVCodecParameters_(nullptr),
+	m_pCodecContext_(nullptr),
+	m_pFrame_(nullptr),
+	m_pGLFrame_(nullptr),
 	m_pConvertContext_(nullptr),
-	m_pWorkerThread_(nullptr)
+	m_pAVPacket_(nullptr),
+	m_dIntervalFrame_(0),
+	m_dNextFrameTime_(0),
+	m_pWorkerThread_(nullptr),
+	m_bNewFrame_(false),
+	m_dTime_(0.0),
+	m_bStopWorkerThread_(false),
+	m_bDebug_(bDebug),
+	m_uiDecodingThreadCount_(uiDecodingThreadCount),
+	m_dPlaybackSpeed_(dPlaybackSpeed)
 {
 }
 
@@ -89,10 +85,7 @@ double Video::renderInterval() const {
 	return m_dIntervalFrame_ / m_dPlaybackSpeed_;
 };
 
-bool Video::load(
-	std::string const& sFileName,
-	int32_t iVideoStreamIndex
-)
+bool Video::load(std::string const& sFileName, int32_t iVideoStreamIndex)
 {
 	m_sFileName_ = sFileName;
 
@@ -260,17 +253,20 @@ bool Video::load(
 	m_pGLFrame_ = av_frame_alloc();
 	
 	// Allocate te data buffer for the glFrame
-	const int size = av_image_get_buffer_size(
+	const auto iSize = av_image_get_buffer_size(
 		AV_PIX_FMT_RGB24,
 		m_pCodecContext_->width,
 		m_pCodecContext_->height,
 		1
 	);
 
-	auto puiInternalBuffer = static_cast<uint8_t*>(av_malloc(size * sizeof(uint8_t)));
+	const auto puiInternalBuffer = static_cast<const uint8_t*>(
+		av_malloc(iSize * sizeof(uint8_t))
+	);
+
 	av_image_fill_arrays(
-		(uint8_t**)((AVPicture*)m_pGLFrame_->data),
-		(int*)((AVPicture*)m_pGLFrame_->linesize),
+		m_pGLFrame_->data,
+		m_pGLFrame_->linesize,
 		puiInternalBuffer,
 		AV_PIX_FMT_RGB24,
 		m_pCodecContext_->width,
@@ -426,7 +422,7 @@ void Video::bind(GLuint uiTexUnit) const
 	glBindTextureUnit(uiTexUnit, m_uiTexID_);
 }
 
-int64_t Video::seekTime(double dTime)
+int64_t Video::seekTime(double dTime) const
 {
 	const auto iTimeMs = static_cast<int64_t>(dTime * 1000.);
 	const auto iFrameNumber = av_rescale(
