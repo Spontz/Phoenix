@@ -81,7 +81,8 @@ void Video::clearData()
 		avcodec_free_context(&m_pCodecContext_);
 }
 
-double Video::renderInterval() const {
+double Video::renderInterval() const
+{
 	return m_dIntervalFrame_ / m_dPlaybackSpeed_;
 };
 
@@ -327,78 +328,81 @@ bool Video::load(std::string const& sFileName, int32_t iVideoStreamIndex)
 
 	m_bLoaded_ = true;
 
-
-	static auto fnDecode = [this]() {
-		if (m_dTime_ < m_dNextFrameTime_ - renderInterval() || m_dTime_ > m_dNextFrameTime_ + renderInterval() * 2) {
-			LOG->Info(
-				LogLevel::HIGH,
-				"%s: Seeking %s[stream %d] @ %.4fs [desynced by %.4fs]...",
-				__FILE__,
-				m_sFileName_.c_str(),
-				m_iVideoStreamIndex_,
-				m_dTime_,
-				m_dTime_ - m_dNextFrameTime_
-			);
-
-			seekTime(m_dTime_);
-			m_dNextFrameTime_ = 0.0f;
-		}
-		else if (m_dTime_ < m_dNextFrameTime_)
-		{
-			return;
-		}
-
-		if (m_bDebug_) {
-			LOG->Info(
-				LogLevel::LOW,
-				"%s: Time: %.4fs, Next Frame time: %.4fs",
-				__FILE__,
-				m_dTime_,
-				m_dNextFrameTime_
-			);
-		}
-
-		// Retrieve new frame
-		while (m_dNextFrameTime_ <= m_dTime_)
-		{
-			// fill the Packet with data from the Stream
-			if (av_read_frame(m_pFormatContext_, m_pAVPacket_) >= 0) {
-				// if it's the video stream
-				if (m_pAVPacket_->stream_index == m_iVideoStreamIndex_) {
-					if (0 < decodePacket())
-						LOG->Error("%s: Packet cannot be decoded", __FILE__);
-				}
-			}
-			else {
-				// Loop: Start the video again
-				seekTime(0);
-				// av_seek_frame(pFormatContext, video_stream_index, 0, 0);
-			}
-
-			av_packet_unref(m_pAVPacket_);
-		}
-	};
-
 	while (!m_bNewFrame_)
-		fnDecode();
+		decode();
 
 	m_pWorkerThread_ = new std::thread([&] {
 		while (!m_bStopWorkerThread_) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1)); // hack
-			fnDecode();
+			decode();
 		}
 		});
 
 	return true;
 }
 
+void Video::decode()
+{
+	if (
+		m_dTime_ < m_dNextFrameTime_ - renderInterval() ||
+		m_dTime_ > m_dNextFrameTime_ + renderInterval() * 2
+		) {
+		LOG->Info(
+			LogLevel::HIGH,
+			"%s: Seeking %s[stream %d] @ %.4fs [desynced by %.4fs]...",
+			__FILE__,
+			m_sFileName_.c_str(),
+			m_iVideoStreamIndex_,
+			m_dTime_,
+			m_dTime_ - m_dNextFrameTime_
+		);
+
+		seekTime(m_dTime_);
+		m_dNextFrameTime_ = 0.0f;
+	}
+	else if (m_dTime_ < m_dNextFrameTime_)
+	{
+		return;
+	}
+
+	if (m_bDebug_) {
+		LOG->Info(
+			LogLevel::LOW,
+			"%s: Time: %.4fs, Next Frame time: %.4fs",
+			__FILE__,
+			m_dTime_,
+			m_dNextFrameTime_
+		);
+	}
+
+	// Retrieve new frame
+	while (m_dNextFrameTime_ <= m_dTime_)
+	{
+		// fill the Packet with data from the Stream
+		if (av_read_frame(m_pFormatContext_, m_pAVPacket_) >= 0) {
+			// if it's the video stream
+			if (m_pAVPacket_->stream_index == m_iVideoStreamIndex_) {
+				if (decodePacket() < 0)
+					LOG->Error("%s: Packet cannot be decoded", __FILE__);
+			}
+		}
+		else {
+			// Loop: Start the video again
+			seekTime(0);
+			// av_seek_frame(pFormatContext, video_stream_index, 0, 0);
+		}
+
+		av_packet_unref(m_pAVPacket_);
+	}
+}
+
 void Video::renderVideo(double dTime)
 {
-	if (!m_bLoaded_)
-		return;
-
 	m_dTime_ = dTime;
 
+	if (!m_bLoaded_)
+		return;
+		
 	if (m_pCodecContext_ && m_bNewFrame_) {
 		glBindTextureUnit(0, m_uiTexID_);
 		glTexSubImage2D(
@@ -421,9 +425,9 @@ void Video::bind(GLuint uiTexUnit) const
 	glBindTextureUnit(uiTexUnit, m_uiTexID_);
 }
 
-int64_t Video::seekTime(double dTime) const
+int64_t Video::seekTime(double dSeconds) const
 {
-	const auto iTimeMs = static_cast<int64_t>(dTime * 1000.);
+	const auto iTimeMs = static_cast<int64_t>(dSeconds * 1000.);
 	const auto iFrameNumber = av_rescale(
 		iTimeMs,
 		m_pFormatContext_->streams[m_iVideoStreamIndex_]->time_base.den,
@@ -431,7 +435,7 @@ int64_t Video::seekTime(double dTime) const
 	) / 1000;
 
 	if (av_seek_frame(m_pFormatContext_, m_iVideoStreamIndex_, iFrameNumber, 0) < 0)
-		LOG->Error("%s: Could not reach position: %.4fs, frame: %d", __FILE__, dTime, iFrameNumber);
+		LOG->Error("%s: Could not reach position: %.4fs, frame: %d", __FILE__, dSeconds, iFrameNumber);
 
 	return iFrameNumber;
 }

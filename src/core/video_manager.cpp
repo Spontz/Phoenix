@@ -1,13 +1,18 @@
 // videomanager.cpp
 // Spontz Demogroup
 
-#include "videomanager.h"
+#include "video_manager.h"
 #include "main.h"
+
+VideoManager::VideoManager(bool bForceReload)
+	:
+	m_bForceReload_(bForceReload)
+{
+}
 
 VideoManager::~VideoManager()
 {
-	m_forceReload = false;
-	for (auto const& pVideo : m_videos_)
+	for (auto pVideo : m_videos_)
 		delete pVideo;
 }
 
@@ -17,7 +22,7 @@ Video* VideoManager::addVideo(std::string const& sPath, int32_t iVideoStreamInde
 	// If video already exists return or reload and return it (acording to m_forceLoad)
 	for (auto const pVideo : m_videos_) {
 		if (pVideo->getFileName() == sPath) {
-			if (m_forceReload) {
+			if (m_bForceReload_) {
 				// Reload video
 				if (!pVideo->load(sPath, iVideoStreamIndex)) {
 					// Handle reload error
@@ -54,10 +59,3 @@ Video* VideoManager::addVideo(std::string const& sPath, int32_t iVideoStreamInde
 	return pVideo;
 }
 
-Video* VideoManager::getVideo(int32_t iVideoIndex) const
-{
-	if (iVideoIndex >= 0 && iVideoIndex < m_videos_.size())
-		return m_videos_[iVideoIndex];
-
-	return nullptr;
-}

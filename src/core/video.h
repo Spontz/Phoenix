@@ -18,14 +18,13 @@ public:
     ~Video();
 
 public:
-    bool load(
+    [[nodiscard]] bool load(
         std::string const& sFileName,
         int32_t iVideoStreamIndex             // -1 will use the first video stream found the file
     );
 
     void renderVideo(double dTime);           // Render the video to the OpenGL texture at the specified time
 
-public:
     void bind(GLuint uiTexUnit = 0) const;
     [[nodiscard]] std::string const& getFileName() const;
     [[nodiscard]] GLuint getTexID() const;
@@ -34,11 +33,12 @@ public:
 
 private:
     void clearData();
+    void decode();
     int32_t decodePacket();
 
 private:
     [[nodiscard]] double renderInterval() const;
-    [[nodiscard]] int64_t seekTime(double dTime) const;
+    int64_t seekTime(double dSeconds) const; // returns the frame number
 
 private:
     std::string	m_sFileName_;                 // Video file name

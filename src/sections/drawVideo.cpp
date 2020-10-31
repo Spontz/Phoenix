@@ -61,7 +61,7 @@ bool sDrawVideo::load()
 	m_bFitToContent = static_cast<bool>(param[3]);
 
 	// Load the Video
-	m_pVideo = m_demo.videoManager.addVideo(m_demo.dataFolder + strings[0], kVideoStreamIndex);
+	m_pVideo = m_demo.m_videoManager_.addVideo(m_demo.dataFolder + strings[0], kVideoStreamIndex);
 	if (!m_pVideo)
 		return false;
 	m_fVideoAspectRatio = static_cast<float>(m_pVideo->getWidth()) / static_cast<float>(m_pVideo->getHeight());

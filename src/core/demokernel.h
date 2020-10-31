@@ -13,7 +13,7 @@ class demokernel;
 #include "core/sectionmanager.h"
 #include "sections/sections.h"
 
-#include "core/videomanager.h"
+#include "core/video_manager.h"
 #include "core/texturemanager.h"
 #include "core/fbomanager.h"
 #include "core/modelmanager.h"
@@ -65,7 +65,7 @@ public:
 	// Managers
 	SectionManager	sectionManager;
 	TextureManager	textureManager;
-	VideoManager	videoManager;
+	VideoManager	m_videoManager_;
 	FboManager		fboManager;					// Generic Fbo Manager (FBO's free to be used by the demo maker)
 	FboManager		efxBloomFbo;				// Bloom efx Fbo Manager (internal FBO's used by the engine)
 	FboManager		efxAccumFbo;				// Accumulation efx Fbo Manager (internal FBO's used by the engine)
@@ -105,7 +105,7 @@ public:
 	int mouseXvar, mouseYvar;					// Mouse variation rom the center of the screen
 
 	// network slave mode
-	int slaveMode;								// 1 = network slave; 0 = standalone mode;
+	const int slaveMode;						// 1 = network slave; 0 = standalone mode;
 
 	// Multi-purpose variables, shared in for the sections
 	float var[MULTIPURPOSE_VARS];

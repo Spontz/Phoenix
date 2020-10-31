@@ -47,7 +47,7 @@ demokernel::demokernel()
 	accumFrameCount(0),
 	fps(0),
 	frameCount(0),
-	slaveMode(false),
+	slaveMode(0),
 	beat(0),
 	beat_ratio(1.4f),
 	beat_fadeout(4.0f),
@@ -57,7 +57,8 @@ demokernel::demokernel()
 	mouseYvar(0),
 	loadedSections(0),
 	exitDemo(false),
-	res(nullptr)
+	res(nullptr),
+	m_videoManager_(slaveMode==1)
 {
 	for (uint32_t i = 0; i < MULTIPURPOSE_VARS; ++i)
 		var[i] = 0.0f;
@@ -359,7 +360,6 @@ bool demokernel::load_config()
 		LOG->Info(LogLevel::MED, "Engine is in slave mode, therefore, enabling force loads for shaders and textures!");
 		textureManager.forceLoad = true;
 		shaderManager.forceLoad	= true;
-		videoManager.m_forceReload	= true;
 	}
 	return true;
 }
