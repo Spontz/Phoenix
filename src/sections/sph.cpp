@@ -22,8 +22,8 @@ namespace sections {
 	}
 
 	bool SPH::load() {
-		const std::string uri = m_demo.dataFolder + "/resources/shaders/sph/billboard.glsl";
-		pass_sph_billboard_ = m_demo.shaderManager.addShader(uri);
+		const std::string uri = m_demo.m_dataFolder + "/resources/shaders/sph/billboard.glsl";
+		pass_sph_billboard_ = m_demo.m_shaderManager.addShader(uri);
 		return true;
 	}
 

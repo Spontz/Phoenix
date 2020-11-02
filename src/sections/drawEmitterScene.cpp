@@ -63,10 +63,10 @@ bool sDrawEmitterScene::load() {
 
 	// Load the shaders
 	std::string pathShaders;
-	pathShaders = m_demo.dataFolder + strings[0];
+	pathShaders = m_demo.m_dataFolder + strings[0];
 
 	// Load the model
-	m_pModel = m_demo.modelManager.addModel(m_demo.dataFolder + strings[1]);
+	m_pModel = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[1]);
 
 	if (!m_pModel)
 		return false;
@@ -171,8 +171,8 @@ void sDrawEmitterScene::exec() {
 	
 	glDepthMask(GL_FALSE); // Disable depth buffer writting
 
-	glm::mat4 projection = glm::perspective(glm::radians(DEMO->camera->Zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
-	glm::mat4 view = m_demo.camera->GetViewMatrix();
+	glm::mat4 projection = glm::perspective(glm::radians(DEMO->m_pCamera->Zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
+	glm::mat4 view = m_demo.m_pCamera->GetViewMatrix();
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
@@ -193,7 +193,7 @@ void sDrawEmitterScene::exec() {
 	}
 	m_pPartSystem->force = m_vForce;
 	
-	m_pPartSystem->Render(deltaTime, vp, model, m_demo.camera->Position);
+	m_pPartSystem->Render(deltaTime, vp, model, m_demo.m_pCamera->Position);
 
 
 	// End evaluating blending

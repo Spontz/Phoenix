@@ -1,8 +1,8 @@
-// lightmanager.cpp
+// light_manager.cpp
 // Spontz Demogroup
 
 #include "main.h"
-#include "lightmanager.h"
+#include "light_manager.h"
 
 
 // Init vars

@@ -48,8 +48,8 @@ bool sEfxAccum::load() {
 	m_bAccumBuffer = false;
 	
 	// Check if the fbo can be used for the effect
-	if (m_uiFboNum < 0 || m_uiFboNum >= m_demo.fboManager.fbo.size()) {
-		LOG->Error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), m_uiFboNum, m_demo.fboManager.fbo.size()-1);
+	if (m_uiFboNum < 0 || m_uiFboNum >= m_demo.m_fboManager.fbo.size()) {
+		LOG->Error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), m_uiFboNum, m_demo.m_fboManager.fbo.size()-1);
 		return false;
 	}
 	
@@ -65,7 +65,7 @@ bool sEfxAccum::load() {
 		return false;
 
 	// Load Blur shader
-	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
+	m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
 	if (!m_pShader)
 		return false;
 
@@ -110,7 +110,7 @@ void sEfxAccum::exec() {
 		
 		{
 			// We want to capture the frame in the "Accum Fbo", so first we use the previous fbo for storing the entire image
-			m_demo.efxAccumFbo.bind(m_bAccumBuffer, false, false);
+			m_demo.m_efxAccumFbo.bind(m_bAccumBuffer, false, false);
 		
 			float fps = 1.0f / 60.0f;
 			m_pShader->use();
@@ -119,32 +119,32 @@ void sEfxAccum::exec() {
 			m_pVars->setValues();
 
 			// Set the screen fbo in texture unit 0
-			m_demo.fboManager.bind_tex(m_uiFboNum, 0);
+			m_demo.m_fboManager.bind_tex(m_uiFboNum, 0);
 			
 			// Set the accumulation fbo in texture unit 1
 			if (firstIteration)
 				firstIteration = false;
 			m_bAccumBuffer = !m_bAccumBuffer; 
-			m_demo.efxAccumFbo.bind_tex(m_bAccumBuffer, 1);
+			m_demo.m_efxAccumFbo.bind_tex(m_bAccumBuffer, 1);
 
 			// Render a quad using the Accum shader (combining the 2 Images)
-			m_demo.res->Draw_QuadFS();
+			m_demo.m_pRes->Draw_QuadFS();
 
-			m_demo.efxAccumFbo.unbind(false, false); // Unbind drawing into the "Accum Fbo"
+			m_demo.m_efxAccumFbo.unbind(false, false); // Unbind drawing into the "Accum Fbo"
 
 			// Adjust back the current fbo
-			m_demo.fboManager.bindCurrent();
+			m_demo.m_fboManager.bindCurrent();
 		}
 		
 
 		// Second step: Draw the accum buffer
-		m_demo.res->shdr_QuadTex->use();
-		m_demo.res->shdr_QuadTex->setValue("screenTexture", 0);
+		m_demo.m_pRes->shdr_QuadTex->use();
+		m_demo.m_pRes->shdr_QuadTex->setValue("screenTexture", 0);
 		if (firstIteration)
-			m_demo.fboManager.bind_tex(m_uiFboNum, 0);
+			m_demo.m_fboManager.bind_tex(m_uiFboNum, 0);
 		else
-			m_demo.efxAccumFbo.bind_tex(!m_bAccumBuffer, 0);
-		m_demo.res->Draw_QuadFS();
+			m_demo.m_efxAccumFbo.bind_tex(!m_bAccumBuffer, 0);
+		m_demo.m_pRes->Draw_QuadFS();
 
 	}		
 	glEnable(GL_DEPTH_TEST);

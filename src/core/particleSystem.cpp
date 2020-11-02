@@ -256,7 +256,7 @@ void ParticleSystem::RenderParticles(const glm::mat4 &VP, const glm::mat4 &model
 
 bool ParticleSystem::initShaderBillboard()
 {
-	billboardShader = DEMO->shaderManager.addShader(this->pathBillboard);
+	billboardShader = DEMO->m_shaderManager.addShader(this->pathBillboard);
 	if (billboardShader)
 		return true;
 	return false;
@@ -264,7 +264,7 @@ bool ParticleSystem::initShaderBillboard()
 
 bool ParticleSystem::initShaderParticleSystem()
 {
-	particleSystemShader = DEMO->shaderManager.addShader( this->pathUpdate,
+	particleSystemShader = DEMO->m_shaderManager.addShader( this->pathUpdate,
 															{ "Position1", "Velocity1", "Color1", "Age1", "Type1" });
 
 	if (particleSystemShader)

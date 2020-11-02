@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
 
 	// Check the data folder
 	if (!demo.checkDataFolder()) {
-		log.Error(("Critical error: Cannot find data folder in: " + demo.dataFolder + ", exit!").c_str());
+		log.Error(("Critical error: Cannot find data folder in: " + demo.m_dataFolder + ", exit!").c_str());
 		return 1;
 	}
 

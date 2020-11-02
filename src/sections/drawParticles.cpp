@@ -46,7 +46,7 @@ bool sDrawParticles::load() {
 	
 
 	// Load the shader
-	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
+	m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
 
 	if (!m_pShader)
 		return false;
@@ -109,8 +109,8 @@ void sDrawParticles::exec() {
 
 	glDepthMask(GL_FALSE); // Disable depth buffer writting
 
-	glm::mat4 projection = glm::perspective(glm::radians(m_demo.camera->Zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
-	glm::mat4 view = m_demo.camera->GetViewMatrix();
+	glm::mat4 projection = glm::perspective(glm::radians(m_demo.m_pCamera->Zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
+	glm::mat4 view = m_demo.m_pCamera->GetViewMatrix();
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
@@ -126,7 +126,7 @@ void sDrawParticles::exec() {
 	m_pShader->setValue("gTime", runTime);	// Send the Time
 	m_pShader->setValue("gVP", projection * view);	// Set Projection x View matrix
 	m_pShader->setValue("gModel", model);			// Set Model matrix
-	m_pShader->setValue("gCameraPos", m_demo.camera->Position);		// Set camera position
+	m_pShader->setValue("gCameraPos", m_demo.m_pCamera->Position);		// Set camera position
 	m_pShader->setValue("gNumParticles", (float)m_iNumParticles);	// Set the total number of particles
 
 	// Set the other shader variable values

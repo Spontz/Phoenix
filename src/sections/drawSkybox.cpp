@@ -39,7 +39,7 @@ bool sDrawSkybox::load() {
 	}
 
 	// Check if skybox is present in resources
-	if (m_demo.res->obj_skybox == 0 || m_demo.res->shdr_Skybox == nullptr ) {
+	if (m_demo.m_pRes->obj_skybox == 0 || m_demo.m_pRes->shdr_Skybox == nullptr ) {
 		LOG->Error("DrawSkybox [%s]: Skybox model or shader has not been properly loaded in resources, please fix it!", identifier.c_str());
 		return false;
 	}
@@ -49,10 +49,10 @@ bool sDrawSkybox::load() {
 	m_bDrawWireframe = static_cast<bool>(param[1]);
 	
 	// Load the 6 textures of our cubemap
-	std::vector<std::string> faces {	m_demo.dataFolder + strings[0], m_demo.dataFolder + strings[1], m_demo.dataFolder + strings[2],
-										m_demo.dataFolder + strings[3], m_demo.dataFolder + strings[4], m_demo.dataFolder + strings[5]};
+	std::vector<std::string> faces {	m_demo.m_dataFolder + strings[0], m_demo.m_dataFolder + strings[1], m_demo.m_dataFolder + strings[2],
+										m_demo.m_dataFolder + strings[3], m_demo.m_dataFolder + strings[4], m_demo.m_dataFolder + strings[5]};
 
-	m_pCubemap = m_demo.textureManager.addCubemap(faces, false);
+	m_pCubemap = m_demo.m_textureManager.addCubemap(faces, false);
 	if (!m_pCubemap)
 		return false;
 
@@ -95,14 +95,14 @@ void sDrawSkybox::exec() {
 	if (m_bClearDepth)
 		glClear(GL_DEPTH_BUFFER_BIT);
 
-	m_demo.res->shdr_Skybox->use(); // TODO: Do not use the Resource shader for skybox, and use our own shader!
+	m_demo.m_pRes->shdr_Skybox->use(); // TODO: Do not use the Resource shader for skybox, and use our own shader!
 
 	// view/projection transformations
-	float zoom = m_demo.camera->Zoom;
+	float zoom = m_demo.m_pCamera->Zoom;
 	glm::mat4 projection = glm::perspective(glm::radians(zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
-	glm::mat4 view = glm::mat4(glm::mat3(m_demo.camera->GetViewMatrix())); // remove translation from the view matrix
-	m_demo.res->shdr_Skybox->setValue("projection", projection);
-	m_demo.res->shdr_Skybox->setValue("view", view);
+	glm::mat4 view = glm::mat4(glm::mat3(m_demo.m_pCamera->GetViewMatrix())); // remove translation from the view matrix
+	m_demo.m_pRes->shdr_Skybox->setValue("projection", projection);
+	m_demo.m_pRes->shdr_Skybox->setValue("view", view);
 
 	// render the loaded model
 	glm::mat4 model = glm::mat4(1.0f);
@@ -110,10 +110,10 @@ void sDrawSkybox::exec() {
 	model = glm::rotate(model, glm::radians(m_vRotation.y), glm::vec3(0, 1, 0));
 	model = glm::rotate(model, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
 	model = glm::scale(model, m_vScale);
-	m_demo.res->shdr_Skybox->setValue("model", model);
+	m_demo.m_pRes->shdr_Skybox->setValue("model", model);
 	
-	m_demo.res->shdr_Skybox->setValue("skybox", 0);
-	m_demo.res->Draw_Skybox(m_pCubemap);
+	m_demo.m_pRes->shdr_Skybox->setValue("skybox", 0);
+	m_demo.m_pRes->Draw_Skybox(m_pCubemap);
 	
 
 	if (m_bDrawWireframe)

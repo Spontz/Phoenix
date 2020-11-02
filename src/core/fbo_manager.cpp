@@ -1,8 +1,8 @@
-// fbomanager.cpp
+// fbo_manager.cpp
 // Spontz Demogroup
 
 #include "main.h"
-#include "fbomanager.h"
+#include "fbo_manager.h"
 
 
 // Init vars

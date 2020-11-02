@@ -126,9 +126,9 @@ void Camera::CapturePos()
 	char message[1024];
 	camFile.open("camera.cam", std::ios::out | std::ios::app);
 	sprintf_s(message, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
-		demo.camera->Position.x, demo.camera->Position.y, demo.camera->Position.z,
-		demo.camera->Up.x, demo.camera->Up.y, demo.camera->Up.z,
-		demo.camera->Yaw, demo.camera->Pitch, demo.camera->Roll, demo.camera->Zoom);
+		demo.m_pCamera->Position.x, demo.m_pCamera->Position.y, demo.m_pCamera->Position.z,
+		demo.m_pCamera->Up.x, demo.m_pCamera->Up.y, demo.m_pCamera->Up.z,
+		demo.m_pCamera->Yaw, demo.m_pCamera->Pitch, demo.m_pCamera->Roll, demo.m_pCamera->Zoom);
 	camFile << message << "\n";
 	camFile.close();
 }

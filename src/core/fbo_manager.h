@@ -1,8 +1,8 @@
-// fbonmanager.h
+// fbo_manager.h
 // Spontz Demogroup
 
-#ifndef FBOMANAGER_H
-#define FBOMANAGER_H
+#pragma once
+
 #include <string>
 #include <vector>
 #include "core/fbo.h"
@@ -26,5 +26,3 @@ public:
 
 private:
 };
-
-#endif

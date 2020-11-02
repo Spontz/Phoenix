@@ -66,7 +66,7 @@ void sDrawFbo::exec() {
 
 	glDisable(GL_DEPTH_TEST);
 	{
-		m_demo.res->Draw_QuadFBOFS(m_iFboNum, m_iFboAttachment);
+		m_demo.m_pRes->Draw_QuadFBOFS(m_iFboNum, m_iFboAttachment);
 	}
 	glEnable(GL_DEPTH_TEST);
 

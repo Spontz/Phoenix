@@ -1,8 +1,8 @@
-// lightmanager.h
+// light_manager.h
 // Spontz Demogroup
 
-#ifndef LIGHTMANAGER_H
-#define LIGHTMANAGER_H
+#pragma once
+
 #include <string>
 #include <vector>
 #include "core/light.h"
@@ -22,5 +22,3 @@ private:
 
 	
 };
-
-#endif

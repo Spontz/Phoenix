@@ -34,7 +34,7 @@ bool sEfxFader::load() {
 	}
 	
 	// Load Fader shader
-	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
+	m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
 	if (!m_pShader)
 		return false;
 
@@ -64,7 +64,7 @@ void sEfxFader::exec() {
 		// Set shader variables values
 		p_Vars->setValues();
 		// Render scene
-		m_demo.res->Draw_QuadFS();
+		m_demo.m_pRes->Draw_QuadFS();
 	}		
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();

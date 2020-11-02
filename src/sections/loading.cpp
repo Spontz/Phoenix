@@ -42,18 +42,18 @@ bool sLoading::load() {
 	}
 
 	if (!m_bDefaultLoader) {
-		m_pTexBack = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[0]);
-		m_pTexFront = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[1]);
-		m_pTexBar = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[2]);
+		m_pTexBack = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + strings[0]);
+		m_pTexFront = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + strings[1]);
+		m_pTexBar = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + strings[2]);
 		m_fTX = param[0];
 		m_fTY = param[1];
 		m_fSY = param[2];
 	}
 	else {
 		// Deault values
-		m_pTexBack = m_demo.textureManager.addTexture(m_demo.dataFolder + "/resources/loading/loadingback.jpg");
-		m_pTexFront = m_demo.textureManager.addTexture(m_demo.dataFolder + "/resources/loading/loadingfront.jpg");
-		m_pTexBar = m_demo.textureManager.addTexture(m_demo.dataFolder + "/resources/loading/loadingbar.jpg");
+		m_pTexBack = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + "/resources/loading/loadingback.jpg");
+		m_pTexFront = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + "/resources/loading/loadingfront.jpg");
+		m_pTexBar = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + "/resources/loading/loadingbar.jpg");
 		m_fTX = 0.0f;
 		m_fTY = -0.4f;
 		m_fSY = 0.1f;
@@ -77,8 +77,8 @@ void sLoading::exec() {
 	}
 
 	float zero2one = 0;
-	if (m_demo.sectionManager.loadSection.size()>0)
-		zero2one = (float)m_demo.loadedSections / (float)(m_demo.sectionManager.loadSection.size());
+	if (m_demo.m_sectionManager.loadSection.size()>0)
+		zero2one = (float)m_demo.m_iLoadedSections / (float)(m_demo.m_sectionManager.loadSection.size());
 	
 	GLDRV->initRender(true);
 	glClearColor(0, 0, 0, 0);
@@ -88,9 +88,9 @@ void sLoading::exec() {
 	glBlendFunc(GL_ONE, GL_ONE);
 	glDisable(GL_DEPTH_TEST);
 		// Background
-		m_demo.res->Draw_QuadFS(m_pTexBack, 1 - zero2one);
+		m_demo.m_pRes->Draw_QuadFS(m_pTexBack, 1 - zero2one);
 		// Foreground
-		m_demo.res->Draw_QuadFS(m_pTexFront, zero2one);
+		m_demo.m_pRes->Draw_QuadFS(m_pTexFront, zero2one);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
@@ -100,7 +100,7 @@ void sLoading::exec() {
 
 	model = glm::translate(model, glm::vec3(m_fTX, m_fTY, 0));  // Move the bar
 	model = glm::scale(model, glm::vec3(zero2one, m_fSY, 0));		// Scale the bar
-	m_demo.res->Draw_Obj_QuadTex(m_pTexBar, &model);
+	m_demo.m_pRes->Draw_Obj_QuadTex(m_pTexBar, &model);
 
 	GLDRV->swapBuffers();
 }

@@ -132,15 +132,15 @@ void imGuiDriver::drawInfo() {
 
 	// Get Demo status
 	char* demoStatus;
-	if (m_demo.state & DemoStatus::PAUSE) {
-		if (m_demo.state & DemoStatus::REWIND) demoStatus = stateStr[4];
-		else if (m_demo.state & DemoStatus::FASTFORWARD) demoStatus = stateStr[5];
+	if (m_demo.m_status & DemoStatus::PAUSE) {
+		if (m_demo.m_status & DemoStatus::REWIND) demoStatus = stateStr[4];
+		else if (m_demo.m_status & DemoStatus::FASTFORWARD) demoStatus = stateStr[5];
 		else demoStatus = stateStr[3];
 
 	}
 	else {
-		if (m_demo.state & DemoStatus::REWIND) demoStatus = stateStr[1];
-		else if (m_demo.state & DemoStatus::FASTFORWARD) demoStatus = stateStr[2];
+		if (m_demo.m_status & DemoStatus::REWIND) demoStatus = stateStr[1];
+		else if (m_demo.m_status & DemoStatus::FASTFORWARD) demoStatus = stateStr[2];
 		else demoStatus = stateStr[0];
 	}
 
@@ -178,13 +178,13 @@ void imGuiDriver::drawInfo() {
 		//ImGui::Text("Font: %.3f", m_fontScale);	// Show font size
 		ImGui::Text("Fps: %.0f", m_demo.fps);
 		ImGui::Text("Demo status: %s", demoStatus);
-		ImGui::Text("Time: %.2f/%.2f", m_demo.demo_runTime, m_demo.demo_endTime);
+		ImGui::Text("Time: %.2f/%.2f", m_demo.m_demoRunTime, m_demo.m_demoEndTime);
 		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->sound_cpu());
-		ImGui::Text("Texture mem used: %.2fmb", m_demo.textureManager.mem + m_demo.fboManager.mem + m_demo.efxBloomFbo.mem + m_demo.efxAccumFbo.mem);
-		ImGui::Text("Cam Speed: %.3f", m_demo.camera->MovementSpeed);
-		ImGui::Text("Cam Pos: %.1f,%.1f,%.1f", m_demo.camera->Position.x, m_demo.camera->Position.y, m_demo.camera->Position.z);
-		ImGui::Text("Cam Front: %.1f,%.1f,%.1f", m_demo.camera->Front.x, m_demo.camera->Front.y, m_demo.camera->Front.z);
-		ImGui::Text("Cam Yaw: %.1f, Pitch: %.1f, Roll: %.1f, Zoom: %.1f", m_demo.camera->Yaw, m_demo.camera->Pitch, m_demo.camera->Roll, m_demo.camera->Zoom);
+		ImGui::Text("Texture mem used: %.2fmb", m_demo.m_textureManager.mem + m_demo.m_fboManager.mem + m_demo.m_efxBloomFbo.mem + m_demo.m_efxAccumFbo.mem);
+		ImGui::Text("Cam Speed: %.3f", m_demo.m_pCamera->MovementSpeed);
+		ImGui::Text("Cam Pos: %.1f,%.1f,%.1f", m_demo.m_pCamera->Position.x, m_demo.m_pCamera->Position.y, m_demo.m_pCamera->Position.z);
+		ImGui::Text("Cam Front: %.1f,%.1f,%.1f", m_demo.m_pCamera->Front.x, m_demo.m_pCamera->Front.y, m_demo.m_pCamera->Front.z);
+		ImGui::Text("Cam Yaw: %.1f, Pitch: %.1f, Roll: %.1f, Zoom: %.1f", m_demo.m_pCamera->Yaw, m_demo.m_pCamera->Pitch, m_demo.m_pCamera->Roll, m_demo.m_pCamera->Zoom);
 		if (m_demo.slaveMode == 1)
 			ImGui::Text("Slave Mode ON");
 		else
@@ -220,8 +220,8 @@ void imGuiDriver::drawFbo() {
 	int fbo_num_min = ((num_fboSetToDraw - 1) * num_fboPerPage);
 	int fbo_num_max = (num_fboPerPage - 1) + ((num_fboSetToDraw - 1) * num_fboPerPage);
 
-	if (fbo_num_max >= m_demo.fboManager.fbo.size())
-		fbo_num_max = static_cast<int>(m_demo.fboManager.fbo.size()) - 1;
+	if (fbo_num_max >= m_demo.m_fboManager.fbo.size())
+		fbo_num_max = static_cast<int>(m_demo.m_fboManager.fbo.size()) - 1;
 
 	ImGui::SetNextWindowPos(ImVec2(0, (2.0f* static_cast<float>(m_vp.y) - offsetY +2.0f* static_cast<float>(m_vp.height)/3.0f)), ImGuiCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height)/3.0f + offsetY), ImGuiCond_Once);
@@ -237,9 +237,9 @@ void imGuiDriver::drawFbo() {
 		ImGui::SetWindowFontScale(m_fontScale);
 		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fbo_num_min, fbo_num_max, num_fboAttachmentToDraw);
 		for (int i = fbo_num_min; i <= fbo_num_max; i++) {
-			if (i < m_demo.fboManager.fbo.size())
+			if (i < m_demo.m_fboManager.fbo.size())
 			{
-				Fbo* my_fbo = m_demo.fboManager.fbo[i];
+				Fbo* my_fbo = m_demo.m_fboManager.fbo[i];
 				if (num_fboAttachmentToDraw < my_fbo->numAttachments)
 					ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[num_fboAttachmentToDraw], ImVec2(fbo_w_size, fbo_h_size), ImVec2(0, 1), ImVec2(1, 0));
 				else
@@ -284,9 +284,9 @@ void imGuiDriver::drawSesctionInfo()
 		return;
 	}
 	ImGui::SetWindowFontScale(m_fontScale);
-	for (int i = 0; i < m_demo.sectionManager.execSection.size(); i++) {
-		sec_id = m_demo.sectionManager.execSection[i].second;	// The second value is the ID of the section
-		ds = m_demo.sectionManager.section[sec_id];
+	for (int i = 0; i < m_demo.m_sectionManager.execSection.size(); i++) {
+		sec_id = m_demo.m_sectionManager.execSection[i].second;	// The second value is the ID of the section
+		ds = m_demo.m_sectionManager.section[sec_id];
 		ImGui::Text(ds->debug().c_str());
 		ImGui::Separator();
 	}
@@ -295,7 +295,7 @@ void imGuiDriver::drawSesctionInfo()
 
 void imGuiDriver::drawFPSHistogram()
 {
-	m_renderTimes[m_currentRenderTime] = m_demo.realFrameTime*1000.f; // Render times in ms
+	m_renderTimes[m_currentRenderTime] = m_demo.m_realFrameTime*1000.f; // Render times in ms
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), 140.0f), ImGuiCond_Once);

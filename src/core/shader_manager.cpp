@@ -1,13 +1,12 @@
-// shadermanager.cpp
+// shader_manager.cpp
 // Spontz Demogroup
 
 #include "main.h"
-#include "shadermanager.h"
-
-
+#include "shader_manager.h"
 
 // Init vars
-ShaderManager::ShaderManager() {
+ShaderManager::ShaderManager()
+{
 	shader.clear();
 	forceLoad = false;
 }
@@ -18,7 +17,8 @@ ShaderManager::~ShaderManager()
 }
 
 // Adds a Texture into the queue, returns the ID of the texture added
-Shader* ShaderManager::addShader(std::string filepath, std::vector<std::string> feedbackVaryings) {
+Shader* ShaderManager::addShader(std::string filepath, std::vector<std::string> feedbackVaryings)
+{
 	unsigned int i;
 	bool loaded = false;
 	int shad_id = -1;

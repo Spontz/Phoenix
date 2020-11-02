@@ -40,7 +40,7 @@ sSound::sSound()
 }
 
 bool sSound::load() {
-	if (!m_demo.sound) {
+	if (!m_demo.m_sound) {
 		return false;
 	}
 
@@ -63,7 +63,7 @@ bool sSound::load() {
 	m_fIntensity = 0;
 	m_iPosition = 1;
 
-	std::string file = m_demo.dataFolder + strings[0];
+	std::string file = m_demo.m_dataFolder + strings[0];
 	m_hMusicStream = BASS_StreamCreateFile(FALSE, file.c_str(), 0, 0, BASS_STREAM_PRESCAN);
 	if (m_hMusicStream == 0) {
 		LOG->Error("Sound [%s]: Cannot read file: %s - Error Code: %i", identifier.c_str(), file.c_str(), BASS_ErrorGetCode());
@@ -75,10 +75,10 @@ bool sSound::load() {
 void sSound::init() {
 	int BASS_err = 0;
 
-	if (!m_demo.sound)
+	if (!m_demo.m_sound)
 		return;
 
-	if (m_demo.state != DemoStatus::PLAY)
+	if (m_demo.m_status != DemoStatus::PLAY)
 		return;
 
 	// Beat detection - Init variables
@@ -147,7 +147,7 @@ void sSound::exec() {
 		m_fIntensity = 1.0f;
 	}
 	else if (m_fIntensity > 0) {
-		m_fIntensity -= m_fFadeOut * m_demo.frameTime;
+		m_fIntensity -= m_fFadeOut * m_demo.m_frameTime;
 		if (m_fIntensity < 0) m_fIntensity = 0;
 	}
 
@@ -169,7 +169,7 @@ void sSound::exec() {
 }
 
 void sSound::end() {
-	if (!m_demo.sound)
+	if (!m_demo.m_sound)
 		return;
 
 	BOOL r = BASS_ChannelStop(m_hMusicStream);

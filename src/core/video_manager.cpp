@@ -6,7 +6,7 @@
 
 VideoManager::VideoManager(bool bForceReload)
 	:
-	bForceReload_(bForceReload)
+	m_bForceReload(bForceReload)
 {
 }
 
@@ -17,7 +17,7 @@ VideoManager::~VideoManager()
 		delete i.second;
 }
 
-Video* VideoManager::getVideo(CVideoSource const& VideoSource)
+Video* VideoManager::addVideo(CVideoSource const& VideoSource)
 {
 	// If the video is already loaded just return it
 	// If the video is not loaded load and return it
@@ -25,18 +25,18 @@ Video* VideoManager::getVideo(CVideoSource const& VideoSource)
 
 	if (it != VideoMap_.end()) {
 		auto pVideo = it->second;
-		if (bForceReload_) {
-			// Reload video acording to m_bForceReload_
+		if (m_bForceReload) {
+			// Reload video acording to m_bForceReload
 			if (!pVideo->load(VideoSource)) {
 				// Handle reload error
-				LOG->Error("Could not reload video: \"%s\"", VideoSource.sPath_.c_str());
+				LOG->Error("Could not reload video: \"%s\"", VideoSource.m_sPath.c_str());
 				return nullptr;
 			}
 
 			LOG->Info(
 				LogLevel::MED,
 				"Video \"%s\" [id: %d] force reload OK.",
-				VideoSource.sPath_.c_str(),
+				VideoSource.m_sPath.c_str(),
 				VideoMap_.size() - 1
 			);
 
@@ -50,7 +50,7 @@ Video* VideoManager::getVideo(CVideoSource const& VideoSource)
 	// Load video
 	if (!pVideo->load(VideoSource)) {
 		// Handle load error
-		LOG->Error("Could not load video: \"%s\"", VideoSource.sPath_.c_str());
+		LOG->Error("Could not load video: \"%s\"", VideoSource.m_sPath.c_str());
 		delete pVideo;
 		return nullptr;
 	}
@@ -59,10 +59,9 @@ Video* VideoManager::getVideo(CVideoSource const& VideoSource)
 	LOG->Info(
 		LogLevel::MED,
 		"Video \"%s\" [id: %d] loaded OK.",
-		VideoSource.sPath_.c_str(),
+		VideoSource.m_sPath.c_str(),
 		VideoMap_.size() - 1
 	);
 
 	return pVideo;
 }
-

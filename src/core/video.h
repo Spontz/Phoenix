@@ -13,20 +13,20 @@
 class CVideoSource final {
 public:
 	bool operator<(CVideoSource const& value) const {
-		if (sPath_ < value.sPath_)
+		if (m_sPath < value.m_sPath)
 			return true;
-		if (iVideoStreamIndex_ < value.iVideoStreamIndex_)
+		if (m_iVideoStreamIndex < value.m_iVideoStreamIndex)
 			return true;
-		if (uiDecodingThreadCount_ < value.uiDecodingThreadCount_)
+		if (m_uiDecodingThreadCount < value.m_uiDecodingThreadCount)
 			return true;
-		return (dPlaybackSpeed_ < value.dPlaybackSpeed_);
+		return (m_dPlaybackSpeed < value.m_dPlaybackSpeed);
 	}
 
 public:
-	std::string sPath_;
-	int32_t iVideoStreamIndex_ = -1;		// -1 will use the first video stream found the file
-	uint32_t uiDecodingThreadCount_ = 10;	// ideally logical cores - 1
-	double dPlaybackSpeed_ = 1.0;			// 1.0 means normal speed, 2.0 double speed, etc.
+	std::string m_sPath;
+	int32_t m_iVideoStreamIndex = -1;		// -1 will use the first video stream found the file
+	uint32_t m_uiDecodingThreadCount = 10;	// ideally logical cores - 1
+	double m_dPlaybackSpeed = 1.0;			// 1.0 means normal speed, 2.0 double speed, etc.
 };
 
 /// <summary>
@@ -55,25 +55,25 @@ private:
 	int64_t seekTime(double dSeconds) const;				// Returns the frame number
 
 private:
-	CVideoSource VideoSource_;
-	double dFramerate_;										// Video framerate
-	int32_t iWidth_;										// Video width
-	int32_t iHeight_;										// Video height
-	GLuint uiTextureOGLName_;								// OpenGL texture ID where the video is displayed
-	bool bLoaded_;
-	AVFormatContext* pFormatContext_;						// AVFormatContext holds the format header information (Container)
-	AVCodec* pAVCodec_;										// The component that knows how to encode and decode the stream
-	AVCodecParameters* pAVCodecParameters_;					// This component describes the properties of a codec used by the stream
-	AVCodecContext* pCodecContext_;							// Codec context
-	AVFrame* pFrame_;										// AV Frame
-	AVFrame* pGLFrame_;										// OpenGL Frame
-	SwsContext* pConvertContext_;							// Convert Context (for OpenGL)
-	AVPacket* pAVPacket_;									// Packet
-	double dIntervalFrame_;									// Time between frames (1/frameRate)
-	double dNextFrameTime_;									// Time to present the next frame
-	std::thread* pWorkerThread_;							// Video decoding thread
-	bool bNewFrame_;
-	double dTime_;
-	bool bStopWorkerThread_;
-	const bool bDebug_;
+	CVideoSource m_VideoSource;
+	double m_dFramerate;									// Video framerate
+	int32_t m_iWidth;										// Video width
+	int32_t m_iHeight;										// Video height
+	GLuint m_uiTextureOGLName;								// OpenGL texture ID where the video is displayed
+	bool m_bLoaded;
+	AVFormatContext* m_pFormatContext;						// AVFormatContext holds the format header information (Container)
+	AVCodec* m_pAVCodec;									// The component that knows how to encode and decode the stream
+	AVCodecParameters* m_pAVCodecParameters;				// This component describes the properties of a codec used by the stream
+	AVCodecContext* m_pCodecContext;						// Codec context
+	AVFrame* m_pFrame;										// AV Frame
+	AVFrame* m_pGLFrame;									// OpenGL Frame
+	SwsContext* m_pConvertContext;							// Convert Context (for OpenGL)
+	AVPacket* m_pAVPacket;									// Packet
+	double m_dIntervalFrame;								// Time between frames (1/frameRate)
+	double m_dNextFrameTime;								// Time to present the next frame
+	std::thread* m_pWorkerThread;							// Video decoding thread
+	bool m_bNewFrame;
+	double m_dTime;
+	bool m_bStopWorkerThread;
+	const bool m_bDebug;
 };

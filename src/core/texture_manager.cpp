@@ -1,8 +1,8 @@
-// texturemanager.cpp
+// texture_manager.cpp
 // Spontz Demogroup
 
 #include "main.h"
-#include "texturemanager.h"
+#include "texture_manager.h"
 
 
 // Init vars

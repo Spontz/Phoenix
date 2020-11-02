@@ -195,19 +195,19 @@ void Resource::Load_Obj_Qube()
 
 void Resource::Load_Shaders()
 {
-	shdr_QuadTex = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/QuadTex.glsl");
-	shdr_QuadDepth = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/QuadDepth.glsl");
-	shdr_QuadTexAlpha = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/QuadTexAlpha.glsl");
-	shdr_QuadTexModel = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/QuadTexModel.glsl");
-	shdr_QuadTexPVM = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/QuadTexPVM.glsl");
-	shdr_QuadTexVFlipModel = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.glsl");
-	shdr_Skybox = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/skybox/skybox.glsl");
-	shdr_ObjColor = m_demo.shaderManager.addShader(m_demo.dataFolder + "/resources/shaders/basic/ObjColor.glsl");
+	shdr_QuadTex = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTex.glsl");
+	shdr_QuadDepth = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadDepth.glsl");
+	shdr_QuadTexAlpha = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTexAlpha.glsl");
+	shdr_QuadTexModel = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTexModel.glsl");
+	shdr_QuadTexPVM = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTexPVM.glsl");
+	shdr_QuadTexVFlipModel = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.glsl");
+	shdr_Skybox = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/skybox/skybox.glsl");
+	shdr_ObjColor = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/ObjColor.glsl");
 }
 
 void Resource::Load_Tex_Spontz()
 {
-	tex_tv = m_demo.textureManager.addTexture(m_demo.dataFolder + "/resources/textures/tv.jpg");
+	tex_tv = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + "/resources/textures/tv.jpg");
 }
 
 void Resource::Load_Text_Fonts()
@@ -218,10 +218,10 @@ void Resource::Load_Text_Fonts()
 
 void Resource::Load_Lights()
 {
-	m_demo.lightManager.addLight(LightType::SpotLight);
-	m_demo.lightManager.addLight(LightType::SpotLight);
-	m_demo.lightManager.addLight(LightType::PointLight);
-	m_demo.lightManager.addLight(LightType::PointLight);
+	m_demo.m_lightManager.addLight(LightType::SpotLight);
+	m_demo.m_lightManager.addLight(LightType::SpotLight);
+	m_demo.m_lightManager.addLight(LightType::PointLight);
+	m_demo.m_lightManager.addLight(LightType::PointLight);
 }
 
 // Draw a Quad with texture in full screen
@@ -229,7 +229,7 @@ void Resource::Draw_QuadFS(int textureNum)
 {
 	shdr_QuadTex->use();
 	shdr_QuadTex->setValue("screenTexture", 0);
-	m_demo.textureManager.texture[textureNum]->bind();
+	m_demo.m_textureManager.texture[textureNum]->bind();
 
 	Draw_QuadFS();
 }
@@ -240,7 +240,7 @@ void Resource::Draw_QuadFS(int textureNum, float alpha)
 	shdr_QuadTexAlpha->use();
 	shdr_QuadTexAlpha->setValue("alpha", alpha);
 	shdr_QuadTexAlpha->setValue("screenTexture", 0);
-	m_demo.textureManager.texture[textureNum]->bind();
+	m_demo.m_textureManager.texture[textureNum]->bind();
 	
 	Draw_QuadFS();
 }
@@ -261,7 +261,7 @@ void Resource::Draw_QuadFBOFS(int fboNum, GLuint attachment)
 {
 	shdr_QuadTex->use();
 	shdr_QuadTex->setValue("screenTexture", 0);
-	m_demo.fboManager.bind_tex(fboNum, 0, attachment);
+	m_demo.m_fboManager.bind_tex(fboNum, 0, attachment);
 	
 	Draw_QuadFS();
 }
@@ -271,7 +271,7 @@ void Resource::Draw_QuadEfxFBOFS(int efxFboNum, GLuint attachment)
 {
 	shdr_QuadTex->use();
 	shdr_QuadTex->setValue("screenTexture", 0);
-	m_demo.efxBloomFbo.bind_tex(efxFboNum, 0, attachment);
+	m_demo.m_efxBloomFbo.bind_tex(efxFboNum, 0, attachment);
 
 	Draw_QuadFS();
 }
@@ -282,7 +282,7 @@ void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 const* model)
 	shdr_QuadTexModel->use();
 	shdr_QuadTexModel->setValue("model", *model);
 	shdr_QuadTexModel->setValue("screenTexture", 0);
-	m_demo.textureManager.texture[textureNum]->bind();
+	m_demo.m_textureManager.texture[textureNum]->bind();
 
 	Draw_QuadFS();
 }
@@ -306,7 +306,7 @@ void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *projection, glm::mat4
 	shdr_QuadTexPVM->setValue("view", *view);
 	shdr_QuadTexPVM->setValue("model", *model);
 	shdr_QuadTexPVM->setValue("screenTexture", 0);
-	m_demo.textureManager.texture[textureNum]->bind();
+	m_demo.m_textureManager.texture[textureNum]->bind();
 
 	Draw_QuadFS();
 }

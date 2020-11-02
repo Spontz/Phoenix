@@ -1,8 +1,8 @@
-// texturenmanager.h
+// texture_manager.h
 // Spontz Demogroup
 
-#ifndef TEXTUREMANAGER_H
-#define TEXTUREMANAGER_H
+#pragma once
+
 #include <string>
 #include <vector>
 #include "core/texture.h"
@@ -27,5 +27,3 @@ private:
 
 	
 };
-
-#endif

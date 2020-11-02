@@ -1,8 +1,8 @@
-// shadermanager.h
+// shader_manager.h
 // Spontz Demogroup
 
-#ifndef SHADERMANAGER_H
-#define SHADERMANAGER_H
+#pragma once
+
 #include <string>
 #include <vector>
 #include "core/shader.h"
@@ -21,5 +21,3 @@ public:
 private:
 
 };
-
-#endif

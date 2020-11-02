@@ -10,13 +10,13 @@ namespace Phoenix {
 	m_filepath(""),
 	m_scriptData(""),
 	scriptCommand ({
-			{"demo_name",				SectionVar::TYPE_STRING,		&DEMO->demoName			},
-			{"debug",					SectionVar::TYPE_INT,			&DEMO->debug			},
-			{"debugFontSize",			SectionVar::TYPE_FLOAT,			&DEMO->debug_fontSize	},
-			{"loop",					SectionVar::TYPE_INT,			&DEMO->loop				},
-			{"sound",					SectionVar::TYPE_INT,			&DEMO->sound			},
-			{"demo_start",				SectionVar::TYPE_FLOAT,			&DEMO->demo_startTime	},
-			{"demo_end",				SectionVar::TYPE_FLOAT,			&DEMO->demo_endTime		},
+			{"demo_name",				SectionVar::TYPE_STRING,		&DEMO->m_demoName			},
+			{"debug",					SectionVar::TYPE_INT,			&DEMO->m_debug			},
+			{"debugFontSize",			SectionVar::TYPE_FLOAT,			&DEMO->m_debug_fontSize	},
+			{"loop",					SectionVar::TYPE_INT,			&DEMO->m_loop				},
+			{"sound",					SectionVar::TYPE_INT,			&DEMO->m_sound			},
+			{"demo_start",				SectionVar::TYPE_FLOAT,			&DEMO->m_demoStartTime	},
+			{"demo_end",				SectionVar::TYPE_FLOAT,			&DEMO->m_demoEndTime		},
 			{"slave",					SectionVar::TYPE_INT,			&DEMO->slaveMode		},
 			{"log_detail",				SectionVar::TYPE_INT,			&DEMO->m_logLevel		},
 
@@ -274,10 +274,10 @@ namespace Phoenix {
 
 				// by default the section is enabled and marked as not loaded
 				sec_id = -1;
-				sec_id = DEMO->sectionManager.addSection(sec_type, "File: " + m_filepath, true);
+				sec_id = DEMO->m_sectionManager.addSection(sec_type, "File: " + m_filepath, true);
 				if (sec_id != -1) {
 					LOG->Info(LogLevel::LOW, "  Section %s added!", sec_type.c_str());
-					new_sec = DEMO->sectionManager.section[sec_id];
+					new_sec = DEMO->m_sectionManager.section[sec_id];
 				}
 				else {
 					LOG->Error("Section %s not supported! File skipped", sec_type.c_str());
@@ -427,7 +427,7 @@ namespace Phoenix {
 
 					case SectionCommand_::SPLINE:
 						new_spl = new Spline();
-						new_spl->filename = DEMO->dataFolder + s_line.second;
+						new_spl->filename = DEMO->m_dataFolder + s_line.second;
 						new_spl->duration = new_sec->duration; // Spline duration is the same as the sectio duration
 						new_sec->spline.push_back(new_spl);
 						LOG->Info(LogLevel::LOW, "  Loaded Spline: %s", new_spl->filename.c_str());

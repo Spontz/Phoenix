@@ -166,7 +166,7 @@ bool ShaderVars::ReadString(const char * string_var)
 		// Is it s a normal texture...
 		else {
 			var->isFBO = false;
-			var->texture = DEMO->textureManager.addTexture(DEMO->dataFolder + var_value);
+			var->texture = DEMO->m_textureManager.addTexture(DEMO->m_dataFolder + var_value);
 		}
 		sampler2D.push_back(var);
 	}
@@ -228,7 +228,7 @@ void ShaderVars::setValues()
 		if (my_sampler2D->isFBO) {
 			//Fbo* my_fbo = DEMO->fboManager.fbo[my_sampler2D->fboNum];
 			//glBindTextureUnit(my_sampler2D->texUnitID, my_fbo->m_colorAttachment[0]);
-			glBindTextureUnit(my_sampler2D->texUnitID, DEMO->fboManager.getOpenGLTextureID(my_sampler2D->fboNum));
+			glBindTextureUnit(my_sampler2D->texUnitID, DEMO->m_fboManager.getOpenGLTextureID(my_sampler2D->fboNum));
 		}
 		else
 			glBindTextureUnit(my_sampler2D->texUnitID, my_sampler2D->texture->m_textureID);

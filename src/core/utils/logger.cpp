@@ -15,7 +15,7 @@ Logger::Logger()
 	m_outputFile_("demo_log.txt"),
 	m_logLevel_(LogLevel::HIGH)
 {
-	if (DEMO->debug)
+	if (DEMO->m_debug)
 		OpenLogFile();
 }
 
@@ -26,7 +26,7 @@ void Logger::setLogLevel(LogLevel level)
 }
 
 void Logger::Info(LogLevel level, const char* pszMessage, ...) const {
-	if (DEMO->debug && this->m_logLevel_ >= level) {
+	if (DEMO->m_debug && this->m_logLevel_ >= level) {
 
 		// Get the message
 		va_list argptr;
@@ -41,7 +41,7 @@ void Logger::Info(LogLevel level, const char* pszMessage, ...) const {
 		struct tm* timeinfo = localtime(&t);
 
 		std::stringstream ss;
-		ss << "Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->demo_runTime << "] " << pszText << std::endl;
+		ss << "Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << pszText << std::endl;
 		const auto strOutputString = ss.str();
 
 		delete[] pszText;
@@ -59,7 +59,7 @@ void Logger::Info(LogLevel level, const char* pszMessage, ...) const {
 
 void Logger::SendEditor(const char* pszMessage, ...) const {
 	// We send the message only if we are in debug mode and slave mode
-	if (DEMO->debug == false || DEMO->slaveMode == 0)
+	if (DEMO->m_debug == false || DEMO->slaveMode == 0)
 		return;
 	
 	// Get the message
@@ -75,7 +75,7 @@ void Logger::SendEditor(const char* pszMessage, ...) const {
 	struct tm* timeinfo = localtime(&t);
 
 	std::stringstream ss;
-	ss << "INFO::Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->demo_runTime << "] " << pszText << std::endl;
+	ss << "INFO::Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << pszText << std::endl;
 	const auto strOutputString = ss.str();
 
 	delete[] pszText;
@@ -91,7 +91,7 @@ void Logger::SendEditor(const char* pszMessage, ...) const {
 
 
 void Logger::Error(const char* pszMessage, ...) const {
-	if (!DEMO->debug)
+	if (!DEMO->m_debug)
 		return;
 
 	// Get the message
@@ -107,7 +107,7 @@ void Logger::Error(const char* pszMessage, ...) const {
 	struct tm* timeinfo = localtime(&t);
 	
 	std::stringstream ss;
-	ss << "Error [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->demo_runTime << "] " << pszText << std::endl;
+	ss << "Error [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << pszText << std::endl;
 	const auto strOutputString = ss.str();
 
 	delete[] pszText;

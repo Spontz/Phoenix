@@ -76,12 +76,12 @@ bool sDrawSceneMatrix::load() {
 	m_iAnimationNumber = static_cast<int>(param[4]);
 	
 	// Load ref. model, model and shader
-	m_pModelRef = m_demo.modelManager.addModel(m_demo.dataFolder + strings[0]);
-	m_pModel = m_demo.modelManager.addModel(m_demo.dataFolder + strings[1]);
+	m_pModelRef = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[0]);
+	m_pModel = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[1]);
 	if (!m_pModelRef || m_pModel < 0)
 		return false;
 
-	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[2]);
+	m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[2]);
 	if (!m_pShader)
 		return false;
 
@@ -187,17 +187,17 @@ void sDrawSceneMatrix::exec() {
 	m_pShader->use();
 
 	// For ShadowMapping
-	m_pShader->setValue("lightSpaceMatrix", m_demo.lightManager.light[0]->spaceMatrix);
+	m_pShader->setValue("lightSpaceMatrix", m_demo.m_lightManager.light[0]->spaceMatrix);
 	// End ShadowMapping
 
 	// view/projection transformations
 	glm::mat4 projection = glm::perspective(
-		glm::radians(m_demo.camera->Zoom),
+		glm::radians(m_demo.m_pCamera->Zoom),
 		//GLDRV->GetCurrentViewport().GetAspectRatio(),
 		GLDRV->GetFramebufferViewport().GetAspectRatio(),
 		0.1f, 10000.0f
 	);
-	glm::mat4 view = m_demo.camera->GetViewMatrix();
+	glm::mat4 view = m_demo.m_pCamera->GetViewMatrix();
 	m_pShader->setValue("projection", projection);
 	m_pShader->setValue("view", view);
 	// For MotionBlur: send the previous matrix

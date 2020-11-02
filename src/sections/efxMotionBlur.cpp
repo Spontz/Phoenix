@@ -41,7 +41,7 @@ bool sEfxMotionBlur::load() {
 	if (m_uiFPSScale == 0)
 		m_uiFPSScale = 1;
 
-	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
+	m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
 	if (!m_pShader)
 		return false;
 
@@ -60,8 +60,8 @@ bool sEfxMotionBlur::load() {
 	m_pShader->setValue("velocity", 1);		// The velocity is in the Tex unit 1
 
 	// Store the buffers of our FBO (we assume that in Attachment 0 we have the color and in Attachment 1 we have the brights)
-	m_uiBufferColor = m_demo.fboManager.fbo[m_uiFboNum]->m_colorAttachment[0];
-	m_uiBufferVelocity = m_demo.fboManager.fbo[m_uiFboNum]->m_colorAttachment[1];
+	m_uiBufferColor = m_demo.m_fboManager.fbo[m_uiFboNum]->m_colorAttachment[0];
+	m_uiBufferVelocity = m_demo.m_fboManager.fbo[m_uiFboNum]->m_colorAttachment[1];
 
 	return true;
 }
@@ -83,7 +83,7 @@ void sEfxMotionBlur::exec() {
 
 		glBindTextureUnit(0, m_uiBufferColor);
 		glBindTextureUnit(1, m_uiBufferVelocity);
-		m_demo.res->Draw_QuadFS();
+		m_demo.m_pRes->Draw_QuadFS();
 	}
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();

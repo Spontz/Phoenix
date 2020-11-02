@@ -67,10 +67,10 @@ bool sDrawScene::load() {
 	m_iAnimationNumber = static_cast<int>(param[3]);
 	
 	// Load model and shader
-	m_pModel = m_demo.modelManager.addModel(m_demo.dataFolder + strings[0]);
+	m_pModel = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[0]);
 	if (!m_pModel)
 		return false;
-	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[1]);
+	m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[1]);
 	if (!m_pShader)
 		return false;
 	
@@ -151,19 +151,19 @@ void sDrawScene::exec() {
 	m_pShader->use();
 
 	// For ShadowMapping
-	m_pShader->setValue("lightSpaceMatrix", m_demo.lightManager.light[0]->spaceMatrix);
+	m_pShader->setValue("lightSpaceMatrix", m_demo.m_lightManager.light[0]->spaceMatrix);
 	// End ShadowMapping
 
 	// view/projection transformations
 	m_mProjection = glm::perspective(
-		glm::radians(m_demo.camera->Zoom),
+		glm::radians(m_demo.m_pCamera->Zoom),
 		GLDRV->GetFramebufferViewport().GetAspectRatio(),
 		0.1f, 10000.0f
 	);
 
 	m_pShader->setValue("projection", m_mProjection);
 
-	m_mView = m_demo.camera->GetViewMatrix();
+	m_mView = m_demo.m_pCamera->GetViewMatrix();
 	//if (CameraNumber < 0)
 		m_pShader->setValue("view", m_mView);
 

@@ -59,13 +59,13 @@ bool sDrawImage::load()
 	m_bFitToContent = static_cast<bool>(param[3]);
 
 	// Load the Image
-	m_pTexture = m_demo.textureManager.addTexture(m_demo.dataFolder + strings[0]);
+	m_pTexture = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + strings[0]);
 	if (!m_pTexture)
 		return false;
 	m_fTexAspectRatio = static_cast<float>(m_pTexture->width) / static_cast<float>(m_pTexture->height);
 
 	// Load the Shader
-	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[1]);
+	m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[1]);
 	if (!m_pShader)
 		return false;
 
@@ -151,8 +151,8 @@ void sDrawImage::exec()
 		}
 		else
 		{
-			glm::mat4 mView = m_demo.camera->GetViewMatrix();
-			float zoom = m_demo.camera->Zoom;
+			glm::mat4 mView = m_demo.m_pCamera->GetViewMatrix();
+			float zoom = m_demo.m_pCamera->Zoom;
 			glm::mat4 mProjection = glm::perspective(glm::radians(zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
 
 			mModel = glm::translate(mModel, m_vTranslation);
@@ -172,7 +172,7 @@ void sDrawImage::exec()
 		// Set other shader variables values
 		m_pVars->setValues();
 		m_pTexture->bind();
-		m_demo.res->Draw_QuadFS(); // Draw a quad with the video
+		m_demo.m_pRes->Draw_QuadFS(); // Draw a quad with the video
 
 		/*
 		// View / projection / model Matrixes

@@ -309,7 +309,7 @@ std::vector<Texture*> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType
 		if (0 == strcmp(filepath.C_Str(), "$texture_dummy.bmp"))				// Prevent a bug in assimp: In some cases, the texture by default is named "$texture_dummy.bmp"
 			filepath = filename.substr(0, filename.find_last_of('.')) + ".jpg";	// In that case, we change this to "<model_name.jpg>"
 		fullpath = directory + "/" + filepath.C_Str();
-		Texture* tex = DEMO->textureManager.addTexture(fullpath.c_str(), false, typeName);
+		Texture* tex = DEMO->m_textureManager.addTexture(fullpath.c_str(), false, typeName);
 		if (tex)
 			textures.push_back(tex);
 	}

@@ -16,10 +16,10 @@ public:
 
 public:
 	// Returns a video (and loads it if required)
-	Video* getVideo(CVideoSource const& videoDesc);
+	Video* addVideo(CVideoSource const& videoDesc);
 
 private:
 	CVideoMap VideoMap_;
 	// Force video reloading on each getVideo call (required for slave mode)
-	const bool bForceReload_;
+	const bool m_bForceReload;
 };

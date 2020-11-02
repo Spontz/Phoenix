@@ -41,8 +41,8 @@ bool sLight::load() {
 
 	// Load the parameters
 	m_iLightNum = (int)param[0];
-	if (m_iLightNum<0 || m_iLightNum >= m_demo.lightManager.light.size()) {
-		LOG->Error("Light: The light number is not supported by the engine. Max Lights: %d", (m_demo.lightManager.light.size()-1));
+	if (m_iLightNum<0 || m_iLightNum >= m_demo.m_lightManager.light.size()) {
+		LOG->Error("Light: The light number is not supported by the engine. Max Lights: %d", (m_demo.m_lightManager.light.size()-1));
 		return false;
 	}
 
@@ -57,7 +57,7 @@ bool sLight::load() {
 	m_bDrawLight = static_cast<bool>(param[6]);
 	m_fDrawLightSize = param[7];
 
-	Light* my_light = m_demo.lightManager.light[m_iLightNum];
+	Light* my_light = m_demo.m_lightManager.light[m_iLightNum];
 
 	// Register the variables
 	m_pExprLight = new mathDriver(this);
@@ -79,11 +79,11 @@ void sLight::exec() {
 	// Evaluate the expression
 	m_pExprLight->Expression.value();
 
-	Light* my_light = m_demo.lightManager.light[m_iLightNum];
+	Light* my_light = m_demo.m_lightManager.light[m_iLightNum];
 
 	if (m_bLinkPosToCamera) {
-		my_light->position = m_demo.camera->Position;
-		my_light->direction = m_demo.camera->Position + (m_demo.camera->Front*10.0f); // TODO: Remove this hardcode! XD
+		my_light->position = m_demo.m_pCamera->Position;
+		my_light->direction = m_demo.m_pCamera->Position + (m_demo.m_pCamera->Front*10.0f); // TODO: Remove this hardcode! XD
 	}
 		
 

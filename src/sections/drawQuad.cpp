@@ -40,7 +40,7 @@ bool sDrawQuad::load() {
 	m_bClearDepth = static_cast<bool>(param[1]);
 	
 	// Load shader
-	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[0]);
+	m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
 	if (!m_pShader)
 		return false;
 
@@ -77,7 +77,7 @@ void sDrawQuad::exec() {
 
 	glDisable(GL_DEPTH_TEST);
 	{
-		m_demo.res->Draw_QuadFS();
+		m_demo.m_pRes->Draw_QuadFS();
 	}
 	glEnable(GL_DEPTH_TEST);
 

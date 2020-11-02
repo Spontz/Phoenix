@@ -1,8 +1,8 @@
-// modelnmanager.h
+// model_manager.h
 // Spontz Demogroup
 
-#ifndef MODELMANAGER_H
-#define MODELMANAGER_H
+#pragma once
+
 #include <string>
 #include <vector>
 #include "core/model.h"
@@ -20,5 +20,3 @@ private:
 
 	
 };
-
-#endif

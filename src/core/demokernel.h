@@ -1,8 +1,7 @@
 // demoKernel.h
 // Spontz Demogroup
 
-#ifndef DEMOKERNEL_H
-#define DEMOKERNEL_H
+#pragma once
 
 class demokernel;
 
@@ -10,15 +9,15 @@ class demokernel;
 
 #include "core/spline.h"
 #include "core/section.h"
-#include "core/sectionmanager.h"
+#include "core/section_manager.h"
 #include "sections/sections.h"
 
 #include "core/video_manager.h"
-#include "core/texturemanager.h"
-#include "core/fbomanager.h"
-#include "core/modelmanager.h"
-#include "core/shadermanager.h"
-#include "core/lightmanager.h"
+#include "core/texture_manager.h"
+#include "core/fbo_manager.h"
+#include "core/model_manager.h"
+#include "core/shader_manager.h"
+#include "core/light_manager.h"
 #include "core/font.h"
 #include "core/camera.h"
 #include "core/light.h"
@@ -48,46 +47,46 @@ private:
 public:
 	// ******************************************************************
 	// VARIABLES
-	std::string		dataFolder;	// Path to "data" folder
-	char*			demoName;
-	const bool		debug;
-	const float		debug_fontSize;
+	std::string		m_dataFolder;	// Path to "data" folder
+	char*			m_demoName;
+	const bool		m_debug;
+	const float		m_debug_fontSize;
 	const LogLevel	m_logLevel;
 
-	// misc
-	int			loop;
-	int			sound;
+	// misc // TODO: should be boolean values
+	int			m_loop;
+	int			m_sound;
 
-	int			state;				// state of the demo (play, pause, loading, etc.)
-	float		demo_startTime;		// first demo second
-	float		demo_endTime;		// last demo second (0 = unlimited)
+	int			m_status;			// Demo status (play, pause, loading, etc.) - TODO: change int to struct
+	float		m_demoStartTime;	// first demo second
+	float		m_demoEndTime;		// last demo second (0 = unlimited)
 
 	// Managers
-	SectionManager	sectionManager;
-	TextureManager	textureManager;
-	VideoManager	m_videoManager_;
-	FboManager		fboManager;					// Generic Fbo Manager (FBO's free to be used by the demo maker)
-	FboManager		efxBloomFbo;				// Bloom efx Fbo Manager (internal FBO's used by the engine)
-	FboManager		efxAccumFbo;				// Accumulation efx Fbo Manager (internal FBO's used by the engine)
-	ModelManager	modelManager;
-	ShaderManager	shaderManager;
-	LightManager	lightManager;
-	Camera			*camera;
-	Font			*text;
+	SectionManager	m_sectionManager;
+	TextureManager	m_textureManager;
+	VideoManager	m_videoManager;
+	FboManager		m_fboManager;				// Generic Fbo Manager (FBO's free to be used by the demo maker)
+	FboManager		m_efxBloomFbo;				// Bloom efx Fbo Manager (internal FBO's used by the engine)
+	FboManager		m_efxAccumFbo;				// Accumulation efx Fbo Manager (internal FBO's used by the engine)
+	ModelManager	m_modelManager;
+	ShaderManager	m_shaderManager;
+	LightManager	m_lightManager;
+	Camera			*m_pCamera;
+	Font			*m_pText;
 
 	// Resources
-	Resource		*res;
+	Resource		*m_pRes;
 
 	// loading information
-	int loadedSections;
+	int m_iLoadedSections;
 
 	// realtime information
-	float demo_runTime;							// seconds ellapsed since 0.0 <- demo init
-	float beforeFrameTime;						// time before render the actual frame
-	float afterFrameTime;						// time after render the actual frame
-	float frameTime;							// last frame time (used by sections)
-	float realFrameTime;						// last frame time (used by kernel)
-	unsigned int frameCount;					// demo frame count since start
+	float m_demoRunTime;						// seconds ellapsed since 0.0 <- demo init
+	float m_beforeFrameTime;					// time before render the actual frame
+	float m_afterFrameTime;						// time after render the actual frame
+	float m_frameTime;							// last frame time (used by sections)
+	float m_realFrameTime;						// last frame time (used by kernel)
+	unsigned int m_uiFrameCount;				// demo frame count since start
 
 	// fps calculation
 	unsigned int accumFrameCount;				// frame count since last fps calculation
@@ -165,6 +164,3 @@ private:
 	void reInitSectionQueues();		// ReInit Section Queues
 	void processSectionQueues();	// Process Section Queues
 };
-// ******************************************************************
-
-#endif

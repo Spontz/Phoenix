@@ -59,9 +59,9 @@ bool sDrawVideo::load()
 	m_bFitToContent = static_cast<bool>(param[3]);
 
 	// Load the Video
-	m_pVideo = m_demo.m_videoManager_.getVideo(
+	m_pVideo = m_demo.m_videoManager.addVideo(
 		{
-			m_demo.dataFolder + strings[0],
+			m_demo.m_dataFolder + strings[0],
 			-1, // hack: hardcoded, take from spo
 			10, // hack: hardcoded, take from spo
 			1.0 // hack: hardcoded, take from spo
@@ -72,7 +72,7 @@ bool sDrawVideo::load()
 	m_fVideoAspectRatio = static_cast<float>(m_pVideo->getWidth()) / static_cast<float>(m_pVideo->getHeight());
 
 	// Load the Shader
-	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[1]);
+	m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[1]);
 	if (!m_pShader)
 		return false;
 
@@ -163,8 +163,8 @@ void sDrawVideo::exec()
 		}
 		else
 		{
-			glm::mat4 mView = m_demo.camera->GetViewMatrix();
-			float zoom = m_demo.camera->Zoom;
+			glm::mat4 mView = m_demo.m_pCamera->GetViewMatrix();
+			float zoom = m_demo.m_pCamera->Zoom;
 			glm::mat4 mProjection = glm::perspective(glm::radians(zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
 
 			mModel = glm::translate(mModel, m_vTranslation);
@@ -184,7 +184,7 @@ void sDrawVideo::exec()
 		// Set other shader variables values
 		m_pVars->setValues();
 		m_pVideo->bind(0); // todo: from SPO maybe?
-		m_demo.res->Draw_QuadFS(); // Draw a quad with the video
+		m_demo.m_pRes->Draw_QuadFS(); // Draw a quad with the video
 
 	}
 	glEnable(GL_DEPTH_TEST);

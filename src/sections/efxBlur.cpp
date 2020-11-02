@@ -45,8 +45,8 @@ bool sEfxBlur::load() {
 	m_uiFboNum = static_cast<unsigned int>(param[2]);
 	
 	// Check if the fbo can be used for the effect
-	if (m_uiFboNum < 0 || m_uiFboNum >= m_demo.fboManager.fbo.size()) {
-		LOG->Error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), m_uiFboNum, m_demo.fboManager.fbo.size()-1);
+	if (m_uiFboNum < 0 || m_uiFboNum >= m_demo.m_fboManager.fbo.size()) {
+		LOG->Error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), m_uiFboNum, m_demo.m_fboManager.fbo.size()-1);
 		return false;
 	}
 	
@@ -60,7 +60,7 @@ bool sEfxBlur::load() {
 		return false;
 
 	// Load Blur shader
-	m_pShader = m_demo.shaderManager.addShader(m_demo.dataFolder + strings[1]);
+	m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[1]);
 	if (!m_pShader)
 		return false;
 
@@ -108,28 +108,28 @@ void sEfxBlur::exec() {
 			m_pShader->setValue("horizontal", horizontal);
 			
 			// We always draw the First pass in the efxBloom FBO
-			m_demo.efxBloomFbo.bind(horizontal, false, false); // TODO: Fix: use an FBO for Blur, not the Bloom FBO
+			m_demo.m_efxBloomFbo.bind(horizontal, false, false); // TODO: Fix: use an FBO for Blur, not the Bloom FBO
 			
 			// If it's the first iteration, we pick the fbo
 			// if not, we pick the fbo of our efxBloom
 			if (first_iteration)
-				m_demo.fboManager.bind_tex(m_uiFboNum);
+				m_demo.m_fboManager.bind_tex(m_uiFboNum);
 			else
-				m_demo.efxBloomFbo.bind_tex(!horizontal);
+				m_demo.m_efxBloomFbo.bind_tex(!horizontal);
 			
 			// Render scene
-			m_demo.res->Draw_QuadFS();
+			m_demo.m_pRes->Draw_QuadFS();
 			horizontal = !horizontal;
 			if (first_iteration)
 				first_iteration = false;
 		}
 
-		m_demo.efxBloomFbo.unbind(false, false); // Unbind drawing into an Fbo
+		m_demo.m_efxBloomFbo.unbind(false, false); // Unbind drawing into an Fbo
 		
 		// Adjust back the current fbo
-		m_demo.fboManager.bindCurrent();
+		m_demo.m_fboManager.bindCurrent();
 		// Second step: Draw the Blurred image
-		m_demo.res->Draw_QuadEfxFBOFS(!horizontal);
+		m_demo.m_pRes->Draw_QuadEfxFBOFS(!horizontal);
 	}		
 	glEnable(GL_DEPTH_TEST);
 	EvalBlendingEnd();

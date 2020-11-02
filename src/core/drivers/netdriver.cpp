@@ -147,22 +147,22 @@ std::string netDriver::processMessage(const std::string& sMessage) const
 			}
 		}
 		else if (sAction == "toggle") {
-			DEMO->sectionManager.toggleSection(Message[3]);
+			DEMO->m_sectionManager.toggleSection(Message[3]);
 		}
 		else if (sAction == "delete") {
-			DEMO->sectionManager.deleteSection(Message[3]);
+			DEMO->m_sectionManager.deleteSection(Message[3]);
 		}
 		else if (sAction == "update") {
-			DEMO->sectionManager.updateSection(Message[3],Message[4]);
+			DEMO->m_sectionManager.updateSection(Message[3],Message[4]);
 		}
 		else if (sAction == "setStartTime") {
-			DEMO->sectionManager.setSectionsStartTime(Message[3], Message[4]);
+			DEMO->m_sectionManager.setSectionsStartTime(Message[3], Message[4]);
 		}
 		else if (sAction == "setEndTime") {
-			DEMO->sectionManager.setSectionsEndTime(Message[3], Message[4]);
+			DEMO->m_sectionManager.setSectionsEndTime(Message[3], Message[4]);
 		}
 		else if (sAction == "setLayer") {
-			DEMO->sectionManager.setSectionLayer(Message[3], Message[4]);
+			DEMO->m_sectionManager.setSectionLayer(Message[3], Message[4]);
 		}
 		else {
 			sResult = "NOK";
@@ -178,8 +178,8 @@ std::string netDriver::processMessage(const std::string& sMessage) const
 	sResponse = sIdentifier + kDelimiterChar +
 		sResult + kDelimiterChar +
 		std::to_string(DEMO->fps) + kDelimiterChar +
-		std::to_string(DEMO->state) + kDelimiterChar +
-		std::to_string(DEMO->demo_runTime) + kDelimiterChar +
+		std::to_string(DEMO->m_status) + kDelimiterChar +
+		std::to_string(DEMO->m_demoRunTime) + kDelimiterChar +
 		sInfo;
 	
 	LOG->Info(LogLevel::LOW, "Sending response: %s", sResponse.c_str());

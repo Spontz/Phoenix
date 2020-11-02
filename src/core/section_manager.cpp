@@ -1,8 +1,8 @@
-// sectionmanager.cpp
+// section_manager.cpp
 // Spontz Demogroup
 
 #include "main.h"
-#include "sectionmanager.h"
+#include "section_manager.h"
 #include "sections/sections.h"
 
 

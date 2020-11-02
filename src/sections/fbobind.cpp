@@ -37,7 +37,7 @@ bool sFboBind::load() {
 	m_bClearScreen = static_cast<bool>(param[1]);
 	m_bClearDepth = static_cast<bool>(param[2]);
 
-	if (m_uiFboNum >= m_demo.fboManager.fbo.size()) {
+	if (m_uiFboNum >= m_demo.m_fboManager.fbo.size()) {
 		LOG->Error("FboBind [%s]: The fbo number %i cannot be accessed, check graphics.spo file", identifier.c_str(), m_uiFboNum);
 		return false;
 	}
@@ -52,7 +52,7 @@ void sFboBind::init() {
 void sFboBind::exec() {
 
 	// Enable the buffer in which we are going to paint
-	m_demo.fboManager.bind(m_uiFboNum, m_bClearScreen, m_bClearDepth);
+	m_demo.m_fboManager.bind(m_uiFboNum, m_bClearScreen, m_bClearDepth);
 }
 
 void sFboBind::end() {

@@ -92,7 +92,7 @@ void sCamera::exec() {
 		// apply formula modifications
 		m_pExprCamera->Expression.value();
 
-		m_demo.camera->setCamera(glm::vec3(new_pos[0], new_pos[1], new_pos[2]) + m_vCamPos,
+		m_demo.m_pCamera->setCamera(glm::vec3(new_pos[0], new_pos[1], new_pos[2]) + m_vCamPos,
 			glm::vec3(new_pos[3], new_pos[4], new_pos[5]),
 			new_pos[6] + m_fCamYaw, new_pos[7] + m_fCamPitch, new_pos[8] + m_fCamRoll, new_pos[9] + m_fCamZoom);
 	}

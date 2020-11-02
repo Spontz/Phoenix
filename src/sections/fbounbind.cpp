@@ -43,7 +43,7 @@ void sFboUnbind::init() {
 
 void sFboUnbind::exec() {
 	// Unbind the fbo
-	m_demo.fboManager.unbind(m_bClearScreen, m_bClearDepth);
+	m_demo.m_fboManager.unbind(m_bClearScreen, m_bClearDepth);
 }
 
 void sFboUnbind::end() {

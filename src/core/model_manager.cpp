@@ -1,8 +1,8 @@
-// modelnmanager.cpp
+// model_manager.cpp
 // Spontz Demogroup
 
 #include "main.h"
-#include "modelmanager.h"
+#include "model_manager.h"
 
 
 // Init vars

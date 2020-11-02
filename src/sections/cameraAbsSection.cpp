@@ -116,7 +116,7 @@ void sCameraAbs::exec() {
 		// apply formula modifications
 		m_pExprCamera->Expression.value();
 		
-		DEMO->camera->setCamera(m_vCamFinalPos,
+		DEMO->m_pCamera->setCamera(m_vCamFinalPos,
 			glm::vec3(new_pos[3], new_pos[4], new_pos[5]),
 			m_fCamFinalYaw, m_fCamFinalPitch, m_fCamFinalRoll, m_fCamFinalZoom);
 	}

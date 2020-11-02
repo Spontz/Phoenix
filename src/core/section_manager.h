@@ -1,8 +1,8 @@
-// sectionmanager.h
+// section_manager.h
 // Spontz Demogroup
 
-#ifndef SECTIONMANAGER_H
-#define SECTIONMANAGER_H
+#pragma once
+
 #include <string>
 #include <vector>
 #include "section.h"
@@ -68,5 +68,3 @@ private:
 	Section* getSection(const std::string& id);
 	int getSectionPosition(const std::string& id);
 };
-
-#endif
