@@ -130,7 +130,7 @@ void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, in
 
 	if (action == GLFW_PRESS) {
 		if (key == KEY_EXIT)
-			demo.exitDemo = true;
+			demo.m_exitDemo = true;
 		if (demo.m_debug) {
 			if (key == KEY_FASTFORWARD)
 				demo.fastforwardDemo();

@@ -31,7 +31,7 @@ demokernel::demokernel()
 	m_debug(true),
 	m_logLevel(LogLevel::LOW),
 #else
-	debug(false),
+	m_debug(false),
 	m_logLevel(LogLevel::HIGH),
 #endif
 	m_loop(true),
@@ -43,25 +43,25 @@ demokernel::demokernel()
 	m_frameTime(0),
 	m_afterFrameTime(0),
 	m_beforeFrameTime(0),
-	accumFrameTime(0),
-	accumFrameCount(0),
-	fps(0),
+	m_accumFrameTime(0),
+	m_accumFrameCount(0),
+	m_fps(0),
 	m_uiFrameCount(0),
-	slaveMode(0),
-	beat(0),
-	beat_ratio(1.4f),
-	beat_fadeout(4.0f),
-	mouseX(0),
-	mouseY(0),
-	mouseXvar(0),
-	mouseYvar(0),
+	m_slaveMode(0),
+	m_beat(0),
+	m_beatRatio(1.4f),
+	m_beatFadeout(4.0f),
+	m_mouseX(0),
+	m_mouseY(0),
+	m_mouseXvar(0),
+	m_mouseYvar(0),
 	m_iLoadedSections(0),
-	exitDemo(false),
+	m_exitDemo(false),
 	m_pRes(nullptr),
-	m_videoManager(slaveMode==1)
+	m_videoManager(m_slaveMode==1)
 {
 	for (uint32_t i = 0; i < MULTIPURPOSE_VARS; ++i)
-		var[i] = 0.0f;
+		m_var[i] = 0.0f;
 }
 
 void demokernel::getArguments(int argc, char* argv[]) {
@@ -116,7 +116,7 @@ bool demokernel::initDemo() {
 
 void demokernel::initNetwork()
 {
-	if (slaveMode) {
+	if (m_slaveMode) {
 		LOG->Info(LogLevel::HIGH, "Running in network slave mode");
 		netDriver::GetInstance().init();
 		netDriver::GetInstance().update();
@@ -132,7 +132,7 @@ void demokernel::mainLoop() {
 	m_status = DemoStatus::PLAY;
 
 	/* Loop until the user closes the window */
-	while ((!GLDRV->WindowShouldClose()) && (!exitDemo)) {
+	while ((!GLDRV->WindowShouldClose()) && (!m_exitDemo)) {
 		PX_PROFILE_SCOPE("RunLoop");
 
 		// Poll for and process events
@@ -162,7 +162,7 @@ void demokernel::doExec() {
 				pauseDemo();
 			}
 			else {
-				exitDemo = TRUE;
+				m_exitDemo = true;
 				return;
 			}
 		}
@@ -208,7 +208,7 @@ void demokernel::doExec() {
 	//	BASSDRV->update();
 
 	// Update network driver
-	if (slaveMode)
+	if (m_slaveMode)
 		netDriver::GetInstance().update();
 }
 
@@ -356,7 +356,7 @@ bool demokernel::load_config()
 		LOG->OpenLogFile();
 	LOG->setLogLevel(m_logLevel);
 
-	if (slaveMode) {
+	if (m_slaveMode) {
 		LOG->Info(LogLevel::MED, "Engine is in slave mode, therefore, enabling force loads for shaders and textures!");
 		m_textureManager.forceLoad = true;
 		m_shaderManager.forceLoad	= true;
@@ -416,12 +416,12 @@ void demokernel::initTimer()
 
 void demokernel::calculateFPS(float const frameTime)
 {
-	accumFrameTime += frameTime;
-	accumFrameCount++;
-	if (accumFrameTime > 0.3f) {
-		fps = (float)accumFrameCount / accumFrameTime;
-		accumFrameTime = 0;
-		accumFrameCount = 0;
+	m_accumFrameTime += frameTime;
+	m_accumFrameCount++;
+	if (m_accumFrameTime > 0.3f) {
+		m_fps = (float)m_accumFrameCount / m_accumFrameTime;
+		m_accumFrameTime = 0;
+		m_accumFrameCount = 0;
 	}
 }
 
@@ -468,10 +468,10 @@ void demokernel::initControlVars() {
 	m_frameTime = 0;
 	m_realFrameTime = 0;
 	m_uiFrameCount = 0;
-	accumFrameCount = 0;
-	accumFrameTime = 0;
-	fps = 0;
-	exitDemo = FALSE;
+	m_accumFrameCount = 0;
+	m_accumFrameTime = 0;
+	m_fps = 0;
+	m_exitDemo = false;
 }
 
 void demokernel::initSectionQueues() {
@@ -524,7 +524,7 @@ void demokernel::initSectionQueues() {
 	for (i = 0; i < m_sectionManager.section.size(); i++) {
 		ds = m_sectionManager.section[i];
 		// If we are in slave mode, we load all the sections but if not, we will load only the ones that are inside the demo time
-		if ((slaveMode == 1) || (((ds->startTime < m_demoEndTime) || fabs(m_demoEndTime) < FLT_EPSILON) && (ds->endTime > startTime))) {
+		if ((m_slaveMode == 1) || (((ds->startTime < m_demoEndTime) || fabs(m_demoEndTime) < FLT_EPSILON) && (ds->endTime > startTime))) {
 			// If the section is not the "loading", then we add id to the Ready Section lst
 			if (ds->type != SectionType::Loading) {
 				m_sectionManager.loadSection.push_back(i);
@@ -553,7 +553,7 @@ void demokernel::initSectionQueues() {
 		else
 			LOG->Error("  Section %d [id: %s, DataSource: %s] not loaded properly!", sec_id, ds->identifier.c_str(), ds->DataSource.c_str());
 
-		if (exitDemo) {
+		if (m_exitDemo) {
 			closeDemo();
 			exit(EXIT_SUCCESS);
 		}

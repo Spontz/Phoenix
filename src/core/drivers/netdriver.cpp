@@ -131,7 +131,7 @@ std::string netDriver::processMessage(const std::string& sMessage) const
 		else if (sAction == "ping") {
 		}
 		else if (sAction == "end") {
-			DEMO->exitDemo = true;
+			DEMO->m_exitDemo = true;
 		}
 		else {
 			sResult = "NOK";
@@ -177,7 +177,7 @@ std::string netDriver::processMessage(const std::string& sMessage) const
 	// Create response
 	sResponse = sIdentifier + kDelimiterChar +
 		sResult + kDelimiterChar +
-		std::to_string(DEMO->fps) + kDelimiterChar +
+		std::to_string(DEMO->m_fps) + kDelimiterChar +
 		std::to_string(DEMO->m_status) + kDelimiterChar +
 		std::to_string(DEMO->m_demoRunTime) + kDelimiterChar +
 		sInfo;

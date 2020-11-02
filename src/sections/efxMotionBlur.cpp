@@ -78,7 +78,7 @@ void sEfxMotionBlur::exec() {
 		m_pShader->use();
 
 		// Set new shader variables values
-		m_pShader->setValue("uVelocityScale", m_demo.fps/m_uiFPSScale); //uVelocityScale = currentFps / targetFps;
+		m_pShader->setValue("uVelocityScale", m_demo.m_fps/m_uiFPSScale); //uVelocityScale = currentFps / targetFps;
 		m_pVars->setValues();
 
 		glBindTextureUnit(0, m_uiBufferColor);

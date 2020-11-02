@@ -22,8 +22,8 @@ private:
 
 	// Beat parameters
 	float	m_fEnergy[BUFFER_SAMPLES] = {0.0f};
-	float	m_fBeatRatio	= m_demo.beat_ratio;
-	float	m_fFadeOut		= m_demo.beat_fadeout;
+	float	m_fBeatRatio	= m_demo.m_beatRatio;
+	float	m_fFadeOut		= m_demo.m_beatFadeout;
 	float	m_fIntensity	= 0;
 	int		m_iPosition		= 1;
 	float	m_fVolume		= 1;
@@ -53,8 +53,8 @@ bool sSound::load() {
 	m_fPrevVolume = m_fVolume;
 
 	// Beat detection - Init variables
-	m_fBeatRatio = m_demo.beat_ratio;
-	m_fFadeOut = m_demo.beat_fadeout;
+	m_fBeatRatio = m_demo.m_beatRatio;
+	m_fFadeOut = m_demo.m_beatFadeout;
 
 	// Clean variables
 	for (auto i = 0; i < BUFFER_SAMPLES; i++) {
@@ -82,8 +82,8 @@ void sSound::init() {
 		return;
 
 	// Beat detection - Init variables
-	m_fBeatRatio = m_demo.beat_ratio;
-	m_fFadeOut = m_demo.beat_fadeout;
+	m_fBeatRatio = m_demo.m_beatRatio;
+	m_fFadeOut = m_demo.m_beatFadeout;
 
 	// Clean variables
 	for (auto i = 0; i < BUFFER_SAMPLES; i++) {
@@ -114,8 +114,8 @@ void sSound::exec() {
 	float fft[BUFFER_SAMPLES] = {0.0f}; // 512 samples, because we have used "BASS_DATA_FFT1024", and this returns 512 values
 
 	// Update local values with the ones defined by the demosystem
-	m_fBeatRatio = m_demo.beat_ratio;
-	m_fFadeOut = m_demo.beat_fadeout;
+	m_fBeatRatio = m_demo.m_beatRatio;
+	m_fFadeOut = m_demo.m_beatFadeout;
 
 	// Adjust volume if necessary
 	if (m_fVolume != m_fPrevVolume) {
@@ -153,7 +153,7 @@ void sSound::exec() {
 
 	// updated kernel shared variable
 	// to be used by kernel itself or another sections
-	m_demo.beat = m_fIntensity;
+	m_demo.m_beat = m_fIntensity;
 
 	// update energy buffer
 	if (m_iPosition < BUFFER_SAMPLES) {

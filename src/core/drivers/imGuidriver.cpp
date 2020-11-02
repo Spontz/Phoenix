@@ -176,7 +176,7 @@ void imGuiDriver::drawInfo() {
 	// Draw Info
 		ImGui::SetWindowFontScale(m_fontScale);
 		//ImGui::Text("Font: %.3f", m_fontScale);	// Show font size
-		ImGui::Text("Fps: %.0f", m_demo.fps);
+		ImGui::Text("Fps: %.0f", m_demo.m_fps);
 		ImGui::Text("Demo status: %s", demoStatus);
 		ImGui::Text("Time: %.2f/%.2f", m_demo.m_demoRunTime, m_demo.m_demoEndTime);
 		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->sound_cpu());
@@ -185,7 +185,7 @@ void imGuiDriver::drawInfo() {
 		ImGui::Text("Cam Pos: %.1f,%.1f,%.1f", m_demo.m_pCamera->Position.x, m_demo.m_pCamera->Position.y, m_demo.m_pCamera->Position.z);
 		ImGui::Text("Cam Front: %.1f,%.1f,%.1f", m_demo.m_pCamera->Front.x, m_demo.m_pCamera->Front.y, m_demo.m_pCamera->Front.z);
 		ImGui::Text("Cam Yaw: %.1f, Pitch: %.1f, Roll: %.1f, Zoom: %.1f", m_demo.m_pCamera->Yaw, m_demo.m_pCamera->Pitch, m_demo.m_pCamera->Roll, m_demo.m_pCamera->Zoom);
-		if (m_demo.slaveMode == 1)
+		if (m_demo.m_slaveMode == 1)
 			ImGui::Text("Slave Mode ON");
 		else
 			ImGui::Text("Slave Mode OFF");
@@ -262,7 +262,7 @@ void imGuiDriver::drawSound()
 	}
 	ImVec2 win = ImGui::GetWindowSize();
 	ImGui::SetWindowFontScale(m_fontScale);
-	ImGui::Text("Beat value: %.3f, fadeout: %.3f, ratio: %.3f", m_demo.beat, m_demo.beat_fadeout, m_demo.beat_ratio);
+	ImGui::Text("Beat value: %.3f, fadeout: %.3f, ratio: %.3f", m_demo.m_beat, m_demo.m_beatFadeout, m_demo.m_beatRatio);
 	ImGui::Text("FFT Samples: %d", FFT_BUFFER_SAMPLES);
 	ImGui::PlotHistogram("", BASSDRV->getFFTdata(), FFT_BUFFER_SAMPLES, 0, "sound histogram", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80));
 	ImGui::End();
