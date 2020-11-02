@@ -44,6 +44,7 @@ public:
 private:
 	
 	std::string ReadFile(const std::string& filepath);
+	void addLinedirective(std::string& source);
 	std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
 	bool Compile(const std::unordered_map<GLenum, std::string>& shaderSources, std::vector<std::string> feedbackVaryings = { });
 

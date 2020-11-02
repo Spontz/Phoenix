@@ -41,6 +41,7 @@ bool Shader::load(const std::string& filepath, std::vector<std::string> feedback
 	
 	// 1. retrieve the vertex/fragment source code from filePath
 	std::string source = ReadFile(filepath);
+	addLinedirective(source);
 	auto shaderSources = PreProcess(source);
 	if (Compile(shaderSources, feedbackVaryings) == false)
 		return false;
@@ -141,11 +142,35 @@ std::string Shader::ReadFile(const std::string& filepath)
 	return result;
 }
 
+void Shader::addLinedirective(std::string& source)
+{
+	std::istringstream f(source);
+	std::stringstream end_stream;
+	std::string line;
+	int lineNum = 1;
+	while (std::getline(f, line)) {
+		end_stream << line;
+		std::size_t found = line.find("#version"); // Right after the #version directive we will add the #line directive
+		if (found != std::string::npos)
+		{
+			std::stringstream newline;
+			newline << "#line " << lineNum << std::endl;
+			end_stream << newline.str();
+			lineNum++;
+		}
+
+		lineNum++;
+		std::cout << line << std::endl;
+	}
+	source = end_stream.str();
+}
+
 
 std::unordered_map<GLenum, std::string> Shader::PreProcess(const std::string& source)
 {
 	std::unordered_map<GLenum, std::string> shaderSources;
-
+	
+	// Split shader by type
 	const char* typeToken = "#type";
 	size_t typeTokenLength = strlen(typeToken);
 	size_t pos = source.find(typeToken, 0); //Start of shader type declaration line
