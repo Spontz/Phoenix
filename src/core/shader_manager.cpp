@@ -56,12 +56,12 @@ Shader* ShaderManager::addShader(std::string filepath, std::vector<std::string> 
 	}
 
 	if (loaded) {
-		LOG->Info(LogLevel::MED, "Shader loaded OK [id: %d, gl_id: %d] file: %s", shad_id, new_shad->ID, filepath.c_str());
+		Logger::info(LogLevel::med, "Shader loaded OK [id: %d, gl_id: %d] file: %s", shad_id, new_shad->ID, filepath.c_str());
 		return shader[shad_id];
 	}
 		
 	else {
-		LOG->Error("Could not load shader: %s", filepath.c_str());
+		Logger::error("Could not load shader: %s", filepath.c_str());
 		return nullptr;
 	}
 }

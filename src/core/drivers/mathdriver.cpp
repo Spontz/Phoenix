@@ -153,7 +153,7 @@ bool mathDriver::compileFormula()
 {
 	Expression.register_symbol_table(SymbolTable);
 	if (!Parser.compile(expression, Expression)) {
-		LOG->Error("Error in formula, please check expression: %s", expression.c_str());
+		Logger::error("Error in formula, please check expression: %s", expression.c_str());
 		return false;
 	}
 	return true;

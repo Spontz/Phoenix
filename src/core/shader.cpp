@@ -113,7 +113,7 @@ GLint Shader::getUniformLocation(const char *name) const
 	GLint val;
 	val = glGetUniformLocation(ID, name);
 	if (val == -1)
-		LOG->Info(LogLevel::MED, "Warning: Shader uniform variable '%s' not found in shader '%s'", name, m_filepath.c_str());
+		Logger::info(LogLevel::med, "Warning: Shader uniform variable '%s' not found in shader '%s'", name, m_filepath.c_str());
 	return val;
 }
 
@@ -132,11 +132,11 @@ std::string Shader::ReadFile(const std::string& filepath)
 			in.close();
 		}
 		else {
-			LOG->Error("Could not read file %s", filepath.c_str());
+			Logger::error("Could not read file %s", filepath.c_str());
 		}
 	}
 	else {
-		LOG->Error("Could not open file %s", filepath.c_str()); 
+		Logger::error("Could not open file %s", filepath.c_str()); 
 	}
 
 	return result;
@@ -178,15 +178,15 @@ std::unordered_map<GLenum, std::string> Shader::PreProcess(const std::string& so
 	{
 		size_t eol = source.find_first_of("\r\n", pos); //End of shader type declaration line
 		if (eol == std::string::npos)
-			LOG->Error("Shader PreProcess syntax error");
+			Logger::error("Shader PreProcess syntax error");
 		size_t begin = pos + typeTokenLength + 1; //Start of shader type name (after "#type " keyword)
 		std::string type = source.substr(begin, eol - begin);
 		if (0 == GetShaderTypeFromString(type))
-			LOG->Error("Invalid shader type specified: %s", type.c_str());
+			Logger::error("Invalid shader type specified: %s", type.c_str());
 
 		size_t nextLinePos = source.find_first_not_of("\r\n", eol); //Start of shader code after shader type declaration line
 		if (nextLinePos == std::string::npos)
-			LOG->Error("Shader PreProcess syntax error");
+			Logger::error("Shader PreProcess syntax error");
 		pos = source.find(typeToken, nextLinePos); //Start of next shader type declaration line
 
 		shaderSources[GetShaderTypeFromString(type)] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
@@ -236,7 +236,7 @@ bool Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSource
 
 			glDeleteShader(shader);
 
-			LOG->Error("Shader Compile (%s - %s) log: %s", GetShaderStringFromType(type).c_str(), m_filepath.c_str(), infoLog);
+			Logger::error("Shader Compile (%s - %s) log: %s", GetShaderStringFromType(type).c_str(), m_filepath.c_str(), infoLog);
 			delete[] infoLog;
 			return false;
 		}
@@ -279,7 +279,7 @@ bool Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSource
 			glDeleteShader(shaderID);
 
 
-		LOG->Error("Shader Linking: file %s, log: %s", this->m_filepath.c_str(), infoLog);
+		Logger::error("Shader Linking: file %s, log: %s", this->m_filepath.c_str(), infoLog);
 		delete[] infoLog;
 		return false;
 	}

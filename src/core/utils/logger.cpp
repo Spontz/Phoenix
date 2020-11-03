@@ -4,29 +4,29 @@
 #include "main.h"
 #include "logger.h"
 
-Logger& Logger::GetInstance() {
-	static Logger l;
-	return l;
-}
+#include <iomanip>
 
-Logger::Logger()
-	:
-	m_netDriver(netDriver::GetInstance()),
-	m_outputFile("demo_log.txt"),
-	m_logLevel(LogLevel::HIGH)
-{
-	if (DEMO->m_debug)
-		OpenLogFile();
-}
+const netDriver& Logger::m_netDriver{ netDriver::GetInstance() };
+const std::string Logger::m_strOutputFile{ "demo_log.txt" };
+LogLevel Logger::m_bLogLevel{ LogLevel::high };
+std::ofstream Logger::m_ofstream;
 
 void Logger::setLogLevel(LogLevel level)
 {
-	if (level <= LogLevel::LOW)
-		m_logLevel = level;
+	static bool bInitialized = false;
+
+	if (!bInitialized) {
+		if (DEMO->m_debug)
+			openLogFile();
+		bInitialized = true;
+	}
+
+	if (level <= LogLevel::low)
+		m_bLogLevel = level;
 }
 
-void Logger::Info(LogLevel level, const char* pszMessage, ...) const {
-	if (DEMO->m_debug && this->m_logLevel >= level) {
+void Logger::info(LogLevel level, const char* pszMessage, ...) {
+	if (DEMO->m_debug && m_bLogLevel >= level) {
 
 		// Get the message
 		va_list argptr;
@@ -51,13 +51,13 @@ void Logger::Info(LogLevel level, const char* pszMessage, ...) const {
 
 		// Output to Visual Studio
 #if defined(_DEBUG) && defined(WIN32)
-		if (level <= LogLevel::HIGH)
+		if (level <= LogLevel::high)
 			OutputDebugStringA(strOutputString.c_str());
 #endif
 	}
 }
 
-void Logger::SendEditor(const char* pszMessage, ...) const {
+void Logger::sendEditor(const char* pszMessage, ...) {
 	// We send the message only if we are in debug mode and slave mode
 	if (DEMO->m_debug == false || DEMO->m_slaveMode == 0)
 		return;
@@ -89,8 +89,7 @@ void Logger::SendEditor(const char* pszMessage, ...) const {
 #endif
 }
 
-
-void Logger::Error(const char* pszMessage, ...) const {
+void Logger::error(const char* pszMessage, ...) {
 	if (!DEMO->m_debug)
 		return;
 
@@ -124,12 +123,12 @@ void Logger::Error(const char* pszMessage, ...) const {
 	m_netDriver.sendMessage("ERROR::" + strOutputString);
 }
 
-void Logger::OpenLogFile() const {
+void Logger::openLogFile() {
 	if (!m_ofstream.is_open())
-		m_ofstream.open(m_outputFile.c_str(), std::ios::out | std::ios::trunc);
+		m_ofstream.open(m_strOutputFile.c_str(), std::ios::out | std::ios::trunc);
 }
 
-void Logger::CloseLogFile() const {
+void Logger::closeLogFile() {
 	if (m_ofstream.is_open())
 		m_ofstream.close();
 }

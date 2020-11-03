@@ -29,7 +29,7 @@ sDrawFbo::sDrawFbo() {
 bool sDrawFbo::load() {
 	// script validation
 	if (param.size() != 4) {
-		LOG->Error("DrawFbo [%s]: 4 params are needed: fbo to use and attachment, clear the screen buffer, clear depth buffer", identifier.c_str());
+		Logger::error("DrawFbo [%s]: 4 params are needed: fbo to use and attachment, clear the screen buffer, clear depth buffer", identifier.c_str());
 		return false;
 	}
 
@@ -41,12 +41,12 @@ bool sDrawFbo::load() {
 
 	// Check for the right parameter values
 	if ((m_iFboNum < 0) || (m_iFboNum > (float)FBO_BUFFERS)) {
-		LOG->Error("DrawFbo [%s]: Invalid texture fbo number: %i", identifier.c_str(), m_iFboNum);
+		Logger::error("DrawFbo [%s]: Invalid texture fbo number: %i", identifier.c_str(), m_iFboNum);
 		return false;
 	}
 
 	if ((m_iFboAttachment < 0) || (m_iFboAttachment > (float)GLDRV_MAX_COLOR_ATTACHMENTS)) {
-		LOG->Error("DrawFbo [%s]: Invalid texture fbo attachment: %i", identifier.c_str(), m_iFboAttachment);
+		Logger::error("DrawFbo [%s]: Invalid texture fbo attachment: %i", identifier.c_str(), m_iFboAttachment);
 		return false;
 	}
 

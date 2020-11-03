@@ -52,7 +52,7 @@ sDrawScene::sDrawScene()
 
 bool sDrawScene::load() {
 	if ((this->param.size() != 4) || (this->strings.size() < 7)) {
-		LOG->Error(
+		Logger::error(
 			"DrawScene [%s]: 4 param (Enable Depth buffer, enable wireframe, enable animation & "
 			"animation number) and 7 strings needed (model, shader, CameraNumber, aTime & "
 			"three more for object positioning)",

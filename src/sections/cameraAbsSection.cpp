@@ -46,7 +46,7 @@ sCameraAbs::sCameraAbs() {
 bool sCameraAbs::load() {
 	// script validation
 	if ((spline.size() != 1) || (param.size() != 1) || (strings.size() < 2)) {
-		LOG->Error("Camera [%s]: 1 spline, 1 param and 2 strings needed", this->identifier.c_str());
+		Logger::error("Camera [%s]: 1 spline, 1 param and 2 strings needed", this->identifier.c_str());
 		return false;
 	}
 
@@ -56,7 +56,7 @@ bool sCameraAbs::load() {
 	// Load the camera splines
 	for (int i=0; i < spline.size(); i++) {
 		if (this->spline[i]->load() == false) {
-			LOG->Error("CameraSection [%s]: Spline not loaded", identifier.c_str());
+			Logger::error("CameraSection [%s]: Spline not loaded", identifier.c_str());
 			return false;
 		}
 	}

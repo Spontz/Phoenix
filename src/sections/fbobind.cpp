@@ -28,7 +28,7 @@ sFboBind::sFboBind() {
 bool sFboBind::load() {
 	// script validation
 	if (param.size() != 3) {
-		LOG->Error("FboBind [%s]: 3 params are needed: fbo to use, clear the screen buffer, clear depth buffer", identifier.c_str());
+		Logger::error("FboBind [%s]: 3 params are needed: fbo to use, clear the screen buffer, clear depth buffer", identifier.c_str());
 		return false;
 	}
 
@@ -38,7 +38,7 @@ bool sFboBind::load() {
 	m_bClearDepth = static_cast<bool>(param[2]);
 
 	if (m_uiFboNum >= m_demo.m_fboManager.fbo.size()) {
-		LOG->Error("FboBind [%s]: The fbo number %i cannot be accessed, check graphics.spo file", identifier.c_str(), m_uiFboNum);
+		Logger::error("FboBind [%s]: The fbo number %i cannot be accessed, check graphics.spo file", identifier.c_str(), m_uiFboNum);
 		return false;
 	}
 

@@ -34,7 +34,7 @@ sLoading::sLoading() {
 bool sLoading::load() {
 	// script validation
 	if ((this->param.size() != 3) || (this->strings.size() != 3)) {
-		LOG->Error("Loading [%s]: 3 strings and 3 params needed. Using default values.", this->identifier.c_str());
+		Logger::error("Loading [%s]: 3 strings and 3 params needed. Using default values.", this->identifier.c_str());
 		m_bDefaultLoader = true;
 	}
 	else {
@@ -60,7 +60,7 @@ bool sLoading::load() {
 	}
 
 	if (m_pTexBar == nullptr || m_pTexBack == nullptr || m_pTexFront == nullptr) {
-		LOG->Error("Loading [%s]: Could not load some of the loading textures", identifier.c_str());
+		Logger::error("Loading [%s]: Could not load some of the loading textures", identifier.c_str());
 	}
 
 	return true;

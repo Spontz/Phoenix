@@ -98,7 +98,7 @@ bool Texture::load(const std::string & file_name, bool flip)
 
 	}
 	else {
-		LOG->Error("Failed loading texture from file: %s", filename.c_str());
+		Logger::error("Failed loading texture from file: %s", filename.c_str());
 		is_loaded = false;
 	}
 

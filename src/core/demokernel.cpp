@@ -29,7 +29,7 @@ demokernel::demokernel()
 	m_debug_fontSize(1.0f),
 #ifdef _DEBUG
 	m_debug(true),
-	m_logLevel(LogLevel::LOW),
+	m_bLogLevel(LogLevel::low),
 #else
 	m_debug(false),
 	m_logLevel(LogLevel::HIGH),
@@ -79,7 +79,7 @@ bool demokernel::initDemo() {
 	// initialize graphics driver
 	if (!GLDRV->initGraphics())
 		return false;
-	LOG->Info(LogLevel::HIGH, "OpenGL environment created");
+	Logger::info(LogLevel::high, "OpenGL environment created");
 
 	// initialize sound driver
 	if (m_sound)
@@ -87,13 +87,13 @@ bool demokernel::initDemo() {
 
 
 	// Show versions
-	LOG->Info(LogLevel::MED, "Component versions:");
-	LOG->Info(LogLevel::HIGH, "Spontz visuals engine 'Phoenix' version: %s", getEngineVersion().c_str());
-	LOG->Info(LogLevel::MED, "OpenGL driver version is: %s", GLDRV->getOpenGLVersion().c_str());
-	LOG->Info(LogLevel::MED, "GLFW library version is: %s", GLDRV->getVersion().c_str());
-	LOG->Info(LogLevel::MED, "Bass library version is: %s", BASSDRV->getVersion().c_str());
-	LOG->Info(LogLevel::MED, "Network Dyad.c library version is: %s", getLibDyadVersion().c_str());
-	LOG->Info(LogLevel::MED, "Assimp library version is: %s", getLibAssimpVersion().c_str());
+	Logger::info(LogLevel::med, "Component versions:");
+	Logger::info(LogLevel::high, "Spontz visuals engine 'Phoenix' version: %s", getEngineVersion().c_str());
+	Logger::info(LogLevel::med, "OpenGL driver version is: %s", GLDRV->getOpenGLVersion().c_str());
+	Logger::info(LogLevel::med, "GLFW library version is: %s", GLDRV->getVersion().c_str());
+	Logger::info(LogLevel::med, "Bass library version is: %s", BASSDRV->getVersion().c_str());
+	Logger::info(LogLevel::med, "Network Dyad.c library version is: %s", getLibDyadVersion().c_str());
+	Logger::info(LogLevel::med, "Assimp library version is: %s", getLibAssimpVersion().c_str());
 
 	// Create the camera
 	m_pCamera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -117,17 +117,17 @@ bool demokernel::initDemo() {
 void demokernel::initNetwork()
 {
 	if (m_slaveMode) {
-		LOG->Info(LogLevel::HIGH, "Running in network slave mode");
+		Logger::info(LogLevel::high, "Running in network slave mode");
 		netDriver::GetInstance().init();
 		netDriver::GetInstance().update();
 	}
 	else
-		LOG->Info(LogLevel::HIGH, "Running in standalone mode");
+		Logger::info(LogLevel::high, "Running in standalone mode");
 }
 
 void demokernel::mainLoop() {
 	if (m_debug)
-		LOG->Info(LogLevel::MED, "************ Main demo loop started!");
+		Logger::info(LogLevel::med, "************ Main demo loop started!");
 
 	m_status = DemoStatus::PLAY;
 
@@ -332,32 +332,32 @@ bool demokernel::load_config()
 	std::string fullpath;
 	std::string ScriptRelativePath;
 	fullpath = m_dataFolder + "/config/*.spo";
-	LOG->Info(LogLevel::MED, "Scanning config folder: %s", fullpath.c_str());
+	Logger::info(LogLevel::med, "Scanning config folder: %s", fullpath.c_str());
 	if ((hFile = _findfirst(fullpath.c_str(), &FindData)) != -1L) {
 		do {
 			ScriptRelativePath = m_dataFolder + "/config/" + FindData.name;
-			LOG->Info(LogLevel::LOW, "Reading file: %s", ScriptRelativePath.c_str());
+			Logger::info(LogLevel::low, "Reading file: %s", ScriptRelativePath.c_str());
 
 			Phoenix::SpoReader spo;
 			spo.readAsciiFromFile(ScriptRelativePath);
 			spo.loadScriptData();
-			LOG->Info(LogLevel::LOW, "Finished loading file!");
+			Logger::info(LogLevel::low, "Finished loading file!");
 		} while (_findnext(hFile, &FindData) == 0);
 		_findclose(hFile);
 	}
 	else {
-		LOG->Error("Config files not found in 'config' folder");
+		Logger::error("Config files not found in 'config' folder");
 		return false;
 	}
-	LOG->Info(LogLevel::MED, "Finished loading all config files.");
+	Logger::info(LogLevel::med, "Finished loading all config files.");
 
 	// Log file
 	if (m_debug)
-		LOG->OpenLogFile();
-	LOG->setLogLevel(m_logLevel);
+		Logger::openLogFile();
+	Logger::setLogLevel(m_bLogLevel);
 
 	if (m_slaveMode) {
-		LOG->Info(LogLevel::MED, "Engine is in slave mode, therefore, enabling force loads for shaders and textures!");
+		Logger::info(LogLevel::med, "Engine is in slave mode, therefore, enabling force loads for shaders and textures!");
 		m_textureManager.forceLoad = true;
 		m_shaderManager.forceLoad	= true;
 	}
@@ -371,19 +371,19 @@ void demokernel::load_spos()
 	std::string fullpath;
 	std::string ScriptRelativePath;
 	fullpath = m_dataFolder + "/*.spo";
-	LOG->Info(LogLevel::MED, "Scanning folder: %s", fullpath.c_str());
+	Logger::info(LogLevel::med, "Scanning folder: %s", fullpath.c_str());
 	if ((hFile = _findfirst(fullpath.c_str(), &FindData)) != -1L) {
 		do {
 			ScriptRelativePath = m_dataFolder + "/" + FindData.name;
-			LOG->Info(LogLevel::LOW, "Reading file: %s", ScriptRelativePath.c_str());
+			Logger::info(LogLevel::low, "Reading file: %s", ScriptRelativePath.c_str());
 			Phoenix::SpoReader spo;
 			spo.readAsciiFromFile(ScriptRelativePath);
 			spo.loadScriptData();
-			LOG->Info(LogLevel::LOW, "Finished loading file!");
+			Logger::info(LogLevel::low, "Finished loading file!");
 		} while (_findnext(hFile, &FindData) == 0);
 		_findclose(hFile);
 	}
-	LOG->Info(LogLevel::MED, "Finished loading all files.");
+	Logger::info(LogLevel::med, "Finished loading all files.");
 }
 
 bool demokernel::load_scriptFromNetwork(std::string sScript)
@@ -393,7 +393,7 @@ bool demokernel::load_scriptFromNetwork(std::string sScript)
 
 	const int sec_id = spo.loadScriptData();
 	if (sec_id < 0) {
-		LOG->Error("Invalid sec_id.");
+		Logger::error("Invalid sec_id.");
 		return false;
 	}
 
@@ -402,9 +402,9 @@ bool demokernel::load_scriptFromNetwork(std::string sScript)
 	// Load the data from the section
 	my_sec->loaded = my_sec->load();
 	if (my_sec->loaded)
-		LOG->Info(LogLevel::LOW, "  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, my_sec->identifier.c_str(), my_sec->DataSource.c_str());
+		Logger::info(LogLevel::low, "  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, my_sec->identifier.c_str(), my_sec->DataSource.c_str());
 	else
-		LOG->Error("  Section %d [id: %s, DataSource: %s] not loaded properly!", sec_id, my_sec->identifier.c_str(), my_sec->DataSource.c_str());
+		Logger::error("  Section %d [id: %s, DataSource: %s] not loaded properly!", sec_id, my_sec->identifier.c_str(), my_sec->DataSource.c_str());
 
 	return my_sec->loaded;
 }
@@ -484,7 +484,7 @@ void demokernel::initSectionQueues() {
 
 	// Set the demo state to loading
 	m_status = DemoStatus::LOADING;// DEMO_LOADING;
-	LOG->Info(LogLevel::HIGH, "Loading Start...");
+	Logger::info(LogLevel::high, "Loading Start...");
 
 	if (m_debug) {
 		startTime = (float)glfwGetTime();
@@ -497,10 +497,10 @@ void demokernel::initSectionQueues() {
 	}
 
 	if (ds_loading == NULL) {
-		LOG->Info(LogLevel::MED, "Loading section not found: using default loader");
+		Logger::info(LogLevel::med, "Loading section not found: using default loader");
 		sec_id = m_sectionManager.addSection("Loading", "Automatically created", TRUE);
 		if (sec_id < 0) {
-			LOG->Error("Critical Error, Loading section not found and could not be created!");
+			Logger::error("Critical Error, Loading section not found and could not be created!");
 			return;
 		}
 		else
@@ -514,7 +514,7 @@ void demokernel::initSectionQueues() {
 	ds_loading->inited = TRUE;
 	ds_loading->exec();
 
-	LOG->Info(LogLevel::MED, "  Loading section loaded, inited and executed for first time");
+	Logger::info(LogLevel::med, "  Loading section loaded, inited and executed for first time");
 
 	// Clear the load and run section lists
 	m_sectionManager.loadSection.clear();
@@ -534,7 +534,7 @@ void demokernel::initSectionQueues() {
 		}
 	}
 
-	LOG->Info(LogLevel::LOW, "  Ready Section queue complete: %d sections to be loaded", m_sectionManager.loadSection.size());
+	Logger::info(LogLevel::low, "  Ready Section queue complete: %d sections to be loaded", m_sectionManager.loadSection.size());
 
 	// Start Loading the sections of the Ready List
 	m_iLoadedSections = 0;
@@ -549,9 +549,9 @@ void demokernel::initSectionQueues() {
 		// Update loading
 		ds_loading->exec();
 		if (ds->loaded)
-			LOG->Info(LogLevel::LOW, "  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, ds->identifier.c_str(), ds->DataSource.c_str());
+			Logger::info(LogLevel::low, "  Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, ds->identifier.c_str(), ds->DataSource.c_str());
 		else
-			LOG->Error("  Section %d [id: %s, DataSource: %s] not loaded properly!", sec_id, ds->identifier.c_str(), ds->DataSource.c_str());
+			Logger::error("  Section %d [id: %s, DataSource: %s] not loaded properly!", sec_id, ds->identifier.c_str(), ds->DataSource.c_str());
 
 		if (m_exitDemo) {
 			closeDemo();
@@ -559,7 +559,7 @@ void demokernel::initSectionQueues() {
 		}
 	}
 
-	LOG->Info(LogLevel::MED, "Loading complete, %d sections have been loaded", m_iLoadedSections);
+	Logger::info(LogLevel::med, "Loading complete, %d sections have been loaded", m_iLoadedSections);
 
 	// End loading
 	ds_loading->end();
@@ -572,13 +572,13 @@ void demokernel::reInitSectionQueues() {
 	int i;
 	int sec_id;
 
-	LOG->Info(LogLevel::LOW, "  Analysing sections that must be re-inited...");
+	Logger::info(LogLevel::low, "  Analysing sections that must be re-inited...");
 	for (i = 0; i < m_sectionManager.execSection.size(); i++) {
 		sec_id = m_sectionManager.execSection[i].second;	// The second value is the ID of the section
 		ds = m_sectionManager.section[sec_id];
 		if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
 			ds->inited = FALSE;			// Mark the section as not inited
-			LOG->Info(LogLevel::LOW, "  Section %d [layer: %d id: %s] marked to be inited", sec_id, ds->layer, ds->identifier.c_str());
+			Logger::info(LogLevel::low, "  Section %d [layer: %d id: %s] marked to be inited", sec_id, ds->layer, ds->identifier.c_str());
 		}
 	}
 }
@@ -590,23 +590,23 @@ void demokernel::processSectionQueues() {
 	std::vector<Section*>::iterator it;
 
 
-	LOG->Info(LogLevel::MED, "Start queue processing (end, init and exec) for second: %.4f", m_demoRunTime);
+	Logger::info(LogLevel::med, "Start queue processing (end, init and exec) for second: %.4f", m_demoRunTime);
 	// We loop all the sections, searching for finished sections,
 	// if any is found, we will remove from the queue and will execute the .end() function
 
 	// Check the sections that need to be finalized
-	LOG->Info(LogLevel::LOW, "  Analysing sections that can be removed...", m_demoRunTime);
+	Logger::info(LogLevel::low, "  Analysing sections that can be removed...", m_demoRunTime);
 	for (it = m_sectionManager.section.begin(); it < m_sectionManager.section.end(); it++) {
 		ds = *it;
 		if ((ds->endTime <= m_demoRunTime) && (ds->ended == FALSE)) {
 			ds->end();
 			ds->ended = TRUE;
-			LOG->Info(LogLevel::LOW, "  Section [layer: %d id: %s type: %s] ended", ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
+			Logger::info(LogLevel::low, "  Section [layer: %d id: %s type: %s] ended", ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 		}
 	}
 
 	// Check the sections that need to be executed
-	LOG->Info(LogLevel::LOW, "  Analysing sections that must be executed...", m_demoRunTime);
+	Logger::info(LogLevel::low, "  Analysing sections that must be executed...", m_demoRunTime);
 	m_sectionManager.execSection.clear();
 	for (i = 0; i < m_sectionManager.section.size(); i++) {
 		ds = m_sectionManager.section[i];
@@ -617,9 +617,9 @@ void demokernel::processSectionQueues() {
 	}
 	sort(m_sectionManager.execSection.begin(), m_sectionManager.execSection.end());	// Sort sections by Layer
 
-	LOG->Info(LogLevel::LOW, "  Exec Section queue complete: %d sections to be executed", m_sectionManager.execSection.size());
+	Logger::info(LogLevel::low, "  Exec Section queue complete: %d sections to be executed", m_sectionManager.execSection.size());
 	// Run Init sections
-	LOG->Info(LogLevel::LOW, "  Running Init Sections...");
+	Logger::info(LogLevel::low, "  Running Init Sections...");
 	for (i = 0; i < m_sectionManager.execSection.size(); i++) {
 		sec_id = m_sectionManager.execSection[i].second;	// The second value is the ID of the section
 		ds = m_sectionManager.section[sec_id];
@@ -627,7 +627,7 @@ void demokernel::processSectionQueues() {
 			ds->runTime = m_demoRunTime - ds->startTime;
 			ds->init();			// Init the Section
 			ds->inited = TRUE;
-			LOG->Info(LogLevel::LOW, "  Section %d [layer: %d id: %s type: %s] inited", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
+			Logger::info(LogLevel::low, "  Section %d [layer: %d id: %s type: %s] inited", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 		}
 	}
 
@@ -638,7 +638,7 @@ void demokernel::processSectionQueues() {
 	//GLDRV->startDrawImgGUI();
 
 	// Run Exec sections
-	LOG->Info(LogLevel::LOW, "  Running Exec Sections...");
+	Logger::info(LogLevel::low, "  Running Exec Sections...");
 	{
 		PX_PROFILE_SCOPE("ExecSections");
 		for (i = 0; i < m_sectionManager.execSection.size(); i++) {
@@ -646,10 +646,10 @@ void demokernel::processSectionQueues() {
 			ds = m_sectionManager.section[sec_id];
 			ds->runTime = m_demoRunTime - ds->startTime;
 			ds->exec();			// Exec the Section
-			LOG->Info(LogLevel::LOW, "  Section %d [layer: %d id: %s type: %s] executed", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
+			Logger::info(LogLevel::low, "  Section %d [layer: %d id: %s type: %s] executed", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 		}
 	}
-	LOG->Info(LogLevel::MED, "End queue processing!");
+	Logger::info(LogLevel::med, "End queue processing!");
 
 	// Set back to the frambuffer and restore the viewport
 	GLDRV->SetFramebuffer();

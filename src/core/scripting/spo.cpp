@@ -18,7 +18,7 @@ namespace Phoenix {
 			{"demo_start",				SectionVar::TYPE_FLOAT,			&DEMO->m_demoStartTime	},
 			{"demo_end",				SectionVar::TYPE_FLOAT,			&DEMO->m_demoEndTime	},
 			{"slave",					SectionVar::TYPE_INT,			&DEMO->m_slaveMode		},
-			{"log_detail",				SectionVar::TYPE_INT,			&DEMO->m_logLevel		},
+			{"log_detail",				SectionVar::TYPE_INT,			&DEMO->m_bLogLevel		},
 
 			{"gl_fullscreen",			SectionVar::TYPE_INT,			&GLDRV->config.fullScreen				},
 			{"gl_width",				SectionVar::TYPE_INT,			&GLDRV->config.framebuffer_width		},
@@ -157,7 +157,7 @@ namespace Phoenix {
 
 			// Ignore comments or empty line
 			if (line.empty() || (line[0] == ';') || (line[0] == '\n') || (line[0] == '\r') || (line[0] == ' ') || (line[0] == '\t')) {
-				LOG->Info(LogLevel::LOW, "  Comments found or empty in line %i, ignoring this line.", lineNum);
+				Logger::info(LogLevel::low, "  Comments found or empty in line %i, ignoring this line.", lineNum);
 				continue;
 			}
 
@@ -201,7 +201,7 @@ namespace Phoenix {
 				continue;
 			}
 			if ((line[0] == ';') || (line[0] == ' ') || (line[0] == '\t')) {
-				LOG->Info(LogLevel::LOW, "  Comments found in line %i, ignoring this line.", lineNum);
+				Logger::info(LogLevel::low, "  Comments found in line %i, ignoring this line.", lineNum);
 				continue;
 			}
 
@@ -213,25 +213,25 @@ namespace Phoenix {
 				case SectionVar::TYPE_INT:
 					*(int*)((char**)scriptCommand[command].vAddr) = std::stoi(s_line.second);
 					iptr = (int*)scriptCommand[command].vAddr;
-					LOG->Info(LogLevel::LOW, "  Command found: %s = %d", scriptCommand[command].cName.c_str(), *iptr);
+					Logger::info(LogLevel::low, "  Command found: %s = %d", scriptCommand[command].cName.c_str(), *iptr);
 					break;
 				case SectionVar::TYPE_FLOAT:
 					*(float*)((char**)scriptCommand[command].vAddr) = std::stof(s_line.second);
 					fptr = (float*)scriptCommand[command].vAddr;
-					LOG->Info(LogLevel::LOW, "  Command found: %s = %f", scriptCommand[command].cName.c_str(), *fptr);
+					Logger::info(LogLevel::low, "  Command found: %s = %f", scriptCommand[command].cName.c_str(), *fptr);
 					break;
 				case SectionVar::TYPE_STRING:
 					*((char**)scriptCommand[command].vAddr) = _strdup(s_line.second.c_str());
 					sptr = (char**)scriptCommand[command].vAddr;
-					LOG->Info(LogLevel::LOW, "  Command found: %s = %s", scriptCommand[command].cName.c_str(), *sptr);
+					Logger::info(LogLevel::low, "  Command found: %s = %s", scriptCommand[command].cName.c_str(), *sptr);
 					break;
 				default:
-					LOG->Error("%d is not a valid variable type id.", scriptCommand[command].vType);
+					Logger::error("%d is not a valid variable type id.", scriptCommand[command].vType);
 					break;
 				}
 			}
 			else {
-				LOG->Error("'%s' is not a valid SPO script variable. Check file: %s, line: %d", s_line.first.c_str(), m_filepath.c_str(), lineNum);
+				Logger::error("'%s' is not a valid SPO script variable. Check file: %s, line: %d", s_line.first.c_str(), m_filepath.c_str(), lineNum);
 			}
 		}
 		return true;
@@ -256,7 +256,7 @@ namespace Phoenix {
 
 			// Ignore comments or empty line
 			if (line.empty() || (line[0] == ';') || (line[0] == '\n') || (line[0] == '\r') || (line[0] == ' ') || (line[0] == '\t')) {
-				LOG->Info(LogLevel::LOW, "  Comments found or empty in line %i, ignoring this line.", lineNum);
+				Logger::info(LogLevel::low, "  Comments found or empty in line %i, ignoring this line.", lineNum);
 				continue;
 			}
 
@@ -276,11 +276,11 @@ namespace Phoenix {
 				sec_id = -1;
 				sec_id = DEMO->m_sectionManager.addSection(sec_type, "File: " + m_filepath, true);
 				if (sec_id != -1) {
-					LOG->Info(LogLevel::LOW, "  Section %s added!", sec_type.c_str());
+					Logger::info(LogLevel::low, "  Section %s added!", sec_type.c_str());
 					new_sec = DEMO->m_sectionManager.section[sec_id];
 				}
 				else {
-					LOG->Error("Section %s not supported! File skipped", sec_type.c_str());
+					Logger::error("Section %s not supported! File skipped", sec_type.c_str());
 					return sec_id;
 				}
 			}
@@ -318,35 +318,35 @@ namespace Phoenix {
 				switch (command)
 				{
 					case SectionCommand_::INVALID:
-						LOG->Error("  Invalid line: %s", line.c_str());
+						Logger::error("  Invalid line: %s", line.c_str());
 						break;
 
 					case SectionCommand_::IDENTIFIER:
 						new_sec->identifier = s_line.second;
-						LOG->Info(LogLevel::LOW, "  Section id: %s", new_sec->identifier.c_str());
+						Logger::info(LogLevel::low, "  Section id: %s", new_sec->identifier.c_str());
 						break;
 
 					case SectionCommand_::ENABLED:
 						new_sec->enabled = std::stoi(s_line.second);
-						LOG->Info(LogLevel::LOW, "  Section enabled state: %i", new_sec->enabled);
+						Logger::info(LogLevel::low, "  Section enabled state: %i", new_sec->enabled);
 						break;
 
 					case SectionCommand_::START:
 						new_sec->startTime = std::stof(s_line.second);
-						LOG->Info(LogLevel::LOW, "  Section Start time: %f", new_sec->startTime);
+						Logger::info(LogLevel::low, "  Section Start time: %f", new_sec->startTime);
 						break;
 
 					case SectionCommand_::END:
 						new_sec->endTime = std::stof(s_line.second);
-						LOG->Info(LogLevel::LOW, "  Section End time: %f", new_sec->endTime);
+						Logger::info(LogLevel::low, "  Section End time: %f", new_sec->endTime);
 						new_sec->duration = new_sec->endTime - new_sec->startTime;
 						if (new_sec->duration <= 0)
-							LOG->Error("Section End time is less or equal than Start timeStart time!");
+							Logger::error("Section End time is less or equal than Start timeStart time!");
 						break;
 
 					case SectionCommand_::LAYER:
 						new_sec->layer = std::stoi(s_line.second);
-						LOG->Info(LogLevel::LOW, "  Section layer: %i", new_sec->layer);
+						Logger::info(LogLevel::low, "  Section layer: %i", new_sec->layer);
 						break;
 
 					
@@ -356,23 +356,23 @@ namespace Phoenix {
 
 							if ((spoBlendFunc.find(blendModes.first) == spoBlendFunc.end()) ||
 								(spoBlendFunc.find(blendModes.second) == spoBlendFunc.end())) {
-								LOG->Error("Invalid blend mode(s) in line: %s", line.c_str());
+								Logger::error("Invalid blend mode(s) in line: %s", line.c_str());
 							}
 							else {
 								new_sec->sfactor = spoBlendFunc.find(blendModes.first)->second;
 								new_sec->dfactor = spoBlendFunc.find(blendModes.second)->second;
 								new_sec->hasBlend = true;
-								LOG->Info(LogLevel::LOW, "  Section blend mode: source %i and destination %i", new_sec->sfactor, new_sec->dfactor);
+								Logger::info(LogLevel::low, "  Section blend mode: source %i and destination %i", new_sec->sfactor, new_sec->dfactor);
 							}
 						}
 						break;
 
 					case SectionCommand_::BLEND_EQUATION:
 						if (spoBlendEquationFunc.find(s_line.second) == spoBlendEquationFunc.end())
-							LOG->Error("Invalid blend equation in line: %s", line.c_str());
+							Logger::error("Invalid blend equation in line: %s", line.c_str());
 						else {
 							new_sec->blendEquation = spoBlendEquationFunc.find(s_line.second)->second;
-							LOG->Info(LogLevel::LOW, "  Section blend equation: %i", new_sec->blendEquation);
+							Logger::info(LogLevel::low, "  Section blend equation: %i", new_sec->blendEquation);
 						}
 						break;
 							
@@ -388,15 +388,15 @@ namespace Phoenix {
 								new_sec->alpha2 = std::stof(alphaValues[2]);
 								break;
 							default:
-								LOG->Error("Invalid alpha in line: %s", line.c_str());
+								Logger::error("Invalid alpha in line: %s", line.c_str());
 								break;
 							}
 							if (spoAlphaFunc.find(alphaValues[0]) == spoAlphaFunc.end())
-								LOG->Error("Invalid alpha function in line: %s", line.c_str());
+								Logger::error("Invalid alpha function in line: %s", line.c_str());
 							else {
 								new_sec->alphaFunc = spoAlphaFunc.find(alphaValues[0])->second;
 								new_sec->hasAlpha = true;
-								LOG->Info(LogLevel::LOW, "  Section alpha: from %f to %f", new_sec->alpha1, new_sec->alpha2);
+								Logger::info(LogLevel::low, "  Section alpha: from %f to %f", new_sec->alpha1, new_sec->alpha2);
 							}
 							
 						}
@@ -407,22 +407,22 @@ namespace Phoenix {
 						try{
 							float fval = std::stof(s_line.second);
 							new_sec->param.push_back(fval);
-							LOG->Info(LogLevel::LOW, "  Section parameter: %s = %f", s_line.first.c_str(), fval);
+							Logger::info(LogLevel::low, "  Section parameter: %s = %f", s_line.first.c_str(), fval);
 						}
 						catch (...)	{
-							LOG->Error("  Parameter not loaded in line: %s --> The parameter: %s with value [%s] could not be parsed", line.c_str(), s_line.first.c_str(), s_line.second.c_str());
+							Logger::error("  Parameter not loaded in line: %s --> The parameter: %s with value [%s] could not be parsed", line.c_str(), s_line.first.c_str(), s_line.second.c_str());
 						}
 						}
 						break;
 
 					case SectionCommand_::STRING:
 						new_sec->strings.push_back(s_line.second);
-						LOG->Info(LogLevel::LOW, "  Loaded string: \"%s\"", s_line.second.c_str());
+						Logger::info(LogLevel::low, "  Loaded string: \"%s\"", s_line.second.c_str());
 						break;
 
 					case SectionCommand_::UNIFORM:
 						new_sec->uniform.push_back(s_line.second);
-						LOG->Info(LogLevel::LOW, "  Loaded uniform: \"%s\"", s_line.second.c_str());
+						Logger::info(LogLevel::low, "  Loaded uniform: \"%s\"", s_line.second.c_str());
 						break;
 
 					case SectionCommand_::SPLINE:
@@ -430,10 +430,10 @@ namespace Phoenix {
 						new_spl->filename = DEMO->m_dataFolder + s_line.second;
 						new_spl->duration = new_sec->duration; // Spline duration is the same as the sectio duration
 						new_sec->spline.push_back(new_spl);
-						LOG->Info(LogLevel::LOW, "  Loaded Spline: %s", new_spl->filename.c_str());
+						Logger::info(LogLevel::low, "  Loaded Spline: %s", new_spl->filename.c_str());
 						break;
 					default:
-						LOG->Error("Unknown section variable was found in line: \"%s\"", line.c_str());
+						Logger::error("Unknown section variable was found in line: \"%s\"", line.c_str());
 						break;
 					}
 			}

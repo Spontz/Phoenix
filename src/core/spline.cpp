@@ -142,7 +142,7 @@ bool Spline::load()
 
 	f = fopen(this->filename.c_str(), "rt");
 	if (!f) {
-		LOG->Error("Error loading spline file: %s", this->filename.c_str());
+		Logger::error("Error loading spline file: %s", this->filename.c_str());
 		return false;
 	}
 
@@ -162,20 +162,20 @@ bool Spline::load()
 		chan = Util::getFloatVector(line, new_key->cv, kszKeyFrameNumChannels);
 
 		if (chan == -1) {
-			LOG->Error("Spline load error: too many floats in file: %s, line: '%s'", this->filename.c_str(), line);
+			Logger::error("Spline load error: too many floats in file: %s, line: '%s'", this->filename.c_str(), line);
 			return false;
 		}
 
 		if (this->channels == 0) {
 			if (chan == 0) {
-				LOG->Error("Spline: incorrect format in %s", this->filename.c_str());
+				Logger::error("Spline: incorrect format in %s", this->filename.c_str());
 				return false;
 			}				
 			this->channels = chan;
 		}
 		else {
 			if (this->channels != chan) {
-				LOG->Error("Spline: incorrect channel in %s", this->filename.c_str());
+				Logger::error("Spline: incorrect channel in %s", this->filename.c_str());
 				return false;
 			}
 				
@@ -213,7 +213,7 @@ Motion * Spline::load(const std::string & file_name)
 
 	f = fopen(file_name.c_str(), "rt");
 	if (!f) {
-		LOG->Error("Error loading spline file: %s", file_name.c_str());
+		Logger::error("error loading spline file: %s", file_name.c_str());
 		return NULL;
 	}
 
@@ -238,16 +238,16 @@ Motion * Spline::load(const std::string & file_name)
 		key = &motion->keylist[motion->keys];
 		chan = Util::getFloatVector(line, key->cv, NUM_CHAN);
 		if (chan == -1)
-			LOG->Error("Spline load error: too many floats in file: %s, line: '%s'", file_name.c_str(), line);
+			Logger::error("Spline load error: too many floats in file: %s, line: '%s'", file_name.c_str(), line);
 
 		if (motion->channels == 0) {
 			if (chan == 0)
-				LOG->Error("Spline: incorrect format in %s", file_name.c_str());
+				Logger::error("Spline: incorrect format in %s", file_name.c_str());
 			motion->channels = chan;
 		}
 		else {
 			if (motion->channels != chan)
-				LOG->Error("Spline: incorrect channel in %s", file_name.c_str());
+				Logger::error("Spline: incorrect channel in %s", file_name.c_str());
 		}
 
 		key->tens = 0;

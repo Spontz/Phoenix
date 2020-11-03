@@ -67,7 +67,7 @@ bool Cubemap::load(std::vector<std::string> faces_file_name, bool flip)
 		}
 			
 		else {
-			LOG->Error("Failed loading cubemap from file: %s", faces_file_name[i].c_str());
+			Logger::error("Failed loading cubemap from file: %s", faces_file_name[i].c_str());
 			is_loaded = false;
 		}
 		mem += (float)(Width * Height * 3) / 1048576.0f;		// Calculate the texture mem (in mb)
@@ -77,7 +77,7 @@ bool Cubemap::load(std::vector<std::string> faces_file_name, bool flip)
 	for (unsigned int i = 0; i < faces_file_name.size(); i++)
 	{
 		if ((this->width[0] != this->width[i]) || (this->height[0] != this->height[i])) {
-			LOG->Error("The cubemap image %s has a different size from the first one. Please check that all cubemap images have same size", faces_file_name[i].c_str());
+			Logger::error("The cubemap image %s has a different size from the first one. Please check that all cubemap images have same size", faces_file_name[i].c_str());
 			is_loaded = false;
 		}
 	}

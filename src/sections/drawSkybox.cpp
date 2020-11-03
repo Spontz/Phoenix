@@ -34,13 +34,13 @@ sDrawSkybox::sDrawSkybox() {
 
 bool sDrawSkybox::load() {
 	if ((param.size() != 2) || (strings.size() < 8)) {
-		LOG->Error("DrawSkybox [%s]: 2 param and 8 strings needed: enable depthBuffer, drawWireframe + 6 strings with skybox faces, 2 strings with rot and scale", identifier.c_str());
+		Logger::error("DrawSkybox [%s]: 2 param and 8 strings needed: enable depthBuffer, drawWireframe + 6 strings with skybox faces, 2 strings with rot and scale", identifier.c_str());
 		return false;
 	}
 
 	// Check if skybox is present in resources
 	if (m_demo.m_pRes->obj_skybox == 0 || m_demo.m_pRes->shdr_Skybox == nullptr ) {
-		LOG->Error("DrawSkybox [%s]: Skybox model or shader has not been properly loaded in resources, please fix it!", identifier.c_str());
+		Logger::error("DrawSkybox [%s]: Skybox model or shader has not been properly loaded in resources, please fix it!", identifier.c_str());
 		return false;
 	}
 

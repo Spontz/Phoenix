@@ -63,8 +63,8 @@ void netDriver::init()
 void netDriver::connectToEditor()
 {
 	// Listener for sending messages to the editor
-	LOG->Info(
-		LogLevel::MED,
+	Logger::info(
+		LogLevel::med,
 		"Network: outgoing messages will be done through port: %d",
 		m_iPortSend
 	);
@@ -97,8 +97,8 @@ std::string netDriver::processMessage(const std::string& sMessage) const
 	const std::string sType = Message[1];
 	const std::string sAction = Message[2];
 	
-	LOG->Info(
-		LogLevel::LOW,
+	Logger::info(
+		LogLevel::low,
 		"Message received: [identifier: %s] [type: %s] [action: %s]",
 		sIdentifier.c_str(),
 		sType.c_str(),
@@ -182,7 +182,7 @@ std::string netDriver::processMessage(const std::string& sMessage) const
 		std::to_string(DEMO->m_demoRunTime) + kDelimiterChar +
 		sInfo;
 	
-	LOG->Info(LogLevel::LOW, "Sending response: %s", sResponse.c_str());
+	Logger::info(LogLevel::low, "Sending response: %s", sResponse.c_str());
 
 	// return response
 	return sResponse;
@@ -214,8 +214,8 @@ void netDriver::dyadOnAccept(dyad_Event* const pDyadEvent)
 
 void netDriver::dyadOnListen(dyad_Event* const pDyadEvent)
 {
-	LOG->Info(
-		LogLevel::MED,
+	Logger::info(
+		LogLevel::med,
 		"Network listener started in port: %d",
 		dyad_getPort(pDyadEvent->stream)
 	);
@@ -223,15 +223,15 @@ void netDriver::dyadOnListen(dyad_Event* const pDyadEvent)
 
 void netDriver::dyadOnError(dyad_Event* const pDyadEvent)
 {
-	LOG->Error("Network server error: %s", pDyadEvent->msg);
+	Logger::error("Network server error: %s", pDyadEvent->msg);
 }
 
 void netDriver::dyadOnConnect(dyad_Event* const pDyadEvent)
 {
 	netDriver::GetInstance().m_bConnectedToEditor_ = true;
 
-	LOG->Info(
-		LogLevel::MED,
+	Logger::info(
+		LogLevel::med,
 		"Network: Connected to editor through port: %d",
 		dyad_getPort(pDyadEvent->stream)
 	);

@@ -66,7 +66,7 @@ void ParticleMesh::initialize_particles(std::vector<PARTICLE> Part)
 	}
 	else {
 		if (Part.size() != m_numParticles)
-			LOG->Error("ParticleMesh: The number of positions does not match the number of particles!");
+			Logger::error("ParticleMesh: The number of positions does not match the number of particles!");
 		else {
 			for (int i = 0; i < m_numParticles; i++)
 			{

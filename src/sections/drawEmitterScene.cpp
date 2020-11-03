@@ -57,7 +57,7 @@ static float RandomFloat()
 bool sDrawEmitterScene::load() {
 	// script validation
 	if ((param.size() != 3) || (strings.size() < 9)) {
-		LOG->Error("Draw Emitter Scene [%s]: 3 param (emission time, Particle Life Time & Randomness) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", identifier.c_str());
+		Logger::error("Draw Emitter Scene [%s]: 3 param (emission time, Particle Life Time & Randomness) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", identifier.c_str());
 		return false;
 	}
 
@@ -77,7 +77,7 @@ bool sDrawEmitterScene::load() {
 	m_fEmitterRandomness = param[2];
 
 	if (m_fEmissionTime <= 0) {
-		LOG->Error("Draw Emitter Scene [%s]: Emission time should be greater than 0", identifier.c_str());
+		Logger::error("Draw Emitter Scene [%s]: Emission time should be greater than 0", identifier.c_str());
 		return false;
 	}
 
@@ -117,7 +117,7 @@ bool sDrawEmitterScene::load() {
 	}
 
 	if (m_uiNumEmitters <= 0) {
-		LOG->Error("Draw Emitter Scene [%s]: No emitters found in the 3D model", identifier.c_str());
+		Logger::error("Draw Emitter Scene [%s]: No emitters found in the 3D model", identifier.c_str());
 		return false;
 	}
 	m_pExprPosition->SymbolTable.add_constant("TnE", static_cast<float>(m_uiNumEmitters));
@@ -127,7 +127,7 @@ bool sDrawEmitterScene::load() {
 		return false;
 	
 	m_uiNumMaxParticles = m_uiNumEmitters + static_cast<unsigned int>(static_cast<float>(m_uiNumEmitters)*m_fParticleLifeTime*(1.0f / m_fEmissionTime));
-	LOG->Info(LogLevel::LOW, "Draw Emitter Scene [%s]: Num max of particles will be: %d", identifier.c_str(), m_uiNumMaxParticles);
+	Logger::info(LogLevel::low, "Draw Emitter Scene [%s]: Num max of particles will be: %d", identifier.c_str(), m_uiNumMaxParticles);
 
 	std::vector<Particle> Emitter;
 	Emitter.resize(m_uiNumEmitters);

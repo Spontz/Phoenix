@@ -200,10 +200,10 @@ void SectionManager::toggleSection(const std::string& identifier)
 		ds = getSection(ids[i]);
 		if (ds) {
 			ds->enabled = !ds->enabled;
-			//LOG->SendEditor("Section toggled: %s", ids[i].c_str());
+			//Logger::sendEditor("Section toggled: %s", ids[i].c_str());
 		}
 		else {
-			LOG->Error("Section NOT toggled: %s", ids[i].c_str());
+			Logger::error("Section NOT toggled: %s", ids[i].c_str());
 		}
 	}
 }
@@ -222,10 +222,10 @@ void SectionManager::deleteSection(const std::string& identifier)
 		if (ds) {
 			ds->end();
 			this->section.erase(this->section.begin() + ds_number);
-			//LOG->SendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
+			//Logger::sendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 		}
 		else {
-			LOG->Error("Section NOT deleted: %s", ids[i].c_str());
+			Logger::error("Section NOT deleted: %s", ids[i].c_str());
 		}
 	}
 }
@@ -268,10 +268,10 @@ void SectionManager::setSectionsStartTime(const std::string& amount, const std::
 				ds->spline[k]->duration = ds->duration;
 				ds->spline[k]->load();
 			}
-			//LOG->SendEditor("Section [%s] changed StartTime: %.3f", ds->identifier.c_str(), ds->startTime);
+			//Logger::sendEditor("Section [%s] changed StartTime: %.3f", ds->identifier.c_str(), ds->startTime);
 		}
 		else {
-			LOG->Error("Section NOT modified (StartTime): %s", ids[i].c_str());
+			Logger::error("Section NOT modified (StartTime): %s", ids[i].c_str());
 		}
 	}
 }
@@ -294,10 +294,10 @@ void SectionManager::setSectionsEndTime(const std::string& amount, const std::st
 				ds->spline[k]->duration = ds->duration;
 				ds->spline[k]->load();
 			}
-			//LOG->SendEditor("Section [%s] changed EndTime: %.3f", ds->identifier.c_str(), ds->endTime);
+			//Logger::sendEditor("Section [%s] changed EndTime: %.3f", ds->identifier.c_str(), ds->endTime);
 		}
 		else {
-			LOG->Error("Section NOT modified (EndTime): %s", ids[i].c_str());
+			Logger::error("Section NOT modified (EndTime): %s", ids[i].c_str());
 		}
 	}
 }
@@ -309,11 +309,11 @@ void SectionManager::setSectionLayer(const std::string& layer, const std::string
 
 	ds = getSection(identifier);
 	if (ds) {
-		//LOG->SendEditor("Section [%s] changed Layer from %d to %d", ds->identifier.c_str(), ds->layer, new_layer);
+		//Logger::sendEditor("Section [%s] changed Layer from %d to %d", ds->identifier.c_str(), ds->layer, new_layer);
 		ds->layer = new_layer;
 	}
 	else {
-		LOG->Error("Section NOT modified (setSectionLayer): %s", identifier.c_str());
+		Logger::error("Section NOT modified (setSectionLayer): %s", identifier.c_str());
 	}
 }
 

@@ -79,7 +79,7 @@ void Model::setAnimation(unsigned int a)
 		m_currentAnimation = a;
 	}
 	else
-		LOG->Error("The animation number specified [%i] is not supported in the file [%s]", a, filename.c_str());
+		Logger::error("The animation number specified [%i] is not supported in the file [%s]", a, filename.c_str());
 }
 
 void Model::setCamera(unsigned int c)
@@ -91,7 +91,7 @@ void Model::setCamera(unsigned int c)
 	else {
 		useCamera = false;
 		m_currentCamera = 0;
-		LOG->Error("The camera number specified [%i] is not available in the file [%s]", c, filename.c_str());
+		Logger::error("The camera number specified [%i] is not available in the file [%s]", c, filename.c_str());
 	}
 }
 
@@ -108,13 +108,13 @@ bool Model::Load(const std::string& path)
 	// check for errors
 	if (!m_pScene || m_pScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !m_pScene->mRootNode) // if is Not Zero
 	{
-		LOG->Error("Error loading file [%s]: %s", filepath.c_str(), m_Importer.GetErrorString());
+		Logger::error("Error loading file [%s]: %s", filepath.c_str(), m_Importer.GetErrorString());
 		return false;
 	}
 	// retrieve the directory path of the filepath and the filename (without the data folder, because each loader adds the data folder)
 	directory = filepath.substr(0, filepath.find_last_of('/'));
 	filename = filepath.substr(filepath.find_last_of('/')+1, filepath.length());
-	LOG->Info(LogLevel::LOW, "Loading Model: %s", filename.c_str());
+	Logger::info(LogLevel::low, "Loading Model: %s", filename.c_str());
 
 	// Get transformation matrix for nodes (vertices relative to bones)
 	m_GlobalInverseTransform = mat4_cast(m_pScene->mRootNode->mTransformation);
@@ -167,7 +167,7 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 		// the node object only contains indices to index the actual objects in the scene. 
 		// the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		LOG->Info(LogLevel::LOW, "Reading node name: %s", node->mName.data);
+		Logger::info(LogLevel::low, "Reading node name: %s", node->mName.data);
 		meshes.push_back(processMesh(node->mName.data, mesh, scene));
 	}
 	// after we've processed all of the meshes (if any) we then recursively process each of the children nodes
@@ -186,13 +186,13 @@ Mesh Model::processMesh(std::string nodeName, aiMesh *mesh, const aiScene *scene
 	std::vector<int> textures;
 
 
-	LOG->Info(LogLevel::LOW, "Loading mesh: %s", mesh->mName.C_Str());
+	Logger::info(LogLevel::low, "Loading mesh: %s", mesh->mName.C_Str());
 
 	if (mesh->HasNormals() == false)
-		LOG->Error("The loaded mesh has no Normal info.");
+		Logger::error("The loaded mesh has no Normal info.");
 
 	if (mesh->HasTangentsAndBitangents() == false)
-		LOG->Info(LogLevel::MED, "Warning, the loaded mesh has no Tangents and BiTangents! Normal will be copied there.");
+		Logger::info(LogLevel::med, "Warning, the loaded mesh has no Tangents and BiTangents! Normal will be copied there.");
 	
 	vertices.reserve(mesh->mNumVertices);			// Allocate memory so we avoid resizing the vector each time
 	// Walk through each of the mesh's vertices
@@ -390,10 +390,10 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 		glm::mat4 TranslationM = glm::translate(glm::mat4(1.0f), translation);
 		/*
 		// Show debug info
-		LOG->Info(LogLevel::LOW, "Node Anim: %s, second: %.3f", pNodeAnim->mNodeName.data, AnimationTime);
-		LOG->Info(LogLevel::LOW, "S: %.3f, %.3f, %.3f", scale.x, scale.y, scale.z);
-		LOG->Info(LogLevel::LOW, "R: %.3f, %.3f, %.3f, %.3f", RotationQ.x, RotationQ.y, RotationQ.z, RotationQ.w);
-		LOG->Info(LogLevel::LOW, "T: %.3f, %.3f, %.3f", translation.x, translation.y, translation.z);
+		Logger::info(LogLevel::low, "Node Anim: %s, second: %.3f", pNodeAnim->mNodeName.data, AnimationTime);
+		Logger::info(LogLevel::low, "S: %.3f, %.3f, %.3f", scale.x, scale.y, scale.z);
+		Logger::info(LogLevel::low, "R: %.3f, %.3f, %.3f, %.3f", RotationQ.x, RotationQ.y, RotationQ.z, RotationQ.w);
+		Logger::info(LogLevel::low, "T: %.3f, %.3f, %.3f", translation.x, translation.y, translation.z);
 		*/
 		// Combine the above transformations
 		NodeTransformation = TranslationM * RotationM *ScalingM;
@@ -408,9 +408,9 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 	for (unsigned int i = 0; i < this->m_NumMeshes; i++) {
 		if (NodeName == this->meshes[i].nodeName) {
 			this->meshes[i].meshTransform *= m_GlobalInverseTransform * GlobalTransformation;
-			/*LOG->Info(LogLevel::LOW, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %i [time: %.3f]", NodeName.c_str(), i, AnimationTime);
+			/*Logger::info(LogLevel::low, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %i [time: %.3f]", NodeName.c_str(), i, AnimationTime);
 			glm::mat4 M = GlobalTransformation;
-			LOG->Info(LogLevel::LOW, "M: [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f]",
+			Logger::info(LogLevel::low, "M: [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f]",
 				M[0][0], M[0][1], M[0][2], M[0][3],
 				M[1][0], M[1][1], M[1][2], M[1][3], 
 				M[2][0], M[2][1], M[2][2], M[2][3], 
@@ -511,10 +511,10 @@ void Model::CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, con
 	const aiQuaternion& EndRotationQ = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
 	aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
 	Out = Out.Normalize();
-	/*LOG->Info(LogLevel::LOW, "rot: factor: %.3f", Factor);
-	LOG->Info(LogLevel::LOW, "rot: Start: %.3f, %.3f, %.3f, %.3f", StartRotationQ.x, StartRotationQ.y, StartRotationQ.z, StartRotationQ.w);
-	LOG->Info(LogLevel::LOW, "rot: End:   %.3f, %.3f, %.3f, %.3f", EndRotationQ.x, EndRotationQ.y, EndRotationQ.z, EndRotationQ.w);
-	LOG->Info(LogLevel::LOW, "rot: Out:   %.3f, %.3f, %.3f, %.3f", Out.x, Out.y, Out.z, Out.w);
+	/*Logger::info(LogLevel::low, "rot: factor: %.3f", Factor);
+	Logger::info(LogLevel::low, "rot: Start: %.3f, %.3f, %.3f, %.3f", StartRotationQ.x, StartRotationQ.y, StartRotationQ.z, StartRotationQ.w);
+	Logger::info(LogLevel::low, "rot: End:   %.3f, %.3f, %.3f, %.3f", EndRotationQ.x, EndRotationQ.y, EndRotationQ.z, EndRotationQ.w);
+	Logger::info(LogLevel::low, "rot: Out:   %.3f, %.3f, %.3f, %.3f", Out.x, Out.y, Out.z, Out.w);
 	*/
 }
 

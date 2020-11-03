@@ -32,10 +32,10 @@ Model* ModelManager::addModel(std::string path) {
 	if (new_model->Load(path)) {
 		model.push_back(new_model);
 		p_model = new_model;
-		LOG->Info(LogLevel::MED, "Model %s [id: %d] loaded OK", path.c_str(), model.size()-1);
+		Logger::info(LogLevel::med, "Model %s [id: %d] loaded OK", path.c_str(), model.size()-1);
 	}
 	else
-		LOG->Error("Could not load model: %s", path.c_str());
+		Logger::error("Could not load model: %s", path.c_str());
 	
 	return p_model;
 }

@@ -91,28 +91,28 @@ bool Video::load(CVideoSource const& videoSource)
 
 	m_pFormatContext = avformat_alloc_context();
 	if (!m_pFormatContext) {
-		LOG->Error("%s: could not allocate memory for AVFormatContext.", __FILE__);
+		Logger::error("%s: could not allocate memory for AVFormatContext.", __FILE__);
 		return false;
 	}
 
 	// Open file and read header
 	// Codecs are not opened
 	if (m_bDebug)
-		LOG->Info(
-			LogLevel::LOW,
+		Logger::info(
+			LogLevel::low,
 			"%s: Opening \"%s\" and loading format (container) header.",
 			__FILE__,
 			m_VideoSource.m_sPath.c_str()
 		);
 
 	if (avformat_open_input(&m_pFormatContext, m_VideoSource.m_sPath.c_str(), nullptr, nullptr) != 0) {
-		LOG->Error("%s: Error opening \"%s\".", __FILE__, m_VideoSource.m_sPath.c_str());
+		Logger::error("%s: Error opening \"%s\".", __FILE__, m_VideoSource.m_sPath.c_str());
 		return false;
 	}
 
 	// Show info
-	LOG->Info(
-		LogLevel::LOW,
+	Logger::info(
+		LogLevel::low,
 		"%s: %s, %dms, %dbits/s.",
 		__FILE__,
 		m_pFormatContext->iformat->name,
@@ -123,9 +123,9 @@ bool Video::load(CVideoSource const& videoSource)
 	// Read Packets from AVFormatContext to get stream information
 	// avformat_find_streainfo populates pFormatContext_->streams (of size equals to pFormatContext->nb_streams)
 	if (m_bDebug)
-		LOG->Info(LogLevel::LOW, "%s: Finding stream info from format", __FILE__);
+		Logger::info(LogLevel::low, "%s: Finding stream info from format", __FILE__);
 	if (avformat_find_stream_info(m_pFormatContext, nullptr) < 0) {
-		LOG->Error("%s: Could not get the stream info.", __FILE__);
+		Logger::error("%s: Could not get the stream info.", __FILE__);
 		return false;
 	}
 
@@ -134,47 +134,47 @@ bool Video::load(CVideoSource const& videoSource)
 		const auto pAVCodecParameters = pAVStream->codecpar;
 
 		if (m_bDebug) {
-			LOG->Info(
-				LogLevel::LOW,
+			Logger::info(
+				LogLevel::low,
 				"%s: AVStream->time_base before open coded %d/%d",
 				__FILE__,
 				pAVStream->time_base.num,
 				pAVStream->time_base.den
 			);
-			LOG->Info(
-				LogLevel::LOW,
+			Logger::info(
+				LogLevel::low,
 				"%s: AVStream->r_frame_rate before open coded %d/%d",
 				__FILE__,
 				pAVStream->r_frame_rate.num,
 				pAVStream->r_frame_rate.den
 			);
-			LOG->Info(
-				LogLevel::LOW,
+			Logger::info(
+				LogLevel::low,
 				"%s: AVStream->start_time %lld",
 				__FILE__,
 				pAVStream->start_time
 			);
-			LOG->Info(
-				LogLevel::LOW,
+			Logger::info(
+				LogLevel::low,
 				"%s: AVStream->duration %lld",
 				__FILE__,
 				pAVStream->duration
 			);
-			LOG->Info(LogLevel::LOW, "%s: finding the proper decoder (CODEC)", __FILE__);
+			Logger::info(LogLevel::low, "%s: finding the proper decoder (CODEC)", __FILE__);
 		}
 
 		// Find AVCodec given an AVCodecID
 		const auto pAVCodec = avcodec_find_decoder(pAVCodecParameters->codec_id);
 		if (pAVCodec == nullptr) {
-			LOG->Error("%s: Unsupported codec.", __FILE__);
+			Logger::error("%s: Unsupported codec.", __FILE__);
 			return false;
 		}
 
 		switch (pAVCodecParameters->codec_type) {
 		case AVMEDIA_TYPE_VIDEO:
 			// Show video stream info
-			LOG->Info(
-				LogLevel::LOW,
+			Logger::info(
+				LogLevel::low,
 				"%s: #%d Video stream[CodecID:%d], %s, %d channels, %dx%d, %dhz, %dbps.",
 				__FILE__,
 				i,
@@ -190,8 +190,8 @@ bool Video::load(CVideoSource const& videoSource)
 			// Store video stream index, codec parameters and codec
 			if (m_VideoSource.m_iVideoStreamIndex == -1)
 				if (videoSource.m_iVideoStreamIndex == -1 || videoSource.m_iVideoStreamIndex == i) {
-					LOG->Info(
-						LogLevel::LOW,
+					Logger::info(
+						LogLevel::low,
 						"%s: Using video stream #%d.",
 						__FILE__,
 						i
@@ -210,8 +210,8 @@ bool Video::load(CVideoSource const& videoSource)
 
 		default:
 			// Show extra stream info
-			LOG->Info(
-				LogLevel::LOW,
+			Logger::info(
+				LogLevel::low,
 				"%s: #%d %s stream[CodecID:%d], %s, %d channels, %dhz, %d, %dbps.",
 				__FILE__,
 				i,
@@ -229,20 +229,20 @@ bool Video::load(CVideoSource const& videoSource)
 
 	m_pCodecContext = avcodec_alloc_context3(m_pAVCodec);
 	if (!m_pCodecContext) {
-		LOG->Error("%s: failed to allocated memory for AVCodecContext", __FILE__);
+		Logger::error("%s: failed to allocated memory for AVCodecContext", __FILE__);
 		return false;
 	}
 	m_pCodecContext->thread_count = m_VideoSource.m_uiDecodingThreadCount;
 
 	// Fill the codec context based on the values from the supplied codec parameters
 	if (avcodec_parameters_to_context(m_pCodecContext, m_pAVCodecParameters) < 0) {
-		LOG->Error("%s: failed to copy codec params to codec context", __FILE__);
+		Logger::error("%s: failed to copy codec params to codec context", __FILE__);
 		return false;
 	}
 
 	// Initialize the AVCodecContext to use the given AVCodec.
 	if (avcodec_open2(m_pCodecContext, m_pAVCodec, nullptr) < 0) {
-		LOG->Error("%s: failed to open codec through avcodec_open2", __FILE__);
+		Logger::error("%s: failed to open codec through avcodec_open2", __FILE__);
 		return false;
 	}
 
@@ -272,7 +272,7 @@ bool Video::load(CVideoSource const& videoSource)
 	);
 
 	if (!m_pFrame || !m_pGLFrame) {
-		LOG->Error("%s: failed to allocated memory for AVFrame", __FILE__);
+		Logger::error("%s: failed to allocated memory for AVFrame", __FILE__);
 		return false;
 	}
 
@@ -291,13 +291,13 @@ bool Video::load(CVideoSource const& videoSource)
 	);
 
 	if (!m_pConvertContext) {
-		LOG->Error("%s: Could not create the convert context for OpenGL", __FILE__);
+		Logger::error("%s: Could not create the convert context for OpenGL", __FILE__);
 		return false;
 	}
 
 	m_pAVPacket = av_packet_alloc();
 	if (!m_pAVPacket) {
-		LOG->Error("%s: Video: failed to allocated memory for AVPacket", __FILE__);
+		Logger::error("%s: Video: failed to allocated memory for AVPacket", __FILE__);
 		return false;
 	}
 
@@ -343,8 +343,8 @@ void Video::decode()
 		m_dTime < m_dNextFrameTime - renderInterval() ||
 		m_dTime > m_dNextFrameTime + renderInterval() * 2
 		) {
-		LOG->Info(
-			LogLevel::HIGH,
+		Logger::info(
+			LogLevel::high,
 			"%s: Seeking %s[stream %d] @ %.4fs [desynced by %.4fs]...",
 			__FILE__,
 			m_VideoSource.m_sPath.c_str(),
@@ -362,8 +362,8 @@ void Video::decode()
 	}
 
 	if (m_bDebug) {
-		LOG->Info(
-			LogLevel::LOW,
+		Logger::info(
+			LogLevel::low,
 			"%s: Time: %.4fs, Next Frame time: %.4fs",
 			__FILE__,
 			m_dTime,
@@ -379,7 +379,7 @@ void Video::decode()
 			// if it's the video stream
 			if (m_pAVPacket->stream_index == m_VideoSource.m_iVideoStreamIndex) {
 				if (decodePacket() < 0)
-					LOG->Error("%s: Packet cannot be decoded", __FILE__);
+					Logger::error("%s: Packet cannot be decoded", __FILE__);
 			}
 		}
 		else {
@@ -431,7 +431,7 @@ int64_t Video::seekTime(double dSeconds) const
 	) / 1000;
 
 	if (av_seek_frame(m_pFormatContext, m_VideoSource.m_iVideoStreamIndex, iFrameNumber, 0) < 0)
-		LOG->Error("%s: Could not reach position: %.4fs, frame: %d", __FILE__, dSeconds, iFrameNumber);
+		Logger::error("%s: Could not reach position: %.4fs, frame: %d", __FILE__, dSeconds, iFrameNumber);
 
 	return iFrameNumber;
 }
@@ -442,7 +442,7 @@ int32_t Video::decodePacket()
 	auto iResponse = avcodec_send_packet(m_pCodecContext, m_pAVPacket);
 
 	if (iResponse < 0) {
-		LOG->Error("%s: decodePacket Error while sending a packet to the decoder", __FILE__); // : %s", av_err2str(response));
+		Logger::error("%s: decodePacket Error while sending a packet to the decoder", __FILE__); // : %s", av_err2str(response));
 		return iResponse;
 	}
 
@@ -453,14 +453,14 @@ int32_t Video::decodePacket()
 		if (iResponse == AVERROR(EAGAIN) || iResponse == AVERROR_EOF)
 			break;
 		else if (iResponse < 0) {
-			LOG->Error("%s: Error while receiving a frame from the decoder", __FILE__); // : %s", av_err2str(response));
+			Logger::error("%s: Error while receiving a frame from the decoder", __FILE__); // : %s", av_err2str(response));
 			return iResponse;
 		}
 
 		if (iResponse >= 0) {
 			if (m_bDebug) {
-				LOG->Info(
-					LogLevel::LOW,
+				Logger::info(
+					LogLevel::low,
 					"%s: Frame %d (type=%c, size=%d bytes) pts %d key_frame %d [DTS %d]",
 					__FILE__,
 					m_pCodecContext->frame_number,

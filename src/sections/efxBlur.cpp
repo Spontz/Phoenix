@@ -35,7 +35,7 @@ sEfxBlur::sEfxBlur() {
 bool sEfxBlur::load() {
 	// script validation
 	if ((param.size()) != 3 || (strings.size() != 2)) {
-		LOG->Error("EfxBlur [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 3 strings (One with the formula of the Blur Amount + blur shader file)", identifier.c_str());
+		Logger::error("EfxBlur [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 3 strings (One with the formula of the Blur Amount + blur shader file)", identifier.c_str());
 		return false;
 	}
 
@@ -46,7 +46,7 @@ bool sEfxBlur::load() {
 	
 	// Check if the fbo can be used for the effect
 	if (m_uiFboNum < 0 || m_uiFboNum >= m_demo.m_fboManager.fbo.size()) {
-		LOG->Error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), m_uiFboNum, m_demo.m_fboManager.fbo.size()-1);
+		Logger::error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), m_uiFboNum, m_demo.m_fboManager.fbo.size()-1);
 		return false;
 	}
 	

@@ -35,14 +35,14 @@ sLight::sLight() {
 bool sLight::load() {
 	// script validation
 	if ((param.size() != 8)) {
-		LOG->Error("Light [%s]: 8 params needed (light Number, link to camera position, shadowMapping, near&far planes, size, DebugDraw & DebugDraw size)", identifier.c_str());
+		Logger::error("Light [%s]: 8 params needed (light Number, link to camera position, shadowMapping, near&far planes, size, DebugDraw & DebugDraw size)", identifier.c_str());
 		return false;
 	}
 
 	// Load the parameters
 	m_iLightNum = (int)param[0];
 	if (m_iLightNum<0 || m_iLightNum >= m_demo.m_lightManager.light.size()) {
-		LOG->Error("Light: The light number is not supported by the engine. Max Lights: %d", (m_demo.m_lightManager.light.size()-1));
+		Logger::error("Light: The light number is not supported by the engine. Max Lights: %d", (m_demo.m_lightManager.light.size()-1));
 		return false;
 	}
 

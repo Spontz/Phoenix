@@ -31,7 +31,7 @@ sDrawQuad::sDrawQuad() {
 bool sDrawQuad::load() {
 	// script validation
 	if ((param.size()) != 2 || (strings.size() != 1)) {
-		LOG->Error("DrawQuad [%s]: 2 params are needed (Clear the screen buffer & clear depth buffer), and the shader file", identifier.c_str());
+		Logger::error("DrawQuad [%s]: 2 params are needed (Clear the screen buffer & clear depth buffer), and the shader file", identifier.c_str());
 		return false;
 	}
 

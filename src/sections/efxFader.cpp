@@ -29,7 +29,7 @@ sEfxFader::sEfxFader() {
 bool sEfxFader::load() {
 	// script validation
 	if (strings.size() < 1) {
-		LOG->Error("EfxFader [%s]: 1 shader file required", identifier.c_str());
+		Logger::error("EfxFader [%s]: 1 shader file required", identifier.c_str());
 		return false;
 	}
 	

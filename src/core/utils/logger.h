@@ -5,42 +5,27 @@
 
 #include "core/drivers/netdriver.h"
 
-#include <string>
 #include <fstream>
-#include <iomanip>
 
 enum class LogLevel {
-	NONE = 0,
-	HIGH = 1,
-	MED = 2,
-	LOW = 3
+	none = 0,
+	high = 1,
+	med = 2,
+	low = 3
 };
 
 class Logger {
 public:
-	static Logger& GetInstance();
+	static void setLogLevel(LogLevel level);
+	static void info(LogLevel level, const char* pszMessage, ...);
+	static void sendEditor(const char* pszMessage, ...);
+	static void error(const char* pszMessage, ...);
+	static void openLogFile();
+	static void closeLogFile();
 
 private:
-	Logger();
-
-public:
-	void setLogLevel(LogLevel level);
-
-public:
-	void Info(LogLevel level, const char* message, ...) const;
-	void SendEditor(const char* message, ...) const;
-	void Error(const char* message, ...) const;
-	void OpenLogFile() const;
-	void CloseLogFile() const;
-
-private:
-	mutable std::ofstream	m_ofstream;
-
-private:
-	LogLevel				m_logLevel;
-	const std::string		m_outputFile;
-	const netDriver&		m_netDriver;
+	static std::ofstream m_ofstream;
+	static LogLevel m_bLogLevel;
+	static const std::string m_strOutputFile;
+	static const netDriver& m_netDriver;
 };
-
-// HACK: 0 macros
-#define LOG (&Logger::GetInstance())

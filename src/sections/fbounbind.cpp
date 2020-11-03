@@ -27,7 +27,7 @@ sFboUnbind::sFboUnbind() {
 bool sFboUnbind::load() {
 	// script validation
 	if (param.size() != 2) {
-		LOG->Error("FboUnbind [%s]: 2 params are needed: clear the screen buffer, clear depth buffer", this->identifier.c_str());
+		Logger::error("FboUnbind [%s]: 2 params are needed: clear the screen buffer, clear depth buffer", this->identifier.c_str());
 		return false;
 	}
 

@@ -51,9 +51,9 @@ namespace Phoenix {
 				// Subsequent profiling output meant for the original session will end up in the
 				// newly opened session instead.  That's better than having badly formatted
 				// profiling output.
-				if (LOG) // Edge case: BeginSession() might be before Log::Init()
+				//if (LOG) // Edge case: BeginSession() might be before Log::Init()
 				{
-					LOG->Error("Instrumentor::BeginSession('%s') when session '%s' already open.", name.c_str(), m_CurrentSession->Name.c_str());
+					Logger::error("Instrumentor::BeginSession('%s') when session '%s' already open.", name.c_str(), m_CurrentSession->Name.c_str());
 				}
 				InternalEndSession();
 			}
@@ -66,9 +66,9 @@ namespace Phoenix {
 			}
 			else
 			{
-				if (LOG) // Edge case: BeginSession() might be before Log::Init()
+				//if (LOG) // Edge case: BeginSession() might be before Log::Init()
 				{
-					LOG->Error("Instrumentor could not open results file '%s'.", filepath.c_str());
+					Logger::error("Instrumentor could not open results file '%s'.", filepath.c_str());
 				}
 			}
 		}

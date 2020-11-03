@@ -35,7 +35,7 @@ glTexTable_t textureModes[] = {
 
 void glDriver::glfwError_callback(int, const char* err_str)
 {
-	LOG->Error("GLFW Error: %s", err_str);
+	Logger::error("GLFW Error: %s", err_str);
 }
 
 void glDriver::glfwWindowSize_callback(GLFWwindow* p_glfw_window, int width, int height) {
@@ -104,7 +104,7 @@ void glDriver::mouseButton_callback(GLFWwindow* p_glfw_window, int button, int a
 	if (GLDRV->m_demo.m_debug && !(ImGui::GetIO().WantCaptureMouse)) {
 		if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
 			GLDRV->calcMousePos(GLDRV->m_mouse_lastxpos, GLDRV->m_mouse_lastypos);
-			LOG->SendEditor("Mouse pos [%.4f, %.4f]", GLDRV->m_mouseX, GLDRV->m_mouseY);
+			Logger::sendEditor("Mouse pos [%.4f, %.4f]", GLDRV->m_mouseX, GLDRV->m_mouseY);
 		}
 	}
 }
@@ -119,7 +119,7 @@ void glDriver::mouseScroll_callback(GLFWwindow* p_glfw_window, double xoffset, d
 
 void glDriver::glDebugMessage_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
-	LOG->Info(LogLevel::LOW, "Error GL callback: %s type = 0x%x, severity = 0x%x, message = %s",
+	Logger::info(LogLevel::low, "Error GL callback: %s type = 0x%x, severity = 0x%x, message = %s",
 		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
 		type, severity, message);
 }
@@ -137,7 +137,7 @@ void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, in
 			else if (key == KEY_REWIND)
 				demo.rewindDemo();
 			else if (key == KEY_TIME)
-				LOG->Info(LogLevel::HIGH, "Demo time: %.4f", demo.m_demoRunTime);
+				Logger::info(LogLevel::high, "Demo time: %.4f", demo.m_demoRunTime);
 			else if (key == KEY_PLAY_PAUSE) {
 				if (demo.m_status == DemoStatus::PLAY)
 					demo.pauseDemo();
@@ -252,7 +252,7 @@ glDriver::glDriver()
 void glDriver::initFramework() {
 	// Initialize the library
 	if (!glfwInit()) {
-		LOG->Error("GL Framework could not be initialized!");
+		Logger::error("GL Framework could not be initialized!");
 		return;
 	}
 	else {
@@ -281,7 +281,7 @@ bool glDriver::initGraphics() {
 
 	if (!m_glfw_window) {
 		glfwTerminate();
-		//LOG->Error("Window was not created. OpenGL version not supported?");
+		//Logger::error("Window was not created. OpenGL version not supported?");
 		return false;
 	}
 		
@@ -303,7 +303,7 @@ bool glDriver::initGraphics() {
 	// Initialize glad
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		glfwTerminate();
-		LOG->Error("Failed to initialize GLAD");
+		Logger::error("Failed to initialize GLAD");
 		return false;
 	}
 	
@@ -477,7 +477,7 @@ void glDriver::initFbos() {
 	{
 		// Clear Fbo's, if there is any
 		if (m_demo.m_efxBloomFbo.fbo.size() > 0) {
-			LOG->Info(LogLevel::LOW, "Ooops! we need to regenerate the Bloom efx FBO's! clearing efx FBO's first!");
+			Logger::info(LogLevel::low, "Ooops! we need to regenerate the Bloom efx FBO's! clearing efx FBO's first!");
 			m_demo.m_efxBloomFbo.clearFbos();
 		}
 
@@ -497,9 +497,9 @@ void glDriver::initFbos() {
 		for (int i = 0; i < EFXBLOOM_FBO_BUFFERS; i++) {
 			res = m_demo.m_efxBloomFbo.addFbo(bloomFbo.format, (int)bloomFbo.width, (int)bloomFbo.height, bloomFbo.tex_iformat, bloomFbo.tex_format, bloomFbo.tex_type, bloomFbo.tex_components, bloomFbo.numColorAttachments);
 			if (res >= 0)
-				LOG->Info(LogLevel::LOW, "EfxBloom Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, bloomFbo.width, bloomFbo.height, bloomFbo.format, bloomFbo.tex_components, bloomFbo.tex_format, bloomFbo.tex_iformat, bloomFbo.tex_type);
+				Logger::info(LogLevel::low, "EfxBloom Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, bloomFbo.width, bloomFbo.height, bloomFbo.format, bloomFbo.tex_components, bloomFbo.tex_format, bloomFbo.tex_iformat, bloomFbo.tex_type);
 			else
-				LOG->Error("Error in efxBloom Fbo definition: Efx_Fbo number %i has a non recongised format: '%s', please blame the coder.", i, bloomFbo.format);
+				Logger::error("Error in efxBloom Fbo definition: Efx_Fbo number %i has a non recongised format: '%s', please blame the coder.", i, bloomFbo.format);
 		}
 
 	}
@@ -509,7 +509,7 @@ void glDriver::initFbos() {
 	{
 		// Clear Fbo's, if there is any
 		if (m_demo.m_efxAccumFbo.fbo.size() > 0) {
-			LOG->Info(LogLevel::LOW, "Ooops! we need to regenerate the Accum efx FBO's! clearing efx FBO's first!");
+			Logger::info(LogLevel::low, "Ooops! we need to regenerate the Accum efx FBO's! clearing efx FBO's first!");
 			m_demo.m_efxAccumFbo.clearFbos();
 		}
 
@@ -529,9 +529,9 @@ void glDriver::initFbos() {
 		for (int i = 0; i < EFXACCUM_FBO_BUFFERS; i++) {
 			res = m_demo.m_efxAccumFbo.addFbo(accumFbo.format, (int)accumFbo.width, (int)accumFbo.height, accumFbo.tex_iformat, accumFbo.tex_format, accumFbo.tex_type, accumFbo.tex_components, accumFbo.numColorAttachments);
 			if (res >= 0)
-				LOG->Info(LogLevel::LOW, "EfxAccum Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, accumFbo.width, accumFbo.height, accumFbo.format, accumFbo.tex_components, accumFbo.tex_format, accumFbo.tex_iformat, accumFbo.tex_type);
+				Logger::info(LogLevel::low, "EfxAccum Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, accumFbo.width, accumFbo.height, accumFbo.format, accumFbo.tex_components, accumFbo.tex_format, accumFbo.tex_iformat, accumFbo.tex_type);
 			else
-				LOG->Error("Error in efxAccum Fbo definition: Efx_Fbo number %i has a non recongised format: '%s', please blame the coder.", i, accumFbo.format);
+				Logger::error("Error in efxAccum Fbo definition: Efx_Fbo number %i has a non recongised format: '%s', please blame the coder.", i, accumFbo.format);
 		}
 
 	}
@@ -539,7 +539,7 @@ void glDriver::initFbos() {
 	////////////// FBO Manager: Generic FBO's that can be used by the user
 	// Clear Fbo's, if there is any
 	if (m_demo.m_fboManager.fbo.size() > 0) {
-		LOG->Info(LogLevel::LOW, "Ooops! we need to regenerate the FBO's! clearing generic FBO's first!");
+		Logger::info(LogLevel::low, "Ooops! we need to regenerate the FBO's! clearing generic FBO's first!");
 		m_demo.m_fboManager.clearFbos();
 	}
 
@@ -558,10 +558,10 @@ void glDriver::initFbos() {
 			// Check if the format is valid
 			if (this->fbo[i].tex_format > 0) {
 				m_demo.m_fboManager.addFbo(this->fbo[i].format, (int)this->fbo[i].width, (int)this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type, this->fbo[i].tex_components, this->fbo[i].numColorAttachments);
-				LOG->Info(LogLevel::LOW, "Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_components, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
+				Logger::info(LogLevel::low, "Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format, this->fbo[i].tex_components, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
 			}
 			else {
-				LOG->Error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, this->fbo[i].format);
+				Logger::error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, this->fbo[i].format);
 			}
 		}
 	}

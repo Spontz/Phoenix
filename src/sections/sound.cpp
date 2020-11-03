@@ -45,7 +45,7 @@ bool sSound::load() {
 	}
 
 	if (param.size() != 1 || strings.size() != 1) {
-		LOG->Error("Sound [%s]: 1 param and 1 string needed: volume (0.0 to 1.0), and path to the sound file", identifier.c_str());
+		Logger::error("Sound [%s]: 1 param and 1 string needed: volume (0.0 to 1.0), and path to the sound file", identifier.c_str());
 		return false;
 	}
 
@@ -66,7 +66,7 @@ bool sSound::load() {
 	std::string file = m_demo.m_dataFolder + strings[0];
 	m_hMusicStream = BASS_StreamCreateFile(FALSE, file.c_str(), 0, 0, BASS_STREAM_PRESCAN);
 	if (m_hMusicStream == 0) {
-		LOG->Error("Sound [%s]: Cannot read file: %s - Error Code: %i", identifier.c_str(), file.c_str(), BASS_ErrorGetCode());
+		Logger::error("Sound [%s]: Cannot read file: %s - Error Code: %i", identifier.c_str(), file.c_str(), BASS_ErrorGetCode());
 		return false;
 	}
 	return true;
@@ -96,14 +96,14 @@ void sSound::init() {
 	if (FALSE == BASS_ChannelSetPosition(m_hMusicStream, bytes, BASS_POS_BYTE)) { // seek there
 		BASS_err = BASS_ErrorGetCode();
 		if (BASS_err > 0 && BASS_err != BASS_ERROR_POSITION)
-			LOG->Error("Sound [%s]: BASS_ChannelSetPosition returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
+			Logger::error("Sound [%s]: BASS_ChannelSetPosition returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
 	}
 	
 	if (FALSE == BASS_Start())
-		LOG->Error("Sound [%s]: BASS_Start returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
+		Logger::error("Sound [%s]: BASS_Start returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
 
 	if (FALSE == BASS_ChannelPlay(m_hMusicStream, FALSE))
-		LOG->Error("Sound [%s]: BASS_ChannelPlay returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
+		Logger::error("Sound [%s]: BASS_ChannelPlay returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
 		
 	BASS_ChannelSetAttribute(m_hMusicStream, BASS_ATTRIB_VOL, m_fVolume);
 }
@@ -126,7 +126,7 @@ void sSound::exec() {
 	if (-1 == BASS_ChannelGetData(m_hMusicStream, fft, BASS_DATA_FFT1024)) {	// get the FFT data
 		int BASS_err = BASS_ErrorGetCode();
 		if ((BASS_err > 0) && (BASS_err != BASS_ERROR_ENDED))
-			LOG->Error("Sound [%s]: BASS_ChannelGetData returned error: %i", identifier.c_str(), BASS_err);
+			Logger::error("Sound [%s]: BASS_ChannelGetData returned error: %i", identifier.c_str(), BASS_err);
 	}
 
 	BASSDRV->copyFFTdata(fft, BUFFER_SAMPLES);
@@ -174,7 +174,7 @@ void sSound::end() {
 
 	BOOL r = BASS_ChannelStop(m_hMusicStream);
 	if (r != TRUE)
-		LOG->Error("Sound [%s]: BASS_ChannelStop returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
+		Logger::error("Sound [%s]: BASS_ChannelStop returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
 }
 
 std::string sSound::debug() {

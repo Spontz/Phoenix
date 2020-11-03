@@ -43,7 +43,7 @@ sDrawParticlesImage::sDrawParticlesImage() {
 bool sDrawParticlesImage::load() {
 	// script validation
 	if (strings.size() != 5) {
-		LOG->Error("Draw Particles Image [%s]: 5 strings needed (1 for shader file, 1 for image, 3 for positioning)", identifier.c_str());
+		Logger::error("Draw Particles Image [%s]: 5 strings needed (1 for shader file, 1 for image, 3 for positioning)", identifier.c_str());
 		return false;
 	}
 
@@ -57,7 +57,7 @@ bool sDrawParticlesImage::load() {
 	if (m_pTexture == nullptr)
 		return false;
 	if (!m_pTexture->keepData()) {
-		LOG->Error("Draw Particles Image [%s]: Could not allocate data image", identifier.c_str());
+		Logger::error("Draw Particles Image [%s]: Could not allocate data image", identifier.c_str());
 		return false;
 	}
 		
@@ -66,7 +66,7 @@ bool sDrawParticlesImage::load() {
 	m_iNumParticles = m_pTexture->width * m_pTexture->height;
 
 	if (m_iNumParticles == 0) {
-		LOG->Error("Draw Particles Image [%s]: Image size is zero, no particles to draw", identifier.c_str());
+		Logger::error("Draw Particles Image [%s]: Image size is zero, no particles to draw", identifier.c_str());
 		return false;
 	}
 	// Load the particles position and color

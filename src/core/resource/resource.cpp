@@ -7,7 +7,7 @@
 
 void Resource::loadAllResources()
 {
-	LOG->Info(LogLevel::LOW, "Start loading engine internal resources");
+	Logger::info(LogLevel::low, "Start loading engine internal resources");
 	// Load Objects
 	Load_Obj_QuadFullscreen();
 	Load_Obj_Skybox();
@@ -20,7 +20,7 @@ void Resource::loadAllResources()
 	//Load_Text_Fonts();			// Text fonts
 	// Load Lights
 	Load_Lights();
-	LOG->Info(LogLevel::LOW, "End loading engine internal resources");
+	Logger::info(LogLevel::low, "End loading engine internal resources");
 }
 
 Resource::Resource()

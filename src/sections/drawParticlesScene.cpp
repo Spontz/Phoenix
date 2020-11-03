@@ -43,7 +43,7 @@ sDrawParticlesScene::sDrawParticlesScene() {
 bool sDrawParticlesScene::load() {
 	// script validation
 	if (strings.size() != 5) {
-		LOG->Error("Draw Particles Scene [%s]: 5 strings needed (1 for shader file, 1 for 3D model, 3 for positioning)", identifier.c_str());
+		Logger::error("Draw Particles Scene [%s]: 5 strings needed (1 for shader file, 1 for 3D model, 3 for positioning)", identifier.c_str());
 		return false;
 	}
 
@@ -64,7 +64,7 @@ bool sDrawParticlesScene::load() {
 		m_iNumParticles += (int)m_pModel->meshes[i].unique_vertices_pos.size();
 	}
 	if (m_iNumParticles == 0) {
-		LOG->Error("Draw Particles Scene [%s]: No vertex found in the model", identifier.c_str());
+		Logger::error("Draw Particles Scene [%s]: No vertex found in the model", identifier.c_str());
 		return false;
 	}
 	// Load the particles position

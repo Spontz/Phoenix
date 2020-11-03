@@ -29,7 +29,7 @@ Fbo::~Fbo()
 bool Fbo::upload(std::string EngineFormat, int index, int Width, int Height, int iFormat, int Format, int Type, unsigned int numColorAttachments)
 {
 	if ((Width == 0) || (Height == 0)) {
-		LOG->Error("Fbo error: Size is zero!");
+		Logger::error("Fbo error: Size is zero!");
 		return false;
 	}
 	this->engineFormat = EngineFormat;
@@ -42,11 +42,11 @@ bool Fbo::upload(std::string EngineFormat, int index, int Width, int Height, int
 
 	// Check Color attachments
 	if (this->numAttachments <= 0 ) {
-		LOG->Error("Fbo::upload: Requested %d attachments for fbo_%d, but should be at least 1", this->numAttachments, index);
+		Logger::error("Fbo::upload: Requested %d attachments for fbo_%d, but should be at least 1", this->numAttachments, index);
 		this->numAttachments = 1;
 	}
 	if (this->numAttachments > GLDRV_MAX_COLOR_ATTACHMENTS) {
-		LOG->Error("Fbo::upload: MAX number of attachments reached. Requested %d attachments for fbo_%d, but max attachments are: %d", this->numAttachments, index, GLDRV_MAX_COLOR_ATTACHMENTS);
+		Logger::error("Fbo::upload: MAX number of attachments reached. Requested %d attachments for fbo_%d, but max attachments are: %d", this->numAttachments, index, GLDRV_MAX_COLOR_ATTACHMENTS);
 		this->numAttachments = GLDRV_MAX_COLOR_ATTACHMENTS;
 	}
 
@@ -109,10 +109,10 @@ bool Fbo::upload(std::string EngineFormat, int index, int Width, int Height, int
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		switch (status) {
 		case GL_FRAMEBUFFER_UNSUPPORTED:
-			LOG->Error("Fbo::upload: Error uploading %s fbo '%d' (id='%d'): glCheckFramebufferStatus returned GL_FRAMEBUFFER_UNSUPPORTED. Choose other format, this is not supported in the current system.", this->engineFormat.c_str(), index, this->m_frameBuffer);
+			Logger::error("Fbo::upload: Error uploading %s fbo '%d' (id='%d'): glCheckFramebufferStatus returned GL_FRAMEBUFFER_UNSUPPORTED. Choose other format, this is not supported in the current system.", this->engineFormat.c_str(), index, this->m_frameBuffer);
 			break;
 		default:
-			LOG->Error("Fbo::upload: Error uploading %s fbo '%d' (id='%d'): Invalid framebuffer status.", this->engineFormat.c_str(), index, this->m_frameBuffer);
+			Logger::error("Fbo::upload: Error uploading %s fbo '%d' (id='%d'): Invalid framebuffer status.", this->engineFormat.c_str(), index, this->m_frameBuffer);
 			break;
 		}
 		return false;

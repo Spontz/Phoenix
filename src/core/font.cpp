@@ -23,29 +23,29 @@ Font::Font(int size, std::string font_path, std::string shader_path)
 		shdr_font->use();
 	}
 	else {
-		LOG->Error("Could not load Font shader!");
+		Logger::error("Could not load Font shader!");
 		return;
 	}
 		
 
 	shdr_font->setValue("projection", projection);
-	LOG->Info(LogLevel::LOW, "Font shader loaded OK");
+	Logger::info(LogLevel::low, "Font shader loaded OK");
 
 
 	if (FT_Init_FreeType(&ft)) {
-		LOG->Error("Freetype library could not be initializad");
+		Logger::error("Freetype library could not be initializad");
 		return;
 	}
-	LOG->Info(LogLevel::LOW, "FreeType lib loaded OK");
+	Logger::info(LogLevel::low, "FreeType lib loaded OK");
 
 	FT_Face face;
 	if (ft) {
 		if (FT_New_Face(ft, font_path.c_str(), 0, &face)) {
-			LOG->Error("Freetype library could not load font: %s", font_path.c_str());
+			Logger::error("Freetype library could not load font: %s", font_path.c_str());
 			return;
 		}
 		FT_Set_Pixel_Sizes(face, 0, size);
-		LOG->Info(LogLevel::LOW, "Font %s loaded OK", font_path.c_str());
+		Logger::info(LogLevel::low, "Font %s loaded OK", font_path.c_str());
 	}
 
 	FT_GlyphSlot glyphSlot = face->glyph;
@@ -57,7 +57,7 @@ Font::Font(int size, std::string font_path, std::string shader_path)
 	for (GLubyte c = 32; c < 128; c++) {
 		// Load character glyph 
 		if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-			LOG->Error("Freetype: Failed to load Glyph: %c", c);
+			Logger::error("Freetype: Failed to load Glyph: %c", c);
 			continue;
 		}
 		
@@ -77,7 +77,7 @@ Font::Font(int size, std::string font_path, std::string shader_path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	LOG->Info(LogLevel::LOW, "Font Atlas texture size is %dx%d pixels", width, height);
+	Logger::info(LogLevel::low, "Font Atlas texture size is %dx%d pixels", width, height);
 
 	// Now we put all the characters into the texture
 	int ox = 0;
@@ -86,12 +86,12 @@ Font::Font(int size, std::string font_path, std::string shader_path)
 	for (GLubyte c = 32; c < 128; c++) {
 		// Load character glyph 
 		if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-			LOG->Error("Freetype: Failed to load Glyph");
+			Logger::error("Freetype: Failed to load Glyph");
 			continue;
 		}
 		char_width = glyphSlot->bitmap.width + 1;
 		glTexSubImage2D(GL_TEXTURE_2D, 0, ox, oy, glyphSlot->bitmap.width, glyphSlot->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyphSlot->bitmap.buffer);
-		//LOG->Info(LogLevel::LOW, "Inserted char %c, texture in %dx%d pixels, size: %dx%d", c, ox, oy, glyphSlot->bitmap.width, glyphSlot->bitmap.rows);
+		//Logger::info(LogLevel::low, "Inserted char %c, texture in %dx%d pixels, size: %dx%d", c, ox, oy, glyphSlot->bitmap.width, glyphSlot->bitmap.rows);
 		// Now store character for later use
 		Char character = {
 			glm::ivec2(glyphSlot->bitmap.width, glyphSlot->bitmap.rows),
@@ -99,7 +99,7 @@ Font::Font(int size, std::string font_path, std::string shader_path)
 			glm::fvec2((float)ox / (float)width, (float)glyphSlot->bitmap.rows / (float)height),
 			(GLuint)(glyphSlot->advance.x) >> 6 // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
 		};
-		//LOG->Info(LogLevel::LOW, "Inserted char %c, size: %dx%d, offset: %.4f, offsetSize: %.4f", c, character.Size.x, character.Size.y, character.coordOffset.x, (float)(character.Size.x) / (float)width);
+		//Logger::info(LogLevel::low, "Inserted char %c, size: %dx%d, offset: %.4f, offsetSize: %.4f", c, character.Size.x, character.Size.y, character.coordOffset.x, (float)(character.Size.x) / (float)width);
 		Characters.insert(std::pair<GLchar, Char>(c, character));
 
 		ox += char_width;
@@ -109,7 +109,7 @@ Font::Font(int size, std::string font_path, std::string shader_path)
 	FT_Done_Face(face);
 	FT_Done_FreeType(ft);
 
-	LOG->Info(LogLevel::LOW, "Freetype Glyph fonts processed OK, and Freetype Lib unloaded OK");
+	Logger::info(LogLevel::low, "Freetype Glyph fonts processed OK, and Freetype Lib unloaded OK");
 
 	// Configure VAO/VBO for texture quads
 	glGenVertexArrays(1, &VAO);
@@ -181,7 +181,7 @@ void Font::RenderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, glm
 		GLfloat v = 0;
 		GLfloat vsize = ch.coordOffset.y;
 
-		//LOG->Info(LogLevel::LOW, "Font sizes: char: %c - xypos: %.3f,%.3f - wh: %.3f,%.3f uusize: %.3f,%.3f", *c, xpos, ypos, w, h, u, usize);
+		//Logger::info(LogLevel::low, "Font sizes: char: %c - xypos: %.3f,%.3f - wh: %.3f,%.3f uusize: %.3f,%.3f", *c, xpos, ypos, w, h, u, usize);
 		// Update VBO for each character
 		GLfloat vertices[6][4] = {
 			{ xpos,     -ypos - h,   u, v },

@@ -64,7 +64,7 @@ sDrawSceneMatrix::sDrawSceneMatrix()
 
 bool sDrawSceneMatrix::load() {
 	if ((param.size() != 5) || (strings.size() < 7)) {
-		LOG->Error("DrawSceneMatrix [%s]: 5 param (Enable Depth buffer, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier.c_str());
+		Logger::error("DrawSceneMatrix [%s]: 5 param (Enable Depth buffer, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier.c_str());
 		return false;
 	}
 
@@ -92,7 +92,7 @@ bool sDrawSceneMatrix::load() {
 		num_obj_instances += (int)m_pModelRef->meshes[i].unique_vertices_pos.size();
 	}
 	if (num_obj_instances == 0) {
-		LOG->Error("DrawSceneMatrix: No vertex found in the reference model");
+		Logger::error("DrawSceneMatrix: No vertex found in the reference model");
 		return false;
 	}
 
