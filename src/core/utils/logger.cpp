@@ -11,9 +11,9 @@ Logger& Logger::GetInstance() {
 
 Logger::Logger()
 	:
-	m_netDriver_(netDriver::GetInstance()),
-	m_outputFile_("demo_log.txt"),
-	m_logLevel_(LogLevel::HIGH)
+	m_netDriver(netDriver::GetInstance()),
+	m_outputFile("demo_log.txt"),
+	m_logLevel(LogLevel::HIGH)
 {
 	if (DEMO->m_debug)
 		OpenLogFile();
@@ -22,11 +22,11 @@ Logger::Logger()
 void Logger::setLogLevel(LogLevel level)
 {
 	if (level <= LogLevel::LOW)
-		m_logLevel_ = level;
+		m_logLevel = level;
 }
 
 void Logger::Info(LogLevel level, const char* pszMessage, ...) const {
-	if (DEMO->m_debug && this->m_logLevel_ >= level) {
+	if (DEMO->m_debug && this->m_logLevel >= level) {
 
 		// Get the message
 		va_list argptr;
@@ -47,7 +47,7 @@ void Logger::Info(LogLevel level, const char* pszMessage, ...) const {
 		delete[] pszText;
 
 		// Output to file
-		m_ofstream_ << strOutputString;
+		m_ofstream << strOutputString;
 
 		// Output to Visual Studio
 #if defined(_DEBUG) && defined(WIN32)
@@ -81,7 +81,7 @@ void Logger::SendEditor(const char* pszMessage, ...) const {
 	delete[] pszText;
 
 	// Output to editor
-	m_netDriver_.sendMessage(strOutputString);
+	m_netDriver.sendMessage(strOutputString);
 
 	// Output to Visual Studio
 #if defined(_DEBUG) && defined(WIN32)
@@ -113,7 +113,7 @@ void Logger::Error(const char* pszMessage, ...) const {
 	delete[] pszText;
 
 	// Output to file
-	m_ofstream_ << strOutputString;
+	m_ofstream << strOutputString;
 
 	// Output to Visual Studio
 	#if defined(_DEBUG) && defined(WIN32)
@@ -121,15 +121,15 @@ void Logger::Error(const char* pszMessage, ...) const {
 	#endif
 
 	// Output to demo editor
-	m_netDriver_.sendMessage("ERROR::" + strOutputString);
+	m_netDriver.sendMessage("ERROR::" + strOutputString);
 }
 
 void Logger::OpenLogFile() const {
-	if (!m_ofstream_.is_open())
-		m_ofstream_.open(m_outputFile_.c_str(), std::ios::out | std::ios::trunc);
+	if (!m_ofstream.is_open())
+		m_ofstream.open(m_outputFile.c_str(), std::ios::out | std::ios::trunc);
 }
 
 void Logger::CloseLogFile() const {
-	if (m_ofstream_.is_open())
-		m_ofstream_.close();
+	if (m_ofstream.is_open())
+		m_ofstream.close();
 }

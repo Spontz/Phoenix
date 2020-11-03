@@ -80,7 +80,7 @@ void Video::clearData()
 double Video::renderInterval() const
 {
 	return m_dIntervalFrame / m_VideoSource.m_dPlaybackSpeed;
-};
+}
 
 bool Video::load(CVideoSource const& videoSource)
 {
@@ -248,7 +248,7 @@ bool Video::load(CVideoSource const& videoSource)
 
 	m_pFrame = av_frame_alloc();
 	m_pGLFrame = av_frame_alloc();
-	
+
 	// Allocate te data buffer for the glFrame
 	const auto iSize = av_image_get_buffer_size(
 		AV_PIX_FMT_RGB24,
@@ -259,7 +259,7 @@ bool Video::load(CVideoSource const& videoSource)
 
 	const auto puiInternalBuffer = static_cast<const uint8_t*>(
 		av_malloc(iSize * sizeof(uint8_t))
-	);
+		);
 
 	av_image_fill_arrays(
 		m_pGLFrame->data,
@@ -398,7 +398,7 @@ void Video::renderVideo(double dTime)
 
 	if (!m_bLoaded)
 		return;
-		
+
 	if (m_pCodecContext && m_bNewFrame) {
 		glBindTextureUnit(0, m_uiTextureOGLName);
 		glTexSubImage2D(

@@ -34,12 +34,12 @@ public:
 	void CloseLogFile() const;
 
 private:
-	mutable std::ofstream	m_ofstream_;
+	mutable std::ofstream	m_ofstream;
 
 private:
-	LogLevel				m_logLevel_;
-	const std::string		m_outputFile_;
-	const netDriver&		m_netDriver_;
+	LogLevel				m_logLevel;
+	const std::string		m_outputFile;
+	const netDriver&		m_netDriver;
 };
 
 // HACK: 0 macros
