@@ -29,10 +29,10 @@ demokernel::demokernel()
 	m_debug_fontSize(1.0f),
 #ifdef _DEBUG
 	m_debug(true),
-	m_bLogLevel(LogLevel::low),
+	m_logLevel(LogLevel::low),
 #else
 	m_debug(false),
-	m_logLevel(LogLevel::HIGH),
+	m_logLevel(LogLevel::high),
 #endif
 	m_loop(true),
 	m_sound(true),
@@ -354,7 +354,7 @@ bool demokernel::load_config()
 	// Log file
 	if (m_debug)
 		Logger::openLogFile();
-	Logger::setLogLevel(m_bLogLevel);
+	Logger::setLogLevel(m_logLevel);
 
 	if (m_slaveMode) {
 		Logger::info(LogLevel::med, "Engine is in slave mode, therefore, enabling force loads for shaders and textures!");

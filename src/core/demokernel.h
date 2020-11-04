@@ -51,7 +51,7 @@ public:
 	char*			m_demoName;
 	const bool		m_debug;
 	const float		m_debug_fontSize;
-	const LogLevel	m_bLogLevel;
+	const LogLevel	m_logLevel;
 
 	// misc // TODO: should be boolean values
 	int			m_loop;

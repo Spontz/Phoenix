@@ -18,7 +18,7 @@ namespace Phoenix {
 			{"demo_start",				SectionVar::TYPE_FLOAT,			&DEMO->m_demoStartTime	},
 			{"demo_end",				SectionVar::TYPE_FLOAT,			&DEMO->m_demoEndTime	},
 			{"slave",					SectionVar::TYPE_INT,			&DEMO->m_slaveMode		},
-			{"log_detail",				SectionVar::TYPE_INT,			&DEMO->m_bLogLevel		},
+			{"log_detail",				SectionVar::TYPE_INT,			&DEMO->m_logLevel		},
 
 			{"gl_fullscreen",			SectionVar::TYPE_INT,			&GLDRV->config.fullScreen				},
 			{"gl_width",				SectionVar::TYPE_INT,			&GLDRV->config.framebuffer_width		},
