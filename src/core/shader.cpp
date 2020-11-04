@@ -148,8 +148,8 @@ void Shader::addLinedirective(std::string& source)
 	std::stringstream end_stream;
 	std::string line;
 	int lineNum = 1;
-	while (std::getline(f, line)) {
-		end_stream << line;
+	while (!Util::safeGetline(f, line).eof()) {
+		end_stream << line << std::endl;
 		std::size_t found = line.find("#version"); // Right after the #version directive we will add the #line directive
 		if (found != std::string::npos)
 		{
@@ -164,7 +164,6 @@ void Shader::addLinedirective(std::string& source)
 	}
 	source = end_stream.str();
 }
-
 
 std::unordered_map<GLenum, std::string> Shader::PreProcess(const std::string& source)
 {

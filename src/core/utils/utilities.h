@@ -21,6 +21,7 @@ namespace Util {
 	int getFloatVector(char *line, float *vector, int max);
 	float getFloat(char *line);
 	std::string& replaceString(std::string & subj, std::string old_str, std::string new_str);
+	std::istream& safeGetline(std::istream& is, std::string& t);
 }
 
 
