@@ -3,7 +3,7 @@
 #include "main.h"
 #include "core/drivers/bassdriver.h"
 
-#define BUFFER_SAMPLES	512
+#define BUFFER_SAMPLES	1024
 #define	DEFAULT_ENERGY	1.0f
 //#define	BEAT_RATIO		1.4f
 //#define FADE_OUT		4.0f
@@ -114,7 +114,7 @@ void sSound::init() {
 void sSound::exec() {
 	float instant, avg;	// Instant energy
 	int i;
-	float fft[BUFFER_SAMPLES] = {0.0f}; // 512 samples, because we have used "BASS_DATA_FFT1024", and this returns 512 values
+	float fft[BUFFER_SAMPLES] = {0.0f}; // 1024 samples, because we have used "BASS_DATA_FFT2048"
 
 	// Update local values with the ones defined by the demosystem
 	m_fBeatRatio = m_demo.m_beatRatio;
@@ -131,7 +131,7 @@ void sSound::exec() {
 	BASS_ChannelGetLevelEx(m_hMusicStream, m_fLevels, 0.02f, BASS_LEVEL_STEREO | BASS_LEVEL_VOLPAN);
 	
 	// FFT analysis
-	if (-1 == BASS_ChannelGetData(m_hMusicStream, fft, BASS_DATA_FFT1024)) {	// get the FFT data
+	if (-1 == BASS_ChannelGetData(m_hMusicStream, fft, BASS_DATA_FFT2048)) {	// get the FFT data
 			int BASS_err = BASS_ErrorGetCode();
 		if ((BASS_err > 0) && (BASS_err != BASS_ERROR_ENDED))
 			Logger::error("Sound [%s]: BASS_ChannelGetData returned error: %i", identifier.c_str(), BASS_err);

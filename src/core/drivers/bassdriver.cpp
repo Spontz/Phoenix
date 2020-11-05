@@ -14,7 +14,7 @@ bassDriver& bassDriver::GetInstance() {
 bassDriver::bassDriver()
 	:
 	m_demo(demokernel::GetInstance()),
-	m_fft{0.0}
+	m_spectrum{0.0}
 {
 }
 
@@ -38,7 +38,7 @@ void bassDriver::update() {
 	m_demo.m_beat = 0;
 	
 	if (m_demo.m_debug)
-		memset(m_fft, 0, FFT_BUFFER_SAMPLES *sizeof(float));
+		memset(m_spectrum, 0, SPECTRUM_SAMPLES *sizeof(float));
 	
 }
 
@@ -58,23 +58,39 @@ void bassDriver::addFFTdata(float* fftData, int samples) {
 	// FFT values are just for debug purposes, so we just add the values if we are in debug mode
 	if (m_demo.m_debug)
 	{
-		if (samples != FFT_BUFFER_SAMPLES)
-			return;
-		// Add FFT info, although it not really used, just or "plot" values
-		for (int i = 0; i < FFT_BUFFER_SAMPLES; i++)
-			m_fft[i] += fftData[i];
+		// Populate spectrum bars based on FFT data received
+		int b0 = 0;
+		for (int i = 0; i < SPECTRUM_SAMPLES; i++) {
+			float peak = 0;
+			int b1 = static_cast<int>(pow(2.0f, (float)i * 10.0f / (float)(SPECTRUM_SAMPLES - 1))); //determine size of the bin
+
+			//upper bound on bin size
+			if (b1 >= samples)
+				b1 = samples-1;
+
+			//make sure atleast one bin is used
+			if (b1 <= b0)
+				b1 = b0 + 1;
+
+			//loop over every bin
+			for (; b0 < b1; b0++) {
+				if (peak < fftData[1+b0]) { peak = fftData[1+b0]; }
+			}
+			//write each column to file
+			m_spectrum[i] = sqrt(peak);
+		}
 	}
 	
 }
 
-float* bassDriver::getFFTdata()
+float* bassDriver::getSpectrumData()
 {
-	return &(m_fft[0]);
+	return &(m_spectrum[0]);
 }
 
-int bassDriver::getFFTSamples()
+int bassDriver::getSpectrumSamples()
 {
-	return FFT_BUFFER_SAMPLES;
+	return SPECTRUM_SAMPLES;
 }
 
 float bassDriver::getCPUload() {

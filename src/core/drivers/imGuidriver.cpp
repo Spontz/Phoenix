@@ -263,9 +263,9 @@ void imGuiDriver::drawSound()
 	ImVec2 win = ImGui::GetWindowSize();
 	ImGui::SetWindowFontScale(m_fontScale);
 	ImGui::Text("Beat value: %.3f, fadeout: %.3f, ratio: %.3f", m_demo.m_beat, m_demo.m_beatFadeout, m_demo.m_beatRatio);
-	int plotSamples = BASSDRV->getFFTSamples() / 4;
-	ImGui::Text("FFT Samples: %d, Displaying first %d samples", BASSDRV->getFFTSamples(), plotSamples);
-	ImGui::PlotHistogram("", BASSDRV->getFFTdata(), plotSamples, 0, "sound fft", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectrum display
+	int plotSamples = BASSDRV->getSpectrumSamples();
+	ImGui::Text("Spectrum analyzer: %d samples", plotSamples);
+	ImGui::PlotHistogram("", BASSDRV->getSpectrumData(), plotSamples, 0, "Spectrum analyzer", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectrum display
 	//ImGui::Text("Waveform display, Displaying 2 channels:");
 	//ImGui::PlotHistogram("", BASSDRV->getFFTdata(), plotSamples, 0, "sound waveform", -0.5, 0.5, ImVec2(win.x - 10, win.y - 80)); // For Waveform display
 

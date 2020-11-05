@@ -6,7 +6,7 @@
 
 // hack: get rid of macros
 #define BASSDRV (&bassDriver::GetInstance())
-#define FFT_BUFFER_SAMPLES 512
+#define SPECTRUM_SAMPLES 32
 
 // ******************************************************************
 
@@ -18,7 +18,7 @@ public:
 
 private:
 	demokernel&	m_demo;
-	float		m_fft[FFT_BUFFER_SAMPLES];
+	float		m_spectrum[SPECTRUM_SAMPLES];
 
 public:
 	void init();
@@ -29,8 +29,8 @@ public:
 	void end();
 
 	void				addFFTdata(float* fftData, int samples);
-	float*				getFFTdata();
-	int					getFFTSamples();
+	float*				getSpectrumData();
+	int					getSpectrumSamples();
 	float				getCPUload();
 	const std::string	getVersion();
 };
