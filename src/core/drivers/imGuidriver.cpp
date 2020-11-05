@@ -179,7 +179,7 @@ void imGuiDriver::drawInfo() {
 		ImGui::Text("Fps: %.0f", m_demo.m_fps);
 		ImGui::Text("Demo status: %s", demoStatus);
 		ImGui::Text("Time: %.2f/%.2f", m_demo.m_demoRunTime, m_demo.m_demoEndTime);
-		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->sound_cpu());
+		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->getCPUload());
 		ImGui::Text("Texture mem used: %.2fmb", m_demo.m_textureManager.mem + m_demo.m_fboManager.mem + m_demo.m_efxBloomFbo.mem + m_demo.m_efxAccumFbo.mem);
 		ImGui::Text("Cam Speed: %.3f", m_demo.m_pCamera->MovementSpeed);
 		ImGui::Text("Cam Pos: %.1f,%.1f,%.1f", m_demo.m_pCamera->Position.x, m_demo.m_pCamera->Position.y, m_demo.m_pCamera->Position.z);
@@ -263,8 +263,8 @@ void imGuiDriver::drawSound()
 	ImVec2 win = ImGui::GetWindowSize();
 	ImGui::SetWindowFontScale(m_fontScale);
 	ImGui::Text("Beat value: %.3f, fadeout: %.3f, ratio: %.3f", m_demo.m_beat, m_demo.m_beatFadeout, m_demo.m_beatRatio);
-	int plotSamples = FFT_BUFFER_SAMPLES / 4;
-	ImGui::Text("FFT Samples: %d, Displaying first %d samples", FFT_BUFFER_SAMPLES, plotSamples);
+	int plotSamples = BASSDRV->getFFTSamples() / 4;
+	ImGui::Text("FFT Samples: %d, Displaying first %d samples", BASSDRV->getFFTSamples(), plotSamples);
 	ImGui::PlotHistogram("", BASSDRV->getFFTdata(), plotSamples, 0, "sound fft", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectrum display
 	//ImGui::Text("Waveform display, Displaying 2 channels:");
 	//ImGui::PlotHistogram("", BASSDRV->getFFTdata(), plotSamples, 0, "sound waveform", -0.5, 0.5, ImVec2(win.x - 10, win.y - 80)); // For Waveform display
