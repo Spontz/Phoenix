@@ -62,7 +62,7 @@ void bassDriver::addFFTdata(float* fftData, int samples) {
 		int b0 = 0;
 		for (int i = 0; i < SPECTRUM_SAMPLES; i++) {
 			float peak = 0;
-			int b1 = static_cast<int>(pow(2.0f, (float)i * 10.0f / (float)(SPECTRUM_SAMPLES - 1))); //determine size of the bin
+			int b1 = static_cast<int>(pow(2.0f, (float)i * 9.0f / (float)(SPECTRUM_SAMPLES - 1))); //determine size of the bin
 
 			//upper bound on bin size
 			if (b1 >= samples)
