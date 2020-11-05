@@ -28,7 +28,7 @@ public:
 	void stop();
 	void end();
 
-	void copyFFTdata(float* fftData, int samples);
+	void addFFTdata(float* fftData, int samples);
 	float* getFFTdata();
 	float sound_cpu();
 	const std::string getVersion();

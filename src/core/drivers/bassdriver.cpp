@@ -31,6 +31,11 @@ void bassDriver::play() {
 
 void bassDriver::update() {
 	BASS_Update(200);
+	
+	// Clear general beat value and internal fft data
+	DEMO->m_beat = 0;
+	memset(fft, 0, FFT_BUFFER_SAMPLES * sizeof(float));
+	
 }
 
 void bassDriver::pause() {
@@ -45,11 +50,12 @@ void bassDriver::end() {
 	BASS_Free();
 }
 
-void bassDriver::copyFFTdata(float* fftData, int samples) {
+void bassDriver::addFFTdata(float* fftData, int samples) {
 	if (samples != FFT_BUFFER_SAMPLES)
 		return;
-	else
-		memcpy(fft, fftData, FFT_BUFFER_SAMPLES);
+	// Add FFT info, although it not really used, just or "plot" values
+	for (int i = 0; i < FFT_BUFFER_SAMPLES; i++)
+		fft[i] += fftData[i];
 }
 
 float* bassDriver::getFFTdata()

@@ -203,9 +203,9 @@ void demokernel::doExec() {
 		processTimer();
 	}
 
-	// update sound driver once a frame (seems that is not needed)
-	//if (sound)
-	//	BASSDRV->update();
+	// update sound driver once a frame
+	if (m_sound)
+		BASSDRV->update();
 
 	// Update network driver
 	if (m_slaveMode)

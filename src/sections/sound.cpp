@@ -18,16 +18,19 @@ public:
 	std::string debug();
 
 private:
-	HSTREAM m_hMusicStream;	// Music Stream
+	HSTREAM		m_hMusicStream;					// Music Stream
+
+	std::string	m_file = "";
+	float		m_fLevels[2]	= { 0.0f };;	// Left and right channels
 
 	// Beat parameters
-	float	m_fEnergy[BUFFER_SAMPLES] = {0.0f};
-	float	m_fBeatRatio	= m_demo.m_beatRatio;
-	float	m_fFadeOut		= m_demo.m_beatFadeout;
-	float	m_fIntensity	= 0;
-	int		m_iPosition		= 1;
-	float	m_fVolume		= 1;
-	float	m_fPrevVolume	= 1;	// Previous volume value
+	float		m_fEnergy[BUFFER_SAMPLES] = {0.0f};
+	float		m_fBeatRatio	= m_demo.m_beatRatio;
+	float		m_fFadeOut		= m_demo.m_beatFadeout;
+	float		m_fIntensity	= 0;
+	int			m_iPosition		= 1;
+	float		m_fVolume		= 1;
+	float		m_fPrevVolume	= 1;	// Previous volume value
 };
 
 Section* instance_sound() {
@@ -63,10 +66,10 @@ bool sSound::load() {
 	m_fIntensity = 0;
 	m_iPosition = 1;
 
-	std::string file = m_demo.m_dataFolder + strings[0];
-	m_hMusicStream = BASS_StreamCreateFile(FALSE, file.c_str(), 0, 0, BASS_STREAM_PRESCAN);
+	m_file = m_demo.m_dataFolder + strings[0];
+	m_hMusicStream = BASS_StreamCreateFile(FALSE, m_file.c_str(), 0, 0, BASS_STREAM_PRESCAN);
 	if (m_hMusicStream == 0) {
-		Logger::error("Sound [%s]: Cannot read file: %s - Error Code: %i", identifier.c_str(), file.c_str(), BASS_ErrorGetCode());
+		Logger::error("Sound [%s]: Cannot read file: %s - Error Code: %i", identifier.c_str(), m_file.c_str(), BASS_ErrorGetCode());
 		return false;
 	}
 	return true;
@@ -122,17 +125,38 @@ void sSound::exec() {
 		BASS_ChannelSetAttribute(m_hMusicStream, BASS_ATTRIB_VOL, m_fVolume);
 		m_fPrevVolume = m_fVolume;
 	}
-
+	
+	// Get a peak level reading for each channel using 20ms of data.
+	// TODO: Do we need it? to ask Ivan
+	BASS_ChannelGetLevelEx(m_hMusicStream, m_fLevels, 0.02f, BASS_LEVEL_STEREO | BASS_LEVEL_VOLPAN);
+	
+	// FFT analysis
 	if (-1 == BASS_ChannelGetData(m_hMusicStream, fft, BASS_DATA_FFT1024)) {	// get the FFT data
-		int BASS_err = BASS_ErrorGetCode();
+			int BASS_err = BASS_ErrorGetCode();
 		if ((BASS_err > 0) && (BASS_err != BASS_ERROR_ENDED))
 			Logger::error("Sound [%s]: BASS_ChannelGetData returned error: %i", identifier.c_str(), BASS_err);
 	}
 
-	BASSDRV->copyFFTdata(fft, BUFFER_SAMPLES);
-
+	BASSDRV->addFFTdata(fft, BUFFER_SAMPLES);
+	
+	// Waveform data
+	/*
+	float fft_transform[BUFFER_SAMPLES] = { 0.0f };
+	if (-1 == BASS_ChannelGetData(m_hMusicStream, fft, (BUFFER_SAMPLES * sizeof(float)) | BASS_DATA_FLOAT)) {
+	int BASS_err = BASS_ErrorGetCode();
+	if ((BASS_err > 0) && (BASS_err != BASS_ERROR_ENDED))
+		Logger::error("Sound [%s]: BASS_ChannelGetData returned error: %i", identifier.c_str(), BASS_err);
+	}
+	// Data transform: In case we have a waveform data: Split info by channels
+	for (i = 0; i < BUFFER_SAMPLES / 2; i++) {
+		fft_transform[i] = fft[i * 2];	//Channel 1
+		fft_transform[BUFFER_SAMPLES / 2 + i] = fft[i * 2 + 1]; // Channel 2
+	}
+	BASSDRV->copyFFTdata(fft_transform, BUFFER_SAMPLES);
+	*/
+	
 	instant = 0;
-	for (i = 0; i < (int)BUFFER_SAMPLES; i++)
+	for (i = 0; i < BUFFER_SAMPLES; i++)
 		instant += fft[i];
 
 	// calculate average energy in last samples
@@ -153,7 +177,9 @@ void sSound::exec() {
 
 	// updated kernel shared variable
 	// to be used by kernel itself or another sections
-	m_demo.m_beat = m_fIntensity;
+	m_demo.m_beat += m_fIntensity;
+	if (m_demo.m_beat > 1.0) // TODO: We should control this in the sound driver... I think
+		m_demo.m_beat = 1.0f;
 
 	// update energy buffer
 	if (m_iPosition < BUFFER_SAMPLES) {
@@ -180,6 +206,9 @@ void sSound::end() {
 std::string sSound::debug() {
 	std::stringstream ss;
 	ss << "+ Sound id: " << identifier << " layer: " << layer << std::endl;
+	ss << "  file: " << m_file << std::endl;
 	ss << "  beat: " << m_fIntensity << std::endl;
+	ss << "  Level left: " << m_fLevels[0] << std::endl;
+	ss << "  Level right: " << m_fLevels[1] << std::endl;
 	return ss.str();
 }
