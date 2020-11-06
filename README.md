@@ -1,29 +1,34 @@
 # Engine Usage keys
 ## Control keys
 * Exit Demo : ESC
-* Take Screenshot: PRINTSCREEN -> Not implemented yet
-* Show time on log file: ENTER
-* Show time on screen: T (only works if the engine is in debug mode)
-* Show FPS's on screen: Y (only works if the engine is in debug mode)
-* Show which sections that are being drawn, and some information related to them: U (only works if the engine is in debug mode)
-* Show FBO's content on screen: F (only works if the engine is in debug mode)
-* Change FBO's Attachment content on screen: G (only works if the engine is in debug mode)
+
+## Debug information (only displayed if engine is in debug mode):
+* `1` Show Information (FPS, demo status, time, texture memory used, and other information)
+* `2` Show FPS Histogram
+* `3` Show FBO's
+* `4` Change FBO attachments to see
+* `5` Show which sections that are being drawn, and some information related to them
+* `6` Show sound information (beat and fft histogram)
+* `0` Show engine and libraries versions
+* `ENTER` Print time on log file
 
 ## Playback control
-* PLAY / PAUSE: F1
-* REWIND: F2
-* FASTFORWARD: F3
-* RESTART: F4
+* `F1` PLAY / PAUSE
+* `F2` REWIND
+* `F3` FASTFORWARD
+* `F4` RESTART
 
 ## Camera keys
-* Capture camera position: SPACE
-* Move camera forward: W
-* Move camera backwards: S
-* Move camera left: A
-* Move camera right: D
-* Increase Camera Speed: PAGE UP
-* Decrease Camera Speed: PAGE DOWN
-* Reset camera position: R
+* Capture camera position: `SPACE`
+* Move camera forward: `W`
+* Move camera backwards: `S`
+* Move camera left: `A`
+* Move camera right: `D`
+* Roll camera left: `Q`
+* Roll camera right: `E`
+* Increase Camera Speed: `PAGE UP`
+* Decrease Camera Speed: `PAGE DOWN`
+* Reset camera position: `R`
 
 # Engine formulas and variables
 ## Formulas
@@ -51,39 +56,49 @@ Or, if using formulas in shaders, like this:
 For shaders, the variables that are sent to the shader are named: `v1`,`v2`,`v3` and `v4`
 The other variables that are "built in", and can be used anytime are:
 
-* t: Time of the section in seconds
-* tend: Section time end
-* tdemo: Time of the demo in seconds
-* beat: Beat detection of the music (from 0.0 to 1.0)
-* fps: FPS of the demo
+* `t` Time of the section in seconds
+* `tend` Section time end
+* `tdemo` Time of the demo in seconds
+* `beatX` Beat detection of the music (from 0.0 to 1.0), you can use any of the existing beats 'beat0' to 'beat4'
+* `fps` FPS of the demo
+
+Multipurpose variables:
+
+* `var[0 to 9]` Can be used as a multipurpose variable. Each variable stores a float value
+Multipurpose variables can be shared between sections. For example, you can set a value in "var1" and then read that value in another section. You can change the variable values by using the ["setVariable" section](https://github.com/Spontz/Phoenix/wiki/Sections-description#setvariable).
 
 Camera data:
 
-* cam_pos[X/Y/Z]: Position of the camera (X/Y/Z)
-* cam_up[X/Y/Z]: Up vector of the camera (X/Y/Z)
-* cam_yaw: Yaw of the camera
-* cam_pitch: Pitch of the camera
-* cam_zoom: Zoom value of the camera
+* `cam_pos[X/Y/Z]` Position of the camera (X/Y/Z)
+* `cam_up[X/Y/Z]` Up vector of the camera (X/Y/Z)
+* `cam_yaw` Yaw of the camera
+* `cam_pitch` Pitch of the camera
+* `cam_zoom` Zoom value of the camera
 
 Lights data:
 
 N = Light number (from 0 to 3)
-* lightN_pos[X/Y/Z]: Light Position (X/Y/Z)
-* lightN_dir[X/Y/Z]: Light Direction (X/Y/Z)
-* lightN_colAmb[R/G/B]: Light Ambient Color (R/G/B)
-* lightN_colDif[R/G/B]: Light Diffuse Color (R/G/B)
-* lightN_colSpc[R/G/B]: Light Specular Color (R/G/B)
+* `lightN_pos[X/Y/Z]` Light Position (X/Y/Z)
+* `lightN_dir[X/Y/Z]` Light Direction (X/Y/Z)
+* `lightN_colAmb[R/G/B]` Light Ambient Color (R/G/B)
+* `lightN_colDif[R/G/B]` Light Diffuse Color (R/G/B)
+* `lightN_colSpc[R/G/B]` Light Specular Color (R/G/B)
 
 Viewport data:
 
-* vpWidth: Viewport width of the window (in pixels)
-* vpHeight: Viewport height of the window (in pixels)
-* aspectRatio: aspectRatio of the window
+* `vpWidth` Viewport width of the window (in pixels)
+* `vpHeight` Viewport height of the window (in pixels)
+* `aspectRatio` aspectRatio of the window
 
 Fbo data:
 
-* fboXWidth: Width in pixels of the fbo X ('X' goes from 0 to 24)
-* fboXHeight: Height in pixels of the fbo X ('X' goes from 0 to 24)
+* `fboXWidth` Width in pixels of the fbo X ('X' goes from 0 to 24)
+* `fboXHeight` Height in pixels of the fbo X ('X' goes from 0 to 24)
+
+Debug variables (only work when the engine is in debug mode):
+
+* `mouseX`: X coordinates of the mouse when you ress right-click. It goes from -0.5 to 0.5
+* `mouseY`: Y coordinates of the mouse when you ress right-click. It goes from -0.5 to 0.5
 
 ## Writing formulas for shaders
 ### Using simple variables (float, vec2, vec3 and vec4)
