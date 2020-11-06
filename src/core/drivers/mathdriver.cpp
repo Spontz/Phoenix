@@ -13,15 +13,21 @@ mathDriver::mathDriver(Section *sec) {
 	SymbolTable.add_variable("t", sec->runTime);
 	SymbolTable.add_variable("tend", sec->duration);
 	SymbolTable.add_variable("tdemo", DEMO->m_demoRunTime);
-	SymbolTable.add_variable("beat", DEMO->m_beat);
 	SymbolTable.add_variable("fps", DEMO->m_fps);
 	SymbolTable.add_variable("mouseX", GLDRV->m_mouseX);
 	SymbolTable.add_variable("mouseY", GLDRV->m_mouseY);
 
+	
 	// Multi-purpose variables
 	for (int i = 0; i < MULTIPURPOSE_VARS; i++) {
 		std::string varNum = "var" + std::to_string(i);
-		SymbolTable.add_variable(varNum, DEMO->m_var[i]);
+		SymbolTable.add_variable(varNum, DEMO->m_fVar[i]);
+	}
+
+	// Track beats
+	for (int i = 0; i < MAX_BEATS; i++) {
+		std::string beatNum = "beat" + std::to_string(i);
+		SymbolTable.add_variable(beatNum, DEMO->m_fBeat[i]);
 	}
 
 	// Camera values

@@ -18,10 +18,12 @@ public:
 	std::string debug();
 
 private:
+	int			m_beatID		= 0;
+
 	HSTREAM		m_hMusicStream;					// Music Stream
 
-	std::string	m_file = "";
-	float		m_fLevels[2]	= { 0.0f };;	// Left and right channels
+	std::string	m_file			= "";
+	float		m_fLevels[2]	= { 0.0f };		// Left and right channels (this feature is not being used by now)
 
 	// Beat parameters
 	float		m_fEnergy[BUFFER_SAMPLES] = {0.0f};
@@ -47,17 +49,28 @@ bool sSound::load() {
 		return false;
 	}
 
-	if (param.size() != 3 || strings.size() != 1) {
-		Logger::error("Sound [%s]: 3 params (Volume [0.0 - 1.0], beatRatio and FadeOut) and 1 string needed (music path)", identifier.c_str());
+	if (param.size() != 4 || strings.size() != 1) {
+		Logger::error("Sound [%s]: 4 params (Volume [0.0 - 1.0], BeatID, beatRatio and FadeOut) and 1 string needed (music path)", identifier.c_str());
 		return false;
 	}
 
+	
+	
 	m_fVolume = param[0];
+	if (m_fVolume < 0) {
+		m_fVolume = 0;
+	}
 	m_fPrevVolume = m_fVolume;
 
+	m_beatID = static_cast<int>(param[1]);
+	if (m_beatID < 0 || m_beatID >= MAX_BEATS) {
+		Logger::error("Sound [%s]: Beat ID %d not supported, please choose a range between 0 and %d", m_beatID, MAX_BEATS);
+		return false;
+	}
+
 	// Beat detection - Init variables
-	m_fBeatRatio = param[1];
-	m_fFadeOut = param[2];
+	m_fBeatRatio = param[2];
+	m_fFadeOut = param[3];
 
 	// Clean variables
 	for (auto i = 0; i < BUFFER_SAMPLES; i++) {
@@ -118,9 +131,8 @@ void sSound::exec() {
 		m_fPrevVolume = m_fVolume;
 	}
 	
-	// Get a peak level reading for each channel using 20ms of data.
-	// TODO: Do we need it? to ask Ivan
-	BASS_ChannelGetLevelEx(m_hMusicStream, m_fLevels, 0.02f, BASS_LEVEL_STEREO | BASS_LEVEL_VOLPAN);
+	// Get a peak level reading for each channel using 20ms of data. At this moment this feature is not being used
+	// BASS_ChannelGetLevelEx(m_hMusicStream, m_fLevels, 0.02f, BASS_LEVEL_STEREO | BASS_LEVEL_VOLPAN);
 	
 	// FFT analysis
 	if (-1 == BASS_ChannelGetData(m_hMusicStream, fft, BASS_DATA_FFT1024)) {	// get the FFT data
@@ -169,9 +181,9 @@ void sSound::exec() {
 
 	// updated kernel shared variable
 	// to be used by kernel itself or another sections
-	m_demo.m_beat += m_fIntensity;
-	if (m_demo.m_beat > 1.0) // TODO: We should control this in the sound driver... I think
-		m_demo.m_beat = 1.0f;
+	m_demo.m_fBeat[m_beatID] += m_fIntensity;
+	if (m_demo.m_fBeat[m_beatID] > 1.0) // TODO: We should control this in the sound driver... I think
+		m_demo.m_fBeat[m_beatID] = 1.0f;
 
 	// update energy buffer
 	if (m_iPosition < BUFFER_SAMPLES) {
@@ -200,8 +212,6 @@ std::string sSound::debug() {
 	std::stringstream ss;
 	ss << "+ Sound id: " << identifier << " layer: " << layer << std::endl;
 	ss << "  file: " << m_file << std::endl;
-	ss << "  beat: " << m_fIntensity << std::endl;
-	ss << "  Level left: " << m_fLevels[0] << std::endl;
-	ss << "  Level right: " << m_fLevels[1] << std::endl;
+	ss << "  beatID: " << m_beatID << ", value: " << m_fIntensity << std::endl;
 	return ss.str();
 }

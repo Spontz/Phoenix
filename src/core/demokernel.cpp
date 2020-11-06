@@ -48,7 +48,6 @@ demokernel::demokernel()
 	m_fps(0),
 	m_uiFrameCount(0),
 	m_slaveMode(0),
-	m_beat(0),
 	m_mouseX(0),
 	m_mouseY(0),
 	m_mouseXvar(0),
@@ -58,8 +57,11 @@ demokernel::demokernel()
 	m_pRes(nullptr),
 	m_videoManager(m_slaveMode==1)
 {
-	for (uint32_t i = 0; i < MULTIPURPOSE_VARS; ++i)
-		m_var[i] = 0.0f;
+	uint32_t i;
+	for (i = 0; i < MULTIPURPOSE_VARS; i++)
+		m_fVar[i] = 0.0f;
+	for (i = 0; i < MAX_BEATS; i++)
+		m_fBeat[i] = 0.0f;
 }
 
 void demokernel::getArguments(int argc, char* argv[]) {

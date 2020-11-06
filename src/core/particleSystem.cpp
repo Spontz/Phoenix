@@ -189,7 +189,7 @@ void ParticleSystem::UpdateEmitters(float deltaTime)
 	for (unsigned int i = 0; i < nParts; i++) {
 		m_emitterData[i].Type = PARTICLE_TYPE_EMITTER;
 		float sphere = 4* 3.1415f * ((float)(i) / ((float)nParts));
-		m_emitterData[i].Pos = glm::vec3(sin(sphere), 3.0 * sin(m_time / 2.0), cos(sphere));
+		m_emitterData[i].Pos = glm::vec3(glm::sin(sphere), 3.0 * glm::sin(m_time / 2.0), glm::cos(sphere));
 		m_emitterData[i].Vel = glm::vec3(0.0f, 10.0f, 0.0f);
 		m_emitterData[i].Col = glm::vec3(1, 1, 1);
 		m_emitterData[i].lifeTime = 1.0f; // TODO: investigate why only emmits if this is greater than 0...

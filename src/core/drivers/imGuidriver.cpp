@@ -262,7 +262,6 @@ void imGuiDriver::drawSound()
 	}
 	ImVec2 win = ImGui::GetWindowSize();
 	ImGui::SetWindowFontScale(m_fontScale);
-	ImGui::Text("Global beat value: %.3f", m_demo.m_beat);
 	int plotSamples = BASSDRV->getSpectrumSamples();
 	ImGui::Text("Spectrum analyzer: %d samples", plotSamples);
 	ImGui::PlotHistogram("", BASSDRV->getSpectrumData(), plotSamples, 0, "Spectrum analyzer", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectrum display

@@ -176,9 +176,9 @@ void Camera::updateCameraVectors()
 {
 	// Calculate the new Front vector
 	glm::vec3 front;
-	front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-	front.y = sin(glm::radians(Pitch));
-	front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+	front.x = glm::cos(glm::radians(Yaw)) * glm::cos(glm::radians(Pitch));
+	front.y = glm::sin(glm::radians(Pitch));
+	front.z = glm::sin(glm::radians(Yaw)) * glm::cos(glm::radians(Pitch));
 	Front = glm::normalize(front);
 
 	//	control the rotate view
