@@ -60,9 +60,11 @@ void bassDriver::addFFTdata(float* fftData, int samples) {
 	{
 		// Populate spectrum bars based on FFT data received
 		int b0 = 0;
+		float pow_num = std::log2f(static_cast<float>(samples));
 		for (int i = 0; i < SPECTRUM_SAMPLES; i++) {
 			float peak = 0;
-			int b1 = static_cast<int>(pow(2.0f, (float)i * 9.0f / (float)(SPECTRUM_SAMPLES - 1))); //determine size of the bin
+
+			int b1 = static_cast<int>(std::powf(2.0f, static_cast<float>(i) * pow_num / static_cast<float>(SPECTRUM_SAMPLES - 1))); //determine size of the bin
 
 			//upper bound on bin size
 			if (b1 >= samples)
@@ -74,7 +76,8 @@ void bassDriver::addFFTdata(float* fftData, int samples) {
 
 			//loop over every bin
 			for (; b0 < b1; b0++) {
-				if (peak < fftData[1+b0]) { peak = fftData[1+b0]; }
+				if (peak < fftData[1+b0])
+					peak = fftData[1+b0];
 			}
 			//write each column to file
 			m_spectrum[i] = sqrt(peak);
