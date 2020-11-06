@@ -156,8 +156,8 @@ glm::mat4 Camera::getOrthoMatrix_View() const
 
 // Calculates the front vector from the Camera's (updated) Euler Angles
 void Camera::setRollMatrix(glm::mat3x3& m, glm::vec3 f) {
-	float rcos = cos(glm::radians(Roll));
-	float rsin = sin(glm::radians(Roll));
+	float rcos = glm::cos(glm::radians(Roll));
+	float rsin = glm::sin(glm::radians(Roll));
 
 	m[0][0] = rcos + (1 - rcos) * f.x * f.x;
 	m[0][1] = (1 - rcos) * f.x * f.y + rsin * f.z;
