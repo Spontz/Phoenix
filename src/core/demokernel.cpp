@@ -49,8 +49,6 @@ demokernel::demokernel()
 	m_uiFrameCount(0),
 	m_slaveMode(0),
 	m_beat(0),
-	m_beatRatio(1.4f),
-	m_beatFadeout(4.0f),
 	m_mouseX(0),
 	m_mouseY(0),
 	m_mouseXvar(0),

@@ -95,13 +95,10 @@ public:
 
 	bool m_exitDemo;							// exits demo at next loop if true
 
-	// Beat and beat detection parameters
 	float m_beat;								// intensity of the current music beat
-	float m_beatRatio;
-	float m_beatFadeout;
 
 	int m_mouseX, m_mouseY;						// Mouse global coordinates
-	int m_mouseXvar, m_mouseYvar;					// Mouse variation from the center of the screen
+	int m_mouseXvar, m_mouseYvar;				// Mouse variation from the center of the screen
 
 	// network slave mode
 	const int m_slaveMode;						// 1 = network slave; 0 = standalone mode;

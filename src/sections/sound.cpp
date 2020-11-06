@@ -25,8 +25,8 @@ private:
 
 	// Beat parameters
 	float		m_fEnergy[BUFFER_SAMPLES] = {0.0f};
-	float		m_fBeatRatio	= m_demo.m_beatRatio;
-	float		m_fFadeOut		= m_demo.m_beatFadeout;
+	float		m_fBeatRatio	= 1.4f;
+	float		m_fFadeOut		= 4.0f;
 	float		m_fIntensity	= 0;
 	int			m_iPosition		= 1;
 	float		m_fVolume		= 1;
@@ -47,8 +47,8 @@ bool sSound::load() {
 		return false;
 	}
 
-	if (param.size() != 1 || strings.size() != 1) {
-		Logger::error("Sound [%s]: 1 param and 1 string needed: volume (0.0 to 1.0), and path to the sound file", identifier.c_str());
+	if (param.size() != 3 || strings.size() != 1) {
+		Logger::error("Sound [%s]: 3 params (Volume [0.0 - 1.0], beatRatio and FadeOut) and 1 string needed (music path)", identifier.c_str());
 		return false;
 	}
 
@@ -56,8 +56,8 @@ bool sSound::load() {
 	m_fPrevVolume = m_fVolume;
 
 	// Beat detection - Init variables
-	m_fBeatRatio = m_demo.m_beatRatio;
-	m_fFadeOut = m_demo.m_beatFadeout;
+	m_fBeatRatio = param[1];
+	m_fFadeOut = param[2];
 
 	// Clean variables
 	for (auto i = 0; i < BUFFER_SAMPLES; i++) {
@@ -83,10 +83,6 @@ void sSound::init() {
 
 	if (m_demo.m_status != DemoStatus::PLAY)
 		return;
-
-	// Beat detection - Init variables
-	m_fBeatRatio = m_demo.m_beatRatio;
-	m_fFadeOut = m_demo.m_beatFadeout;
 
 	// Clean variables
 	for (auto i = 0; i < BUFFER_SAMPLES; i++) {
@@ -115,10 +111,6 @@ void sSound::exec() {
 	float instant, avg;	// Instant energy
 	int i;
 	float fft[BUFFER_SAMPLES] = {0.0f}; // 512 samples, because we have used "BASS_DATA_FFT1024"
-
-	// Update local values with the ones defined by the demosystem
-	m_fBeatRatio = m_demo.m_beatRatio;
-	m_fFadeOut = m_demo.m_beatFadeout;
 
 	// Adjust volume if necessary
 	if (m_fVolume != m_fPrevVolume) {
@@ -198,9 +190,10 @@ void sSound::end() {
 	if (!m_demo.m_sound)
 		return;
 
-	BOOL r = BASS_ChannelStop(m_hMusicStream);
-	if (r != TRUE)
+	if (!BASS_ChannelStop(m_hMusicStream))
 		Logger::error("Sound [%s]: BASS_ChannelStop returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
+	if (!BASS_StreamFree(m_hMusicStream))
+		Logger::error("Sound [%s]: Music couldnt be freed: %i", identifier.c_str(), BASS_ErrorGetCode());
 }
 
 std::string sSound::debug() {
