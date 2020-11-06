@@ -35,8 +35,7 @@ void bassDriver::update() {
 	BASS_Update(200);
 	
 	// Clear all beat values and internal fft data
-	for (int i = 0; i < MAX_BEATS; i++)
-		m_demo.m_fBeat[i] = 0.0f;
+	memset(m_demo.m_fBeat, 0, MAX_BEATS * sizeof(float));
 	
 	if (m_demo.m_debug)
 		memset(m_spectrum, 0, SPECTRUM_SAMPLES *sizeof(float));

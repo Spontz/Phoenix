@@ -57,11 +57,8 @@ demokernel::demokernel()
 	m_pRes(nullptr),
 	m_videoManager(m_slaveMode==1)
 {
-	uint32_t i;
-	for (i = 0; i < MULTIPURPOSE_VARS; i++)
-		m_fVar[i] = 0.0f;
-	for (i = 0; i < MAX_BEATS; i++)
-		m_fBeat[i] = 0.0f;
+	memset(m_fVar, 0, MULTIPURPOSE_VARS * sizeof(float));
+	memset(m_fBeat, 0, MAX_BEATS * sizeof(float));
 }
 
 void demokernel::getArguments(int argc, char* argv[]) {
