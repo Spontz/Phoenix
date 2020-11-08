@@ -8,6 +8,8 @@
 #include "core/model.h"
 #include "core/modelinstance.h"
 
+#include "core/renderer/VertexArray.h"
+
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -47,37 +49,17 @@ ModelInstance::ModelInstance(Model* model, unsigned int amount)
     }
 
 
-    // configure instanced array
-    // -------------------------
-    glGenBuffers(1, &matricesBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, matricesBuffer);
-    glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrix[0], GL_DYNAMIC_DRAW);// GL_STATIC_DRAW);
+    // Create the new Vertex Buffer to apply to the meshes
+    
+    VertexBuffer* vertexBuffer = new VertexBuffer(amount * sizeof(glm::mat4));
+    vertexBuffer->SetLayout({
+        { ShaderDataType::Mat4,	"aInstancePos"}
+        });
 
-    // set transformation matrices as an instance vertex attribute (with divisor 1)
-    // note: we're cheating a little by taking the, now publicly declared, VAO of the model's mesh(es) and adding new vertexAttribPointers
-    // normally you'd want to do this in a more organized fashion, but for learning purposes this will do.
-    // -----------------------------------------------------------------------------------------------------------------------------------
     for (unsigned int i = 0; i < model->meshes.size(); i++)
     {
-        glBindVertexArray(model->meshes[i].m_VAO);
-        // set attribute pointers for matrix (4 times vec4)
-        glEnableVertexAttribArray(INSTANCED_MAT4_LOCATION_1);
-        glVertexAttribPointer(INSTANCED_MAT4_LOCATION_1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
-        glEnableVertexAttribArray(INSTANCED_MAT4_LOCATION_2);
-        glVertexAttribPointer(INSTANCED_MAT4_LOCATION_2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
-        glEnableVertexAttribArray(INSTANCED_MAT4_LOCATION_3);
-        glVertexAttribPointer(INSTANCED_MAT4_LOCATION_3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
-        glEnableVertexAttribArray(INSTANCED_MAT4_LOCATION_4);
-        glVertexAttribPointer(INSTANCED_MAT4_LOCATION_4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
-
-        glVertexAttribDivisor(INSTANCED_MAT4_LOCATION_1, 1);
-        glVertexAttribDivisor(INSTANCED_MAT4_LOCATION_2, 1);
-        glVertexAttribDivisor(INSTANCED_MAT4_LOCATION_3, 1);
-        glVertexAttribDivisor(INSTANCED_MAT4_LOCATION_4, 1);
-
-        glBindVertexArray(0);
+        model->meshes[i].m_VertexArray->AddVertexBuffer(vertexBuffer);
     }
-
 }
 
 ModelInstance::~ModelInstance()
@@ -98,14 +80,14 @@ void ModelInstance::DrawInstanced(GLuint shaderID)
         my_mesh->DrawMaterials(shaderID);
 
         // Update matrices buffers to GPU
-        glBindBuffer(GL_ARRAY_BUFFER, matricesBuffer);
-        glBufferData(GL_ARRAY_BUFFER, amount*sizeof(glm::mat4), &modelMatrix[0], GL_DYNAMIC_DRAW);
+        std::vector<VertexBuffer*> vb = my_mesh->m_VertexArray->GetVertexBuffers();
+        vb[1]->SetData(&modelMatrix[0], amount * sizeof(glm::mat4)); // TODO: Get rid of this hardcode
 
         // draw mesh
-        glBindVertexArray(model->meshes[i].m_VAO);
-        glDrawElementsInstanced(GL_TRIANGLES, model->meshes[i].m_indices.size(), GL_UNSIGNED_INT, 0, amount);
+        model->meshes[i].m_VertexArray->Bind();
+        glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(model->meshes[i].m_indices.size()), GL_UNSIGNED_INT, 0, static_cast<GLsizei>(amount));
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+        model->meshes[i].m_VertexArray->Unbind();
 
         // always good practice to set everything back to defaults once configured.
         //glBindTextureUnit(0, 0); --> TODO: This gives error on some graphics card (https://community.intel.com/t5/Graphics/intel-uhd-graphics-630-with-latest-driver-will-cause-error-when/td-p/1161376)

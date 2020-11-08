@@ -5,6 +5,7 @@
 #include "core/texture.h"
 #include "core/shader.h"
 #include "core/mesh.h"
+#include "core/renderer/VertexArray.h"
 
 
 #include <string>
@@ -37,13 +38,15 @@ void VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
 }
 
 Mesh::Mesh(std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial *pMaterial, std::string directory, std::string filename)
+	: 
+	meshTransform(glm::mat4(1.0)),
+	m_nodeName(nodeName),
+	m_pMesh(pMesh),
+	m_vertices(vertices),
+	m_indices(indices),
+	m_VertexArray(new VertexArray())
+
 {
-	this->meshTransform = glm::mat4(1.0); // Load identity matrix by default
-	this->nodeName = nodeName;
-	this->m_pMesh = pMesh;
-	this->m_vertices = vertices;
-	this->m_indices = indices;
-	
 	loadUniqueVerticesPos();
 
 	// Setup the material of our mesh (each mesh has only one material)
@@ -83,46 +86,26 @@ void Mesh::loadUniqueVerticesPos()
 // initializes all the buffer objects/arrays
 void Mesh::setupMesh()
 {
-	// Create VAO
-	glGenVertexArrays(1, &m_VAO);
-	glBindVertexArray(m_VAO);
+	// Create & Load the Vertex Buffer
+	VertexBuffer *vertexBuffer = new VertexBuffer(&m_vertices[0], static_cast<uint32_t>(m_vertices.size() * sizeof(Vertex)));
+	//vertexBuffer->SetData(&m_vertices[0], m_vertices.size() * sizeof(Vertex));
+	vertexBuffer->SetLayout({
+		{ ShaderDataType::Float3,	"aPos"},
+		{ ShaderDataType::Float3,	"aNormal"},
+		{ ShaderDataType::Float2,	"aTexCoords"},
+		{ ShaderDataType::Float3,	"aTangent"},
+		{ ShaderDataType::Float3,	"aBiTangent"},
+		{ ShaderDataType::Int4,		"aBoneID"},
+		{ ShaderDataType::Float4,	"aBoneWeight"}
+		});
 
-	// Load data into vertex buffers
-	glGenBuffers(1, &m_vertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_STATIC_DRAW);
+	m_VertexArray->AddVertexBuffer(vertexBuffer);
 
-	// Load data into index buffers (element buffer)
-	glGenBuffers(1, &m_indicesBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indicesBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(unsigned int), &m_indices[0], GL_STATIC_DRAW);
+	// Create & Load the Index Buffer
+	IndexBuffer* indexBuffer = new IndexBuffer(&m_indices[0], static_cast<uint32_t>(m_indices.size()));
+	m_VertexArray->SetIndexBuffer(indexBuffer);
 
-	// Set the vertex attribute pointers
-	// vertex Positions
-	glEnableVertexAttribArray(POSITION_LOCATION);
-	glVertexAttribPointer(POSITION_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-	// vertex normals
-	glEnableVertexAttribArray(NORMAL_LOCATION);
-	glVertexAttribPointer(NORMAL_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
-	// vertex texture coords
-	glEnableVertexAttribArray(TEX_COORD_LOCATION);
-	glVertexAttribPointer(TEX_COORD_LOCATION, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
-	// vertex tangent
-	glEnableVertexAttribArray(TANGENT_LOCATION);
-	glVertexAttribPointer(TANGENT_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
-	// vertex bitangent
-	glEnableVertexAttribArray(BITANGENT_LOCATION);
-	glVertexAttribPointer(BITANGENT_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
-
-	// Bone Vertex ID's as Unsigned INT
-	glEnableVertexAttribArray(BONE_ID_LOCATION);
-	glVertexAttribIPointer(BONE_ID_LOCATION, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void*)(offsetof(Vertex, Bone) + offsetof(VertexBoneData, IDs)));
-	
-	// Bone Vertex Weights
-	glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);
-	glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, Bone) + offsetof(VertexBoneData, Weights)));
-
-	glBindVertexArray(0);
+	m_VertexArray->Unbind();
 }
 
 
@@ -156,9 +139,9 @@ void Mesh::Draw(GLuint shaderID)
 	DrawMaterials(shaderID);
 
 	// draw mesh
-	glBindVertexArray(m_VAO);
+	m_VertexArray->Bind();
 	glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, NULL);
-	glBindVertexArray(0);
+	m_VertexArray->Unbind();
 
 	// always good practice to set everything back to defaults once configured.
 	//glBindTextureUnit(0, 0); --> TODO: This gives error on some graphics card (https://community.intel.com/t5/Graphics/intel-uhd-graphics-630-with-latest-driver-will-cause-error-when/td-p/1161376)

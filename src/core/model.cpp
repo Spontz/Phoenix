@@ -406,7 +406,7 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 	// Now we need to apply the Matrix to the corresponding object
 
 	for (unsigned int i = 0; i < this->m_NumMeshes; i++) {
-		if (NodeName == this->meshes[i].nodeName) {
+		if (NodeName == this->meshes[i].m_nodeName) {
 			this->meshes[i].meshTransform *= m_GlobalInverseTransform * GlobalTransformation;
 			/*Logger::info(LogLevel::low, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %i [time: %.3f]", NodeName.c_str(), i, AnimationTime);
 			glm::mat4 M = GlobalTransformation;

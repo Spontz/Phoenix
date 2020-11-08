@@ -2,8 +2,7 @@
 // Spontz Demogroup
 
 
-#ifndef MESH_H
-#define MESH_H
+#pragma once
 
 
 #include "main.h"
@@ -14,6 +13,8 @@
 #include "core/material.h"
 #include "core/texture.h"
 #include "core/shader.h"
+
+#include "core/renderer/VertexArray.h"
 
 #include <string>
 #include <vector>
@@ -65,7 +66,7 @@ public:
 	std::vector<glm::vec3>		unique_vertices_pos;	// Unique vertices cartesian positions
 	std::vector<glm::vec3>		unique_vertices_polar;	// Unique vertices polar position (x=distance, y=alpha, z=beta)
 	glm::mat4					meshTransform;			// Transformation Matrix for positioning the mesh
-	std::string					nodeName;
+	std::string					m_nodeName;
 	
 	Mesh(std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial *pMaterial, std::string directory, std::string filename);
 	// render the mesh
@@ -74,14 +75,11 @@ public:
 private:
 	friend class ModelInstance;			// We allod ModelInstance class to access private memebers
 
-	GLuint						m_VAO;	// Vertex Array object
-	GLuint						m_vertexBuffer;	// Vertex Buffer Object
-	GLuint						m_indicesBuffer;	// Element Buffer Object
-	const aiMesh				*m_pMesh;	// ASSIMP mesh object
-	std::vector<unsigned int>	m_indices;	// Indices
-	std::vector<Vertex>			m_vertices;	// Vertices
-	Material					m_material;	// Material
-
+	const aiMesh				*m_pMesh;		// ASSIMP mesh object
+	std::vector<unsigned int>	m_indices;		// Indices
+	std::vector<Vertex>			m_vertices;		// Vertices
+	Material					m_material;		// Material
+	VertexArray					*m_VertexArray;	// Vertex Array Object
 
 	// initializes all the buffer objects/arrays
 	void setupMesh();
@@ -92,4 +90,3 @@ private:
 	// Loads the unique vertices positions
 	void loadUniqueVerticesPos();
 };
-#endif
