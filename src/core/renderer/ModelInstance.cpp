@@ -85,17 +85,14 @@ void ModelInstance::DrawInstanced(GLuint shaderID)
         // draw mesh
         model->meshes[i].m_VertexArray->Bind();
         glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(model->meshes[i].m_indices.size()), GL_UNSIGNED_INT, 0, static_cast<GLsizei>(amount));
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        vb[1]->Unbind();
         model->meshes[i].m_VertexArray->Unbind();
-
-        // always good practice to set everything back to defaults once configured.
-        //glBindTextureUnit(0, 0); --> TODO: This gives error on some graphics card (https://community.intel.com/t5/Graphics/intel-uhd-graphics-630-with-latest-driver-will-cause-error-when/td-p/1161376)
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        //glBindVertexArray(model->meshes[i].m_VAO);
-        //glDrawElementsInstanced(GL_TRIANGLES, model->meshes[i].m_indices.size(), GL_UNSIGNED_INT, 0, amount);
-        //glBindVertexArray(0);
     }
+    
+    // always good practice to set everything back to defaults once configured.
+    //glBindTextureUnit(0, 0); --> TODO: This gives error on some graphics card (https://community.intel.com/t5/Graphics/intel-uhd-graphics-630-with-latest-driver-will-cause-error-when/td-p/1161376)
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void ModelInstance::copyMatrices(int instance)

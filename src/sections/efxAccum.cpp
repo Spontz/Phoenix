@@ -138,8 +138,8 @@ void sEfxAccum::exec() {
 		
 
 		// Second step: Draw the accum buffer
-		m_demo.m_pRes->shdr_QuadTex->use();
-		m_demo.m_pRes->shdr_QuadTex->setValue("screenTexture", 0);
+		m_demo.m_pRes->m_pShdrQuadTex->use();
+		m_demo.m_pRes->m_pShdrQuadTex->setValue("screenTexture", 0);
 		if (firstIteration)
 			m_demo.m_fboManager.bind_tex(m_uiFboNum, 0);
 		else

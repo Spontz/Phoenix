@@ -6,6 +6,7 @@
 #include "core/renderer/Texture.h"
 #include "core/renderer/Cubemap.h"
 #include "core/renderer/Shader.h"
+#include "core/renderer/VertexArray.h"
 
 class Resource {
 public:
@@ -28,22 +29,22 @@ public:
 	void Draw_Skybox(Cubemap* cubemap);							// Draws a skybox for a given cubemap texture
 	void Draw_Cube();											// Draws a cube
 
-	Texture* tex_tv; // Default texture (tv)
+	Texture* m_pTVImage;			// Default texture (tv)
 
 	// Shaders
-	Shader* shdr_QuadTex;			// Draws a textured quad
-	Shader* shdr_QuadDepth;			// Draws a depth texture quad
-	Shader* shdr_QuadTexAlpha;		// Draws a textured quad with alpha
-	Shader* shdr_QuadTexModel;		// Draws a textured quad with model matrix
-	Shader* shdr_QuadTexPVM;		// Draws a textured quad with projection, view and model matrixes
-	Shader* shdr_QuadTexVFlipModel;	// Draws a textured quad with model matrix, and with the texture flipped vertically
-	Shader* shdr_Skybox;			// Draws a skybox
-	Shader* shdr_ObjColor;			// Draws an object with a color
+	Shader* m_pShdrQuadTex;				// Draws a textured quad
+	Shader* m_pShdrQuadDepth;			// Draws a depth texture quad
+	Shader* m_pShdrQuadTexAlpha;		// Draws a textured quad with alpha
+	Shader* m_pShdrQuadTexModel;		// Draws a textured quad with model matrix
+	Shader* m_pShdrQuadTexPVM;			// Draws a textured quad with projection, view and model matrixes
+	Shader* m_pShdrQuadTexVFlipModel;	// Draws a textured quad with model matrix, and with the texture flipped vertically
+	Shader* m_pShdrSkybox;				// Draws a skybox
+	Shader* m_pShdrObjColor;			// Draws an object with a color
 
-	// Objects
-	GLuint obj_skybox;
-	GLuint obj_quadFullscreen; // TODO: Temporal, move to private
-	GLuint obj_qube;
+	// Vertex Array Objects
+	VertexArray* m_pSkybox;
+	VertexArray* m_pQuadFullScreen;
+	VertexArray* m_pQube;
 	
 private:
 	void Load_Obj_QuadFullscreen();
@@ -52,6 +53,5 @@ private:
 	void Load_Shaders();
 	void Load_Tex_Spontz();
 	void Load_Text_Fonts();
-
 	void Load_Lights();
 };
