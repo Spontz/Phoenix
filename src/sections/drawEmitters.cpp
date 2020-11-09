@@ -1,7 +1,7 @@
 #include "main.h"
 #include "core/drivers/mathdriver.h"
-#include "core/particleSystem.h"
-#include "core/shadervars.h"
+#include "core/renderer/ParticleSystem.h"
+#include "core/renderer/ShaderVars.h"
 
 struct sDrawEmitters : public Section {
 public:
@@ -33,7 +33,7 @@ private:
 	glm::vec3		m_vVelocity				= { 0, 0, 0 };
 	glm::vec3		m_vForce				= { 0, 0, 0 };
 	glm::vec3		m_vColor				= { 0, 0, 0 };
-	mathDriver		*m_pExprPosition		= nullptr;	// A equation containing the calculations to position the object
+	MathDriver		*m_pExprPosition		= nullptr;	// A equation containing the calculations to position the object
 };
 
 // TODO: This section needs to be reworked, we should remove the model, and position the emitters by code
@@ -80,7 +80,7 @@ bool sDrawEmitters::load() {
 		return false;
 	}
 
-	m_pExprPosition = new mathDriver(this);
+	m_pExprPosition = new MathDriver(this);
 	// Load all the other strings
 	for (int i = 2; i < strings.size(); i++)
 		m_pExprPosition->expression += strings[i];

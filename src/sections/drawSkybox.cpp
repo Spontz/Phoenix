@@ -1,6 +1,6 @@
 #include "main.h"
 #include "core/drivers/mathdriver.h"
-#include "core/shadervars.h"
+#include "core/renderer/ShaderVars.h"
 
 struct sDrawSkybox : public Section {
 public:
@@ -19,7 +19,7 @@ private:
 	glm::vec3	m_vRotation			= {0, 0, 0};
 	glm::vec3	m_vScale			= {1, 1, 1};
 	
-	mathDriver	*m_pExprPosition	= nullptr;	// A equation containing the calculations to position the object
+	MathDriver	*m_pExprPosition	= nullptr;	// A equation containing the calculations to position the object
 };
 
 // ******************************************************************
@@ -57,7 +57,7 @@ bool sDrawSkybox::load() {
 		return false;
 
 	// Read variables for traslation, rotation and scaling
-	m_pExprPosition = new mathDriver(this);
+	m_pExprPosition = new MathDriver(this);
 	// Load all the other strings
 	for (int i = 6; i < strings.size(); i++)
 		m_pExprPosition->expression += strings[i];

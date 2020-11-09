@@ -1,8 +1,7 @@
 // sections.h
 // Spontz Demogroup
 
-#ifndef SECTIONS_H
-#define SECTIONS_H
+#pragma once
 
 #include "core/section.h"
 
@@ -37,5 +36,3 @@ Section* instance_test();
 namespace sections {
 	class SPH;
 }
-
-#endif

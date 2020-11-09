@@ -1,6 +1,6 @@
 #include "main.h"
 #include "core/drivers/mathdriver.h"
-#include "core/shadervars.h"
+#include "core/renderer/ShaderVars.h"
 
 struct sDrawScene : public Section {
 public:
@@ -35,7 +35,7 @@ private:
 
 	Model*		m_pModel			= nullptr;
 	Shader*		m_pShader			= nullptr;
-	mathDriver* m_pExprPosition		= nullptr;	// A equation containing the calculations to position the object
+	MathDriver* m_pExprPosition		= nullptr;	// A equation containing the calculations to position the object
 	ShaderVars*	m_pVars				= nullptr;	// For storing any other shader variables
 };
 
@@ -79,7 +79,7 @@ bool sDrawScene::load() {
 	if (m_pModel->playAnimation)
 		m_pModel->setAnimation(m_iAnimationNumber);
 
-	m_pExprPosition = new mathDriver(this);
+	m_pExprPosition = new MathDriver(this);
 	// Load all the other strings
 	for (int i = 2; i < strings.size(); i++)
 		m_pExprPosition->expression += strings[i];

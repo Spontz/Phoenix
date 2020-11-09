@@ -1,7 +1,7 @@
 #include "main.h"
-#include "core/particleMesh.h"
+#include "core/renderer/ParticleMesh.h"
 #include "core/drivers/mathdriver.h"
-#include "core/shadervars.h"
+#include "core/renderer/ShaderVars.h"
 
 struct sDrawParticles : public Section{
 public:
@@ -23,7 +23,7 @@ private:
 	glm::vec3		m_vRotation			= { 0, 0, 0 };
 	glm::vec3		m_vScale			= { 1, 1, 1 };
 
-	mathDriver		*m_pExprPosition	= nullptr;	// A equation containing the calculations to position the object
+	MathDriver		*m_pExprPosition	= nullptr;	// A equation containing the calculations to position the object
 	ShaderVars		*m_pVars			= nullptr;	// For storing any other shader variables
 };
 
@@ -55,7 +55,7 @@ bool sDrawParticles::load() {
 	m_iNumParticles = static_cast<int>(param[0]);
 
 	// Load particle positioning
-	m_pExprPosition = new mathDriver(this);
+	m_pExprPosition = new MathDriver(this);
 	// Load all the other strings
 	for (int i = 1; i < strings.size(); i++)
 		m_pExprPosition->expression += strings[i];

@@ -1,13 +1,11 @@
-// gldriver.h
+// glDriver.h
 // Spontz Demogroup
 
-#ifndef GLDRIVER_H
-#define GLDRIVER_H
+#pragma once
 
 #include "main.h"
-
-#include "core/drivers/imGuidriver.h"
-#include "core/viewport.h"
+#include "core/drivers/imGuiDriver.h"
+#include "core/renderer/Viewport.h"
 
 // HACK: get rid of macros
 #define GLDRV (&glDriver::GetInstance())
@@ -120,5 +118,3 @@ public:
 	int		WindowShouldClose();
 	void	close();
 };
-
-#endif

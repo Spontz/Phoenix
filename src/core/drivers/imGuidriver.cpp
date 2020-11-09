@@ -1,10 +1,9 @@
-// imGuidriver.cpp
+// imGuiDriver.cpp
 // Spontz Demogroup
 
 #include "main.h"
-
-#include "core/drivers/bassdriver.h"
-#include "core/drivers/imGuidriver.h"
+#include "core/drivers/BassDriver.h"
+#include "core/drivers/imGuiDriver.h"
 
 // Demo states to show in the drawTiming information ****************
 char* stateStr[] = {

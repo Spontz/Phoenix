@@ -1,11 +1,10 @@
-// gldriver.cpp
+// glDriver.cpp
 // Spontz Demogroup
 
 #include "main.h"
-
-#include "core/drivers/events.h"
-#include "core/drivers/imGuidriver.h"
-#include "debug/instrumentor.h"
+#include "core/drivers/Events.h"
+#include "core/drivers/imGuiDriver.h"
+#include "debug/Instrumentor.h"
 
 // ******************************************************************
 

@@ -1,10 +1,9 @@
-// logger.h
+// Logger.h
 // Spontz Demogroup
 
 #pragma once
 
-#include "core/drivers/netdriver.h"
-
+#include "core/drivers/NetDriver.h"
 #include <fstream>
 
 enum class LogLevel {
@@ -27,5 +26,5 @@ private:
 	static std::ofstream m_ofstream;
 	static LogLevel m_bLogLevel;
 	static const std::string m_strOutputFile;
-	static const netDriver& m_netDriver;
+	static const NetDriver& m_netDriver;
 };

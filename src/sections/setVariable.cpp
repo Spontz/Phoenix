@@ -11,7 +11,7 @@ public:
 	std::string debug();
 
 private:
-	mathDriver	*m_pExpr	= nullptr;	// The equations with the variabale changes
+	MathDriver	*m_pExpr	= nullptr;	// The equations with the variabale changes
 };
 
 // ******************************************************************
@@ -27,7 +27,7 @@ sSetVariable::sSetVariable() {
 
 bool sSetVariable::load() {
 	// Register the variables
-	m_pExpr = new mathDriver(this);
+	m_pExpr = new MathDriver(this);
 	std::string string_expr;
 	for (int i = 0; i < strings.size(); i++)
 		string_expr += strings[i];

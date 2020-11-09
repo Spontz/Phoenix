@@ -1,6 +1,6 @@
 #include "main.h"
 #include "core/drivers/mathdriver.h"
-#include "core/shadervars.h"
+#include "core/renderer/ShaderVars.h"
 
 struct sDrawImage : public Section {
 public:
@@ -26,7 +26,7 @@ private:
 	float		m_fRenderAspectRatio	= 1.0f;
 	Texture		*m_pTexture				= nullptr;
 	Shader		*m_pShader				= nullptr;
-	mathDriver	*m_pExprPosition		= nullptr;	// A equation containing the calculations to position the object
+	MathDriver	*m_pExprPosition		= nullptr;	// A equation containing the calculations to position the object
 	ShaderVars	*m_pVars				= nullptr;	// For storing any other shader variables
 } drawImage_section;
 
@@ -70,7 +70,7 @@ bool sDrawImage::load()
 		return false;
 
 	// Load the formmula containing the Image position and scale
-	m_pExprPosition = new mathDriver(this);
+	m_pExprPosition = new MathDriver(this);
 	// Load positions, process constants and compile expression
 	for (int i = 2; i < strings.size(); i++)
 		m_pExprPosition->expression += strings[i];

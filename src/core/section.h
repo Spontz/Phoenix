@@ -1,9 +1,9 @@
-// section.h
+// Section.h
 // Spontz Demogroup
 
 #pragma once 
 
-#include "spline.h"
+#include "core/renderer/Spline.h"
 
 class Section {
     friend class demokernel;

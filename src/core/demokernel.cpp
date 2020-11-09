@@ -1,12 +1,12 @@
-// demoKernel.cpp
+// Demokernel.cpp
 // Spontz Demogroup
 
 #include "main.h"
-#include "core/scripting/spo.h"
-#include "core/drivers/gldriver.h"
-#include "core/drivers/bassdriver.h"
-#include "core/resource/resource.h"
-#include "debug/instrumentor.h"
+#include "core/scripting/SpoReader.h"
+#include "core/drivers/glDriver.h"
+#include "core/drivers/BassDriver.h"
+#include "core/resource/Resource.h"
+#include "debug/Instrumentor.h"
 
 #include <iostream>
 #include <io.h>
@@ -115,8 +115,8 @@ void demokernel::initNetwork()
 {
 	if (m_slaveMode) {
 		Logger::info(LogLevel::high, "Running in network slave mode");
-		netDriver::GetInstance().init();
-		netDriver::GetInstance().update();
+		NetDriver::GetInstance().init();
+		NetDriver::GetInstance().update();
 	}
 	else
 		Logger::info(LogLevel::high, "Running in standalone mode");
@@ -206,7 +206,7 @@ void demokernel::doExec() {
 
 	// Update network driver
 	if (m_slaveMode)
-		netDriver::GetInstance().update();
+		NetDriver::GetInstance().update();
 }
 
 void demokernel::playDemo()
@@ -300,7 +300,7 @@ std::string demokernel::getLibAssimpVersion()
 
 std::string demokernel::getLibDyadVersion()
 {
-	return netDriver::GetInstance().getVersion();
+	return NetDriver::GetInstance().getVersion();
 }
 
 bool demokernel::checkDataFolder()

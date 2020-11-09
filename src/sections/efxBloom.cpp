@@ -1,6 +1,6 @@
 #include "main.h"
 #include "core/drivers/mathdriver.h"
-#include "core/shadervars.h"
+#include "core/renderer/ShaderVars.h"
 
 struct sEfxBloom : public Section {
 public:
@@ -18,7 +18,7 @@ private:
 	float			m_fBlurAmount	= 1;		// Blur layers to apply
 	Shader			*m_pShaderBlur	= nullptr;	// Blur Shader to apply
 	Shader			*m_pShaderBloom	= nullptr;	// Bloom Shader to apply
-	mathDriver		*m_pExprBloom	= nullptr;	// Equations for the Bloom effect
+	MathDriver		*m_pExprBloom	= nullptr;	// Equations for the Bloom effect
 	ShaderVars		*m_pVars		= nullptr;	// Shader variables
 };
 
@@ -56,7 +56,7 @@ bool sEfxBloom::load() {
 	}
 	
 	// Load the Blur amount formula
-	m_pExprBloom = new mathDriver(this);
+	m_pExprBloom = new MathDriver(this);
 	// Load positions, process constants and compile expression
 	m_pExprBloom->expression = strings[0]; // The first string should contain the blur amount
 	m_pExprBloom->SymbolTable.add_variable("blurAmount", m_fBlurAmount);

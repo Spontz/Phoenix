@@ -1,7 +1,7 @@
-// utilities.cpp
+// Utilities.cpp
 // Spontz Demogroup
 
-#include "utilities.h"
+#include "Utilities.h"
 
 const double Util::CurrentTime() {
 	return glfwGetTime();

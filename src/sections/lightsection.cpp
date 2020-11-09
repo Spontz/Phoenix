@@ -19,7 +19,7 @@ private:
 	float		m_fShadowSize		= 10.0f;	// shadowMapping: Size of the plane used in Orthographic view
 	bool		m_bDrawLight		= false;	// Draw a cube representing the light: usefult for debugging
 	float		m_fDrawLightSize	= 1.0f;		// Size of our debug cube
-	mathDriver	*m_pExprLight		= nullptr;	// A equation containing the calculations of the light
+	MathDriver	*m_pExprLight		= nullptr;	// A equation containing the calculations of the light
 };
 
 // ******************************************************************
@@ -60,7 +60,7 @@ bool sLight::load() {
 	Light* my_light = m_demo.m_lightManager.light[m_iLightNum];
 
 	// Register the variables
-	m_pExprLight = new mathDriver(this);
+	m_pExprLight = new MathDriver(this);
 	std::string expr;
 	for (int i = 0; i < strings.size(); i++)
 		expr += strings[i];

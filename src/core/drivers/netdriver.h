@@ -1,4 +1,4 @@
-// netdriver.h
+// NetDriver.h
 // Spontz Demogroup
 
 #pragma once
@@ -8,13 +8,13 @@
 #include <vector>
 #include <string>
 
-class netDriver final {
+class NetDriver final {
 public:
-	static netDriver& GetInstance();
+	static NetDriver& GetInstance();
 
 public:
-	netDriver();
-	~netDriver();
+	NetDriver();
+	~NetDriver();
 
 public:
 	void init();

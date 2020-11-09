@@ -2,7 +2,7 @@
 // Spontz Demogroup
 
 #include "main.h"
-#include "Buffer.h"
+#include "core/renderer/Buffer.h"
 
 // Vertex Buffer
 VertexBuffer::VertexBuffer(uint32_t size)

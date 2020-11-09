@@ -1,13 +1,10 @@
-// imGuidriver.h
+// imGuiDriver.h
 // Spontz Demogroup
 
-#ifndef IMGUIDRIVER_H
-#define IMGUIDRIVER_H
-
+#pragma once
 
 #include "main.h"
-
-#include "core/viewport.h"
+#include "core/renderer/Viewport.h"
 
 #define RENDERTIME_SAMPLES 256
 
@@ -68,5 +65,3 @@ private:
 	void drawSound();
 
 };
-
-#endif

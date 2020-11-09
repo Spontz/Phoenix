@@ -1,11 +1,10 @@
-// netdriver.cpp
+// NetDriver.cpp
 // Spontz Demogroup
 
 // includes ////////////////////////////////////////////////////////////////////////////////////////
 
-#include "netdriver.h"
-
-#include <core/demokernel.h>
+#include "core/drivers/NetDriver.h"
+#include "core/demokernel.h"
 
 
 // globals /////////////////////////////////////////////////////////////////////////////////////////
@@ -16,15 +15,15 @@ auto const kDelimiterString = "\x1f";
 
 // public static ///////////////////////////////////////////////////////////////////////////////////
 
-netDriver& netDriver::GetInstance() {
-	static netDriver obj;
+NetDriver& NetDriver::GetInstance() {
+	static NetDriver obj;
 	return obj;
 }
 
 
 // constructors/destructor /////////////////////////////////////////////////////////////////////////
 
-netDriver::netDriver()
+NetDriver::NetDriver()
 	:
 	m_iPortReceive(28000),
 	m_iPortSend(28001),
@@ -34,7 +33,7 @@ netDriver::netDriver()
 {
 }
 
-netDriver::~netDriver()
+NetDriver::~NetDriver()
 {
 	dyad_shutdown();
 }
@@ -42,7 +41,7 @@ netDriver::~netDriver()
 
 // public
 
-void netDriver::init()
+void NetDriver::init()
 {
 	dyad_init();
 
@@ -60,7 +59,7 @@ void netDriver::init()
 	m_bInitialized_ = true;
 }
 
-void netDriver::connectToEditor()
+void NetDriver::connectToEditor()
 {
 	// Listener for sending messages to the editor
 	Logger::info(
@@ -74,17 +73,17 @@ void netDriver::connectToEditor()
 	dyad_connect(m_pServConnect_, "127.0.0.1", m_iPortSend);
 }
 
-void netDriver::update() const
+void NetDriver::update() const
 {
 	dyad_update();
 }
 
-const char* netDriver::getVersion() const
+const char* NetDriver::getVersion() const
 {
 	return dyad_getVersion();
 }
 
-std::string netDriver::processMessage(const std::string& sMessage) const
+std::string NetDriver::processMessage(const std::string& sMessage) const
 {
 	// Outcoming information
 	std::string sResult = "OK";		// Result of the operation
@@ -188,7 +187,7 @@ std::string netDriver::processMessage(const std::string& sMessage) const
 	return sResponse;
 }
 
-void netDriver::sendMessage(std::string const& sMessage) const
+void NetDriver::sendMessage(std::string const& sMessage) const
 {
 	if (!m_bConnectedToEditor_)
 		return;
@@ -199,20 +198,20 @@ void netDriver::sendMessage(std::string const& sMessage) const
 
 // private static //////////////////////////////////////////////////////////////////////////////////
 
-void netDriver::dyadOnData(dyad_Event* const pDyadEvent) {
-	const std::string sResponse = netDriver::GetInstance().processMessage(pDyadEvent->data);
+void NetDriver::dyadOnData(dyad_Event* const pDyadEvent) {
+	const std::string sResponse = NetDriver::GetInstance().processMessage(pDyadEvent->data);
 
 	// Send the response and close the connection
 	dyad_write(pDyadEvent->stream, sResponse.c_str(), static_cast<int>(sResponse.size()));
 	dyad_end(pDyadEvent->stream);
 }
 
-void netDriver::dyadOnAccept(dyad_Event* const pDyadEvent)
+void NetDriver::dyadOnAccept(dyad_Event* const pDyadEvent)
 {
 	dyad_addListener(pDyadEvent->remote, DYAD_EVENT_DATA, dyadOnData, nullptr);
 }
 
-void netDriver::dyadOnListen(dyad_Event* const pDyadEvent)
+void NetDriver::dyadOnListen(dyad_Event* const pDyadEvent)
 {
 	Logger::info(
 		LogLevel::med,
@@ -221,14 +220,14 @@ void netDriver::dyadOnListen(dyad_Event* const pDyadEvent)
 	);
 }
 
-void netDriver::dyadOnError(dyad_Event* const pDyadEvent)
+void NetDriver::dyadOnError(dyad_Event* const pDyadEvent)
 {
 	Logger::error("Network server error: %s", pDyadEvent->msg);
 }
 
-void netDriver::dyadOnConnect(dyad_Event* const pDyadEvent)
+void NetDriver::dyadOnConnect(dyad_Event* const pDyadEvent)
 {
-	netDriver::GetInstance().m_bConnectedToEditor_ = true;
+	NetDriver::GetInstance().m_bConnectedToEditor_ = true;
 
 	Logger::info(
 		LogLevel::med,
@@ -240,7 +239,7 @@ void netDriver::dyadOnConnect(dyad_Event* const pDyadEvent)
 
 // private /////////////////////////////////////////////////////////////////////////////////////////
 
-std::vector<std::string> netDriver::splitMessage(const std::string& message) const
+std::vector<std::string> NetDriver::splitMessage(const std::string& message) const
 {
 	std::vector<std::string> strings;
 	std::istringstream f(message);

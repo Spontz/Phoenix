@@ -1,7 +1,7 @@
-// section.cpp
+// Section.cpp
 // Spontz Demogroup
 
-#include "section.h"
+#include "Section.h"
 #include "main.h"
 
 Section::Section()

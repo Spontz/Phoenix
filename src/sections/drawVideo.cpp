@@ -1,6 +1,6 @@
 #include "main.h"
-#include "core/video.h"
-#include "core/shadervars.h"
+#include "core/renderer/Video.h"
+#include "core/renderer/ShaderVars.h"
 
 class sDrawVideo final : public Section {
 public:
@@ -27,7 +27,7 @@ private:
 	float		m_fRenderAspectRatio		= 1.0f;
 	Video		*m_pVideo					= nullptr;
 	Shader		*m_pShader					= nullptr;
-	mathDriver* m_pExprPosition				= nullptr;	// A equation containing the calculations to position the object
+	MathDriver* m_pExprPosition				= nullptr;	// A equation containing the calculations to position the object
 	ShaderVars	*m_pVars					= nullptr;	// Shader variables
 };
 
@@ -77,7 +77,7 @@ bool sDrawVideo::load()
 		return false;
 
 	// Load the formmula containing the Image position and scale
-	m_pExprPosition = new mathDriver(this);
+	m_pExprPosition = new MathDriver(this);
 	// Load positions, process constants and compile expression
 	for (int i = 2; i < strings.size(); i++)
 		m_pExprPosition->expression += strings[i];

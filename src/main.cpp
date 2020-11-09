@@ -5,7 +5,7 @@
 
 #include "main.h"
 
-#include "debug/instrumentor.h"
+#include "debug/Instrumentor.h"
 
 int main(int argc, char* argv[]) {
 	auto& demo = demokernel::GetInstance();

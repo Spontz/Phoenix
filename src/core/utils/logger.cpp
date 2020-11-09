@@ -1,12 +1,12 @@
-// logger.cpp
+// Logger.cpp
 // Spontz Demogroup
 
 #include "main.h"
-#include "logger.h"
+#include "core/utils/Logger.h"
 
 #include <iomanip>
 
-const netDriver& Logger::m_netDriver{ netDriver::GetInstance() };
+const NetDriver& Logger::m_netDriver{ NetDriver::GetInstance() };
 const std::string Logger::m_strOutputFile{ "demo_log.txt" };
 LogLevel Logger::m_bLogLevel{ LogLevel::high };
 std::ofstream Logger::m_ofstream;

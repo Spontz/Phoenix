@@ -1,5 +1,5 @@
 #include "main.h"
-#include "core/shadervars.h"
+#include "core/renderer/ShaderVars.h"
 
 struct sEfxFader : public Section {
 public:

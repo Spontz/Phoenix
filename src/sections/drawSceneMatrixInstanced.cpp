@@ -1,7 +1,7 @@
 #include "main.h"
-#include "core/modelinstance.h"
+#include "core/renderer/ModelInstance.h"
 #include "core/drivers/mathdriver.h"
-#include "core/shadervars.h"
+#include "core/renderer/ShaderVars.h"
 
 struct sDrawSceneMatrixInstanced : public Section {
 public:
@@ -44,7 +44,7 @@ private:
 	Model*			m_pModelRef			= nullptr;	// Reference model to be use to store positions
 	ModelInstance*	m_pModel			= nullptr;	// Model to draw instanced
 	Shader*			m_pShader			= nullptr;
-	mathDriver*		m_pExprPosition		= nullptr;	// A equation containing the calculations to position the object
+	MathDriver*		m_pExprPosition		= nullptr;	// A equation containing the calculations to position the object
 	ShaderVars*		m_pVars				= nullptr;	// For storing any other shader variables
 };
 
@@ -111,7 +111,7 @@ bool sDrawSceneMatrixInstanced::load() {
 		m_pModel->model->setAnimation(m_iAnimationNumber);
 
 
-	m_pExprPosition = new mathDriver(this);
+	m_pExprPosition = new MathDriver(this);
 	// Load all the other strings
 	for (int i = 3; i < strings.size(); i++)
 		m_pExprPosition->expression += strings[i];

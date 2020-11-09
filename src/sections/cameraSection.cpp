@@ -1,6 +1,6 @@
 #include "main.h"
 #include "core/drivers/mathdriver.h"
-#include "core/shadervars.h"
+#include "core/renderer/ShaderVars.h"
 
 struct sCamera : public Section {
 public:
@@ -19,7 +19,7 @@ private:
 	float		m_fCamRoll		= 0;
 	float		m_fCamZoom		= 0;
 
-	mathDriver* m_pExprCamera	= nullptr;	// A equation containing the calculations of the camera
+	MathDriver* m_pExprCamera	= nullptr;	// A equation containing the calculations of the camera
 } camera_section;
 
 // ******************************************************************
@@ -51,7 +51,7 @@ bool sCamera::load() {
 	}
 
 	// Load the camera modifiers (based in formulas)
-	m_pExprCamera = new mathDriver(this);
+	m_pExprCamera = new MathDriver(this);
 	m_pExprCamera->expression += "var zzz:=0;"; // Hack: We set up a basic string, just in case no string is given
 
 	for (int i = 0; i < strings.size(); i++) {

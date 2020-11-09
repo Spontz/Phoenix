@@ -1,11 +1,11 @@
-// resouce.h
+// Resource.h
 // Spontz Demogroup
 
 #pragma once
 
-#include <core/texture.h>
-#include <core/cubemap.h>
-#include <core/shader.h>
+#include "core/renderer/Texture.h"
+#include "core/renderer/Cubemap.h"
+#include "core/renderer/Shader.h"
 
 class Resource {
 public:

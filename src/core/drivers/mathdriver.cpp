@@ -1,12 +1,11 @@
-// mathdriver.cpp
+// MathDriver.cpp
 // Spontz Demogroup
 // fastmath library: https://archive.codeplex.com/?p=fastmathparser
 
 #include "main.h"
+#include "core/drivers/MathDriver.h"
 
-#include "core/drivers/mathdriver.h"
-
-mathDriver::mathDriver(Section *sec) {
+MathDriver::MathDriver(Section *sec) {
 	expression = "";
 	
 	// Add the variables that will be used by all sections
@@ -155,7 +154,7 @@ mathDriver::mathDriver(Section *sec) {
 	SymbolTable.add_constant("fbo24Height", GLDRV->fbo[24].height);
 }
 
-bool mathDriver::compileFormula()
+bool MathDriver::compileFormula()
 {
 	Expression.register_symbol_table(SymbolTable);
 	if (!Parser.compile(expression, Expression)) {

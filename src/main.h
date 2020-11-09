@@ -7,7 +7,7 @@
 
 static constexpr uint32_t PHOENIX_MAJOR_VERSION = 1;
 static constexpr uint32_t PHOENIX_MINOR_VERSION = 6;
-static constexpr uint32_t PHOENIX_BUILD_VERSION = 0;
+static constexpr uint32_t PHOENIX_BUILD_VERSION = 1;
 
 static constexpr uint32_t FBO_BUFFERS = 25;
 static constexpr uint32_t EFXBLOOM_FBO_BUFFERS = 2;
@@ -19,7 +19,7 @@ static constexpr uint32_t MAX_BEATS = 5;
 // please check the variable 'scriptCommand' contents in 'demokernel.cpp' file.
 static_assert(FBO_BUFFERS >= 25);
 
-#include "core/demokernel.h"
-#include "core/utils/logger.h"
-#include "core/utils/utilities.h"
-#include "core/resource/resource.h"
+#include "core/Demokernel.h"
+#include "core/utils/Logger.h"
+#include "core/utils/Utilities.h"
+#include "core/resource/Resource.h"

@@ -1,23 +1,20 @@
-// mathdriver.h
+// MathDriver.h
 // Spontz Demogroup
 
-#ifndef MATHDRIVER_H
-#define MATHDRIVER_H
+#pragma once
 
-class mathDriver {
+class MathDriver {
 	
 public:
 	
-	std::string expression;
-	exprtk::symbol_table<float> SymbolTable;
+	std::string					expression;
+	exprtk::symbol_table<float>	SymbolTable;
 	exprtk::expression<float>	Expression;
-	exprtk::parser<float> Parser;
+	exprtk::parser<float>		Parser;
 
-	mathDriver(Section *sec);
+	MathDriver(Section *sec);
 	bool compileFormula();
 
 private:
 
 };
-
-#endif

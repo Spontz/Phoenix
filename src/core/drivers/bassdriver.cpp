@@ -1,24 +1,24 @@
-// bassdriver.cpp
+// BassDriver.cpp
 // Spontz Demogroup
 
 
 
 #include "main.h"
-#include "bassdriver.h"
+#include "core/drivers/BassDriver.h"
 
-bassDriver& bassDriver::GetInstance() {
-	static bassDriver instance;
+BassDriver& BassDriver::GetInstance() {
+	static BassDriver instance;
 	return instance;
 }
 
-bassDriver::bassDriver()
+BassDriver::BassDriver()
 	:
 	m_demo(demokernel::GetInstance()),
 	m_spectrum{0.0}
 {
 }
 
-void bassDriver::init() {
+void BassDriver::init() {
 	if (!BASS_Init(-1, 44100, 0, 0, NULL)) {
 		Logger::error("bassDriver: Sound cannot be initialized, error in BASS_Init()");
 		return;
@@ -27,11 +27,11 @@ void bassDriver::init() {
 	Logger::info(LogLevel::high, "BASS library inited");
 }
 
-void bassDriver::play() {
+void BassDriver::play() {
 	BASS_Start();
 }
 
-void bassDriver::update() {
+void BassDriver::update() {
 	BASS_Update(200);
 	
 	// Clear all beat values and internal fft data
@@ -42,19 +42,19 @@ void bassDriver::update() {
 	
 }
 
-void bassDriver::pause() {
+void BassDriver::pause() {
 	BASS_Pause();
 }
 
-void bassDriver::stop() {
+void BassDriver::stop() {
 	BASS_Stop();
 }
 
-void bassDriver::end() {
+void BassDriver::end() {
 	BASS_Free();
 }
 
-void bassDriver::addFFTdata(float* fftData, int samples) {
+void BassDriver::addFFTdata(float* fftData, int samples) {
 	// FFT values are just for debug purposes, so we just add the values if we are in debug mode
 	if (m_demo.m_debug)
 	{
@@ -86,21 +86,21 @@ void bassDriver::addFFTdata(float* fftData, int samples) {
 	
 }
 
-float* bassDriver::getSpectrumData()
+float* BassDriver::getSpectrumData()
 {
 	return &(m_spectrum[0]);
 }
 
-int bassDriver::getSpectrumSamples()
+int BassDriver::getSpectrumSamples()
 {
 	return SPECTRUM_SAMPLES;
 }
 
-float bassDriver::getCPUload() {
+float BassDriver::getCPUload() {
 	return BASS_GetCPU();
 }
 
-const std::string bassDriver::getVersion()
+const std::string BassDriver::getVersion()
 {
 	return BASSVERSIONTEXT;
 }

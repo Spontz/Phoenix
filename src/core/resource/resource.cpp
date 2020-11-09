@@ -1,4 +1,4 @@
-// resource.cpp
+// Resource.cpp
 // Spontz Demogroup
 
 #include "main.h"

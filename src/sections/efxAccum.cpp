@@ -1,6 +1,6 @@
 #include "main.h"
 #include "core/drivers/mathdriver.h"
-#include "core/shadervars.h"
+#include "core/renderer/ShaderVars.h"
 
 struct sEfxAccum : public Section {
 public:
@@ -19,7 +19,7 @@ private:
 	float			m_fAccumInfluence	= 0.5f;		// Accumulation influence (0 to 1)
 	bool			m_bAccumBuffer		= false;	// Accum buffer to use (0 or 1)
 	Shader			*m_pShader			= nullptr;	// Accumulation Shader to apply
-	mathDriver		*m_pExprAccum		= nullptr;	// Equations for the Accum effect
+	MathDriver		*m_pExprAccum		= nullptr;	// Equations for the Accum effect
 	ShaderVars		*m_pVars			= nullptr;	// Shader variables
 };
 
@@ -54,7 +54,7 @@ bool sEfxAccum::load() {
 	}
 	
 	// Load the Blur amount formula
-	m_pExprAccum = new mathDriver(this);
+	m_pExprAccum = new MathDriver(this);
 	// Load positions, process constants and compile expression
 	for (int i = 1; i < strings.size(); i++)
 		m_pExprAccum->expression += strings[i];

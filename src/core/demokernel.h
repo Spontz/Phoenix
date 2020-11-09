@@ -1,4 +1,4 @@
-// demoKernel.h
+// Demokernel.h
 // Spontz Demogroup
 
 #pragma once
@@ -7,20 +7,20 @@ class demokernel;
 
 #include "drivers/gldriver.h"
 
-#include "core/spline.h"
-#include "core/section.h"
-#include "core/section_manager.h"
+#include "core/renderer/Spline.h"
+#include "core/Section.h"
+#include "core/SectionManager.h"
 #include "sections/sections.h"
 
-#include "core/video_manager.h"
-#include "core/texture_manager.h"
-#include "core/fbo_manager.h"
-#include "core/model_manager.h"
-#include "core/shader_manager.h"
-#include "core/light_manager.h"
-#include "core/font.h"
-#include "core/camera.h"
-#include "core/light.h"
+#include "core/renderer/VideoManager.h"
+#include "core/renderer/TextureManager.h"
+#include "core/renderer/FboManager.h"
+#include "core/renderer/ModelManager.h"
+#include "core/renderer/ShaderManager.h"
+#include "core/renderer/LightManager.h"
+#include "core/renderer/Font.h"
+#include "core/renderer/Camera.h"
+#include "core/renderer/Light.h"
 #include "core/utils/logger.h"
 
 #include "core/resource/resource.h"

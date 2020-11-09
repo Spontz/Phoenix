@@ -1,20 +1,20 @@
-// bassdriver.h
+// BassDriver.h
 // Spontz Demogroup
 
 #pragma once
 
 
 // hack: get rid of macros
-#define BASSDRV (&bassDriver::GetInstance())
+#define BASSDRV (&BassDriver::GetInstance())
 #define SPECTRUM_SAMPLES 32
 
 // ******************************************************************
 
-class bassDriver {
+class BassDriver {
 	
 public:
-	static bassDriver& GetInstance();
-	bassDriver();
+	static BassDriver& GetInstance();
+	BassDriver();
 
 private:
 	demokernel&	m_demo;

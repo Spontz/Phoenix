@@ -1,8 +1,7 @@
-// utilities.h
+// Utilities.h
 // Spontz Demogroup
 
-#ifndef UTILITIES_H
-#define UTILITIES_H
+#pragma once
 
 #include "main.h"
 
@@ -23,7 +22,3 @@ namespace Util {
 	std::string& replaceString(std::string & subj, std::string old_str, std::string new_str);
 	std::istream& safeGetline(std::istream& is, std::string& t);
 }
-
-
-
-#endif

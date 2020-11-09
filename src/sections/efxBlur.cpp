@@ -1,6 +1,6 @@
 #include "main.h"
 #include "core/drivers/mathdriver.h"
-#include "core/shadervars.h"
+#include "core/renderer/ShaderVars.h"
 
 struct sEfxBlur : public Section {
 public:
@@ -17,7 +17,7 @@ private:
 	unsigned int	m_uiFboNum		= 0;		// Fbo to use (must have 2 color attachments!)
 	float			m_fBlurAmount	= 1.0;		// Blur layers to apply
 	Shader			*m_pShader		= nullptr;	// Blur Shader to apply
-	mathDriver		*m_pExprBlur	= nullptr;	// Equations for the Blur effect
+	MathDriver		*m_pExprBlur	= nullptr;	// Equations for the Blur effect
 	ShaderVars		*m_pVars		= nullptr;	// Shader variables
 };
 
@@ -51,7 +51,7 @@ bool sEfxBlur::load() {
 	}
 	
 	// Load the Blur amount formula
-	m_pExprBlur = new mathDriver(this);
+	m_pExprBlur = new MathDriver(this);
 	// Load positions, process constants and compile expression
 	m_pExprBlur->expression = strings[0]; // The first string should contain the blur amount
 	m_pExprBlur->SymbolTable.add_variable("blurAmount", m_fBlurAmount);

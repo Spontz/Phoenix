@@ -2,7 +2,7 @@
 // Spontz Demogroup
 
 #include "main.h"
-#include "Vertexarray.h"
+#include "VertexArray.h"
 
 static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
 {
