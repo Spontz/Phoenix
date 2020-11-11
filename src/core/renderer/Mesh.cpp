@@ -44,7 +44,7 @@ Mesh::Mesh(std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertic
 	m_pMesh(pMesh),
 	m_vertices(vertices),
 	m_indices(indices),
-	m_VertexArray(new VertexArray())
+	m_VertexArray(nullptr)
 
 {
 	loadUniqueVerticesPos();
@@ -86,6 +86,9 @@ void Mesh::loadUniqueVerticesPos()
 // initializes all the buffer objects/arrays
 void Mesh::setupMesh()
 {
+	// Allocate Vertex Array
+	m_VertexArray = new VertexArray();
+
 	// Create & Load the Vertex Buffer
 	VertexBuffer *vertexBuffer = new VertexBuffer(&m_vertices[0], static_cast<uint32_t>(m_vertices.size() * sizeof(Vertex)));
 	//vertexBuffer->SetData(&m_vertices[0], m_vertices.size() * sizeof(Vertex));

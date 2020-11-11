@@ -74,6 +74,7 @@ bool ParticleSystem::InitParticleSystem(Section* sec, const std::vector<Particle
 	glGenTransformFeedbacks(2, m_transformFeedback);	// Transform Feedback object
 	glGenBuffers(2, m_particleBuffer);					// Transform Feedback buffer
 
+	// Info for Opengl4.5 tranform feedback buffer creation: https://cpp.hotexamples.com/examples/-/-/glNamedBufferStorage/cpp-glnamedbufferstorage-function-examples.html
 
 	for (unsigned int i = 0; i < 2; i++) {
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);

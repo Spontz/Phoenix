@@ -32,11 +32,11 @@ bool ParticleMesh::startup(std::vector<PARTICLE> Part)
     initialize_particles(Part);
 
     // Create GPU buffer in read-only mode (faster)
-    glGenBuffers(1, &m_particleBuffer);
+    glCreateBuffers(1, &m_particleBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer);
     glBufferStorage(GL_ARRAY_BUFFER, m_numParticles * sizeof(PARTICLE), m_particles, GL_MAP_READ_BIT);
 
-    glGenVertexArrays(1, &m_vao);
+    glCreateVertexArrays(1, &m_vao);
     glBindVertexArray(m_vao);
 
     glBindVertexBuffer(BINDING, m_particleBuffer, 0, sizeof(PARTICLE));
