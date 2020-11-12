@@ -17,7 +17,7 @@ static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
 	case ShaderDataType::Int:      return GL_INT;
 	case ShaderDataType::Int2:     return GL_INT;
 	case ShaderDataType::Int3:     return GL_INT;
-	case ShaderDataType::Int4:     return GL_INT;
+	case ShaderDataType::Int4:     return GL_UNSIGNED_INT;
 	case ShaderDataType::Bool:     return GL_BOOL;
 	}
 
@@ -77,10 +77,10 @@ void VertexArray::AddVertexBuffer(VertexBuffer* vertexBuffer)
 			break;
 		}
 		case ShaderDataType::Int:
+		case ShaderDataType::Bool:
 		case ShaderDataType::Int2:
 		case ShaderDataType::Int3:
 		case ShaderDataType::Int4:
-		case ShaderDataType::Bool:
 		{
 			glEnableVertexArrayAttrib(m_RendererID, m_VertexBufferIndex);
 			// In case we use ivecN or uvecN, we need to use this Format... so, we need to solve this in the future
