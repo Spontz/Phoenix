@@ -11,13 +11,13 @@ namespace Phoenix {
 	m_scriptData(""),
 	scriptCommand ({
 			{"demo_name",				SectionVar::TYPE_STRING,		&DEMO->m_demoName		},
-			{"debug",					SectionVar::TYPE_INT,			&DEMO->m_debug			},
+			{"debug",					SectionVar::TYPE_BOOL,			&DEMO->m_debug			},
 			{"debugFontSize",			SectionVar::TYPE_FLOAT,			&DEMO->m_debug_fontSize	},
-			{"loop",					SectionVar::TYPE_INT,			&DEMO->m_loop			},
-			{"sound",					SectionVar::TYPE_INT,			&DEMO->m_sound			},
+			{"loop",					SectionVar::TYPE_BOOL,			&DEMO->m_loop			},
+			{"sound",					SectionVar::TYPE_BOOL,			&DEMO->m_sound			},
 			{"demo_start",				SectionVar::TYPE_FLOAT,			&DEMO->m_demoStartTime	},
 			{"demo_end",				SectionVar::TYPE_FLOAT,			&DEMO->m_demoEndTime	},
-			{"slave",					SectionVar::TYPE_INT,			&DEMO->m_slaveMode		},
+			{"slave",					SectionVar::TYPE_BOOL,			&DEMO->m_slaveMode		},
 			{"log_detail",				SectionVar::TYPE_INT,			&DEMO->m_logLevel		},
 
 			{"gl_fullscreen",			SectionVar::TYPE_INT,			&GLDRV->config.fullScreen				},
@@ -210,6 +210,11 @@ namespace Phoenix {
 			command = scriptCommandFound(s_line.first);
 			if (command != -1) {
 				switch (scriptCommand[command].vType) {
+				case SectionVar::TYPE_BOOL:
+					*(bool*)((char**)scriptCommand[command].vAddr) = std::stoi(s_line.second);
+					iptr = (int*)scriptCommand[command].vAddr;
+					Logger::info(LogLevel::low, "  Command found: %s = %d", scriptCommand[command].cName.c_str(), *iptr);
+					break;
 				case SectionVar::TYPE_INT:
 					*(int*)((char**)scriptCommand[command].vAddr) = std::stoi(s_line.second);
 					iptr = (int*)scriptCommand[command].vAddr;

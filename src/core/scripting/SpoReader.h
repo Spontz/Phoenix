@@ -30,6 +30,7 @@ namespace Phoenix {
 
 	enum class SectionVar : char const {
 		TYPE_ERROR = 0,
+		TYPE_BOOL,
 		TYPE_INT,
 		TYPE_FLOAT,
 		TYPE_STRING		

@@ -59,7 +59,7 @@ void Logger::info(LogLevel level, const char* pszMessage, ...) {
 
 void Logger::sendEditor(const char* pszMessage, ...) {
 	// We send the message only if we are in debug mode and slave mode
-	if (DEMO->m_debug == false || DEMO->m_slaveMode == 0)
+	if (!DEMO->m_debug || !DEMO->m_slaveMode)
 		return;
 	
 	// Get the message

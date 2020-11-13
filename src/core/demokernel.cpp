@@ -47,7 +47,7 @@ demokernel::demokernel()
 	m_accumFrameCount(0),
 	m_fps(0),
 	m_uiFrameCount(0),
-	m_slaveMode(0),
+	m_slaveMode(false),
 	m_mouseX(0),
 	m_mouseY(0),
 	m_mouseXvar(0),

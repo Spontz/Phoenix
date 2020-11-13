@@ -24,8 +24,6 @@ struct tGLFboFormat {
 	int numColorAttachments;
 };
 
-// ******************************************************************
-
 struct tGLConfig {
 	int				fullScreen;
 	unsigned int	framebuffer_width;
@@ -41,7 +39,6 @@ struct tExprTkViewport {
 	float			height;
 	float			aspect_ratio;
 };
-
 
 // ******************************************************************
 
@@ -121,4 +118,25 @@ public:
 
 	int		WindowShouldClose();
 	void	close();
+
+private:
+
+	struct tGLTextureTable {
+		char* name;
+		int tex_iformat; // internalformat
+		int tex_format;
+		int tex_type;
+		int tex_components;
+	};
+
+	const			std::vector<tGLTextureTable> textureModes = {
+		{ "RGB", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 3},
+		{ "RGBA",			GL_RGBA8,				GL_RGBA,			GL_UNSIGNED_BYTE,	4 },
+		{ "RGB_16F",		GL_RGB16F,				GL_RGB,				GL_FLOAT,			3 },
+		{ "RGBA_16F",		GL_RGBA16F,				GL_RGBA,			GL_FLOAT,			4 },
+		{ "RGB_32F",		GL_RGB32F,				GL_RGB,				GL_FLOAT,			3 },
+		{ "RGBA_32F",		GL_RGBA32F,				GL_RGBA,			GL_FLOAT,			4 },
+		{ "RG_16F",			GL_RG16F,				GL_RG,				GL_FLOAT,			2 },
+		{ "DEPTH",			GL_DEPTH_COMPONENT,		GL_DEPTH_COMPONENT,	GL_FLOAT,			1 }
+	};
 };

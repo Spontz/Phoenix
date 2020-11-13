@@ -6,30 +6,6 @@
 #include "core/drivers/imGuiDriver.h"
 #include "debug/Instrumentor.h"
 
-// ******************************************************************
-
-typedef struct {
-	char* name;
-	int tex_iformat; // internalformat
-	int tex_format;
-	int tex_type;
-	int tex_components;
-} glTexTable_t;
-
-// ******************************************************************
-
-glTexTable_t textureModes[] = {
-	{ "RGB",			GL_RGB8,				GL_RGB,				GL_UNSIGNED_BYTE,	3},
-	{ "RGBA",			GL_RGBA8,				GL_RGBA,			GL_UNSIGNED_BYTE,	4},
-	{ "RGB_16F",		GL_RGB16F,				GL_RGB,				GL_FLOAT,			3},
-	{ "RGBA_16F",		GL_RGBA16F,				GL_RGBA,			GL_FLOAT,			4},
-	{ "RGB_32F",		GL_RGB32F,				GL_RGB,				GL_FLOAT,			3},
-	{ "RGBA_32F",		GL_RGBA32F,				GL_RGBA,			GL_FLOAT,			4},
-	{ "RG_16F",			GL_RG16F,				GL_RG,				GL_FLOAT,			2},
-	{ "DEPTH",			GL_DEPTH_COMPONENT,		GL_DEPTH_COMPONENT,	GL_FLOAT,			1}
-};
-#define TEXTURE_MODE (sizeof(textureModes) / sizeof(glTexTable_t))
-
 // GLFW CALLBACKS ***************************************************
 
 void glDriver::glfwError_callback(int, const char* err_str)
@@ -644,7 +620,7 @@ const std::vector<std::string> glDriver::getOpenGLExtensions()
 }
 
 int glDriver::getTextureFormatByName(char* name) {
-	for (int i = 0; i < TEXTURE_MODE; i++) {
+	for (int i = 0; i < textureModes.size(); i++) {
 		if (_strcmpi(name, textureModes[i].name) == 0) {
 			return textureModes[i].tex_format;
 		}
@@ -653,7 +629,7 @@ int glDriver::getTextureFormatByName(char* name) {
 }
 
 int glDriver::getTextureInternalFormatByName(char* name) {
-	for (int i = 0; i < TEXTURE_MODE; i++) {
+	for (int i = 0; i < textureModes.size(); i++) {
 		if (_strcmpi(name, textureModes[i].name) == 0) {
 			return textureModes[i].tex_iformat;
 		}
@@ -662,7 +638,7 @@ int glDriver::getTextureInternalFormatByName(char* name) {
 }
 
 int glDriver::getTextureTypeByName(char* name) {
-	for (int i = 0; i < TEXTURE_MODE; i++) {
+	for (int i = 0; i < textureModes.size(); i++) {
 		if (_strcmpi(name, textureModes[i].name) == 0) {
 			return textureModes[i].tex_type;
 		}
@@ -671,7 +647,7 @@ int glDriver::getTextureTypeByName(char* name) {
 }
 
 int glDriver::getTextureComponentsByName(char* name) {
-	for (int i = 0; i < TEXTURE_MODE; i++) {
+	for (int i = 0; i < textureModes.size(); i++) {
 		if (_strcmpi(name, textureModes[i].name) == 0) {
 			return textureModes[i].tex_components;
 		}

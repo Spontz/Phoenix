@@ -45,21 +45,19 @@ class demokernel final {
 private:
 	demokernel();
 public:
-	// ******************************************************************
-	// VARIABLES
 	std::string		m_dataFolder;	// Path to "data" folder
 	char*			m_demoName;
 	const bool		m_debug;
 	const float		m_debug_fontSize;
 	const LogLevel	m_logLevel;
 
-	// misc // TODO: should be boolean values
-	int			m_loop;
-	int			m_sound;
+	// misc
+	bool			m_loop;
+	bool			m_sound;
 
-	int			m_status;			// Demo status (play, pause, loading, etc.) - TODO: change int to struct
-	float		m_demoStartTime;	// first demo second
-	float		m_demoEndTime;		// last demo second (0 = unlimited)
+	int				m_status;			// Demo status (play, pause, loading, etc.)
+	float			m_demoStartTime;	// first demo second
+	float			m_demoEndTime;		// last demo second (0 = unlimited)
 
 	// Managers
 	SectionManager	m_sectionManager;
@@ -99,7 +97,7 @@ public:
 	int m_mouseXvar, m_mouseYvar;				// Mouse variation from the center of the screen
 
 	// network slave mode
-	const int m_slaveMode;						// 1 = network slave; 0 = standalone mode;
+	const bool m_slaveMode;						// Are we in Slave mode?
 
 	
 	float m_fVar[MULTIPURPOSE_VARS];			// Multi-purpose variables, shared across sections
