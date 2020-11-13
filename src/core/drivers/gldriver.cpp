@@ -627,6 +627,22 @@ const std::string glDriver::getOpenGLRenderer()
 	return strVersion;
 }
 
+const std::vector<std::string> glDriver::getOpenGLExtensions()
+{
+	// Show supported OpenGL extensions
+	std::vector<std::string> sv;
+	
+	GLint nExt = 0;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &nExt);
+	for (GLint i = 0; i < nExt; i++)
+	{
+		std::string s = (const char*)glGetStringi(GL_EXTENSIONS, i);
+		sv.push_back(s);
+	}
+	
+	return sv;
+}
+
 int glDriver::getTextureFormatByName(char* name) {
 	for (int i = 0; i < TEXTURE_MODE; i++) {
 		if (_strcmpi(name, textureModes[i].name) == 0) {

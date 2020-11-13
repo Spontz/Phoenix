@@ -21,7 +21,7 @@ private:
 	float		m_spectrum[SPECTRUM_SAMPLES];
 
 public:
-	void init();
+	bool init();
 	void play();
 	void update();
 	void pause();

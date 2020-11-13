@@ -76,12 +76,15 @@ bool demokernel::initDemo() {
 	// initialize graphics driver
 	if (!GLDRV->initGraphics())
 		return false;
-	Logger::info(LogLevel::high, "OpenGL environment created");
+	Logger::info(LogLevel::med, "OpenGL environment created");
 
 	// initialize sound driver
-	if (m_sound)
-		BASSDRV->init();
-
+	if (m_sound) {
+		if (BASSDRV->init())
+			Logger::info(LogLevel::med, "BASS library inited");
+		else
+			Logger::error("Could not init BASS library");
+	}
 
 	// Show versions
 	Logger::info(LogLevel::med, "Component versions:");
@@ -94,17 +97,11 @@ bool demokernel::initDemo() {
 	Logger::info(LogLevel::med, "Network Dyad.c library version: %s", getLibDyadVersion().c_str());
 	Logger::info(LogLevel::med, "Assimp library version: %s", getLibAssimpVersion().c_str());
 
-	// Show OpenGL extensions supported
-	GLint nExt = 0;
-	glGetIntegerv(GL_NUM_EXTENSIONS, &nExt);
-	Logger::info(LogLevel::low, "OpenGL Supported extensions:");
-	for (GLint i = 0; i < nExt; i++)
-	{
-		const char* extension =
-			(const char*)glGetStringi(GL_EXTENSIONS, i);
-		Logger::info(LogLevel::low, "OpenGL Extension %d: %s", i, extension);
-	}
-
+	Logger::info(LogLevel::med, "List of supported OpenGL extensions:");
+	const std::vector<std::string> extensions = GLDRV->getOpenGLExtensions();
+	for (const auto& extension : extensions)
+		Logger::info(LogLevel::med, "\t%s", extension.c_str());
+	
 	// Create the camera
 	m_pCamera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 

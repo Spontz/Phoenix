@@ -18,13 +18,8 @@ BassDriver::BassDriver()
 {
 }
 
-void BassDriver::init() {
-	if (!BASS_Init(-1, 44100, 0, 0, NULL)) {
-		Logger::error("bassDriver: Sound cannot be initialized, error in BASS_Init()");
-		return;
-	}
-
-	Logger::info(LogLevel::high, "BASS library inited");
+bool BassDriver::init() {
+	return BASS_Init(-1, 44100, 0, 0, NULL);
 }
 
 void BassDriver::play() {
