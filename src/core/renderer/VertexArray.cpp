@@ -201,6 +201,8 @@ void VertexArray::AddVertexBuffer(VertexBuffer* vertexBuffer)
 
 void VertexArray::SetIndexBuffer(IndexBuffer* indexBuffer)
 {
-	glVertexArrayElementBuffer(m_RendererID, indexBuffer->GetBufferID());
+	glBindVertexArray(m_RendererID);
+	indexBuffer->Bind();
+	//glVertexArrayElementBuffer(m_RendererID, indexBuffer->GetBufferID());	// In case we want to use DSA, we can remove glBindVertexArray and indexBufferBind and use this
 	m_IndexBuffer = indexBuffer;
 }
