@@ -91,14 +91,13 @@ void Mesh::setupMesh()
 
 	// Create & Load the Vertex Buffer
 	VertexBuffer *vertexBuffer = new VertexBuffer(&m_vertices[0], static_cast<uint32_t>(m_vertices.size() * sizeof(Vertex)));
-	//vertexBuffer->SetData(&m_vertices[0], m_vertices.size() * sizeof(Vertex));
 	vertexBuffer->SetLayout({
 		{ ShaderDataType::Float3,	"aPos"},
 		{ ShaderDataType::Float3,	"aNormal"},
 		{ ShaderDataType::Float2,	"aTexCoords"},
 		{ ShaderDataType::Float3,	"aTangent"},
 		{ ShaderDataType::Float3,	"aBiTangent"},
-		{ ShaderDataType::Int4,		"aBoneID"},
+		{ ShaderDataType::UInt4,	"aBoneID"},
 		{ ShaderDataType::Float4,	"aBoneWeight"}
 		});
 

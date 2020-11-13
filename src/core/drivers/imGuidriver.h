@@ -41,6 +41,8 @@ public:
 private:
 	std::string m_VersionEngine;
 	std::string m_VersionOpenGL;
+	std::string m_VendorOpenGL;
+	std::string m_RendererOpenGL;
 	std::string m_VersionGLFW;
 	std::string m_VersionBASS;
 	std::string m_VersionDyad;

@@ -86,11 +86,13 @@ bool demokernel::initDemo() {
 	// Show versions
 	Logger::info(LogLevel::med, "Component versions:");
 	Logger::info(LogLevel::high, "Spontz visuals engine 'Phoenix' version: %s", getEngineVersion().c_str());
-	Logger::info(LogLevel::med, "OpenGL driver version is: %s", GLDRV->getOpenGLVersion().c_str());
-	Logger::info(LogLevel::med, "GLFW library version is: %s", GLDRV->getVersion().c_str());
-	Logger::info(LogLevel::med, "Bass library version is: %s", BASSDRV->getVersion().c_str());
-	Logger::info(LogLevel::med, "Network Dyad.c library version is: %s", getLibDyadVersion().c_str());
-	Logger::info(LogLevel::med, "Assimp library version is: %s", getLibAssimpVersion().c_str());
+	Logger::info(LogLevel::med, "OpenGL driver version: %s", GLDRV->getOpenGLVersion().c_str());
+	Logger::info(LogLevel::med, "OpenGL driver vendor: %s", GLDRV->getOpenGLVendor().c_str());
+	Logger::info(LogLevel::med, "OpenGL driver renderer: %s", GLDRV->getOpenGLRenderer().c_str());
+	Logger::info(LogLevel::med, "GLFW library version: %s", GLDRV->getGLFWVersion().c_str());
+	Logger::info(LogLevel::med, "Bass library version: %s", BASSDRV->getVersion().c_str());
+	Logger::info(LogLevel::med, "Network Dyad.c library version: %s", getLibDyadVersion().c_str());
+	Logger::info(LogLevel::med, "Assimp library version: %s", getLibAssimpVersion().c_str());
 
 	// Create the camera
 	m_pCamera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));

@@ -100,8 +100,10 @@ public:
 	void	guiDrawSections();
 	void	guiDrawSound();
 	void	guiChangeAttachment();
-	const std::string getVersion();
+	const std::string getGLFWVersion();
 	const std::string getOpenGLVersion();
+	const std::string glDriver::getOpenGLVendor();
+	const std::string glDriver::getOpenGLRenderer();
 
 	Viewport		GetFramebufferViewport() const;
 	float			GetFramebufferAspectRatio() const;

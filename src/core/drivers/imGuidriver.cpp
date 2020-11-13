@@ -38,7 +38,9 @@ imGuiDriver::imGuiDriver()
 {
 	m_VersionEngine = m_demo.getEngineVersion();
 	m_VersionOpenGL = GLDRV->getOpenGLVersion();
-	m_VersionGLFW =  GLDRV->getVersion();
+	m_VendorOpenGL = GLDRV->getOpenGLVendor();
+	m_RendererOpenGL = GLDRV->getOpenGLRenderer();
+	m_VersionGLFW =  GLDRV->getGLFWVersion();
 	m_VersionBASS = BASSDRV->getVersion();
 	m_VersionDyad = m_demo.getLibDyadVersion();
 	m_VersionASSIMP = m_demo.getLibAssimpVersion();
@@ -200,12 +202,14 @@ void imGuiDriver::drawVersion()
 		return;
 	}
 	ImGui::Text("Phoenix engine version: %s", m_VersionEngine.c_str());
-	ImGui::Text("OpenGL driver version is: %s", m_VersionOpenGL.c_str());
-	ImGui::Text("GLFW library version is: %s", m_VersionGLFW.c_str());
-	ImGui::Text("Bass library version is: %s", m_VersionBASS.c_str());
-	ImGui::Text("Network Dyad.c library version is: %s", m_VersionDyad.c_str());
-	ImGui::Text("Assimp library version is: %s", m_VersionASSIMP.c_str());
-	ImGui::Text("ImGUI library version is: %s", m_VersionImGUI.c_str());
+	ImGui::Text("OpenGL driver version: %s", m_VersionOpenGL.c_str());
+	ImGui::Text("OpenGL driver vendor: %s", m_VendorOpenGL.c_str());
+	ImGui::Text("OpenGL driver renderer: %s", m_RendererOpenGL.c_str());
+	ImGui::Text("GLFW library version: %s", m_VersionGLFW.c_str());
+	ImGui::Text("Bass library version: %s", m_VersionBASS.c_str());
+	ImGui::Text("Network Dyad.c library version: %s", m_VersionDyad.c_str());
+	ImGui::Text("Assimp library version: %s", m_VersionASSIMP.c_str());
+	ImGui::Text("ImGUI library version: %s", m_VersionImGUI.c_str());
 	ImGui::End();
 }
 

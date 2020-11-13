@@ -1,4 +1,4 @@
-// glDriver.cpp
+ï»¿// glDriver.cpp
 // Spontz Demogroup
 
 #include "main.h"
@@ -504,7 +504,7 @@ void glDriver::initFbos() {
 	}
 
 	////////////// efxAccum FBO Manager: internal FBO's that are being used by the engine effects
-	// TODO: Que pasa si varios efectos de Accum se lanzan a la vez? no pueden usar la misma textura, asi que se mezclarán! deberíamos tener una fbo por cada efecto? es un LOCURON!!
+	// TODO: Que pasa si varios efectos de Accum se lanzan a la vez? no pueden usar la misma textura, asi que se mezclarÃ¡n! deberÃ­amos tener una fbo por cada efecto? es un LOCURON!!
 	{
 		// Clear Fbo's, if there is any
 		if (m_demo.m_efxAccumFbo.fbo.size() > 0) {
@@ -604,7 +604,7 @@ void glDriver::close() {
 	glfwTerminate();
 }
 
-const std::string glDriver::getVersion()
+const std::string glDriver::getGLFWVersion()
 {
 	return glfwGetVersionString();
 }
@@ -612,7 +612,18 @@ const std::string glDriver::getVersion()
 const std::string glDriver::getOpenGLVersion()
 {
 	std::string strVersion = (const char*)glGetString(GL_VERSION);
-	
+	return strVersion;
+}
+
+const std::string glDriver::getOpenGLVendor()
+{
+	std::string strVersion = (const char*)glGetString(GL_VENDOR);
+	return strVersion;
+}
+
+const std::string glDriver::getOpenGLRenderer()
+{
+	std::string strVersion = (const char*)glGetString(GL_RENDERER);
 	return strVersion;
 }
 
