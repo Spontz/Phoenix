@@ -94,6 +94,17 @@ bool demokernel::initDemo() {
 	Logger::info(LogLevel::med, "Network Dyad.c library version: %s", getLibDyadVersion().c_str());
 	Logger::info(LogLevel::med, "Assimp library version: %s", getLibAssimpVersion().c_str());
 
+	// Show OpenGL extensions supported
+	GLint nExt = 0;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &nExt);
+	Logger::info(LogLevel::low, "OpenGL Supported extensions:");
+	for (GLint i = 0; i < nExt; i++)
+	{
+		const char* extension =
+			(const char*)glGetStringi(GL_EXTENSIONS, i);
+		Logger::info(LogLevel::low, "OpenGL Extension %d: %s", i, extension);
+	}
+
 	// Create the camera
 	m_pCamera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
