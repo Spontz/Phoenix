@@ -14,14 +14,6 @@
 #include <iostream>
 #include <vector>
 
-#define POSITION_LOCATION		0
-#define NORMAL_LOCATION			1
-#define TEX_COORD_LOCATION		2
-#define TANGENT_LOCATION		3
-#define BITANGENT_LOCATION		4
-#define BONE_ID_LOCATION		5
-#define BONE_WEIGHT_LOCATION	6
-
 void VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
 {
 	for (unsigned int i = 0; i < NUM_BONES_PER_VERTEX; ++i) {
@@ -45,7 +37,6 @@ Mesh::Mesh(std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertic
 	m_vertices(vertices),
 	m_indices(indices),
 	m_VertexArray(nullptr)
-
 {
 	loadUniqueVerticesPos();
 

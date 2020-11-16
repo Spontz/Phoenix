@@ -68,7 +68,7 @@ bool sDrawParticlesScene::load() {
 		return false;
 	}
 	// Load the particles position
-	std::vector<ParticleMesh::PARTICLE> Part;
+	std::vector<ParticleMesh::Particle> Part;
 	Part.resize(m_iNumParticles);
 	int cnt = 0;
 	for (int i = 0; i < m_pModel->meshes.size(); i++) {

@@ -8,8 +8,7 @@
 ParticleMesh::ParticleMesh(int numParticles):
     m_numParticles(numParticles),
     m_particles (nullptr),
-    m_particleBuffer (0),
-    m_vao(0)
+	m_VertexArray(nullptr)
 {
     
 }
@@ -19,43 +18,31 @@ ParticleMesh::~ParticleMesh()
     shutdown();
 }
 
-#define BINDING			0
-#define LOC_POSITION	0
-#define LOC_COLOR   	1
-
-bool ParticleMesh::startup(std::vector<PARTICLE> Part)
+bool ParticleMesh::startup(std::vector<Particle> Part)
 {
     // Application memory particle buffers (double buffered)
-    m_particles = new PARTICLE[m_numParticles];
+    m_particles = new Particle[m_numParticles];
 
     // Load the ID's of the particles
     initialize_particles(Part);
 
-    // Create GPU buffer in read-only mode (faster)
-    glCreateBuffers(1, &m_particleBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer);
-    glBufferStorage(GL_ARRAY_BUFFER, m_numParticles * sizeof(PARTICLE), m_particles, GL_MAP_READ_BIT);
+	// Allocate Vertex Array
+	m_VertexArray = new VertexArray();
 
-    glCreateVertexArrays(1, &m_vao);
-    glBindVertexArray(m_vao);
+	// Create & Load the Vertex Buffer
+	VertexBuffer *vertexBuffer = new VertexBuffer(&m_particles[0], m_numParticles * sizeof(Particle));
+	vertexBuffer->SetLayout({
+		{ ShaderDataType::Float3,	"aPos"},
+		{ ShaderDataType::Float4,	"aColor"}
+		});
 
-    glBindVertexBuffer(BINDING, m_particleBuffer, 0, sizeof(PARTICLE));
+	m_VertexArray->AddVertexBuffer(vertexBuffer);
+	m_VertexArray->Unbind();
 
-    // Position location
-	glEnableVertexAttribArray(LOC_POSITION);
-	glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(PARTICLE, Pos));
-	glVertexAttribBinding(LOC_POSITION, BINDING);
-
-    // Color location
-    glEnableVertexAttribArray(LOC_COLOR);
-    glVertexAttribFormat(LOC_COLOR, 4, GL_FLOAT, GL_FALSE, offsetof(PARTICLE, Col));
-    glVertexAttribBinding(LOC_COLOR, BINDING);
-
-    glBindVertexArray(0);
     return true;
 }
 
-void ParticleMesh::initialize_particles(std::vector<PARTICLE> Part)
+void ParticleMesh::initialize_particles(std::vector<Particle> Part)
 {
 	if (Part.empty()) {
 		for (int i = 0; i < m_numParticles; i++)
@@ -81,20 +68,15 @@ void ParticleMesh::initialize_particles(std::vector<PARTICLE> Part)
 void ParticleMesh::render(float currentTime)
 {
     // Bind our vertex arrays
-    glBindVertexArray(m_vao);
-
+	m_VertexArray->Bind();
     // Draw! (shader needs to be called in advance!)
     glDrawArrays(GL_POINTS, 0, m_numParticles);
-	
-	glBindVertexArray(0);
+	m_VertexArray->Unbind();
 }
 
 void ParticleMesh::shutdown()
 {
-    glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer);
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-    glDeleteBuffers(1, &m_particleBuffer);
-
     delete[] m_particles;
+	delete[] m_VertexArray;
 }
 

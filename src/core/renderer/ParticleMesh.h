@@ -5,12 +5,13 @@
 
 #include "main.h"
 #include "core/renderer/ShaderVars.h"
+#include "core/renderer/VertexArray.h"
 
 class ParticleMesh
 {
 public:
 
-	struct PARTICLE
+	struct Particle
 	{
 		glm::vec3	Pos;	// Particle initial position
 		glm::vec4	Col;	// Particle initial color
@@ -19,16 +20,15 @@ public:
 	ParticleMesh(int numParticles);
 	~ParticleMesh();
 
-	bool startup(std::vector<PARTICLE> Pos = { });
+	bool startup(std::vector<Particle> Pos = { });
 	void render(float currentTime);
 	void shutdown();
 
-	int         m_numParticles;
+	int				m_numParticles;
 
 private:
-	GLuint      m_particleBuffer;
-	PARTICLE*   m_particles;
-	GLuint      m_vao;
+	Particle		*m_particles;
+	VertexArray		*m_VertexArray;
 
-	void initialize_particles(std::vector<PARTICLE> Pos = { });
+	void initialize_particles(std::vector<Particle> Pos = { });
 };
