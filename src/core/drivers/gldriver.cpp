@@ -204,8 +204,8 @@ glDriver::glDriver()
 	m_mouseX(0),
 	m_mouseY(0),
 
-	fbo{ tGLFboFormat{0.0f,0.0f,0,0,0,0,0,nullptr,0} },
-	config { tGLConfig{ 0, 640, 480, (float)16.0f/9.0f, 0,0,0}},
+	fbo{ tGLFboFormat{0.0f,0.0f,0,0,0,0,0,"",0} },
+	config { tGLConfig{ false, 640, 480, (float)16.0f/9.0f, 0,0,0}},
 	exprTk_current_viewport{ tExprTkViewport {0,0,0} }
 {
 	// Config
@@ -249,7 +249,7 @@ bool glDriver::initGraphics() {
 	m_glfw_window = glfwCreateWindow(
 		config.framebuffer_width,
 		config.framebuffer_height,
-		m_demo.m_demoName,
+		m_demo.m_demoName.c_str(),
 		config.fullScreen ? glfwGetPrimaryMonitor() : nullptr,
 		nullptr
 	);
@@ -525,7 +525,7 @@ void glDriver::initFbos() {
 				this->fbo[i].width = (float)(config.framebuffer_width / this->fbo[i].ratio);
 				this->fbo[i].height = (float)(config.framebuffer_height / this->fbo[i].ratio);
 			}
-
+			
 			this->fbo[i].tex_iformat = getTextureInternalFormatByName(this->fbo[i].format);
 			this->fbo[i].tex_format = getTextureFormatByName(this->fbo[i].format);
 			this->fbo[i].tex_type = getTextureTypeByName(this->fbo[i].format);
@@ -619,36 +619,36 @@ const std::vector<std::string> glDriver::getOpenGLExtensions()
 	return sv;
 }
 
-int glDriver::getTextureFormatByName(char* name) {
+int glDriver::getTextureFormatByName(std::string const& name) {
 	for (int i = 0; i < textureModes.size(); i++) {
-		if (_strcmpi(name, textureModes[i].name) == 0) {
+		if (name == textureModes[i].name) {
 			return textureModes[i].tex_format;
 		}
 	}
 	return -1;
 }
 
-int glDriver::getTextureInternalFormatByName(char* name) {
+int glDriver::getTextureInternalFormatByName(std::string const& name) {
 	for (int i = 0; i < textureModes.size(); i++) {
-		if (_strcmpi(name, textureModes[i].name) == 0) {
+		if (name == textureModes[i].name) {
 			return textureModes[i].tex_iformat;
 		}
 	}
 	return -1;
 }
 
-int glDriver::getTextureTypeByName(char* name) {
+int glDriver::getTextureTypeByName(std::string const& name) {
 	for (int i = 0; i < textureModes.size(); i++) {
-		if (_strcmpi(name, textureModes[i].name) == 0) {
+		if (name == textureModes[i].name) {
 			return textureModes[i].tex_type;
 		}
 	}
 	return -1;
 }
 
-int glDriver::getTextureComponentsByName(char* name) {
+int glDriver::getTextureComponentsByName(std::string const& name) {
 	for (int i = 0; i < textureModes.size(); i++) {
-		if (_strcmpi(name, textureModes[i].name) == 0) {
+		if (name == textureModes[i].name) {
 			return textureModes[i].tex_components;
 		}
 	}

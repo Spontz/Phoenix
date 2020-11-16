@@ -46,7 +46,7 @@ private:
 	demokernel();
 public:
 	std::string		m_dataFolder;	// Path to "data" folder
-	char*			m_demoName;
+	std::string		m_demoName;
 	const bool		m_debug;
 	const float		m_debug_fontSize;
 	const LogLevel	m_logLevel;

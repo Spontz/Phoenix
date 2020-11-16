@@ -20,7 +20,7 @@ namespace Phoenix {
 			{"slave",					SectionVar::TYPE_BOOL,			&DEMO->m_slaveMode		},
 			{"log_detail",				SectionVar::TYPE_INT,			&DEMO->m_logLevel		},
 
-			{"gl_fullscreen",			SectionVar::TYPE_INT,			&GLDRV->config.fullScreen				},
+			{"gl_fullscreen",			SectionVar::TYPE_BOOL,			&GLDRV->config.fullScreen				},
 			{"gl_width",				SectionVar::TYPE_INT,			&GLDRV->config.framebuffer_width		},
 			{"gl_height",				SectionVar::TYPE_INT,			&GLDRV->config.framebuffer_height		},
 			{"gl_aspect",				SectionVar::TYPE_FLOAT,			&GLDRV->config.framebuffer_aspect_ratio	},
@@ -185,9 +185,10 @@ namespace Phoenix {
 		Spline* new_spl = NULL;
 		int command = -1;
 		// generic variable loading
+		bool* bptr;
 		int* iptr;
 		float* fptr;
-		char** sptr;
+		std::string* sptr;
 
 
 		while (std::getline(f, line)) {
@@ -212,23 +213,23 @@ namespace Phoenix {
 				switch (scriptCommand[command].vType) {
 				case SectionVar::TYPE_BOOL:
 					*(bool*)((char**)scriptCommand[command].vAddr) = std::stoi(s_line.second);
-					iptr = (int*)scriptCommand[command].vAddr;
-					Logger::info(LogLevel::low, "  Command found: %s = %d", scriptCommand[command].cName.c_str(), *iptr);
+					bptr = (bool*)scriptCommand[command].vAddr;
+					Logger::info(LogLevel::low, "  Command found: %s [%s]", scriptCommand[command].cName.c_str(), (*bptr) ? "true" : "false");
 					break;
 				case SectionVar::TYPE_INT:
 					*(int*)((char**)scriptCommand[command].vAddr) = std::stoi(s_line.second);
 					iptr = (int*)scriptCommand[command].vAddr;
-					Logger::info(LogLevel::low, "  Command found: %s = %d", scriptCommand[command].cName.c_str(), *iptr);
+					Logger::info(LogLevel::low, "  Command found: %s [%d]", scriptCommand[command].cName.c_str(), *iptr);
 					break;
 				case SectionVar::TYPE_FLOAT:
 					*(float*)((char**)scriptCommand[command].vAddr) = std::stof(s_line.second);
 					fptr = (float*)scriptCommand[command].vAddr;
-					Logger::info(LogLevel::low, "  Command found: %s = %f", scriptCommand[command].cName.c_str(), *fptr);
+					Logger::info(LogLevel::low, "  Command found: %s [%f]", scriptCommand[command].cName.c_str(), *fptr);
 					break;
 				case SectionVar::TYPE_STRING:
-					*((char**)scriptCommand[command].vAddr) = _strdup(s_line.second.c_str());
-					sptr = (char**)scriptCommand[command].vAddr;
-					Logger::info(LogLevel::low, "  Command found: %s = %s", scriptCommand[command].cName.c_str(), *sptr);
+					*(std::string*)((char**)scriptCommand[command].vAddr) = s_line.second;
+					sptr = (std::string*)scriptCommand[command].vAddr;
+					Logger::info(LogLevel::low, "  Command found: %s [%s]", scriptCommand[command].cName.c_str(), sptr->c_str());
 					break;
 				default:
 					Logger::error("%d is not a valid variable type id.", scriptCommand[command].vType);

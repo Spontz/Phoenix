@@ -20,12 +20,12 @@ struct tGLFboFormat {
 	int tex_type;
 	int tex_components;
 	int ratio;
-	char* format;
+	std::string format;
 	int numColorAttachments;
 };
 
 struct tGLConfig {
-	int				fullScreen;
+	bool			fullScreen;
 	unsigned int	framebuffer_width;
 	unsigned int	framebuffer_height;
 	float			framebuffer_aspect_ratio;
@@ -80,10 +80,10 @@ private:
 
 	bool	checkGLError(char* pOut);
 
-	int		getTextureFormatByName(char* name);
-	int		getTextureInternalFormatByName(char* name);
-	int		getTextureTypeByName(char* name);
-	int		getTextureComponentsByName(char* name);
+	int		getTextureFormatByName(std::string const& name);
+	int		getTextureInternalFormatByName(std::string const& name);
+	int		getTextureTypeByName(std::string const& name);
+	int		getTextureComponentsByName(std::string const& name);
 
 public:
 	void	initFramework();
@@ -122,15 +122,15 @@ public:
 private:
 
 	struct tGLTextureTable {
-		char* name;
-		int tex_iformat; // internalformat
-		int tex_format;
-		int tex_type;
-		int tex_components;
+		std::string	name;
+		int			tex_iformat; // internalformat
+		int			tex_format;
+		int			tex_type;
+		int			tex_components;
 	};
 
-	const			std::vector<tGLTextureTable> textureModes = {
-		{ "RGB", GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 3},
+	const std::vector<tGLTextureTable> textureModes = {
+		{ "RGB",			GL_RGB8,				GL_RGB,				GL_UNSIGNED_BYTE,	3 },
 		{ "RGBA",			GL_RGBA8,				GL_RGBA,			GL_UNSIGNED_BYTE,	4 },
 		{ "RGB_16F",		GL_RGB16F,				GL_RGB,				GL_FLOAT,			3 },
 		{ "RGBA_16F",		GL_RGBA16F,				GL_RGBA,			GL_FLOAT,			4 },
