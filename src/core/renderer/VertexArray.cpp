@@ -4,31 +4,6 @@
 #include "main.h"
 #include "VertexArray.h"
 
-static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
-{
-	switch (type)
-	{
-	case ShaderDataType::Float:    return GL_FLOAT;
-	case ShaderDataType::Float2:   return GL_FLOAT;
-	case ShaderDataType::Float3:   return GL_FLOAT;
-	case ShaderDataType::Float4:   return GL_FLOAT;
-	case ShaderDataType::Mat3:     return GL_FLOAT;
-	case ShaderDataType::Mat4:     return GL_FLOAT;
-	case ShaderDataType::Int:      return GL_INT;
-	case ShaderDataType::Int2:     return GL_INT;
-	case ShaderDataType::Int3:     return GL_INT;
-	case ShaderDataType::Int4:     return GL_INT;
-	case ShaderDataType::UInt:     return GL_UNSIGNED_INT;
-	case ShaderDataType::UInt2:    return GL_UNSIGNED_INT;
-	case ShaderDataType::UInt3:    return GL_UNSIGNED_INT;
-	case ShaderDataType::UInt4:    return GL_UNSIGNED_INT;
-	case ShaderDataType::Bool:     return GL_BOOL;
-	}
-
-	Logger::error("Unknown ShaderDataType");
-	return 0;
-}
-
 VertexArray::VertexArray()
 	:
 	m_IndexBuffer(nullptr)
@@ -69,8 +44,8 @@ void VertexArray::AddVertexBuffer(VertexBuffer* vertexBuffer)
 		{
 			glEnableVertexAttribArray(m_VertexBufferIndex);
 			glVertexAttribPointer(m_VertexBufferIndex,
-				element.GetComponentCount(),
-				ShaderDataTypeToOpenGLBaseType(element.Type),
+				element.DataType.elementCount,
+				element.DataType.GLBaseType,
 				element.Normalized ? GL_TRUE : GL_FALSE,
 				layout.GetStride(),
 				(const void*)element.Offset);
@@ -89,8 +64,8 @@ void VertexArray::AddVertexBuffer(VertexBuffer* vertexBuffer)
 		{
 			glEnableVertexAttribArray(m_VertexBufferIndex);
 			glVertexAttribIPointer(m_VertexBufferIndex,
-				element.GetComponentCount(),
-				ShaderDataTypeToOpenGLBaseType(element.Type),
+				element.DataType.elementCount,
+				element.DataType.GLBaseType,
 				layout.GetStride(),
 				(const void*)element.Offset);
 			m_VertexBufferIndex++;
@@ -99,13 +74,13 @@ void VertexArray::AddVertexBuffer(VertexBuffer* vertexBuffer)
 		case ShaderDataType::Mat3:
 		case ShaderDataType::Mat4:
 		{
-			uint8_t count = element.GetComponentCount();
+			uint8_t count = element.DataType.elementCount;
 			for (uint8_t i = 0; i < count; i++)
 			{
 				glEnableVertexAttribArray(m_VertexBufferIndex);
 				glVertexAttribPointer(m_VertexBufferIndex,
 					count,
-					ShaderDataTypeToOpenGLBaseType(element.Type),
+					element.DataType.GLBaseType,
 					element.Normalized ? GL_TRUE : GL_FALSE,
 					layout.GetStride(),
 					(const void*)(element.Offset + sizeof(float) * count * i));
@@ -142,8 +117,8 @@ void VertexArray::AddVertexBuffer(VertexBuffer* vertexBuffer)
 		{
 			glEnableVertexArrayAttrib(m_RendererID, m_VertexBufferIndex);
 			glVertexArrayAttribFormat(m_RendererID, m_VertexBufferIndex,
-				element.GetComponentCount(),
-				ShaderDataTypeToOpenGLBaseType(element.Type),
+				element.DataType.elementCount,
+				element.DataType.GLBaseType,
 				element.Normalized ? GL_TRUE : GL_FALSE,
 				element.Offset);
 			glVertexArrayAttribBinding(m_RendererID, m_VertexBufferIndex, 0);	// remove Binding hardcoded to 0
@@ -163,8 +138,8 @@ void VertexArray::AddVertexBuffer(VertexBuffer* vertexBuffer)
 		{
 			glEnableVertexArrayAttrib(m_RendererID, m_VertexBufferIndex);
 			glVertexArrayAttribIFormat(m_RendererID, m_VertexBufferIndex,
-				element.GetComponentCount(),
-				ShaderDataTypeToOpenGLBaseType(element.Type),
+				element.DataType.elementCount,
+				element.DataType.GLBaseType,
 				element.Offset);
 
 			glVertexArrayAttribBinding(m_RendererID, m_VertexBufferIndex, 0);	// remove Binding hardcoded to 0
@@ -175,13 +150,13 @@ void VertexArray::AddVertexBuffer(VertexBuffer* vertexBuffer)
 		case ShaderDataType::Mat3:
 		case ShaderDataType::Mat4:
 		{
-			uint8_t count = element.GetComponentCount();
+			uint8_t count = element.DataType.elementCount;
 			for (uint8_t i = 0; i < count; i++)
 			{
 				glEnableVertexArrayAttrib(m_RendererID, m_VertexBufferIndex);
 				glVertexArrayAttribFormat(m_RendererID, m_VertexBufferIndex,
-					element.GetComponentCount(),
-					ShaderDataTypeToOpenGLBaseType(element.Type),
+					element.DataType.elementCount,
+					element.DataType.GLBaseType,
 					element.Normalized ? GL_TRUE : GL_FALSE,
 					element.Offset + sizeof(float) * count * i);
 				glVertexArrayBindingDivisor(m_RendererID, m_VertexBufferIndex, 1);

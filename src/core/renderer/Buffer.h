@@ -10,69 +10,60 @@ enum class ShaderDataType
 	None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, UInt, UInt2, UInt3, UInt4, Bool
 };
 
-static uint32_t ShaderDataTypeSize(ShaderDataType type)
-{
-	switch (type)
-	{
-	case ShaderDataType::Float:		return 4;
-	case ShaderDataType::Float2:	return 4 * 2;
-	case ShaderDataType::Float3:	return 4 * 3;
-	case ShaderDataType::Float4:	return 4 * 4;
-	case ShaderDataType::Mat3:		return 4 * 3 * 3;
-	case ShaderDataType::Mat4:		return 4 * 4 * 4;
-	case ShaderDataType::Int:		return 4;
-	case ShaderDataType::Int2:		return 4 * 2;
-	case ShaderDataType::Int3:		return 4 * 3;
-	case ShaderDataType::Int4:		return 4 * 4;
-	case ShaderDataType::UInt:		return 4;
-	case ShaderDataType::UInt2:		return 4 * 2;
-	case ShaderDataType::UInt3:		return 4 * 3;
-	case ShaderDataType::UInt4:		return 4 * 4;
-	case ShaderDataType::Bool:		return 4;
-	}
+struct ShaderDataTypeTable {
+	ShaderDataType	type;
+	GLenum			GLBaseType;
+	uint32_t		elementCount;
+	uint32_t		sizeInBytes;
+};
 
-	Logger::error("Unknown ShaderDataType");
-	return 0;
-}
+const std::vector<ShaderDataTypeTable> ShaderDataTypes = {
+	// ShaderDataType			GLBaseType			elementCount	sizeInBytes
+	{ ShaderDataType::Float,	GL_FLOAT,			1,				4		},
+	{ ShaderDataType::Float2,	GL_FLOAT,			2,				4*2		},
+	{ ShaderDataType::Float3,	GL_FLOAT,			3,				4*3		},
+	{ ShaderDataType::Float4,	GL_FLOAT,			4,				4*4		},
+	{ ShaderDataType::Mat3,		GL_FLOAT,			3,				4*3*3	},
+	{ ShaderDataType::Mat4,		GL_FLOAT,			4,				4*4*4	},
+	{ ShaderDataType::Int,		GL_INT,				1,				4		},
+	{ ShaderDataType::Int2,		GL_INT,				2,				4 * 2	},
+	{ ShaderDataType::Int3,		GL_INT,				3,				4 * 3	},
+	{ ShaderDataType::Int4,		GL_INT,				4,				4 * 4	},
+	{ ShaderDataType::UInt,		GL_UNSIGNED_INT,	1,				4		},
+	{ ShaderDataType::UInt2,	GL_UNSIGNED_INT,	2,				4 * 2	},
+	{ ShaderDataType::UInt3,	GL_UNSIGNED_INT,	3,				4 * 3	},
+	{ ShaderDataType::UInt4,	GL_UNSIGNED_INT,	4,				4 * 4	},
+};
 
 struct BufferElement
 {
 	std::string Name;
 	ShaderDataType Type;
-	uint32_t Size;
 	size_t Offset;
 	bool Normalized;
+	ShaderDataTypeTable DataType;
+
 
 	BufferElement() = default;
 
 	BufferElement(ShaderDataType type, const std::string& name, bool normalized = false)
-		: Name(name), Type(type), Size(ShaderDataTypeSize(type)), Offset(0), Normalized(normalized)
+		:
+		Name(name),
+		Type(type),
+		Offset(0),
+		Normalized(normalized),
+		DataType(getShaderDataType(type))
 	{
 	}
 
-	uint32_t GetComponentCount() const
+	const ShaderDataTypeTable getShaderDataType(ShaderDataType type)
 	{
-		switch (Type)
-		{
-		case ShaderDataType::Float:		return 1;
-		case ShaderDataType::Float2:	return 2;
-		case ShaderDataType::Float3:	return 3;
-		case ShaderDataType::Float4:	return 4;
-		case ShaderDataType::Mat3:		return 3;
-		case ShaderDataType::Mat4:		return 4;
-		case ShaderDataType::Int:		return 1;
-		case ShaderDataType::Int2:		return 2;
-		case ShaderDataType::Int3:		return 3;
-		case ShaderDataType::Int4:		return 4;
-		case ShaderDataType::UInt:		return 1;
-		case ShaderDataType::UInt2:		return 2;
-		case ShaderDataType::UInt3:		return 3;
-		case ShaderDataType::UInt4:		return 4;
-		case ShaderDataType::Bool:		return 1;
+		for (const auto& dataType : ShaderDataTypes) {
+			if (type == dataType.type)
+				return dataType;
 		}
-
 		Logger::error("Unknown ShaderDataType");
-		return 0;
+		return { ShaderDataType::None, 0, 0, 0 };
 	}
 };
 
@@ -102,8 +93,8 @@ private:
 		for (auto& element : m_Elements)
 		{
 			element.Offset = offset;
-			offset += element.Size;
-			m_Stride += element.Size;
+			offset += element.DataType.sizeInBytes;
+			m_Stride += element.DataType.sizeInBytes;
 		}
 	}
 private:
