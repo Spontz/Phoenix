@@ -35,7 +35,7 @@ sEfxBlur::sEfxBlur() {
 bool sEfxBlur::load() {
 	// script validation
 	if ((param.size()) != 3 || (strings.size() != 2)) {
-		Logger::error("EfxBlur [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 3 strings (One with the formula of the Blur Amount + blur shader file)", identifier.c_str());
+		Logger::error("EfxBlur [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 2 strings (One with the formula of the Blur Amount + blur shader file)", identifier.c_str());
 		return false;
 	}
 
