@@ -10,10 +10,11 @@ public:
 	std::string debug();
 
 private:
-	int		m_iFboNum			= 0;
-	int		m_iFboAttachment	= 0;
-	bool	m_bClearScreen		= true;	// Clear Screen buffer
-	bool	m_bClearDepth		= true;	// Clear Depth buffer
+	Fbo*		m_pFbo				= nullptr;
+	uint32_t	m_uFboNum			= 0;
+	uint32_t	m_uFboAttachment	= 0;
+	bool		m_bClearScreen		= true;	// Clear Screen buffer
+	bool		m_bClearDepth		= true;	// Clear Depth buffer
 };
 
 // ******************************************************************
@@ -34,19 +35,21 @@ bool sDrawFbo::load() {
 	}
 
 	// load parameters
-	m_iFboNum = static_cast<int>(param[0]);
-	m_iFboAttachment = static_cast<int>(param[1]);
+	m_uFboNum = static_cast<uint32_t>(param[0]);
+	m_uFboAttachment = static_cast<uint32_t>(param[1]);
 	m_bClearScreen = static_cast<bool>(param[2]);
 	m_bClearDepth = static_cast<bool>(param[3]);
 
 	// Check for the right parameter values
-	if ((m_iFboNum < 0) || (m_iFboNum > (float)FBO_BUFFERS)) {
-		Logger::error("DrawFbo [%s]: Invalid texture fbo number: %i", identifier.c_str(), m_iFboNum);
+	if (m_uFboNum >= FBO_BUFFERS) {
+		Logger::error("DrawFbo [%s]: Invalid texture fbo number: %i", identifier.c_str(), m_uFboNum);
 		return false;
 	}
 
-	if ((m_iFboAttachment < 0) || (m_iFboAttachment > (float)GLDRV_MAX_COLOR_ATTACHMENTS)) {
-		Logger::error("DrawFbo [%s]: Invalid texture fbo attachment: %i", identifier.c_str(), m_iFboAttachment);
+	m_pFbo = m_demo.m_fboManager.fbo[m_uFboNum];
+
+	if (m_uFboAttachment >= static_cast<uint32_t>(m_pFbo->numAttachments)) {
+		Logger::error("DrawFbo [%s]: Invalid texture fbo attachment: %i", identifier.c_str(), m_uFboAttachment);
 		return false;
 	}
 
@@ -66,7 +69,7 @@ void sDrawFbo::exec() {
 
 	glDisable(GL_DEPTH_TEST);
 	{
-		m_demo.m_pRes->Draw_QuadFBOFS(m_iFboNum, m_iFboAttachment);
+		m_demo.m_pRes->Draw_QuadFBOFS(m_pFbo, m_uFboAttachment);
 	}
 	glEnable(GL_DEPTH_TEST);
 
@@ -80,6 +83,7 @@ void sDrawFbo::end() {
 std::string sDrawFbo::debug() {
 	std::stringstream ss;
 	ss << "+ DrawFbo id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  fbo: " << m_iFboNum << std::endl;
+	ss << "  fbo: " << m_uFboNum << std::endl;
+	ss << "  attachment: " << m_uFboAttachment << std::endl;
 	return ss.str();
 }

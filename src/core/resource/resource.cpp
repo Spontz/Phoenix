@@ -228,27 +228,6 @@ void Resource::Load_Lights()
 	m_demo.m_lightManager.addLight(LightType::PointLight);
 }
 
-// Draw a Quad with texture in full screen
-void Resource::Draw_QuadFS(int textureNum)
-{
-	m_pShdrQuadTex->use();
-	m_pShdrQuadTex->setValue("screenTexture", 0);
-	m_demo.m_textureManager.texture[textureNum]->bind();
-
-	Draw_QuadFS();
-}
-
-// Draw a Quad with texture in full screen with alpha
-void Resource::Draw_QuadFS(int textureNum, float alpha)
-{
-	m_pShdrQuadTexAlpha->use();
-	m_pShdrQuadTexAlpha->setValue("alpha", alpha);
-	m_pShdrQuadTexAlpha->setValue("screenTexture", 0);
-	m_demo.m_textureManager.texture[textureNum]->bind();
-	
-	Draw_QuadFS();
-}
-
 // Draw a Quad with texture in full screen with alpha
 void Resource::Draw_QuadFS(Texture* tex, float alpha)
 {
@@ -261,12 +240,12 @@ void Resource::Draw_QuadFS(Texture* tex, float alpha)
 }
 
 // Draw a Quad with a FBO in full screen
-void Resource::Draw_QuadFBOFS(int fboNum, GLuint attachment)
+void Resource::Draw_QuadFBOFS(Fbo* fbo, GLuint attachment)
 {
 	m_pShdrQuadTex->use();
 	m_pShdrQuadTex->setValue("screenTexture", 0);
-	m_demo.m_fboManager.bind_tex(fboNum, 0, attachment);
-	
+	fbo->bind_tex(0, attachment);
+
 	Draw_QuadFS();
 }
 
@@ -276,17 +255,6 @@ void Resource::Draw_QuadEfxFBOFS(int efxFboNum, GLuint attachment)
 	m_pShdrQuadTex->use();
 	m_pShdrQuadTex->setValue("screenTexture", 0);
 	m_demo.m_efxBloomFbo.bind_tex(efxFboNum, 0, attachment);
-
-	Draw_QuadFS();
-}
-
-// Draw a Quad in full screen. A texture can be specified and a model matrix
-void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 const* model)
-{
-	m_pShdrQuadTexModel->use();
-	m_pShdrQuadTexModel->setValue("model", *model);
-	m_pShdrQuadTexModel->setValue("screenTexture", 0);
-	m_demo.m_textureManager.texture[textureNum]->bind();
 
 	Draw_QuadFS();
 }
@@ -303,14 +271,14 @@ void Resource::Draw_Obj_QuadTex(Texture* tex, glm::mat4 const* model)
 }
 
 // Draw a Quad in full screen. A texture can be specified and the 3 matrix
-void Resource::Draw_Obj_QuadTex(int textureNum, glm::mat4 *projection, glm::mat4* view, glm::mat4 *model)
+void Resource::Draw_Obj_QuadTex(Texture* tex, glm::mat4 const* projection, glm::mat4 const* view, glm::mat4 const* model)
 {
 	m_pShdrQuadTexPVM->use();
 	m_pShdrQuadTexPVM->setValue("projection", *projection);
 	m_pShdrQuadTexPVM->setValue("view", *view);
 	m_pShdrQuadTexPVM->setValue("model", *model);
 	m_pShdrQuadTexPVM->setValue("screenTexture", 0);
-	m_demo.m_textureManager.texture[textureNum]->bind();
+	tex->bind();
 
 	Draw_QuadFS();
 }
