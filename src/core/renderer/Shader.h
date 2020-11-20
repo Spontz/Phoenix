@@ -46,6 +46,6 @@ private:
 	std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
 	bool Compile(const std::unordered_map<GLenum, std::string>& shaderSources, std::vector<std::string> feedbackVaryings = { });
 
-	GLenum Shader::GetShaderTypeFromString(const std::string& type);
-	const std::string Shader::GetShaderStringFromType(const GLenum& type);
+	GLenum GetShaderTypeFromString(const std::string& type);
+	const std::string GetShaderStringFromType(const GLenum& type);
 };

@@ -5,17 +5,6 @@
 #include "core/drivers/BassDriver.h"
 #include "core/drivers/imGuiDriver.h"
 
-// Demo states to show in the drawTiming information ****************
-char* stateStr[] = {
-	"play",
-	"play - RW",
-	"play - FF",
-	"paused",
-	"paused - RW",
-	"paused - FF"
-};
-
-
 // imGuiDriver *********************************************************
 
 imGuiDriver::imGuiDriver()
@@ -132,7 +121,7 @@ void imGuiDriver::changeFontSize(float baseSize, int width, int height)
 void imGuiDriver::drawInfo() {
 
 	// Get Demo status
-	char* demoStatus;
+	std::string demoStatus;
 	if (m_demo.m_status & DemoStatus::PAUSE) {
 		if (m_demo.m_status & DemoStatus::REWIND) demoStatus = stateStr[4];
 		else if (m_demo.m_status & DemoStatus::FASTFORWARD) demoStatus = stateStr[5];
@@ -178,7 +167,7 @@ void imGuiDriver::drawInfo() {
 		ImGui::SetWindowFontScale(m_fontScale);
 		//ImGui::Text("Font: %.3f", m_fontScale);	// Show font size
 		ImGui::Text("Fps: %.0f", m_demo.m_fps);
-		ImGui::Text("Demo status: %s", demoStatus);
+		ImGui::Text("Demo status: %s", demoStatus.c_str());
 		ImGui::Text("Time: %.2f/%.2f", m_demo.m_demoRunTime, m_demo.m_demoEndTime);
 		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->getCPUload());
 		ImGui::Text("Texture mem used: %.2fmb", m_demo.m_textureManager.mem + m_demo.m_fboManager.mem + m_demo.m_efxBloomFbo.mem + m_demo.m_efxAccumFbo.mem);

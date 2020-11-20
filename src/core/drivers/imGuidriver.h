@@ -55,7 +55,16 @@ private:
 	float		m_fontScale;
 
 	Viewport	m_vp;
+	
 
+	const std::string stateStr[6] = {
+		"play",
+		"play - RW",
+		"play - FF",
+		"paused",
+		"paused - RW",
+		"paused - FF"
+	};
 
 	void startDraw();
 	void endDraw();

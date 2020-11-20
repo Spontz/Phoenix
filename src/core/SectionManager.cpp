@@ -7,7 +7,7 @@
 
 
 typedef struct {
-	char *scriptName;
+	std::string scriptName;
 	SectionType type;
 } tSectionID;
 
@@ -322,7 +322,7 @@ SectionType SectionManager::getSectionType(const std::string& key)
 	int i;
 
 	for (i = 0; i < SECTIONS_NUMBER; i++) {
-		if (_strcmpi(key.c_str(), sectionID[i].scriptName) == 0) {
+		if (key == sectionID[i].scriptName) {
 			return sectionID[i].type;
 		}
 	}
