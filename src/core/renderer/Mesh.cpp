@@ -105,10 +105,10 @@ void Mesh::setupMesh()
 void Mesh::DrawMaterials(GLuint shaderID)
 {
 	// Send material properties
-	glUniform3fv(glGetUniformLocation(shaderID, "color_ambient"), 1, &m_material.colAmbient[0]);
-	glUniform3fv(glGetUniformLocation(shaderID, "color_specular"), 1, &m_material.colSpecular[0]);
-	glUniform1f(glGetUniformLocation(shaderID, "strenght_specular"), m_material.strenghtSpecular);
-	glUniform3fv(glGetUniformLocation(shaderID, "color_diffuse"), 1, &m_material.colDiffuse[0]);
+	glUniform3fv(glGetUniformLocation(shaderID, "Material.Ka"), 1, &m_material.colAmbient[0]);
+	glUniform3fv(glGetUniformLocation(shaderID, "Material.Ks"), 1, &m_material.colSpecular[0]);
+	glUniform1f(glGetUniformLocation(shaderID, "Material.KsStrenght"), m_material.strenghtSpecular);
+	glUniform3fv(glGetUniformLocation(shaderID, "Material.Kd"), 1, &m_material.colDiffuse[0]);
 
 	// Send textures
 	unsigned int numTextures = static_cast<unsigned int>(m_material.textures.size());
