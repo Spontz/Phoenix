@@ -8,43 +8,6 @@
 #include "section.h"
 #include "sections/sections.h"
 
-enum SectionType {
-	NOT_FOUND,	// No section found
-
-	Loading,
-
-	CameraSec,
-	CameraAbsSec,
-	LightSec, 
-	ObjectShader,
-	ObjectAnimShader,
-	DrawImage,
-	DrawSkybox,
-	DrawVideo,
-	DrawQuad,
-	DrawFbo,
-	DrawScene,
-	DrawSceneMatrix,
-	DrawSceneMatrixInstanced,
-	DrawParticles,
-	DrawParticlesImage,
-	DrawParticlesScene,
-	DrawEmitters,
-	DrawEmitterScene,
-	SetVariable,
-	Sound,
-	FboBind,
-	FboUnbind,
-	EfxAccum,
-	EfxBloom,
-	EfxBlur,
-	EfxFader,
-	EfxMotionBlur,
-	Test
-};
-
-
-
 class SectionManager {
 public:
 	std::vector<Section*> section;	// Sections list, script order

@@ -19,7 +19,6 @@ namespace Phoenix {
 		ENABLED,
 		BLEND,
 		BLEND_EQUATION,
-		ALPHA,
 		PARAM,
 		STRING,
 		UNIFORM,
@@ -67,7 +66,6 @@ namespace Phoenix {
 			{"enabled",			SectionCommand_::ENABLED},
 			{"blend",			SectionCommand_::BLEND},
 			{"blendequation",	SectionCommand_::BLEND_EQUATION},
-			{"alpha",			SectionCommand_::ALPHA},
 			{"param",			SectionCommand_::PARAM},
 			{"string",			SectionCommand_::STRING},
 			{"uniform",			SectionCommand_::UNIFORM},
@@ -98,18 +96,6 @@ namespace Phoenix {
 			{ "SUBTRACT",			GL_FUNC_SUBTRACT		},
 			{ "REVERSE_SUBTRACT",	GL_FUNC_REVERSE_SUBTRACT}
 		};
-
-		const std::map<std::string, int> spoAlphaFunc = {
-			{ "NEVER",		GL_NEVER	},
-			{ "LESS",		GL_LESS		},
-			{ "EQUAL",		GL_EQUAL	},
-			{ "LEQUAL",		GL_LEQUAL	},
-			{ "GREATER",	GL_GREATER	},
-			{ "NOTEQUAL",	GL_NOTEQUAL	},
-			{ "GEQUAL",		GL_GEQUAL	},
-			{ "ALWAYS",		GL_ALWAYS	}
-		};
-
 
 		// Script command structure
 		struct ScriptCommand {

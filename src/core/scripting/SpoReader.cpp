@@ -382,32 +382,6 @@ namespace Phoenix {
 						}
 						break;
 							
-					case SectionCommand_::ALPHA:
-						{
-							auto alphaValues = splitInMultipleLines(s_line.second);
-							switch (alphaValues.size()) {
-							case 2:
-								new_sec->alpha1 = new_sec->alpha2 = std::stof(alphaValues[1]);
-								break;
-							case 3:
-								new_sec->alpha1 = std::stof(alphaValues[1]);
-								new_sec->alpha2 = std::stof(alphaValues[2]);
-								break;
-							default:
-								Logger::error("Invalid alpha in line: %s", line.c_str());
-								break;
-							}
-							if (spoAlphaFunc.find(alphaValues[0]) == spoAlphaFunc.end())
-								Logger::error("Invalid alpha function in line: %s", line.c_str());
-							else {
-								new_sec->alphaFunc = spoAlphaFunc.find(alphaValues[0])->second;
-								new_sec->hasAlpha = true;
-								Logger::info(LogLevel::low, "  Section alpha: from %f to %f", new_sec->alpha1, new_sec->alpha2);
-							}
-							
-						}
-						break;
-							
 					case SectionCommand_::PARAM:
 						{
 						try{
