@@ -61,7 +61,7 @@ class Mesh {
 public:
 	std::vector<glm::vec3>		unique_vertices_pos;	// Unique vertices cartesian positions
 	std::vector<glm::vec3>		unique_vertices_polar;	// Unique vertices polar position (x=distance, y=alpha, z=beta)
-	glm::mat4					meshTransform;			// Transformation Matrix for positioning the mesh
+	glm::mat4					m_modelMatrix;			// Model Matrix for positioning the mesh
 	std::string					m_nodeName;
 	
 	Mesh(std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial *pMaterial, std::string directory, std::string filename);

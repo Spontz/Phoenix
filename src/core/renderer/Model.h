@@ -21,14 +21,18 @@ class Model
 {
 public:
 	std::vector<Mesh>	meshes;
-	std::string			directory;	// Path of the model file
-	std::string			filename;	// Name of the model file
-	std::string			filepath;	// Full path of the model file
-	bool				playAnimation;	// Do we want to compute the transofrmations for playing animations?
-	bool				useCamera;		// Do we want to use the camera of the model?
-	glm::mat4			modelTransform;	// Model initial matrix
-	glm::mat4			prev_view;		// Previous view model matrix, used for effects like motion blur
+	std::string			directory;			// Path of the model file
+	std::string			filename;			// Name of the model file
+	std::string			filepath;			// Full path of the model file
+	bool				playAnimation;		// Do we want to compute the transofrmations for playing animations?
+	bool				useCamera;			// Do we want to use the camera of the model?
 
+	// Matrices
+	glm::mat4			m_matProjection;	// Projection matrix
+	glm::mat4			m_matView;			// View matrix
+	glm::mat4			m_matBaseModel;		// Base model matrix (the intial matrix of all sub-meshes)
+	glm::mat4			m_matMVP;			// Model-View-Projection matrix
+	
 	std::vector<Camera*>	m_camera;
 
 	Model();
@@ -44,7 +48,7 @@ public:
 private:
 	Assimp::Importer	m_Importer;
 	const aiScene*		m_pScene;
-	glm::mat4			m_GlobalInverseTransform; // Global transformation matrix for nodes (vertices relative to bones)
+	glm::mat4			m_matGlobalInverseTransform; // Global transformation matrix for nodes (vertices relative to bones)
 	unsigned int		m_NumMeshes;
 	unsigned int		m_NumCameras;
 	unsigned int		m_NumAnimations;

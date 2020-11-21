@@ -229,7 +229,7 @@ void sDrawSceneMatrix::exec() {
 			m_pShader->setValue("n_pos", m_vCurrObjPos);			// Send the object relative position to the shader
 			m_pShader->setValue("n_polar", m_vCurrObjPosPolar);	// Send the object relative position to the shader (in polar format: x=alpha, y=beta, z=distance)
 
-			m_pModel->modelTransform = m_pMatrixObjModel[object];
+			m_pModel->m_matBaseModel = m_pMatrixObjModel[object];
 
 			// For MotionBlur, we send the previous model matrix
 			m_pShader->setValue("prev_model", m_pmPrevModel[object]);
