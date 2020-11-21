@@ -40,7 +40,7 @@ tSectionID sectionID[] = {
 	{"efxBloom",			SectionType::EfxBloom},
 	{"efxBlur",				SectionType::EfxBlur},
 	{"efxFader",			SectionType::EfxFader},
-	{"efxMotionblur",		SectionType::EfxMotionBlur},
+	{"efxMotionBlur",		SectionType::EfxMotionBlur},
 	{"test",				SectionType::Test}
 };
 
