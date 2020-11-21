@@ -161,11 +161,13 @@ void sDrawScene::exec() {
 		0.1f, 10000.0f
 	);
 
-	m_pShader->setValue("projection", m_mProjection);
+	//m_pShader->setValue("projection", m_mProjection);
+	m_pModel->m_matProjection = m_mProjection;
 
 	m_mView = m_demo.m_pCamera->GetViewMatrix();
 	//if (CameraNumber < 0)
-		m_pShader->setValue("view", m_mView);
+	//	m_pShader->setValue("view", m_mView);
+	m_pModel->m_matView = m_mView;
 
 
 	// render the loaded scene
@@ -175,9 +177,9 @@ void sDrawScene::exec() {
 	m_mModel = glm::rotate(m_mModel, glm::radians(m_vRotation.y), glm::vec3(0, 1, 0));
 	m_mModel = glm::rotate(m_mModel, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
 	m_mModel = glm::scale(m_mModel, m_vScale);
-	m_pModel->modelTransform = m_mModel;
+	m_pModel->m_matBaseModel = m_mModel;
 
-	// For MotionBlur
+	// Set previousmatrices for being used in special effects like like MotionBlur
 	m_pShader->setValue("prev_projection", m_mPrevProjection);
 	//if (CameraNumber < 0)
 		m_pShader->setValue("prev_view", m_mPrevView);
@@ -188,6 +190,7 @@ void sDrawScene::exec() {
 		m_mPrevView = m_mView;
 	m_mPrevModel = m_mModel;
 	// End MotionBlur
+
 
 	// Set the other shader variable values
 	m_pVars->setValues();

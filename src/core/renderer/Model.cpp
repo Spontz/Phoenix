@@ -23,11 +23,15 @@ static inline glm::mat4 mat4_cast(const aiMatrix4x4 &m) { return glm::transpose(
 static inline glm::mat4 mat4_cast(const aiMatrix3x3 &m) { return glm::transpose(glm::make_mat3(&m.a1)); }
 
 Model::Model()
+	:
+	m_matProjection(glm::mat4(1)),
+	m_matView(glm::mat4(1)),
+	m_matBaseModel(glm::mat4(1)),
+	m_matMVP(glm::mat4(1)),
+	m_matGlobalInverseTransform(glm::mat4(1))
 {
 	playAnimation = false;			// By default, animations are disabled
 	useCamera = false;				// By default, we don't use the model camera
-	modelTransform = glm::mat4(1.0f);	// Load Identity matrix by default
-	prev_view = glm::mat4(1.0f);	// Load Identity matrix by default
 
 	m_NumAnimations = 0;
 	m_NumMeshes = 0;
@@ -37,7 +41,6 @@ Model::Model()
 	m_currentCamera = 0;
 	m_animDuration = 0;
 	m_pScene = NULL;
-	m_GlobalInverseTransform = glm::mat4(1.0f);
 }
 
 Model::~Model()
@@ -57,18 +60,22 @@ void Model::Draw(GLuint shaderID, float currentTime)
 	if (this->playAnimation)
 		setBoneTransformations(shaderID, currentTime);
 
+	// If we use camera, override the matrix view for the camera view
 	if (this->useCamera) {
 		if ((m_currentCamera >= 0) && (m_currentCamera < m_camera.size())) {
-			glm::mat4 cam = m_camera[m_currentCamera]->GetMatrix();
-			glUniformMatrix4fv(glGetUniformLocation(shaderID, "view"), 1, GL_FALSE, &cam[0][0]);
-			glUniformMatrix4fv(glGetUniformLocation(shaderID, "prev_view"), 1, GL_FALSE, &prev_view[0][0]);
-			prev_view = cam;
+			m_matView = m_camera[m_currentCamera]->GetMatrix();
 		}
 	}
 
-	// Then, draw the meshes
+	// Send the matrices
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "projection"), 1, GL_FALSE, &(m_matProjection[0][0]));
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "view"), 1, GL_FALSE, &(m_matView[0][0]));
+
+	// Then, send the model matrice of each mesh and draw them
 	for (unsigned int i = 0; i < meshes.size(); i++) {
-		glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, &(meshes[i].meshTransform[0][0]));
+		glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, &(meshes[i].m_modelMatrix[0][0]));
+		m_matMVP = m_matProjection * m_matView * meshes[i].m_modelMatrix;
+		glUniformMatrix4fv(glGetUniformLocation(shaderID, "MVP"), 1, GL_FALSE, &(m_matMVP[0][0]));
 		meshes[i].Draw(shaderID);
 	}
 }
@@ -79,7 +86,7 @@ void Model::setAnimation(unsigned int a)
 		m_currentAnimation = a;
 	}
 	else
-		Logger::error("The animation number specified [%i] is not supported in the file [%s]", a, filename.c_str());
+		Logger::error("The animation number [%i] is not available in the file [%s]", a, filename.c_str());
 }
 
 void Model::setCamera(unsigned int c)
@@ -91,7 +98,7 @@ void Model::setCamera(unsigned int c)
 	else {
 		useCamera = false;
 		m_currentCamera = 0;
-		Logger::error("The camera number specified [%i] is not available in the file [%s]", c, filename.c_str());
+		Logger::error("The camera number [%i] is not available in the file [%s]", c, filename.c_str());
 	}
 }
 
@@ -117,8 +124,8 @@ bool Model::Load(const std::string& path)
 	Logger::info(LogLevel::low, "Loading Model: %s", filename.c_str());
 
 	// Get transformation matrix for nodes (vertices relative to bones)
-	m_GlobalInverseTransform = mat4_cast(m_pScene->mRootNode->mTransformation);
-	m_GlobalInverseTransform = glm::inverse(m_GlobalInverseTransform);
+	m_matGlobalInverseTransform = mat4_cast(m_pScene->mRootNode->mTransformation);
+	m_matGlobalInverseTransform = glm::inverse(m_matGlobalInverseTransform);
 	// process ASSIMP's root node recursively
 	processNode(m_pScene->mRootNode, m_pScene);
 
@@ -319,7 +326,7 @@ std::vector<Texture*> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType
 void Model::setMeshesModelTransform()
 {
 	for (int i = 0; i < meshes.size(); i++)
-		meshes[i].meshTransform = this->modelTransform;
+		meshes[i].m_modelMatrix = this->m_matBaseModel;
 }
 
 /////////////// Bones calculations
@@ -407,7 +414,7 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 
 	for (unsigned int i = 0; i < this->m_NumMeshes; i++) {
 		if (NodeName == this->meshes[i].m_nodeName) {
-			this->meshes[i].meshTransform *= m_GlobalInverseTransform * GlobalTransformation;
+			this->meshes[i].m_modelMatrix *= m_matGlobalInverseTransform * GlobalTransformation;
 			/*Logger::info(LogLevel::low, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %i [time: %.3f]", NodeName.c_str(), i, AnimationTime);
 			glm::mat4 M = GlobalTransformation;
 			Logger::info(LogLevel::low, "M: [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f]",
@@ -427,7 +434,7 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 
 	if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) {
 		unsigned int BoneIndex = m_BoneMapping[NodeName];
-		m_BoneInfo[BoneIndex].FinalTransformation = m_GlobalInverseTransform * GlobalTransformation * m_BoneInfo[BoneIndex].BoneOffset;
+		m_BoneInfo[BoneIndex].FinalTransformation = m_matGlobalInverseTransform * GlobalTransformation * m_BoneInfo[BoneIndex].BoneOffset;
 	}
 
 	for (unsigned int i = 0; i < pNode->mNumChildren; i++) {
