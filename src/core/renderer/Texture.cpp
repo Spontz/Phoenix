@@ -72,7 +72,7 @@ bool Texture::loadFromMem(const unsigned char* data, int len, bool flip)
 
 	stbi_set_flip_vertically_on_load(flip); // required for loading textures properly
 
-	filename = "Embeeded texture";
+	filename = "Embedded texture";
 	bool is_loaded = true;
 
 	unsigned char* data_stbi = stbi_load_from_memory(data, len, &width, &height, &components, 0);
@@ -81,7 +81,7 @@ bool Texture::loadFromMem(const unsigned char* data, int len, bool flip)
 		uploadtoGPU(data_stbi);
 	}
 	else {
-		Logger::error("Failed loading embeeded texture");
+		Logger::error("Failed loading embedded texture");
 		is_loaded = false;
 	}
 
