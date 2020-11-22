@@ -40,6 +40,7 @@ public:
 	uint32_t			m_statNumMeshes;
 	uint32_t			m_statNumCameras;
 	uint32_t			m_statNumAnimations;
+	uint32_t			m_statNumBones;
 
 	Model();
 	virtual ~Model();

@@ -174,6 +174,8 @@ void Model::getStats()
 	m_statNumAnimations = m_pScene->mNumAnimations;
 
 	m_statNumCameras = m_pScene->mNumCameras;
+
+	m_statNumBones = m_numBones;
 }
 
 // Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any)

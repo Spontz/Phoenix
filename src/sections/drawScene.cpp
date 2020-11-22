@@ -215,7 +215,8 @@ std::string sDrawScene::debug()
 	ss << "+ DrawScene id: " << identifier << " layer: " << layer << std::endl;
 	ss << "  file: " << m_pModel->filename << std::endl;
 	ss << "  meshes: " << m_pModel->m_statNumMeshes << ", vertex: " << m_pModel->m_statNumVertices << std::endl;
-	ss << "  animations: " << m_pModel->m_statNumAnimations << ", cameras: " << m_pModel->m_statNumCameras << std::endl;
+	ss << "  animations: " << m_pModel->m_statNumAnimations << ", bones: " << m_pModel->m_statNumBones << std::endl;
+	ss << "  cameras: " << m_pModel->m_statNumCameras << std::endl;
 	return ss.str();
 	/*
 	for (int i=0; i< m_pModel->meshes.size(); i++) {
