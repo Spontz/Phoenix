@@ -18,6 +18,7 @@ public:
 	TextureManager();
 	virtual ~TextureManager();
 	Texture* addTexture(std::string path, bool flip = true, std::string type = "texture_diffuse");
+	Texture* addTextureFromMem(const unsigned char* data, int len, bool flip, std::string type = "texture_diffuse");
 	Cubemap* addCubemap(std::vector<std::string> path, bool flip);
 	int	getOpenGLTextureID(int index);
 	void initTextureStates();

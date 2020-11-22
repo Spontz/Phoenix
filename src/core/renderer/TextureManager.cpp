@@ -62,6 +62,25 @@ Texture* TextureManager::addTexture(std::string path, bool flip, std::string typ
 	return p_tex;
 }
 
+Texture* TextureManager::addTextureFromMem(const unsigned char *data, int len, bool flip, std::string type) {
+	Texture* p_tex = nullptr;
+
+	Texture* new_tex = new Texture();
+	if (new_tex->loadFromMem(data, len, flip)) {
+		new_tex->type = type;
+		texture.push_back(new_tex);
+		mem += new_tex->mem;
+		p_tex = new_tex;
+		Logger::info(LogLevel::med, "Texture embedded [id: %d] loaded OK. Overall texture Memory: %.3fMb", texture.size() - 1, mem);
+	}
+	else {
+		Logger::error("Could not load embedded texture");
+		delete new_tex;
+	}
+
+	return p_tex;
+}
+
 // Adds a Cubemap into the queue, returns the Number of the cubemap added
 Cubemap* TextureManager::addCubemap(std::vector<std::string> path, bool flip)
 {

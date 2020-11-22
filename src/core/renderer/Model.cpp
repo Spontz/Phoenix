@@ -28,19 +28,19 @@ Model::Model()
 	m_matView(glm::mat4(1)),
 	m_matBaseModel(glm::mat4(1)),
 	m_matMVP(glm::mat4(1)),
-	m_matGlobalInverseTransform(glm::mat4(1))
+	m_matGlobalInverseTransform(glm::mat4(1)),
+	m_statNumAnimations(0),
+	m_numBones(0),
+	m_statNumCameras(0),
+	m_statNumMeshes(0),
+	m_statNumVertices(0),
+	m_pScene(nullptr),
+	playAnimation (false),		// By default, animations are disabled
+	useCamera (false),			// By default, we don't use the model camera
+	m_currentAnimation (0),
+	m_currentCamera (0),
+	m_animDuration (0)
 {
-	playAnimation = false;			// By default, animations are disabled
-	useCamera = false;				// By default, we don't use the model camera
-
-	m_NumAnimations = 0;
-	m_NumMeshes = 0;
-	m_NumBones = 0;
-	m_NumCameras = 0;
-	m_currentAnimation = 0;
-	m_currentCamera = 0;
-	m_animDuration = 0;
-	m_pScene = NULL;
 }
 
 Model::~Model()
@@ -82,7 +82,7 @@ void Model::Draw(GLuint shaderID, float currentTime)
 
 void Model::setAnimation(unsigned int a)
 {
-	if (a < m_NumAnimations) {
+	if (a < m_statNumAnimations) {
 		m_currentAnimation = a;
 	}
 	else
@@ -91,7 +91,7 @@ void Model::setAnimation(unsigned int a)
 
 void Model::setCamera(unsigned int c)
 {
-	if (c < m_NumCameras) {
+	if (c < m_statNumCameras) {
 		useCamera = true;
 		m_currentCamera = c;
 	}
@@ -129,22 +129,19 @@ bool Model::Load(const std::string& path)
 	// process ASSIMP's root node recursively
 	processNode(m_pScene->mRootNode, m_pScene);
 
-	// Count total number of meshes
-	m_NumMeshes = static_cast<unsigned int>(meshes.size());
-
-	// Count total number of animations
-	m_NumAnimations = m_pScene->mNumAnimations;
-
 	// Get the cameras
 	processCameras(m_pScene);
-	
+
+	// COmpute the stats of the Model
+	getStats();
+
 	return true;
 }
 
 // Processes scene cameras
 void Model::processCameras(const aiScene* scene)
 {
-	m_NumCameras = m_pScene->mNumCameras;
+	m_statNumCameras = m_pScene->mNumCameras;
 	for (unsigned int i = 0; i < m_pScene->mNumCameras; i++)
 	{
 		aiCamera* aiCam = m_pScene->mCameras[i];
@@ -164,6 +161,20 @@ void Model::processCameras(const aiScene* scene)
 	}
 }
 
+
+void Model::getStats()
+{
+	// Count total number of meshes and their vertices
+	m_statNumMeshes = static_cast<unsigned int>(meshes.size());
+	m_statNumVertices = 0;
+	for (uint32_t i = 0; i < m_statNumMeshes; i++)
+		m_statNumVertices += meshes[i].m_numVertices;
+
+	// Count total number of animations
+	m_statNumAnimations = m_pScene->mNumAnimations;
+
+	m_statNumCameras = m_pScene->mNumCameras;
+}
 
 // Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any)
 void Model::processNode(aiNode *node, const aiScene *scene)
@@ -274,8 +285,8 @@ Mesh Model::processMesh(std::string nodeName, aiMesh *mesh, const aiScene *scene
 		if (m_BoneMapping.find(boneName) == m_BoneMapping.end())
 		{
 			// Allocate an index for the new bone
-			BoneIndex = m_NumBones;
-			m_NumBones++;
+			BoneIndex = m_numBones;
+			m_numBones++;
 			BoneInfo bi;
 			m_BoneInfo.push_back(bi);
 
@@ -300,27 +311,7 @@ Mesh Model::processMesh(std::string nodeName, aiMesh *mesh, const aiScene *scene
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
 	// return a mesh object created from the extracted mesh data
-	return Mesh(nodeName, mesh, vertices, indices, material, directory, filename);
-}
-
-// checks all material textures of a given type and loads the textures if they're not loaded yet.
-// the required info is returned as a Texture struct.
-std::vector<Texture*> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
-{
-	std::vector<Texture*> textures;
-	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
-	{
-		aiString filepath;
-		std::string fullpath;
-		mat->GetTexture(type, i, &filepath);
-		if (0 == strcmp(filepath.C_Str(), "$texture_dummy.bmp"))				// Prevent a bug in assimp: In some cases, the texture by default is named "$texture_dummy.bmp"
-			filepath = filename.substr(0, filename.find_last_of('.')) + ".jpg";	// In that case, we change this to "<model_name.jpg>"
-		fullpath = directory + "/" + filepath.C_Str();
-		Texture* tex = DEMO->m_textureManager.addTexture(fullpath.c_str(), false, typeName);
-		if (tex)
-			textures.push_back(tex);
-	}
-	return textures;
+	return Mesh(scene, nodeName, mesh, vertices, indices, material, directory, filename);
 }
 
 void Model::setMeshesModelTransform()
@@ -360,9 +351,9 @@ void Model::boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transform
 
 	ReadNodeHeirarchy(AnimationTime, m_pScene->mRootNode, glm::mat4(1.0f));
 
-	Transforms.resize(m_NumBones);
+	Transforms.resize(m_numBones);
 
-	for (unsigned int i = 0; i < m_NumBones; i++) {
+	for (unsigned int i = 0; i < m_numBones; i++) {
 		Transforms[i] = m_BoneInfo[i].FinalTransformation;
 	}
 }
@@ -412,7 +403,7 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 
 	// Now we need to apply the Matrix to the corresponding object
 
-	for (unsigned int i = 0; i < this->m_NumMeshes; i++) {
+	for (unsigned int i = 0; i < m_statNumMeshes; i++) {
 		if (NodeName == this->meshes[i].m_nodeName) {
 			this->meshes[i].m_modelMatrix *= m_matGlobalInverseTransform * GlobalTransformation;
 			/*Logger::info(LogLevel::low, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %i [time: %.3f]", NodeName.c_str(), i, AnimationTime);
@@ -426,7 +417,7 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 		}
 	}
 
-	for (unsigned int i = 0; i < this->m_NumCameras; i++) {
+	for (unsigned int i = 0; i < m_pScene->mNumCameras; i++) {
 		if (NodeName == this->m_camera[i]->Name) {
 			this->m_camera[i]->Matrix = glm::inverse(GlobalTransformation);
 		}

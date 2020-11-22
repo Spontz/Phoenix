@@ -26,22 +26,23 @@ void VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
 	}
 
 	// should never get here - more bones than we have space for
-	assert(0);
+	//assert(0);
 }
 
-Mesh::Mesh(std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial *pMaterial, std::string directory, std::string filename)
+Mesh::Mesh(const aiScene* pScene, std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial *pMaterial, std::string directory, std::string filename)
 	: 
 	m_modelMatrix(glm::mat4(1.0)),
 	m_nodeName(nodeName),
 	m_pMesh(pMesh),
 	m_vertices(vertices),
 	m_indices(indices),
+	m_numVertices(static_cast<uint32_t>(vertices.size())),
 	m_VertexArray(nullptr)
 {
 	loadUniqueVerticesPos();
-
+	
 	// Setup the material of our mesh (each mesh has only one material)
-	this->m_material.Load(pMaterial, directory, filename);
+	this->m_material.Load(pMaterial, pScene, directory, filename);
 
 	// now that we have all the required data, set the vertex buffers and its attribute pointers.
 	setupMesh();

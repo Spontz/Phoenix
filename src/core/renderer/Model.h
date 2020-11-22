@@ -35,6 +35,12 @@ public:
 	
 	std::vector<Camera*>	m_camera;
 
+	// Stats
+	uint32_t			m_statNumVertices;
+	uint32_t			m_statNumMeshes;
+	uint32_t			m_statNumCameras;
+	uint32_t			m_statNumAnimations;
+
 	Model();
 	virtual ~Model();
 
@@ -49,16 +55,16 @@ private:
 	Assimp::Importer	m_Importer;
 	const aiScene*		m_pScene;
 	glm::mat4			m_matGlobalInverseTransform; // Global transformation matrix for nodes (vertices relative to bones)
-	unsigned int		m_NumMeshes;
-	unsigned int		m_NumCameras;
-	unsigned int		m_NumAnimations;
 	// Bones info
 	std::map<std::string, unsigned int> m_BoneMapping;	// maps a bone name to its index
-	unsigned int			m_NumBones;
 	std::vector<BoneInfo>	m_BoneInfo;
+	uint32_t				m_numBones;
 	unsigned int			m_currentCamera;			// Current Camera
 	unsigned int			m_currentAnimation;			// Current Animation
 	double					m_animDuration;				// Animation duration in seconds
+
+	// Get Stats form the model
+	void getStats();
 
 	// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
 	void processNode(aiNode *node, const aiScene *scene);
@@ -82,8 +88,4 @@ private:
 	unsigned int FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
 	const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
 	void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
-
-	// Checks all material textures of a given type and loads the textures if they're not loaded yet.
-	// the required info is returned as a Texture array (from texture manager).
-	std::vector<Texture*> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
 };

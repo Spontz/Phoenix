@@ -12,19 +12,25 @@
 #include <vector>
 
 Material::Material()
+	:
+	name (""),
+	colDiffuse (glm::vec3(0)),
+	colSpecular (glm::vec3(0)),
+	colAmbient (glm::vec3(0)),
+	strenghtSpecular (1),
+	m_pMaterial (nullptr),
+	m_pScene (nullptr),
+	m_ModelDirectory(""),
+	m_ModelFilename("")
 {
-	this->name = "";
-	this->colDiffuse = glm::vec3(0);
-	this->colSpecular = glm::vec3(0);
-	this->colAmbient = glm::vec3(0);
-	this->strenghtSpecular = 1.0;
 }
 
-void Material::Load(const aiMaterial *pMaterial, std::string modelDirectory, std::string modelFilename)
+void Material::Load(const aiMaterial *pMaterial, const aiScene* pScene, std::string modelDirectory, std::string modelFilename)
 {
-	this->m_pMaterial = pMaterial;
-	this->m_ModelDirectory = modelDirectory;
-	this->m_ModelFilename = modelFilename;
+	m_pMaterial = pMaterial;
+	m_pScene = pScene;
+	m_ModelDirectory = modelDirectory;
+	m_ModelFilename = modelFilename;
 	
 	// we assume a convention for sampler names in the shaders. Each diffuse texture should be named
 	// as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER. 
@@ -33,27 +39,27 @@ void Material::Load(const aiMaterial *pMaterial, std::string modelDirectory, std
 	// specular: texture_specularN
 	// normal: texture_normalN
 	// 1. diffuse maps
-	std::vector<textureStack> diffuseMaps = loadTextures(pMaterial, aiTextureType_DIFFUSE, "texture_diffuse");
+	std::vector<textureStack> diffuseMaps = loadTextures(aiTextureType_DIFFUSE, "texture_diffuse");
 	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 	Logger::info(LogLevel::low, "  The mesh has %d diffuseMaps", diffuseMaps.size());
 	// 2. specular maps
-	std::vector<textureStack> specularMaps = loadTextures(pMaterial, aiTextureType_SPECULAR, "texture_specular");
+	std::vector<textureStack> specularMaps = loadTextures(aiTextureType_SPECULAR, "texture_specular");
 	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	Logger::info(LogLevel::low, "  The mesh has %d specularMaps", specularMaps.size());
 	// 3. ambient maps
-	std::vector<textureStack> ambientMaps = loadTextures(pMaterial, aiTextureType_AMBIENT, "texture_ambient");
+	std::vector<textureStack> ambientMaps = loadTextures(aiTextureType_AMBIENT, "texture_ambient");
 	textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
 	Logger::info(LogLevel::low, "  The mesh has %d ambientMaps", ambientMaps.size());
 	// 4. height maps
-	std::vector<textureStack> heightMaps = loadTextures(pMaterial, aiTextureType_HEIGHT, "texture_height");
+	std::vector<textureStack> heightMaps = loadTextures(aiTextureType_HEIGHT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 	Logger::info(LogLevel::low, "  The mesh has %d heightMaps", heightMaps.size());
 	// 5. normal maps
-	std::vector<textureStack> normalMaps = loadTextures(pMaterial, aiTextureType_NORMALS, "texture_normal");
+	std::vector<textureStack> normalMaps = loadTextures(aiTextureType_NORMALS, "texture_normal");
 	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 	Logger::info(LogLevel::low, "  The mesh has %d normalMaps", normalMaps.size());
 	// Unknown
-	std::vector<textureStack> unknownMaps = loadTextures(pMaterial, aiTextureType_NONE, "texture_unknown");
+	std::vector<textureStack> unknownMaps = loadTextures(aiTextureType_NONE, "texture_unknown");
 	textures.insert(textures.end(), unknownMaps.begin(), unknownMaps.end());
 	Logger::info(LogLevel::low, "  The mesh has %d unknownMaps", unknownMaps.size());
 
@@ -75,27 +81,112 @@ void Material::Load(const aiMaterial *pMaterial, std::string modelDirectory, std
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.
 // the required info is returned as a Texture struct.
-std::vector<textureStack> Material::loadTextures(const aiMaterial * mat, aiTextureType type, std::string typeName)
+std::vector<textureStack> Material::loadTextures(aiTextureType type, std::string typeName)
 {
 	std::vector<textureStack> textures;
-	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+	unsigned int textureCount = m_pMaterial->GetTextureCount(type);
+
+	for (unsigned int i = 0; i < textureCount; i++)
 	{
 		aiString filepath;
 		std::string fullpath;
 		ai_real blendFactor;
 		aiTextureOp operation;
-		mat->GetTexture(type, i, &filepath, NULL, NULL, &blendFactor, &operation);
-		if (0 == strcmp(filepath.C_Str(), "$texture_dummy.bmp"))				// Prevent a bug in assimp: In some cases, the texture by default is named "$texture_dummy.bmp"
-			filepath = m_ModelFilename.substr(0, m_ModelFilename.find_last_of('.')) + ".jpg";	// In that case, we change this to "<model_name.jpg>"
-		fullpath = m_ModelDirectory + "/" + filepath.C_Str();
-		textureStack tex;
-		tex.tex	= DEMO->m_textureManager.addTexture(fullpath.c_str(), false, typeName);
-		tex.blendOperation = operation;
-		tex.strength = blendFactor;
-		if (tex.tex) {
-			tex.shaderName = typeName + std::to_string(i + 1);
-			textures.push_back(tex);
+		m_pMaterial->GetTexture(type, i, &filepath, NULL, NULL, &blendFactor, &operation);
+		auto storageType = getTextureStorageType(type);
+		
+		// Load the texture depending on the storage type
+		switch (storageType)
+		{
+		case TextureStorageType::Disk:
+		{
+			if (0 == strcmp(filepath.C_Str(), "$texture_dummy.bmp"))				// Prevent a bug in assimp: In some cases, the texture by default is named "$texture_dummy.bmp"
+				filepath = m_ModelFilename.substr(0, m_ModelFilename.find_last_of('.')) + ".jpg";	// In that case, we change this to "<model_name.jpg>"
+			fullpath = m_ModelDirectory + "/" + filepath.C_Str();
+			textureStack tex;
+			tex.tex = DEMO->m_textureManager.addTexture(fullpath.c_str(), false, typeName);
+			tex.blendOperation = operation;
+			tex.strength = blendFactor;
+			if (tex.tex) {
+				tex.shaderName = typeName + std::to_string(i + 1);
+				textures.push_back(tex);
+			}
+			break;
 		}
+		case TextureStorageType::EmbeddedCompressed:
+		case TextureStorageType::EmbeddedNonCompressed:
+		{
+			aiTexture const* pTexture = m_pScene->GetEmbeddedTexture(filepath.C_Str());
+			textureStack tex;
+			if (storageType == TextureStorageType::EmbeddedCompressed)
+				tex.tex = DEMO->m_textureManager.addTextureFromMem(reinterpret_cast<unsigned char*>(pTexture->pcData), pTexture->mWidth, false, typeName);
+			else
+				tex.tex = DEMO->m_textureManager.addTextureFromMem(reinterpret_cast<unsigned char*>(pTexture->pcData), pTexture->mWidth * pTexture->mHeight, false, typeName);
+			tex.blendOperation = operation;
+			tex.strength = blendFactor;
+			if (tex.tex) {
+				tex.shaderName = typeName + std::to_string(i + 1);
+				textures.push_back(tex);
+			}
+			break;
+		}
+		case TextureStorageType::IndexCompressed:
+		case TextureStorageType::IndexNonCompressed:
+		{
+			int index = std::stoi(filepath.C_Str());
+			if (index < 0 || index >= (int)m_pScene->mNumTextures) {
+				Logger::error("Error loading indexed texture, the specified texture number [%d] is not available", index);
+			}
+			else {
+				aiTexture const* pTexture = m_pScene->mTextures[index];
+				textureStack tex;
+				if (storageType == TextureStorageType::IndexCompressed)
+					tex.tex = DEMO->m_textureManager.addTextureFromMem(reinterpret_cast<unsigned char*>(pTexture->pcData), pTexture->mWidth, false, typeName);
+				else
+					tex.tex = DEMO->m_textureManager.addTextureFromMem(reinterpret_cast<unsigned char*>(pTexture->pcData), pTexture->mWidth * pTexture->mHeight, false, typeName);
+				tex.blendOperation = operation;
+				tex.strength = blendFactor;
+				if (tex.tex) {
+					tex.shaderName = typeName + std::to_string(i + 1);
+					textures.push_back(tex);
+				}
+			}
+			break;
+		}
+
+		default:
+			Logger::info(LogLevel::low, "Texture format not supported... skip!");
+		}
+		
 	}
 	return textures;
+}
+
+TextureStorageType Material::getTextureStorageType(aiTextureType textureType)
+{
+	if (!m_pMaterial->GetTextureCount(textureType))
+		return TextureStorageType::None;
+
+	aiString path;
+	m_pMaterial->GetTexture(textureType, 0, &path);
+	std::string texturePath = path.C_Str();
+
+	if (texturePath[0] == '*')
+	{
+		if (m_pScene->mTextures[0]->mHeight == 0)
+			return TextureStorageType::IndexCompressed;
+		else
+			return TextureStorageType::IndexNonCompressed;
+	}
+	else if (auto pTexture = m_pScene->GetEmbeddedTexture(texturePath.c_str()))
+	{
+		if (pTexture->mHeight == 0)
+			return TextureStorageType::EmbeddedCompressed;
+		else
+			return TextureStorageType::EmbeddedNonCompressed;
+	}
+	else if (texturePath.find('.') != std::string::npos)
+		return TextureStorageType::Disk;
+
+	return TextureStorageType::None;
 }
