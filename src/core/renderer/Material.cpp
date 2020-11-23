@@ -38,30 +38,55 @@ void Material::Load(const aiMaterial *pMaterial, const aiScene* pScene, std::str
 	// diffuse: texture_diffuseN
 	// specular: texture_specularN
 	// normal: texture_normalN
-	// 1. diffuse maps
+	// Diffuse maps
 	std::vector<textureStack> diffuseMaps = loadTextures(aiTextureType_DIFFUSE, "texture_diffuse");
 	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 	Logger::info(LogLevel::low, "  The mesh has %d diffuseMaps", diffuseMaps.size());
-	// 2. specular maps
+	// Specular maps
 	std::vector<textureStack> specularMaps = loadTextures(aiTextureType_SPECULAR, "texture_specular");
 	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	Logger::info(LogLevel::low, "  The mesh has %d specularMaps", specularMaps.size());
-	// 3. ambient maps
+	// Ambient maps
 	std::vector<textureStack> ambientMaps = loadTextures(aiTextureType_AMBIENT, "texture_ambient");
 	textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
 	Logger::info(LogLevel::low, "  The mesh has %d ambientMaps", ambientMaps.size());
-	// 4. height maps
+	// Height maps
 	std::vector<textureStack> heightMaps = loadTextures(aiTextureType_HEIGHT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 	Logger::info(LogLevel::low, "  The mesh has %d heightMaps", heightMaps.size());
-	// 5. normal maps
+	// Normal maps
 	std::vector<textureStack> normalMaps = loadTextures(aiTextureType_NORMALS, "texture_normal");
 	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 	Logger::info(LogLevel::low, "  The mesh has %d normalMaps", normalMaps.size());
+	// Emissive maps
+	std::vector<textureStack> emissiveMaps = loadTextures(aiTextureType_EMISSIVE, "texture_emissive");
+	textures.insert(textures.end(), emissiveMaps.begin(), emissiveMaps.end());
+	Logger::info(LogLevel::low, "  The mesh has %d emissiveMaps", emissiveMaps.size());
+	// Roughness maps
+	std::vector<textureStack> roughnessMaps = loadTextures(aiTextureType_DIFFUSE_ROUGHNESS, "texture_roughness");
+	textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
+	Logger::info(LogLevel::low, "  The mesh has %d roughnessMaps", roughnessMaps.size());
+	// Shininess maps
+	std::vector<textureStack> shininessMaps = loadTextures(aiTextureType_SHININESS, "texture_shininess");
+	textures.insert(textures.end(), shininessMaps.begin(), shininessMaps.end());
+	Logger::info(LogLevel::low, "  The mesh has %d shininessMaps", shininessMaps.size());
+	// Ambient Occlusion maps
+	std::vector<textureStack> ambientOclussionMaps = loadTextures(aiTextureType_AMBIENT_OCCLUSION, "texture_ambientoclussion");
+	textures.insert(textures.end(), ambientOclussionMaps.begin(), ambientOclussionMaps.end());
+	Logger::info(LogLevel::low, "  The mesh has %d ambientoclussionMaps", ambientOclussionMaps.size());
+	// Metallness maps
+	std::vector<textureStack> metalnessMaps = loadTextures(aiTextureType_METALNESS, "texture_metalness");
+	textures.insert(textures.end(), metalnessMaps.begin(), metalnessMaps.end());
+	Logger::info(LogLevel::low, "  The mesh has %d metalnessMaps", metalnessMaps.size());
 	// Unknown
-	std::vector<textureStack> unknownMaps = loadTextures(aiTextureType_NONE, "texture_unknown");
+	std::vector<textureStack> unknownMaps = loadTextures(aiTextureType_UNKNOWN, "texture_unknown");
 	textures.insert(textures.end(), unknownMaps.begin(), unknownMaps.end());
 	Logger::info(LogLevel::low, "  The mesh has %d unknownMaps", unknownMaps.size());
+
+	// None
+	std::vector<textureStack> noneMaps = loadTextures(aiTextureType_NONE, "texture_none");
+	textures.insert(textures.end(), noneMaps.begin(), noneMaps.end());
+	Logger::info(LogLevel::low, "  The mesh has %d noneMaps", noneMaps.size());
 
 
 	aiColor3D color;
