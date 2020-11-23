@@ -106,12 +106,30 @@ void Model::setCamera(unsigned int c)
 bool Model::Load(const std::string& path)
 {
 	filepath = path;
-	// read file via ASSIMP
 	
-	m_pScene = m_Importer.ReadFile(filepath, aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals
-		| aiProcess_Triangulate);// | aiProcess_JoinIdenticalVertices); // TODO: JoinIdenticalVertices dows not work: https://github.com/assimp/assimp/issues/2006
-		//| aiProcess_OptimizeGraph | aiProcess_OptimizeMeshes); // TODO: Investigate if this flags work fine with an animated model with complex hierarchy
-	//m_pScene = m_Importer.ReadFile(filepath, aiProcessPreset_TargetRealtime_MaxQuality); // TODO: Investigate if this preset is useful for us
+	// Load file
+	unsigned int importerFlags =
+		aiProcess_CalcTangentSpace |			// Calc tangents and bitangents
+		aiProcess_Triangulate |					// Force all faces to be triangles
+		aiProcess_GenSmoothNormals |			// Generate Smooth normals
+		aiProcess_FlipUVs |						// Flip UV's coordinates
+		aiProcess_LimitBoneWeights |			// limit bone weights to 4 per vertex
+		aiProcess_JoinIdenticalVertices |		// JoinIdenticalVertices does not work? https://github.com/assimp/assimp/issues/2006| --> This reduces the geometry a lot!
+		aiProcess_GenUVCoords |					// convert spherical, cylindrical, box and planar mapping to proper UVs
+		aiProcess_TransformUVCoords |			// preprocess UV transformations (scaling, translation ...)
+		aiProcess_OptimizeMeshes |				// join small meshes, if possible
+		aiProcess_OptimizeGraph |				// Optimize hierarchy
+		aiProcess_SplitByBoneCount |			// split meshes with too many bones. Necessary for our (limited) hardware skinning shader
+		aiProcess_FindInstances |				// search for instanced meshes and remove them by references to one master
+		aiProcess_ValidateDataStructure |		// perform a full validation of the loader's output
+		aiProcess_ImproveCacheLocality |		// improve the cache locality of the output vertices
+		aiProcess_RemoveRedundantMaterials |	// remove redundant materials
+		aiProcess_FindDegenerates |				// remove degenerated polygons from the import
+		//aiProcess_FindInvalidData |			// detect invalid model data, such as invalid normal vectors --> Sometimes this give errors on models with animations
+		0;
+
+	m_pScene = m_Importer.ReadFile(filepath, importerFlags);
+
 	// check for errors
 	if (!m_pScene || m_pScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !m_pScene->mRootNode) // if is Not Zero
 	{
