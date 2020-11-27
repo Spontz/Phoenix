@@ -15,6 +15,16 @@ VertexArray::~VertexArray()
 {
 	if (m_RendererID!=0)
 		glDeleteVertexArrays(1, &m_RendererID);
+	for (auto& vb : m_VertexBuffers) {
+		delete vb;
+		vb = nullptr;
+	}
+		
+	if (m_IndexBuffer) {
+		delete m_IndexBuffer;
+		m_IndexBuffer = nullptr;
+	}
+		
 }
 
 void VertexArray::Bind() const
