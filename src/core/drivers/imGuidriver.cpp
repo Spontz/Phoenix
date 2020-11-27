@@ -18,6 +18,7 @@ imGuiDriver::imGuiDriver()
 	show_fbo(false),
 	show_sound(false),
 	show_version(false),
+	show_grid(false),
 	m_fontScale(1.0f),
 	num_fboSetToDraw(0),
 	num_fboAttachmentToDraw(0),
@@ -57,7 +58,7 @@ void imGuiDriver::init(GLFWwindow *window) {
 
 	// Setup Platform/Renderer bindings
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init("#version 130");
+	ImGui_ImplOpenGL3_Init("#version 410");
 }
 
 void imGuiDriver::drawGui()
@@ -78,6 +79,8 @@ void imGuiDriver::drawGui()
 			drawFPSHistogram();
 		if (show_sound)
 			drawSound();
+		if (show_grid)
+			drawGridConfig();
 	}
 	endDraw();
 }
@@ -134,8 +137,6 @@ void imGuiDriver::drawInfo() {
 		else demoStatus = stateStr[0];
 	}
 
-
-
 	// Draw Menu Bar
 	ImGuiWindowFlags window_flags = 0;
 	window_flags |= ImGuiWindowFlags_MenuBar;
@@ -157,6 +158,7 @@ void imGuiDriver::drawInfo() {
 			ImGui::MenuItem("Show FBO's", "3", &show_fbo);
 			ImGui::MenuItem("Show section stack", "4", &show_sesctionInfo);
 			ImGui::MenuItem("Show sound information", "5", &show_sound);
+			ImGui::MenuItem("Show grid", "6", &show_grid);
 			ImGui::MenuItem("Show versions", "0", &show_version);
 			ImGui::EndMenu();
 		}
@@ -259,6 +261,37 @@ void imGuiDriver::drawSound()
 	ImGui::PlotHistogram("", BASSDRV->getSpectrumData(), plotSamples, 0, "Spectrum analyzer", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectrum display
 	//ImGui::Text("Waveform display, Displaying 2 channels:");
 	//ImGui::PlotHistogram("", BASSDRV->getFFTdata(), plotSamples, 0, "sound waveform", -0.5, 0.5, ImVec2(win.x - 10, win.y - 80)); // For Waveform display
+
+	ImGui::End();
+}
+
+void imGuiDriver::drawGridConfig()
+{
+	ImVec2 size = ImVec2(static_cast<float>(m_vp.width)/4, 120.0f);
+	ImVec2 pos = ImVec2(m_vp.width + m_vp.x - size.x, m_vp.height+m_vp.y-size.y);
+	ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
+	ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
+
+	if (!ImGui::Begin("Grid config", &show_grid))
+	{
+		ImGui::End();
+		return;
+	}
+	ImVec2 win = ImGui::GetWindowSize();
+	ImGui::SetWindowFontScale(m_fontScale);
+	ImGui::Checkbox("Enable grid", &m_demo.m_debug_drawGrid);
+	if (ImGui::SliderFloat("Size", &m_demo.m_pRes->m_gridSize, -50, 50, "%.1f"))
+	{
+	//	if (m_demo.m_pRes->m_gridSize < 1)
+	//		m_demo.m_pRes->m_gridSize = 1;
+		m_demo.m_pRes->Load_Grid();
+	}
+	if (ImGui::SliderInt("Slices", &m_demo.m_pRes->m_gridSlices, 1, 100))
+	{
+		if (m_demo.m_pRes->m_gridSlices < 1)
+			m_demo.m_pRes->m_gridSlices = 1;
+		m_demo.m_pRes->Load_Grid();
+	}
 
 	ImGui::End();
 }

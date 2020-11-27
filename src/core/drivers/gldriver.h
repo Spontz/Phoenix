@@ -89,6 +89,7 @@ public:
 	void	initFramework();
 	bool	initGraphics();
 	void	initRender(int clear);
+	void	drawGrid();
 	void	drawGui();
 	void	guiDrawInfo();
 	void	guiDrawFpsHistogram();

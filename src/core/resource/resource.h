@@ -26,6 +26,7 @@ public:
 	void Draw_Obj_QuadTex(Texture* tex, glm::mat4 const* projection, glm::mat4 const* view, glm::mat4 const* model);
 	void Draw_Skybox(Cubemap* cubemap);							// Draws a skybox for a given cubemap texture
 	void Draw_Cube();											// Draws a cube
+	void Draw_Grid(glm::vec3 const color, glm::mat4 const* MVP);
 
 	Texture* m_pTVImage;				// Default texture (tv)
 
@@ -38,11 +39,18 @@ public:
 	Shader* m_pShdrQuadTexVFlipModel;	// Draws a textured quad with model matrix, and with the texture flipped vertically
 	Shader* m_pShdrSkybox;				// Draws a skybox
 	Shader* m_pShdrObjColor;			// Draws an object with a color
+	Shader* m_pShdrGrid;				// Draws a Grid
 
 	// Vertex Array Objects
 	VertexArray* m_pSkybox;
 	VertexArray* m_pQuadFullScreen;
 	VertexArray* m_pQube;
+	VertexArray* m_pGrid;
+
+	// Grid properties
+	void		Load_Grid();
+	float		m_gridSize;
+	int			m_gridSlices;
 	
 private:
 	void Load_Obj_QuadFullscreen();
@@ -52,4 +60,5 @@ private:
 	void Load_Tex_Spontz();
 	void Load_Text_Fonts();
 	void Load_Lights();
+
 };

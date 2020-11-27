@@ -27,6 +27,7 @@ public:
 	bool	show_fbo;
 	bool	show_sound;
 	bool	show_version;
+	bool	show_grid;
 
 
 	int				num_fboSetToDraw;
@@ -74,5 +75,6 @@ private:
 	void drawFPSHistogram();
 	void drawFbo();
 	void drawSound();
+	void drawGridConfig();
 
 };

@@ -34,6 +34,7 @@ demokernel::demokernel()
 	m_debug(false),
 	m_logLevel(LogLevel::high),
 #endif
+	m_debug_drawGrid(true),
 	m_loop(true),
 	m_sound(true),
 	m_demoRunTime(0),
@@ -642,7 +643,12 @@ void demokernel::processSectionQueues() {
 
 	// prepare engine for render
 	GLDRV->initRender(true);
-	//GLDRV->startDrawImgGUI();
+
+	// Show grid only if we are in Debug
+	if (m_debug && m_debug_drawGrid) {
+		PX_PROFILE_SCOPE("DrawGrid");
+		GLDRV->drawGrid();
+	}
 
 	// Run Exec sections
 	Logger::info(LogLevel::low, "  Running Exec Sections...");

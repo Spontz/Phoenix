@@ -54,6 +54,7 @@ public:
 	// misc
 	bool			m_loop;
 	bool			m_sound;
+	bool			m_debug_drawGrid;
 
 	int				m_status;			// Demo status (play, pause, loading, etc.)
 	float			m_demoStartTime;	// first demo second

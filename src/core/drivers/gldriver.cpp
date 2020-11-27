@@ -366,6 +366,39 @@ void glDriver::initRender(int clear) {
 	}
 }
 
+void glDriver::drawGrid()
+{
+	glm::mat4 MVP;
+	glm::mat4 VP;
+
+	glm::mat4 projection = glm::perspective(
+		glm::radians(m_demo.m_pCamera->Zoom),
+		GetFramebufferViewport().GetAspectRatio(),
+		0.1f, 10000.0f
+	);
+	glm::mat4 view = m_demo.m_pCamera->GetViewMatrix();
+
+	VP = projection * view;
+
+	// X Axis
+	glm::mat4 model = glm::mat4(1.0f);
+	MVP = VP * model;
+	m_demo.m_pRes->Draw_Grid(glm::vec3(1, 0, 0), &MVP);
+
+	// Y Axis
+	model = glm::mat4(1.0f);
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+	MVP = VP * model;
+	m_demo.m_pRes->Draw_Grid(glm::vec3(0, 1, 0), &MVP);
+
+	// Z Axis
+	model = glm::mat4(1.0f);
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 0, 1));
+	MVP = VP * model;
+	m_demo.m_pRes->Draw_Grid(glm::vec3(0, 0, 1), &MVP);
+
+}
+
 void glDriver::drawGui()
 {
 	m_imGui->drawGui();

@@ -12,10 +12,12 @@ void Resource::loadAllResources()
 	Load_Obj_QuadFullscreen();
 	Load_Obj_Skybox();
 	Load_Obj_Qube();
+	// Load grid
+	Load_Grid();
 	// Load Shaders
 	Load_Shaders();
 	// Load Textures
-	Load_Tex_Spontz();			// Spontz ridiculous pictures
+	Load_Tex_Spontz();
 	// Load Fonts --> This is no longer needed since we are using imGui for output text
 	//Load_Text_Fonts();			// Text fonts
 	// Load Lights
@@ -29,9 +31,12 @@ Resource::Resource()
 	m_pQuadFullScreen(nullptr),
 	m_pSkybox(nullptr),
 	m_pQube(nullptr),
-	m_pTVImage(nullptr)
+	m_pTVImage(nullptr),
+	m_pGrid(nullptr),
+	m_gridSize(1.0f),
+	m_gridSlices(10)
 {
-	m_pShdrObjColor = m_pShdrQuadDepth = m_pShdrQuadTex = m_pShdrQuadTexPVM = m_pShdrQuadTexAlpha = m_pShdrQuadTexModel = m_pShdrQuadTexVFlipModel = m_pShdrSkybox = nullptr;
+	m_pShdrObjColor = m_pShdrQuadDepth = m_pShdrQuadTex = m_pShdrQuadTexPVM = m_pShdrQuadTexAlpha = m_pShdrQuadTexModel = m_pShdrQuadTexVFlipModel = m_pShdrSkybox = m_pShdrGrid = nullptr;
 }
 
 Resource::~Resource()
@@ -207,6 +212,7 @@ void Resource::Load_Shaders()
 	m_pShdrQuadTexVFlipModel = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.glsl");
 	m_pShdrSkybox = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/skybox/skybox.glsl");
 	m_pShdrObjColor = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/ObjColor.glsl");
+	m_pShdrGrid = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/Grid.glsl");
 }
 
 void Resource::Load_Tex_Spontz()
@@ -226,6 +232,60 @@ void Resource::Load_Lights()
 	m_demo.m_lightManager.addLight(LightType::SpotLight);
 	m_demo.m_lightManager.addLight(LightType::PointLight);
 	m_demo.m_lightManager.addLight(LightType::PointLight);
+}
+
+void Resource::Load_Grid()
+{
+	std::vector<glm::vec3> vertices;
+	std::vector<uint32_t> indices;
+
+	for (int j = 0; j <= m_gridSlices; ++j) {
+		for (int i = 0; i <= m_gridSlices; ++i) {
+			float x = m_gridSize * ((float)i / (float)m_gridSlices);
+			float y = 0;
+			float z = m_gridSize * ((float)j / (float)m_gridSlices);
+			vertices.push_back(glm::vec3(x, y, z));
+		}
+	}
+
+	for (int j = 0; j < m_gridSlices; ++j) {
+		for (int i = 0; i < m_gridSlices; ++i) {
+
+			int row1 = j * (m_gridSlices + 1);
+			int row2 = (j + 1) * (m_gridSlices + 1);
+
+			indices.push_back(row1 + i);
+			indices.push_back(row1 + i + 1);
+			indices.push_back(row1 + i + 1);
+			indices.push_back(row2 + i + 1);
+
+			indices.push_back(row2 + i + 1);
+			indices.push_back(row2 + i);
+			indices.push_back(row2 + i);
+			indices.push_back(row1 + i);
+
+		}
+	}
+
+	if (m_pGrid)
+		delete m_pGrid;
+
+	// Creatr the Vertex Array
+	m_pGrid = new VertexArray();
+
+	// Create & Load the Vertex Buffer
+	VertexBuffer* vb = new VertexBuffer(&vertices[0], static_cast<uint32_t>(sizeof(glm::vec3)*vertices.size()));
+	vb->SetLayout({
+		{ ShaderDataType::Float3,	"aPos"},
+		});
+
+	m_pGrid->AddVertexBuffer(vb);
+
+	// Create & Load the Index Buffer :: Not really needed since the vertice are already sorted
+	IndexBuffer* ib = new IndexBuffer(&indices[0], static_cast<uint32_t>(indices.size()));
+	m_pGrid->SetIndexBuffer(ib);
+
+	m_pGrid->Unbind();
 }
 
 // Draw a Quad with texture in full screen with alpha
@@ -305,6 +365,19 @@ void Resource::Draw_Cube()
 	m_pQube->Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	m_pQube->Unbind();
+}
+
+void Resource::Draw_Grid(glm::vec3 const color, glm::mat4 const* MVP)
+{
+	glEnable(GL_DEPTH_TEST);
+	m_pShdrGrid->use();
+	m_pShdrGrid->setValue("MVP", *MVP);
+	m_pShdrGrid->setValue("color", color);
+
+	m_pGrid->Bind();
+	
+	glDrawElements(GL_LINES, m_pGrid->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, NULL);
+	m_pGrid->Unbind();
 }
 
 
