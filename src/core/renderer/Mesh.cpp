@@ -39,7 +39,7 @@ Mesh::Mesh(const aiScene* pScene, std::string nodeName, const aiMesh *pMesh, std
 	m_numVertices(static_cast<uint32_t>(vertices.size())),
 	m_VertexArray(nullptr)
 {
-	loadUniqueVerticesPos();
+	loadUniqueVerticesPos(); // TOOO: TO FIX!! This slows down A LOT the model loading, I think it should be removed from the constructor, and only called on demand
 	
 	// Setup the material of our mesh (each mesh has only one material)
 	this->m_material.Load(pMaterial, pScene, directory, filename);

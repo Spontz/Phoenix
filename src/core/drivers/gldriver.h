@@ -97,6 +97,7 @@ public:
 	void	guiDrawFbo();
 	void	guiDrawSections();
 	void	guiDrawSound();
+	void	guiDrawGridPanel();
 	void	guiChangeAttachment();
 	
 	const std::string				getGLFWVersion();

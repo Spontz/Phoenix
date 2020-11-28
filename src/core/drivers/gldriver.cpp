@@ -130,11 +130,13 @@ void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, in
 			else if (key == KEY_SHOWFBO)
 				GLDRV->guiDrawFbo();
 			else if (key == KEY_CHANGEATTACH)
-				GLDRV->guiChangeAttachment(); 
+				GLDRV->guiChangeAttachment();
 			else if (key == KEY_SHOWSECTIONINFO)
 				GLDRV->guiDrawSections();
 			else if (key == KEY_SHOWSOUND)
 				GLDRV->guiDrawSound();
+			else if (key == KEY_SHOWGRIDPANEL)
+				GLDRV->guiDrawGridPanel();
 			
 			
 
@@ -427,6 +429,11 @@ void glDriver::guiDrawSections()
 void glDriver::guiDrawSound()
 {
 	m_imGui->show_sound = !m_imGui->show_sound;
+}
+
+void glDriver::guiDrawGridPanel()
+{
+	m_imGui->show_grid= !m_imGui->show_grid;
 }
 
 void glDriver::guiDrawFbo()

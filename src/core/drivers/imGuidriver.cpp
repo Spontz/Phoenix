@@ -156,9 +156,9 @@ void imGuiDriver::drawInfo() {
 			ImGui::MenuItem("Show Info", "1", &show_info);
 			ImGui::MenuItem("Show FPS Histogram", "2", &show_fpsHistogram);
 			ImGui::MenuItem("Show FBO's", "3", &show_fbo);
-			ImGui::MenuItem("Show section stack", "4", &show_sesctionInfo);
-			ImGui::MenuItem("Show sound information", "5", &show_sound);
-			ImGui::MenuItem("Show grid", "6", &show_grid);
+			ImGui::MenuItem("Show section stack", "5", &show_sesctionInfo);
+			ImGui::MenuItem("Show sound information", "6", &show_sound);
+			ImGui::MenuItem("Show grid panel", "7", &show_grid);
 			ImGui::MenuItem("Show versions", "0", &show_version);
 			ImGui::EndMenu();
 		}
