@@ -52,6 +52,9 @@ public:
 	void setAnimation(unsigned int a);
 	void setCamera(unsigned int c);
 
+	// Load unique vertices
+	void loadUniqueVertices();
+
 private:
 	Assimp::Importer	m_Importer;
 	const aiScene*		m_pScene;
@@ -63,6 +66,8 @@ private:
 	unsigned int			m_currentCamera;			// Current Camera
 	unsigned int			m_currentAnimation;			// Current Animation
 	double					m_animDuration;				// Animation duration in seconds
+
+	bool					m_bLoadedUniqueVertices;	// Have we loaded the unique vertices for each mesh?
 
 	// Get Stats form the model
 	void getStats();

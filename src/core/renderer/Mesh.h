@@ -68,6 +68,9 @@ public:
 	Mesh(const aiScene *pScene, std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial *pMaterial, std::string directory, std::string filename);
 	// render the mesh
 	void Draw(GLuint shaderID);
+	
+	// Loads the unique vertices positions
+	void loadUniqueVerticesPos();
 
 private:
 	friend class ModelInstance;			// We allod ModelInstance class to access private memebers
@@ -84,6 +87,5 @@ private:
 	// Setup materials for drawing
 	void DrawMaterials(GLuint shaderID);
 
-	// Loads the unique vertices positions
-	void loadUniqueVerticesPos();
+
 };

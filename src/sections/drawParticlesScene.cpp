@@ -58,11 +58,15 @@ bool sDrawParticlesScene::load() {
 	if (m_pModel == nullptr)
 		return false;
 
+	// Load unique vertices (it can take a while)
+	m_pModel->loadUniqueVertices();
+
 	// Calculate particles number
 	m_iNumParticles = 0;
-	for (int i = 0; i < m_pModel->meshes.size(); i++) {
-		m_iNumParticles += (int)m_pModel->meshes[i].unique_vertices_pos.size();
+	for (auto& mesh : m_pModel->meshes) {
+		m_iNumParticles += static_cast<uint32_t>(mesh.unique_vertices_pos.size());
 	}
+
 	if (m_iNumParticles == 0) {
 		Logger::error("Draw Particles Scene [%s]: No vertex found in the model", identifier.c_str());
 		return false;

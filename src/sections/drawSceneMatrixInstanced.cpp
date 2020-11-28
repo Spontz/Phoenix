@@ -87,16 +87,19 @@ bool sDrawSceneMatrixInstanced::load() {
 	if (!m_pModelRef || !model_to_draw)
 		return false;
 
+	// Load unique vertices for the reference model (it can take a while)
+	m_pModelRef->loadUniqueVertices();
+
 	m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[2]);
 	if (!m_pShader)
 		return false;
 
 	// Calculate the amount of objects to draw
-	unsigned int num_obj_instances = 0;
-	for (int i = 0; i < m_pModelRef->meshes.size(); i++)
-	{
-		num_obj_instances += (int)m_pModelRef->meshes[i].unique_vertices_pos.size();
+	uint32_t num_obj_instances = 0;
+	for (auto& meshRef : m_pModelRef->meshes) {
+		num_obj_instances += static_cast<uint32_t>(meshRef.unique_vertices_pos.size());
 	}
+
 	if (num_obj_instances == 0) {
 		Logger::error("DrawSceneMatrix: No vertex found in the reference model");
 		return false;

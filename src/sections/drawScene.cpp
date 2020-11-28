@@ -218,14 +218,4 @@ std::string sDrawScene::debug()
 	ss << "  animations: " << m_pModel->m_statNumAnimations << ", bones: " << m_pModel->m_statNumBones << std::endl;
 	ss << "  cameras: " << m_pModel->m_statNumCameras << std::endl;
 	return ss.str();
-	/*
-	for (int i=0; i< m_pModel->meshes.size(); i++) {
-		ss << "  mesh: " << i << std::endl;
-		ss << "    Num vertices: " << m_pModel->meshes[i].unique_vertices_pos.size() << std::endl;
-		ss << "    Num textures: " << m_pModel->meshes[i].m_material.textures.size() << std::endl;
-		ss << "    Color Diffuse [" << m_pModel->meshes[i].m_material.colDiffuse.r << ", " << m_pModel->meshes[i].material.colDiffuse.g + ", " << m_pModel->meshes[i].m_material.colDiffuse.b << "]" << std::endl;
-		ss << "    Color Ambient [" << m_pModel->meshes[i].m_material.colAmbient.r << ", " << m_pModel->meshes[i].material.colAmbient.g + ", " << m_pModel->meshes[i].m_material.colAmbient.b << "]" << std::endl;
-		ss << "    Color Specular [" << m_pModel->meshes[i].m_material.colSpecular.r << ", " << m_pModel->meshes[i].material.colSpecular.g + ", " << m_pModel->meshes[i].m_material.colSpecular.b << "]" << std::endl;
-	}
-	*/
 }

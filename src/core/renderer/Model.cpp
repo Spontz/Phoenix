@@ -39,7 +39,8 @@ Model::Model()
 	useCamera (false),			// By default, we don't use the model camera
 	m_currentAnimation (0),
 	m_currentCamera (0),
-	m_animDuration (0)
+	m_animDuration (0),
+	m_bLoadedUniqueVertices(false)
 {
 }
 
@@ -99,6 +100,16 @@ void Model::setCamera(unsigned int c)
 		useCamera = false;
 		m_currentCamera = 0;
 		Logger::error("The camera number [%i] is not available in the file [%s]", c, filename.c_str());
+	}
+}
+
+void Model::loadUniqueVertices()
+{
+	if (!m_bLoadedUniqueVertices) {
+		for (auto& mesh : meshes) {
+			mesh.loadUniqueVerticesPos();
+		}
+		m_bLoadedUniqueVertices = true;
 	}
 }
 

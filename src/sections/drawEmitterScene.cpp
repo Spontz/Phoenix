@@ -71,6 +71,9 @@ bool sDrawEmitterScene::load() {
 	if (!m_pModel)
 		return false;
 
+	// Load unique vertices (it can take a while)
+	m_pModel->loadUniqueVertices();
+
 	// Load Emitters and Particles config
 	m_fEmissionTime = param[0];
 	m_fParticleLifeTime = param[1];
@@ -111,9 +114,9 @@ bool sDrawEmitterScene::load() {
 
 	m_pExprPosition->SymbolTable.add_variable("nE", m_fCurrentEmitter);
 
-	// Load the particle generator parameters
-	for (int i = 0; i < m_pModel->meshes.size(); i++) {
-		m_uiNumEmitters += (int)m_pModel->meshes[i].unique_vertices_pos.size();
+	// Read the number of emmitters
+	for (auto& mesh : m_pModel->meshes) {
+		m_uiNumEmitters += static_cast<uint32_t>(mesh.unique_vertices_pos.size());
 	}
 
 	if (m_uiNumEmitters <= 0) {
