@@ -201,8 +201,10 @@ void sDrawSceneMatrix::exec() {
 		0.1f, 10000.0f
 	);
 	glm::mat4 view = m_demo.m_pCamera->GetViewMatrix();
-	m_pShader->setValue("projection", projection);
+	m_pShader->setValue("projection", projection);	// TODO: Should we send the projection/view matrices here?
 	m_pShader->setValue("view", view);
+	m_pModel->m_matProjection = projection;			// TODO2: Or should we copy them into the model like we do here?
+	m_pModel->m_matView = view;
 	// For MotionBlur: send the previous matrix
 	m_pShader->setValue("prev_projection", m_mPrevProjection);
 	m_pShader->setValue("prev_view", m_mPrevView);

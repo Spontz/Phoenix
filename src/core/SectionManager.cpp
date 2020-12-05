@@ -21,7 +21,7 @@ tSectionID sectionID[] = {
 	{"light",				SectionType::LightSec},
 	{"drawScene",			SectionType::DrawScene},
 	{"drawSceneMatrix",		SectionType::DrawSceneMatrix},
-	{"DrawSceneMatrixInstanced",		SectionType::DrawSceneMatrixInstanced},
+	{"drawSceneMatrixInstanced",		SectionType::DrawSceneMatrixInstanced},
 	{"drawImage",			SectionType::DrawImage},
 	{"drawSkybox",			SectionType::DrawSkybox},
 	{"drawVideo",			SectionType::DrawVideo},
