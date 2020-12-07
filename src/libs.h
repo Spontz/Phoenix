@@ -21,6 +21,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/polar_coordinates.hpp>
+#include <glm/ext.hpp>
 
 #include <exprtk.hpp>
 

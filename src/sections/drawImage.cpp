@@ -9,6 +9,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -105,8 +106,8 @@ bool sDrawImage::load()
 	return true;
 }
 
-void sDrawImage::init() {
-	
+void sDrawImage::init()
+{
 }
 
 void sDrawImage::exec()
@@ -206,13 +207,26 @@ void sDrawImage::exec()
 	EvalBlendingEnd();
 }
 
-void sDrawImage::end() {
+void sDrawImage::end() 
+{
 	
 }
 
-std::string sDrawImage::debug() {
+void sDrawImage::loadDebugStatic()
+{
 	std::stringstream ss;
-	ss << "+ DrawImage id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  file: " << m_pTexture->filename << std::endl;
+	ss << "File: " << m_pTexture->filename << std::endl;
+	ss << "Fullscreen: " << m_bFullscreen << std::endl;
+	ss << "Fit To Content: " << m_bFitToContent << std::endl;
+	debugStatic = ss.str();
+}
+
+std::string sDrawImage::debug()
+{
+	std::stringstream ss;
+	ss << debugStatic;
+	ss << "Pos: " << glm::to_string(m_vTranslation) << std::endl;
+	ss << "Rot: " << glm::to_string(m_vRotation) << std::endl;
+	ss << "Scale: " << glm::to_string(m_vScale) << std::endl;
 	return ss.str();
 }

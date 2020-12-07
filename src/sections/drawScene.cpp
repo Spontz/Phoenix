@@ -9,6 +9,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -62,7 +63,7 @@ bool sDrawScene::load() {
 
 	// Load parameters
 	m_bClearDepth = static_cast<bool>(param[0]);
-	m_bDrawWireframe= static_cast<bool>(param[1]);
+	m_bDrawWireframe = static_cast<bool>(param[1]);
 	m_bPlayAnimation = static_cast<bool>(param[2]);
 	m_iAnimationNumber = static_cast<int>(param[3]);
 	
@@ -209,13 +210,32 @@ void sDrawScene::end() {
 	
 }
 
+void sDrawScene::loadDebugStatic() {
+	std::stringstream ss;
+	Material* mat;
+	ss << "File: " << m_pModel->filename << std::endl;
+	ss << "Meshes: " << m_pModel->m_statNumMeshes << ", Vertex: " << m_pModel->m_statNumVertices << std::endl;
+	ss << "Animations: " << m_pModel->m_statNumAnimations << ", Bones: " << m_pModel->m_statNumBones << std::endl;
+	ss << "Cameras: " << m_pModel->m_statNumCameras << std::endl;
+	for (auto mesh : m_pModel->meshes) {
+		ss << "+Mesh name: " << mesh.m_nodeName << std::endl;
+		ss << " Vertices: " << mesh.m_numVertices << std::endl;
+		mat = mesh.getMaterial();
+		ss << " Material name: " << mat->name << std::endl;
+		ss << "  Material.Ka:" << glm::to_string(mat->colAmbient) << std::endl;
+		ss << "  Material.Kd:" << glm::to_string(mat->colDiffuse) << std::endl;
+		ss << "  Material.Ks:" << glm::to_string(mat->colSpecular) << std::endl;
+		ss << "  Material.KsStrenght:" << std::to_string(mat->strenghtSpecular) << std::endl;
+		for (auto texture : mat->textures) {
+			ss << "  Texture shader name: " << texture.shaderName << std::endl;
+		}
+		ss << std::endl;
+	}
+	debugStatic = ss.str();
+}
+
+
 std::string sDrawScene::debug()
 {
-	std::stringstream ss;
-	ss << "+ DrawScene id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  file: " << m_pModel->filename << std::endl;
-	ss << "  meshes: " << m_pModel->m_statNumMeshes << ", vertex: " << m_pModel->m_statNumVertices << std::endl;
-	ss << "  animations: " << m_pModel->m_statNumAnimations << ", bones: " << m_pModel->m_statNumBones << std::endl;
-	ss << "  cameras: " << m_pModel->m_statNumCameras << std::endl;
-	return ss.str();
+	return debugStatic;
 }

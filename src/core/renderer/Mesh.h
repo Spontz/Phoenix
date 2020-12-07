@@ -72,6 +72,9 @@ public:
 	// Loads the unique vertices positions
 	void loadUniqueVerticesPos();
 
+	// Get Material
+	Material* getMaterial();
+
 private:
 	friend class ModelInstance;			// We allod ModelInstance class to access private memebers
 

@@ -20,11 +20,14 @@ imGuiDriver::imGuiDriver()
 	show_version(false),
 	show_grid(false),
 	m_fontScale(1.0f),
-	num_fboSetToDraw(0),
-	num_fboAttachmentToDraw(0),
-	num_fboPerPage(4),
+	m_numFboSetToDraw(0),
+	m_numFboAttachmentToDraw(0),
+	m_numFboPerPage(4),
+	m_selectedSection(-1),
 	m_maxRenderFPSScale(60),
-	m_currentRenderTime(0)
+	m_currentRenderTime(0),
+	m_expandAllSections(true),
+	m_expandAllSectionsChanged(true)
 {
 	m_VersionEngine = m_demo.getEngineVersion();
 	m_VersionOpenGL = GLDRV->getOpenGLVersion();
@@ -119,6 +122,8 @@ void imGuiDriver::changeFontSize(float baseSize, int width, int height)
 
 	if (m_fontScale < baseSize)
 		m_fontScale = baseSize;
+
+	ImGui::GetIO().FontGlobalScale = m_fontScale;
 }
 
 void imGuiDriver::drawInfo() {
@@ -148,7 +153,6 @@ void imGuiDriver::drawInfo() {
 		return;
 	}
 
-	ImGui::SetWindowFontScale(m_fontScale);
 	if (ImGui::BeginMenuBar())
 	{
 		if (ImGui::BeginMenu("Panels"))
@@ -166,7 +170,6 @@ void imGuiDriver::drawInfo() {
 	}
 
 	// Draw Info
-		ImGui::SetWindowFontScale(m_fontScale);
 		//ImGui::Text("Font: %.3f", m_fontScale);	// Show font size
 		ImGui::Text("Fps: %.0f", m_demo.m_fps);
 		ImGui::Text("Demo status: %s", demoStatus.c_str());
@@ -208,11 +211,11 @@ void imGuiDriver::drawVersion()
 void imGuiDriver::drawFbo() {
 	float offsetY = 10; // small offset
 
-	if (num_fboSetToDraw == 0)
-		num_fboSetToDraw = 1;
+	if (m_numFboSetToDraw == 0)
+		m_numFboSetToDraw = 1;
 
-	int fbo_num_min = ((num_fboSetToDraw - 1) * num_fboPerPage);
-	int fbo_num_max = (num_fboPerPage - 1) + ((num_fboSetToDraw - 1) * num_fboPerPage);
+	int fbo_num_min = ((m_numFboSetToDraw - 1) * m_numFboPerPage);
+	int fbo_num_max = (m_numFboPerPage - 1) + ((m_numFboSetToDraw - 1) * m_numFboPerPage);
 
 	if (fbo_num_max >= m_demo.m_fboManager.fbo.size())
 		fbo_num_max = static_cast<int>(m_demo.m_fboManager.fbo.size()) - 1;
@@ -228,14 +231,13 @@ void imGuiDriver::drawFbo() {
 		ImGui::End();
 		return;
 	}
-		ImGui::SetWindowFontScale(m_fontScale);
-		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fbo_num_min, fbo_num_max, num_fboAttachmentToDraw);
+		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fbo_num_min, fbo_num_max, m_numFboAttachmentToDraw);
 		for (int i = fbo_num_min; i <= fbo_num_max; i++) {
 			if (i < m_demo.m_fboManager.fbo.size())
 			{
 				Fbo* my_fbo = m_demo.m_fboManager.fbo[i];
-				if (num_fboAttachmentToDraw < my_fbo->numAttachments)
-					ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[num_fboAttachmentToDraw], ImVec2(fbo_w_size, fbo_h_size), ImVec2(0, 1), ImVec2(1, 0));
+				if (m_numFboAttachmentToDraw < my_fbo->numAttachments)
+					ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[m_numFboAttachmentToDraw], ImVec2(fbo_w_size, fbo_h_size), ImVec2(0, 1), ImVec2(1, 0));
 				else
 					ImGui::Image((void*)(intptr_t)NULL, ImVec2(fbo_w_size, fbo_h_size));
 			}
@@ -255,7 +257,6 @@ void imGuiDriver::drawSound()
 		return;
 	}
 	ImVec2 win = ImGui::GetWindowSize();
-	ImGui::SetWindowFontScale(m_fontScale);
 	int plotSamples = BASSDRV->getSpectrumSamples();
 	ImGui::Text("Spectrum analyzer: %d samples", plotSamples);
 	ImGui::PlotHistogram("", BASSDRV->getSpectrumData(), plotSamples, 0, "Spectrum analyzer", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectrum display
@@ -278,7 +279,6 @@ void imGuiDriver::drawGridConfig()
 		return;
 	}
 	ImVec2 win = ImGui::GetWindowSize();
-	ImGui::SetWindowFontScale(m_fontScale);
 	ImGui::Checkbox("Enable grid", &m_demo.m_debug_drawGrid);
 	if (ImGui::SliderFloat("Size", &m_demo.m_pRes->m_gridSize, -50, 50, "%.1f"))
 	{
@@ -301,6 +301,7 @@ void imGuiDriver::drawSesctionInfo()
 {
 	Section* ds;
 	int sec_id;
+	std::string s;
 
 	ImGui::SetNextWindowPos(ImVec2(2.0f * static_cast<float>(m_vp.width) / 3.0f, 0.0f), ImGuiCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width) / 3.0f, static_cast<float>(m_vp.height + (m_vp.y * 2))), ImGuiCond_Once);
@@ -311,13 +312,23 @@ void imGuiDriver::drawSesctionInfo()
 		ImGui::End();
 		return;
 	}
-	ImGui::SetWindowFontScale(m_fontScale);
+	
+	if (ImGui::Checkbox("Expand All", &m_expandAllSections))
+		m_expandAllSectionsChanged = true;
+	
 	for (int i = 0; i < m_demo.m_sectionManager.execSection.size(); i++) {
 		sec_id = m_demo.m_sectionManager.execSection[i].second;	// The second value is the ID of the section
 		ds = m_demo.m_sectionManager.section[sec_id];
-		ImGui::Text(ds->debug().c_str());
-		ImGui::Separator();
+		s = ds->type_str + " id/layer[" + ds->identifier + "/" + std::to_string(ds->layer) + "]";
+		if(m_expandAllSectionsChanged)
+			ImGui::SetNextTreeNodeOpen(m_expandAllSections);
+		if (ImGui::CollapsingHeader(s.c_str()))
+		{
+			ImGui::Text(ds->debug().c_str());
+			ImGui::Separator();
+		}
 	}
+	m_expandAllSectionsChanged = false;
 	ImGui::End();
 }
 
@@ -334,7 +345,6 @@ void imGuiDriver::drawFPSHistogram()
 		return;
 	}
 		ImVec2 win = ImGui::GetWindowSize();
-		ImGui::SetWindowFontScale(m_fontScale);
 		ImGui::DragInt("FPS Scale", &m_maxRenderFPSScale, 10, 10, 1000, "%d");
 		float max = 1000.0f / static_cast<float>(m_maxRenderFPSScale);
 		ImGui::SameLine();

@@ -10,6 +10,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -64,7 +65,8 @@ sDrawSceneMatrixInstanced::sDrawSceneMatrixInstanced()
 	type = SectionType::DrawSceneMatrixInstanced;
 }
 
-bool sDrawSceneMatrixInstanced::load() {
+bool sDrawSceneMatrixInstanced::load() 
+{
 	if ((param.size() != 5) || (strings.size() < 7)) {
 		Logger::error("DrawSceneMatrix [%s]: 5 param (Enable Depth buffer, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier.c_str());
 		return false;
@@ -169,11 +171,13 @@ bool sDrawSceneMatrixInstanced::load() {
 	return true;
 }
 
-void sDrawSceneMatrixInstanced::init() {
+void sDrawSceneMatrixInstanced::init()
+{
 	
 }
 
-void sDrawSceneMatrixInstanced::exec() {
+void sDrawSceneMatrixInstanced::exec()
+{
 
 	// Start evaluating blending
 	EvalBlendingStart();
@@ -258,17 +262,24 @@ void sDrawSceneMatrixInstanced::exec() {
 	EvalBlendingEnd();
 }
 
-void sDrawSceneMatrixInstanced::end() {
+void sDrawSceneMatrixInstanced::end()
+{
+}
+
+void sDrawSceneMatrixInstanced::loadDebugStatic()
+{
+	std::stringstream ss;
+	ss << "Matrix file: " << m_pModelRef->filename << std::endl;
+	ss << "Objects in matrix to be drawn: " << m_fNumObjects << std::endl;
+	ss << "Model file: " << m_pModel->model->filename << std::endl;
+	ss << "Meshes in each model: " << m_pModel->model->m_statNumMeshes << ", Vertex: " << m_pModel->model->m_statNumVertices << std::endl;;
+	debugStatic = ss.str();
 }
 
 std::string sDrawSceneMatrixInstanced::debug()
 {
 	std::stringstream ss;
-	ss << "+ DrawSceneMatrixInstanced id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  Matrix file: " << m_pModelRef->filename << std::endl;
-	ss << "  objects in matrix to be drawn: " << m_fNumObjects << std::endl;
-	ss << "  Model file: " << m_pModel->model->filename << std::endl;
-	ss << "  meshes in each model: " << m_pModel->model->meshes.size() << std::endl;
+	ss << debugStatic;
 	return ss.str();
 }
 

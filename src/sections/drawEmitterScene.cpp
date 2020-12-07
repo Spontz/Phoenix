@@ -11,6 +11,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -40,11 +41,13 @@ private:
 
 // ******************************************************************
 
-Section* instance_drawEmitterScene() {
+Section* instance_drawEmitterScene()
+{
 	return new sDrawEmitterScene();
 }
 
-sDrawEmitterScene::sDrawEmitterScene() {
+sDrawEmitterScene::sDrawEmitterScene()
+{
 	type = SectionType::DrawEmitterScene;
 }
 
@@ -54,7 +57,8 @@ static float RandomFloat()
 	return ((float)rand() / Max);
 }
 
-bool sDrawEmitterScene::load() {
+bool sDrawEmitterScene::load() 
+{
 	// script validation
 	if ((param.size() != 3) || (strings.size() < 9)) {
 		Logger::error("Draw Emitter Scene [%s]: 3 param (emission time, Particle Life Time & Randomness) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", identifier.c_str());
@@ -159,13 +163,15 @@ bool sDrawEmitterScene::load() {
 	return true;
 }
 
-void sDrawEmitterScene::init() {
+void sDrawEmitterScene::init()
+{
 }
 
 
 static float lastTime = 0;
 
-void sDrawEmitterScene::exec() {
+void sDrawEmitterScene::exec() 
+{
 	// Start evaluating blending
 	EvalBlendingStart();
 
@@ -205,13 +211,24 @@ void sDrawEmitterScene::exec() {
 
 }
 
-void sDrawEmitterScene::end() {
+void sDrawEmitterScene::end() 
+{
+}
+
+void sDrawEmitterScene::loadDebugStatic()
+{
+	std::stringstream ss;
+	ss << "Model used: " << m_pModel->filename << std::endl;
+	ss << "Emitters: " << m_uiNumEmitters << std::endl;
+	ss << "Max Particles: " << m_uiNumMaxParticles << std::endl;
+	ss << "Emission Time: " << m_fEmissionTime << std::endl;
+	ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
+	ss << "Emitter Randomness: " << m_fEmitterRandomness << std::endl;
+	debugStatic = ss.str();
 }
 
 std::string sDrawEmitterScene::debug() {
 	std::stringstream ss;
-	ss << "+ DrawEmittersScene id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  numEmitters: " << m_uiNumEmitters << std::endl;
-	ss << "  numMaxParticles: " << m_uiNumMaxParticles << std::endl;
+	ss << debugStatic;
 	return ss.str();
 }

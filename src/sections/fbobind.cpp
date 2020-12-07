@@ -7,6 +7,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -17,15 +18,18 @@ private:
 
 // ******************************************************************
 
-Section* instance_fboBind() {
+Section* instance_fboBind() 
+{
 	return new sFboBind();
 }
 
-sFboBind::sFboBind() {
+sFboBind::sFboBind() 
+{
 	type = SectionType::FboBind;
 }
 
-bool sFboBind::load() {
+bool sFboBind::load() 
+{
 	// script validation
 	if (param.size() != 3) {
 		Logger::error("FboBind [%s]: 3 params are needed: fbo to use, clear the screen buffer, clear depth buffer", identifier.c_str());
@@ -45,23 +49,33 @@ bool sFboBind::load() {
 	return true;
 }
 
-void sFboBind::init() {
+void sFboBind::init()
+{
 	
 }
 
-void sFboBind::exec() {
+void sFboBind::exec()
+{
 
 	// Enable the buffer in which we are going to paint
 	m_demo.m_fboManager.bind(m_uiFboNum, m_bClearScreen, m_bClearDepth);
 }
 
-void sFboBind::end() {
+void sFboBind::end() 
+{
 	
 }
 
-std::string sFboBind::debug() {
+void sFboBind::loadDebugStatic()
+{
 	std::stringstream ss;
-	ss << "+ FboBind id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  fbo: " << m_uiFboNum << std::endl;
-	return ss.str();
+	ss << "Fbo: " << m_uiFboNum << std::endl;
+	ss << "Fbo type: " << m_demo.m_fboManager.fbo[m_uiFboNum]->engineFormat << std::endl;
+	ss << "Fbo attachments: " << m_demo.m_fboManager.fbo[m_uiFboNum]->numAttachments << std::endl;
+	debugStatic = ss.str();
+}
+
+std::string sFboBind::debug() 
+{
+	return debugStatic;
 }

@@ -41,6 +41,5 @@ void sTest::end() {
 
 std::string sTest::debug() {
 	std::stringstream ss;
-	ss << "+ Test id: " << identifier << " layer: " << layer << std::endl;
 	return ss.str();
 }

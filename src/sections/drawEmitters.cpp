@@ -10,6 +10,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -39,11 +40,13 @@ private:
 // TODO: This section needs to be reworked, we should remove the model, and position the emitters by code
 // For putting emitters on a model position we already have the "drawEmittersScene" section
 
-Section* instance_drawEmitters() {
+Section* instance_drawEmitters() 
+{
 	return new sDrawEmitters();
 }
 
-sDrawEmitters::sDrawEmitters() {
+sDrawEmitters::sDrawEmitters()
+{
 	type = SectionType::DrawEmitters;
 }
 
@@ -53,7 +56,8 @@ static float RandomFloat()
 	return ((float)rand() / Max);
 }
 
-bool sDrawEmitters::load() {
+bool sDrawEmitters::load() 
+{
 	// script validation
 	if ((param.size() != 3) || (strings.size() < 9)) {
 		Logger::error("Draw Emitters [%s]: 3 param (emission time, Particle Life Time & Randomness) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", identifier.c_str());
@@ -167,7 +171,8 @@ bool sDrawEmitters::load() {
 	return true;
 }
 
-void sDrawEmitters::init() {
+void sDrawEmitters::init()
+{
 }
 
 
@@ -214,13 +219,25 @@ void sDrawEmitters::exec() {
 
 }
 
-void sDrawEmitters::end() {
+void sDrawEmitters::end() 
+{
 }
 
-std::string sDrawEmitters::debug() {
+void sDrawEmitters::loadDebugStatic()
+{
 	std::stringstream ss;
-	ss << "+ DrawEmitters id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  numEmitters: " << m_uiNumEmitters << std::endl;
-	ss << "  numMaxParticles: " << m_uiNumMaxParticles << std::endl;
+	ss << "Model used: " << m_pModel->filename << std::endl;
+	ss << "Emitters: " << m_uiNumEmitters << std::endl;
+	ss << "Max Particles: " << m_uiNumMaxParticles << std::endl;
+	ss << "Emission Time: " << m_fEmissionTime << std::endl;
+	ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
+	ss << "Emitter Randomness: " << m_fEmitterRandomness << std::endl;
+	debugStatic = ss.str();
+}
+
+std::string sDrawEmitters::debug() 
+{
+	std::stringstream ss;
+	ss << debugStatic;
 	return ss.str();
 }

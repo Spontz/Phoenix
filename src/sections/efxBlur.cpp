@@ -9,6 +9,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -23,16 +24,19 @@ private:
 
 // ******************************************************************
 
-Section* instance_efxBlur() {
+Section* instance_efxBlur()
+{
 	return new sEfxBlur();
 }
 
-sEfxBlur::sEfxBlur() {
+sEfxBlur::sEfxBlur()
+{
 	type = SectionType::EfxBlur;
 }
 
 
-bool sEfxBlur::load() {
+bool sEfxBlur::load()
+{
 	// script validation
 	if ((param.size()) != 3 || (strings.size() != 2)) {
 		Logger::error("EfxBlur [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 2 strings (One with the formula of the Blur Amount + blur shader file)", identifier.c_str());
@@ -79,11 +83,13 @@ bool sEfxBlur::load() {
 	return true;
 }
 
-void sEfxBlur::init() {
+void sEfxBlur::init()
+{
 	
 }
 
-void sEfxBlur::exec() {
+void sEfxBlur::exec()
+{
 	// Clear the screen and depth buffers depending of the parameters passed by the user
 	if (m_bClearScreen) glClear(GL_COLOR_BUFFER_BIT);
 	if (m_bClearDepth) glClear(GL_DEPTH_BUFFER_BIT);
@@ -136,13 +142,22 @@ void sEfxBlur::exec() {
 	
 }
 
-void sEfxBlur::end() {
+void sEfxBlur::end()
+{
 	
 }
 
-std::string sEfxBlur::debug() {
+void sEfxBlur::loadDebugStatic()
+{
 	std::stringstream ss;
-	ss << "+ EfxBlur id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  fbo: " << m_uiFboNum << " Blur Amount: " << m_fBlurAmount << std::endl;
+	ss << "Fbo: " << m_uiFboNum << std::endl;
+	debugStatic = ss.str();
+}
+
+std::string sEfxBlur::debug()
+{
+	std::stringstream ss;
+	ss << debugStatic;
+	ss << "blurAmount: " << m_fBlurAmount << std::endl;
 	return ss.str();
 }

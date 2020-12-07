@@ -8,6 +8,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -19,16 +20,19 @@ private:
 
 // ******************************************************************
 
-Section* instance_drawQuad() {
+Section* instance_drawQuad()
+{
 	return new sDrawQuad();
 }
 
-sDrawQuad::sDrawQuad() {
+sDrawQuad::sDrawQuad()
+{
 	type = SectionType::DrawQuad;
 }
 
 
-bool sDrawQuad::load() {
+bool sDrawQuad::load() 
+{
 	// script validation
 	if ((param.size()) != 2 || (strings.size() != 1)) {
 		Logger::error("DrawQuad [%s]: 2 params are needed (Clear the screen buffer & clear depth buffer), and the shader file", identifier.c_str());
@@ -59,11 +63,13 @@ bool sDrawQuad::load() {
 	return true;
 }
 
-void sDrawQuad::init() {
+void sDrawQuad::init()
+{
 	
 }
 
-void sDrawQuad::exec() {
+void sDrawQuad::exec() 
+{
 	m_pShader->use();
 	// Clear the screen and depth buffers depending of the parameters passed by the user
 	if (m_bClearScreen) glClear(GL_COLOR_BUFFER_BIT);
@@ -84,12 +90,16 @@ void sDrawQuad::exec() {
 	EvalBlendingEnd();
 }
 
-void sDrawQuad::end() {
+void sDrawQuad::end() 
+{
 	
 }
 
-std::string sDrawQuad::debug() {
-	std::stringstream ss;
-	ss << "+ DrawQuad id: " << identifier << " layer: " << layer << std::endl;
-	return ss.str();
+void sDrawQuad::loadDebugStatic()
+{
+}
+
+std::string sDrawQuad::debug() 
+{
+	return "";
 }

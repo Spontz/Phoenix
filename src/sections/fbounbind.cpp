@@ -7,6 +7,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -16,15 +17,18 @@ private:
 
 // ******************************************************************
 
-Section* instance_fboUnbind() {
+Section* instance_fboUnbind()
+{
 	return new sFboUnbind();
 }
 
-sFboUnbind::sFboUnbind() {
+sFboUnbind::sFboUnbind()
+{
 	type = SectionType::FboUnbind;
 }
 
-bool sFboUnbind::load() {
+bool sFboUnbind::load()
+{
 	// script validation
 	if (param.size() != 2) {
 		Logger::error("FboUnbind [%s]: 2 params are needed: clear the screen buffer, clear depth buffer", this->identifier.c_str());
@@ -37,22 +41,28 @@ bool sFboUnbind::load() {
 	return true;
 }
 
-void sFboUnbind::init() {
+void sFboUnbind::init()
+{
 	
 }
 
-void sFboUnbind::exec() {
+void sFboUnbind::exec() 
+{
 	// Unbind the fbo
 	m_demo.m_fboManager.unbind(m_bClearScreen, m_bClearDepth);
 }
 
-void sFboUnbind::end() {
+void sFboUnbind::end() 
+{
 	
 }
 
-std::string sFboUnbind::debug() {
-	std::stringstream ss;
-	ss << "+ FboUnbind id: " << identifier << " layer: " << layer << std::endl;
-	return ss.str();
+void sFboUnbind::loadDebugStatic()
+{
+}
+
+std::string sFboUnbind::debug() 
+{
+	return debugStatic;
 
 }

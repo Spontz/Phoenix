@@ -30,9 +30,11 @@ public:
 	bool	show_grid;
 
 
-	int				num_fboSetToDraw;
-	unsigned int	num_fboAttachmentToDraw;
-	int				num_fboPerPage;
+	int32_t			m_numFboSetToDraw;
+	uint32_t		m_numFboAttachmentToDraw;
+	int32_t			m_numFboPerPage;
+
+	int32_t			m_selectedSection;
 
 	void init(GLFWwindow *window);
 	void drawGui();
@@ -51,9 +53,12 @@ private:
 	std::string m_VersionImGUI;
 
 	float		m_renderTimes[RENDERTIME_SAMPLES];
-	int			m_maxRenderFPSScale;
-	int			m_currentRenderTime;
+	int32_t		m_maxRenderFPSScale;
+	int32_t		m_currentRenderTime;
 	float		m_fontScale;
+
+	bool		m_expandAllSections;
+	bool		m_expandAllSectionsChanged;
 
 	Viewport	m_vp;
 	

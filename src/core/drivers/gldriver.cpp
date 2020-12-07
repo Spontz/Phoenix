@@ -438,20 +438,20 @@ void glDriver::guiDrawGridPanel()
 
 void glDriver::guiDrawFbo()
 {
-	m_imGui->num_fboSetToDraw++;
+	m_imGui->m_numFboSetToDraw++;
 	m_imGui->show_fbo = true;
-	if (m_imGui->num_fboSetToDraw > (ceil((float)FBO_BUFFERS / (float)m_imGui->num_fboPerPage)))
+	if (m_imGui->m_numFboSetToDraw > (ceil((float)FBO_BUFFERS / (float)m_imGui->m_numFboPerPage)))
 	{
-		m_imGui->num_fboSetToDraw = 0;
+		m_imGui->m_numFboSetToDraw = 0;
 		m_imGui->show_fbo = false;
 	}		
 }
 
 void glDriver::guiChangeAttachment()
 {
-	GLDRV->m_imGui->num_fboAttachmentToDraw++;
-	if (GLDRV->m_imGui->num_fboAttachmentToDraw >= GLDRV_MAX_COLOR_ATTACHMENTS)
-		GLDRV->m_imGui->num_fboAttachmentToDraw = 0;
+	GLDRV->m_imGui->m_numFboAttachmentToDraw++;
+	if (GLDRV->m_imGui->m_numFboAttachmentToDraw >= GLDRV_MAX_COLOR_ATTACHMENTS)
+		GLDRV->m_imGui->m_numFboAttachmentToDraw = 0;
 }
 
 Viewport glDriver::GetFramebufferViewport() const {

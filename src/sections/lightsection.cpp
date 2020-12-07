@@ -8,6 +8,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -24,15 +25,18 @@ private:
 
 // ******************************************************************
 
-Section* instance_light() {
+Section* instance_light() 
+{
 	return new sLight();
 }
 
-sLight::sLight() {
+sLight::sLight() 
+{
 	type = SectionType::LightSec;
 }
 
-bool sLight::load() {
+bool sLight::load() 
+{
 	// script validation
 	if ((param.size() != 8)) {
 		Logger::error("Light [%s]: 8 params needed (light Number, link to camera position, shadowMapping, near&far planes, size, DebugDraw & DebugDraw size)", identifier.c_str());
@@ -72,10 +76,12 @@ bool sLight::load() {
 	return true;
 }
 
-void sLight::init() {
+void sLight::init() 
+{
 }
 
-void sLight::exec() {
+void sLight::exec() 
+{
 	// Evaluate the expression
 	m_pExprLight->Expression.value();
 
@@ -97,14 +103,20 @@ void sLight::exec() {
 	}		
 }
 
-void sLight::end() {
+void sLight::end()
+{
 }
 
-std::string sLight::debug() {
+void sLight::loadDebugStatic()
+{
 	std::stringstream ss;
-	ss << "+ Light id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  light: " << m_iLightNum << std::endl;
-	ss << "  ShadowMapping: " << m_bShadowMapping << " Size: " << m_fShadowSize << " Near: " << m_fShadowNearPlane << " Far: " << m_fShadowFarPlane << std::endl;
-	ss << "  DrawLight: " << m_bDrawLight << std::endl;
-	return ss.str();
+	ss << "Light: " << m_iLightNum << std::endl;
+	ss << "ShadowMapping: " << m_bShadowMapping << " Size: " << m_fShadowSize << " Near: " << m_fShadowNearPlane << " Far: " << m_fShadowFarPlane << std::endl;
+	ss << "DrawLight: " << m_bDrawLight << std::endl;
+	debugStatic = ss.str();
+}
+
+std::string sLight::debug()
+{
+	return debugStatic;
 }

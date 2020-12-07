@@ -22,7 +22,8 @@ Section::Section()
 	hasBlend(0),
 	blendEquation(0),
 	sfactor(0),
-	dfactor(0)
+	dfactor(0),
+	debugStatic("")
 {
 }
 
@@ -58,4 +59,5 @@ bool		Section::load() { return true; };
 void		Section::init() {};
 void		Section::exec() {};
 void		Section::end() {};
+void		Section::loadDebugStatic() {};
 std::string	Section::debug() { return {}; };

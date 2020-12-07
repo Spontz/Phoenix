@@ -9,6 +9,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -25,16 +26,19 @@ private:
 
 // ******************************************************************
 
-Section* instance_efxAccum() {
+Section* instance_efxAccum()
+{
 	return new sEfxAccum();
 }
 
-sEfxAccum::sEfxAccum() {
+sEfxAccum::sEfxAccum()
+{
 	type = SectionType::EfxAccum;
 }
 
 
-bool sEfxAccum::load() {
+bool sEfxAccum::load()
+{
 	// script validation
 	if ((param.size()) != 3 || (strings.size() < 1)) {
 		Logger::error("EfxAccum [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 1 string (accum shader)", identifier.c_str());
@@ -85,14 +89,16 @@ bool sEfxAccum::load() {
 	return true;
 }
 
-void sEfxAccum::init() {
+void sEfxAccum::init() 
+{
 	
 }
 
 static float lastTime = 0;
 static bool firstIteration = true;
 
-void sEfxAccum::exec() {
+void sEfxAccum::exec() 
+{
 	// Clear the screen and depth buffers depending of the parameters passed by the user
 	if (m_bClearScreen) glClear(GL_COLOR_BUFFER_BIT);
 	if (m_bClearDepth) glClear(GL_DEPTH_BUFFER_BIT);
@@ -152,13 +158,23 @@ void sEfxAccum::exec() {
 	
 }
 
-void sEfxAccum::end() {
+void sEfxAccum::end()
+{
 	
 }
 
-std::string sEfxAccum::debug() {
+void sEfxAccum::loadDebugStatic()
+{
 	std::stringstream ss;
-	ss << "+ EfxAccum id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  fbo: " << m_uiFboNum << " Source Influence: " << m_fSourceInfluence << " Accum Influence: " << m_fAccumInfluence  << std::endl;
+	ss << "Fbo: " << m_uiFboNum << std::endl; 
+	debugStatic = ss.str();
+}
+
+std::string sEfxAccum::debug() 
+{
+	std::stringstream ss;
+	ss << debugStatic;
+	ss << "Source Influence: " << m_fSourceInfluence << std::endl;
+	ss << "Accum Influence: " << m_fAccumInfluence << std::endl;
 	return ss.str();
 }

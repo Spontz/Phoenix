@@ -9,6 +9,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -24,15 +25,18 @@ private:
 
 // ******************************************************************
 
-Section* instance_drawSkybox() {
+Section* instance_drawSkybox() 
+{
 	return new sDrawSkybox();
 }
 
-sDrawSkybox::sDrawSkybox() {
+sDrawSkybox::sDrawSkybox()
+{
 	type = SectionType::DrawSkybox;
 }
 
-bool sDrawSkybox::load() {
+bool sDrawSkybox::load() 
+{
 	if ((param.size() != 2) || (strings.size() < 8)) {
 		Logger::error("DrawSkybox [%s]: 2 param and 8 strings needed: enable depthBuffer, drawWireframe + 6 strings with skybox faces, 2 strings with rot and scale", identifier.c_str());
 		return false;
@@ -75,11 +79,13 @@ bool sDrawSkybox::load() {
 	return true;
 }
 
-void sDrawSkybox::init() {
+void sDrawSkybox::init()
+{
 	
 }
 
-void sDrawSkybox::exec() {
+void sDrawSkybox::exec()
+{
 	// Evaluate the expression
 	m_pExprPosition->Expression.value();
 
@@ -123,12 +129,23 @@ void sDrawSkybox::exec() {
 	EvalBlendingEnd();
 }
 
-void sDrawSkybox::end() {
+void sDrawSkybox::end() 
+{
 	
 }
 
-std::string sDrawSkybox::debug() {
+void sDrawSkybox::loadDebugStatic()
+{
 	std::stringstream ss;
-	ss << "+ DrawSkybox id: " << identifier << " layer: " << layer << std::endl;
+	for (auto file : m_pCubemap->filename) {
+		ss << "File: " << file << std::endl;
+	}
+	debugStatic = ss.str();
+}
+
+std::string sDrawSkybox::debug()
+{
+	std::stringstream ss;
+	ss << debugStatic;
 	return ss.str();
 }

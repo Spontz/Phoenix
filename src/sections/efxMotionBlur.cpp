@@ -8,6 +8,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -21,15 +22,18 @@ private:
 
 // ******************************************************************
 
-Section* instance_efxMotionBlur() {
+Section* instance_efxMotionBlur() 
+{
 	return new sEfxMotionBlur();
 }
 
-sEfxMotionBlur::sEfxMotionBlur() {
+sEfxMotionBlur::sEfxMotionBlur() 
+{
 	type = SectionType::EfxMotionBlur;
 }
 
-bool sEfxMotionBlur::load() {
+bool sEfxMotionBlur::load()
+{
 	if ((param.size()) != 2 || (strings.size() != 1)) {
 		Logger::error("EfxMotionBlur [%s]: 2 params are needed (Fbo to use and FPS Scale), and 1 shader file (for Motionblur)", identifier.c_str());
 		return false;
@@ -66,11 +70,13 @@ bool sEfxMotionBlur::load() {
 	return true;
 }
 
-void sEfxMotionBlur::init() {
+void sEfxMotionBlur::init() 
+{
 }
 
 
-void sEfxMotionBlur::exec() {
+void sEfxMotionBlur::exec()
+{
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
@@ -89,12 +95,19 @@ void sEfxMotionBlur::exec() {
 	EvalBlendingEnd();
 }
 
-void sEfxMotionBlur::end() {
+void sEfxMotionBlur::end() 
+{
 }
 
-std::string sEfxMotionBlur::debug() {
+void sEfxMotionBlur::loadDebugStatic()
+{
 	std::stringstream ss;
-	ss << "+ EfxMotionBlur id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  fbo: " << m_uiFboNum << " fps Scale: " << m_uiFPSScale << std::endl;
-	return ss.str();
+	ss << "Fbo: " << m_uiFboNum << ", Fps Scale: " << m_uiFPSScale << std::endl;
+	debugStatic = ss.str();
+
+}
+
+std::string sEfxMotionBlur::debug()
+{
+	return debugStatic;
 }

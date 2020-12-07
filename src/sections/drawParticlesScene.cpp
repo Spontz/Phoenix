@@ -10,6 +10,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -32,15 +33,18 @@ private:
 
 // ******************************************************************
 
-Section* instance_drawParticlesScene() {
+Section* instance_drawParticlesScene() 
+{
 	return new sDrawParticlesScene();
 }
 
-sDrawParticlesScene::sDrawParticlesScene() {
+sDrawParticlesScene::sDrawParticlesScene() 
+{
 	type = SectionType::DrawParticlesScene;
 }
 
-bool sDrawParticlesScene::load() {
+bool sDrawParticlesScene::load()
+{
 	// script validation
 	if (strings.size() != 5) {
 		Logger::error("Draw Particles Scene [%s]: 5 strings needed (1 for shader file, 1 for 3D model, 3 for positioning)", identifier.c_str());
@@ -125,13 +129,15 @@ bool sDrawParticlesScene::load() {
 	return true;
 }
 
-void sDrawParticlesScene::init() {
+void sDrawParticlesScene::init()
+{
 }
 
 
 static float lastTime = 0;
 
-void sDrawParticlesScene::exec() {
+void sDrawParticlesScene::exec()
+{
 	// Start evaluating blending
 	EvalBlendingStart();
 
@@ -172,14 +178,22 @@ void sDrawParticlesScene::exec() {
 
 }
 
-void sDrawParticlesScene::end() {
+void sDrawParticlesScene::end()
+{
 	m_pParticleMesh->shutdown();
 }
 
-std::string sDrawParticlesScene::debug() {
+void sDrawParticlesScene::loadDebugStatic()
+{
 	std::stringstream ss;
-	ss << "+ DrawParticlesScene id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  file: " << m_pModel->filename << std::endl;
-	ss << "  numParticles: " << m_iNumParticles << std::endl;
+	ss << "File: " << m_pModel->filename << std::endl;
+	ss << "Num Particles: " << m_iNumParticles << std::endl;
+	debugStatic = ss.str();
+}
+
+std::string sDrawParticlesScene::debug() 
+{
+	std::stringstream ss;
+	ss << debugStatic;
 	return ss.str();
 }

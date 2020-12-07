@@ -10,6 +10,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -34,16 +35,19 @@ private:
 
 // ******************************************************************
 
-Section* instance_cameraAbsSection() {
+Section* instance_cameraAbsSection()
+{
 	return new sCameraAbs();
 }
 
 
-sCameraAbs::sCameraAbs() {
+sCameraAbs::sCameraAbs()
+{
 	type = SectionType::CameraAbsSec;
 }
 
-bool sCameraAbs::load() {
+bool sCameraAbs::load()
+{
 	// script validation
 	if ((spline.size() != 1) || (param.size() != 1) || (strings.size() < 2)) {
 		Logger::error("Camera [%s]: 1 spline, 1 param and 2 strings needed", this->identifier.c_str());
@@ -93,10 +97,12 @@ bool sCameraAbs::load() {
 	return true;
 }
 
-void sCameraAbs::init() {
+void sCameraAbs::init()
+{
 }
 
-void sCameraAbs::exec() {
+void sCameraAbs::exec()
+{
 	// If freeCam is active, we do nothing
 	if (m_bFreeCam)
 		return;
@@ -122,11 +128,15 @@ void sCameraAbs::exec() {
 	}
 }
 
-void sCameraAbs::end() {
+void sCameraAbs::end()
+{
 }
 
-std::string sCameraAbs::debug() {
-	std::stringstream ss;
-	ss << "+ CameraAbs id: " << this->identifier << " layer: " + this->layer << std::endl;
-	return ss.str();
+void sCameraAbs::loadDebugStatic()
+{
+}
+
+std::string sCameraAbs::debug()
+{
+	return "";
 }

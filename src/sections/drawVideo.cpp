@@ -11,6 +11,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -196,11 +197,16 @@ void sDrawVideo::end()
 {
 }
 
-std::string sDrawVideo::debug()
+void sDrawVideo::loadDebugStatic()
 {
 	std::stringstream ss;
-	ss << "+ DrawVideo id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  file: " << m_pVideo->getFileName() << std::endl;
-	ss << "  fullscreen: " << m_bFullscreen << " fit to content: " << m_bFitToContent << std::endl;
-	return ss.str();
+	ss << "File: " << m_pVideo->getFileName() << std::endl;
+	ss << "Fullscreen: " << m_bFullscreen << ", Fit to content: " << m_bFitToContent << std::endl;
+	debugStatic = ss.str();
+
+}
+
+std::string sDrawVideo::debug()
+{
+	return debugStatic;
 }

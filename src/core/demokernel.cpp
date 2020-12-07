@@ -550,6 +550,7 @@ void demokernel::initSectionQueues() {
 		sec_id = m_sectionManager.loadSection[i];
 		ds = m_sectionManager.section[sec_id];
 		if (ds->load()) {
+			ds->loadDebugStatic(); // Load static debug info
 			ds->loaded = TRUE;
 		}
 		++m_iLoadedSections; // Incrmeent the loading sections even if it has not been sucesfully loaded, because it's just for the "loading" screen

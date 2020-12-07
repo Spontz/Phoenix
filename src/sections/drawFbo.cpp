@@ -7,6 +7,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -19,15 +20,18 @@ private:
 
 // ******************************************************************
 
-Section* instance_drawFbo() {
+Section* instance_drawFbo()
+{
 	return new sDrawFbo();
 }
 
-sDrawFbo::sDrawFbo() {
+sDrawFbo::sDrawFbo() 
+{
 	type = SectionType::DrawFbo;
 }
 
-bool sDrawFbo::load() {
+bool sDrawFbo::load()
+{
 	// script validation
 	if (param.size() != 4) {
 		Logger::error("DrawFbo [%s]: 4 params are needed: fbo to use and attachment, clear the screen buffer, clear depth buffer", identifier.c_str());
@@ -56,11 +60,13 @@ bool sDrawFbo::load() {
 	return true;
 }
 
-void sDrawFbo::init() {
+void sDrawFbo::init() 
+{
 	
 }
 
-void sDrawFbo::exec() {
+void sDrawFbo::exec() 
+{
 	// Clear the screen and depth buffers depending of the parameters passed by the user
 	if (m_bClearScreen) glClear(GL_COLOR_BUFFER_BIT);
 	if (m_bClearDepth) glClear(GL_DEPTH_BUFFER_BIT);
@@ -76,14 +82,22 @@ void sDrawFbo::exec() {
 	EvalBlendingEnd();
 }
 
-void sDrawFbo::end() {
+void sDrawFbo::end()
+{
 	
 }
 
-std::string sDrawFbo::debug() {
+void sDrawFbo::loadDebugStatic()
+{
 	std::stringstream ss;
-	ss << "+ DrawFbo id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  fbo: " << m_uFboNum << std::endl;
-	ss << "  attachment: " << m_uFboAttachment << std::endl;
+	ss << "Fbo: " << m_uFboNum << std::endl;
+	ss << "Attachment: " << m_uFboAttachment << std::endl;
+	debugStatic = ss.str();
+}
+
+std::string sDrawFbo::debug()
+{
+	std::stringstream ss;
+	ss << debugStatic;
 	return ss.str();
 }

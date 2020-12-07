@@ -9,6 +9,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -62,7 +63,8 @@ sDrawSceneMatrix::sDrawSceneMatrix()
 }
 
 
-bool sDrawSceneMatrix::load() {
+bool sDrawSceneMatrix::load() 
+{
 	if ((param.size() != 5) || (strings.size() < 7)) {
 		Logger::error("DrawSceneMatrix [%s]: 5 param (Enable Depth buffer, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier.c_str());
 		return false;
@@ -167,11 +169,13 @@ bool sDrawSceneMatrix::load() {
 	return true;
 }
 
-void sDrawSceneMatrix::init() {
+void sDrawSceneMatrix::init()
+{
 	
 }
 
-void sDrawSceneMatrix::exec() {
+void sDrawSceneMatrix::exec()
+{
 
 	// Start evaluating blending
 	EvalBlendingStart();
@@ -258,7 +262,8 @@ void sDrawSceneMatrix::exec() {
 	EvalBlendingEnd();
 }
 
-void sDrawSceneMatrix::end() {
+void sDrawSceneMatrix::end()
+{
 	// Free Mem
 	if (m_pMatrixObjModel)
 		delete[] m_pMatrixObjModel;
@@ -266,14 +271,20 @@ void sDrawSceneMatrix::end() {
 		delete[] m_pmPrevModel;
 }
 
+void sDrawSceneMatrix::loadDebugStatic()
+{
+	std::stringstream ss;
+	ss << "Matrix file: " << m_pModelRef->filename << std::endl;
+	ss << "Objects in matrix to be drawn: " << m_fNumObjects << std::endl;
+	ss << "Model file: " << m_pModel->filename << std::endl;
+	ss << "Meshes in each model: " << m_pModel->m_statNumMeshes << ", Vertex: " << m_pModel->m_statNumVertices << std::endl;;
+	debugStatic = ss.str();
+}
+
 std::string sDrawSceneMatrix::debug()
 {
 	std::stringstream ss;
-	ss << "+ DrawSceneMatrix id: " <<  identifier << " layer: " << layer << std::endl;
-	ss << "  Matrix file: " << m_pModelRef->filename << std::endl;
-	ss << "  objects in matrix to be drawn: " << m_fNumObjects << std::endl;
-	ss << "  Model file: " << m_pModel->filename << std::endl;
-	ss << "  meshes in each model: " << m_pModel->meshes.size() << std::endl;
+	ss << debugStatic;
 	return ss.str();
 }
 

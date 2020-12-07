@@ -369,6 +369,8 @@ void Resource::Draw_Cube()
 
 void Resource::Draw_Grid(glm::vec3 const color, glm::mat4 const* MVP)
 {
+	if (!m_pShdrGrid)
+		return;
 	glEnable(GL_DEPTH_TEST);
 	m_pShdrGrid->use();
 	m_pShdrGrid->setValue("MVP", *MVP);

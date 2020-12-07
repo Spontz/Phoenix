@@ -15,6 +15,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -208,10 +209,17 @@ void sSound::end() {
 		Logger::error("Sound [%s]: Music couldnt be freed: %i", identifier.c_str(), BASS_ErrorGetCode());
 }
 
+void sSound::loadDebugStatic()
+{
+	std::stringstream ss;
+	ss << "File: " << m_file << std::endl;
+	ss << "Beat ID: " << m_beatID << std::endl;
+	debugStatic = ss.str();
+}
+
 std::string sSound::debug() {
 	std::stringstream ss;
-	ss << "+ Sound id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  file: " << m_file << std::endl;
-	ss << "  beatID: " << m_beatID << ", value: " << m_fIntensity << std::endl;
+	ss << debugStatic;
+	ss << "Beat value: " << m_fIntensity << std::endl;
 	return ss.str();
 }

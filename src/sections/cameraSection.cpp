@@ -9,6 +9,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -24,14 +25,17 @@ private:
 
 // ******************************************************************
 
-Section* instance_camera() {
+Section* instance_camera()
+{
 	return new sCamera();
 }
-sCamera::sCamera() {
+sCamera::sCamera() 
+{
 	type = SectionType::CameraSec;
 }
 
-bool sCamera::load() {
+bool sCamera::load()
+{
 	// script validation
 	if ((spline.size() != 1) || (param.size() != 1)) {
 		Logger::error("Camera [%s]: 1 spline and 1 param needed", identifier.c_str());
@@ -75,10 +79,12 @@ bool sCamera::load() {
 	return true;
 }
 
-void sCamera::init() {
+void sCamera::init()
+{
 }
 
-void sCamera::exec() {
+void sCamera::exec() 
+{
 	// If freeCam is active, we do nothing
 	if (m_bFreeCam)
 		return;
@@ -100,11 +106,15 @@ void sCamera::exec() {
 	
 }
 
-void sCamera::end() {
+void sCamera::end()
+{
 }
 
-std::string sCamera::debug() {
-	std::stringstream ss;
-	ss << "+ Camera id: " << this->identifier << " layer: " + this->layer << std::endl;
-	return ss.str();
+void sCamera::loadDebugStatic()
+{
+}
+
+std::string sCamera::debug()
+{
+	return "";
 }

@@ -8,6 +8,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -17,16 +18,19 @@ private:
 
 // ******************************************************************
 
-Section* instance_efxFader() {
+Section* instance_efxFader() 
+{
 	return new sEfxFader();
 }
 
-sEfxFader::sEfxFader() {
+sEfxFader::sEfxFader() 
+{
 	type = SectionType::EfxFader;
 }
 
 
-bool sEfxFader::load() {
+bool sEfxFader::load()
+{
 	// script validation
 	if (strings.size() < 1) {
 		Logger::error("EfxFader [%s]: 1 shader file required", identifier.c_str());
@@ -52,11 +56,13 @@ bool sEfxFader::load() {
 	return true;
 }
 
-void sEfxFader::init() {
+void sEfxFader::init()
+{
 	
 }
 
-void sEfxFader::exec() {
+void sEfxFader::exec()
+{
 	EvalBlendingStart();
 	glDisable(GL_DEPTH_TEST);
 	{
@@ -71,12 +77,16 @@ void sEfxFader::exec() {
 	
 }
 
-void sEfxFader::end() {
+void sEfxFader::end()
+{
 	
 }
 
-std::string sEfxFader::debug() {
-	std::stringstream ss;
-	ss << "+ EfxFader id: " << identifier << " layer: " << layer << std::endl;
-	return ss.str();
+void sEfxFader::loadDebugStatic()
+{
+}
+
+std::string sEfxFader::debug() 
+{
+	return debugStatic;
 }

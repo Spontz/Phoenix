@@ -8,6 +8,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -16,16 +17,19 @@ private:
 
 // ******************************************************************
 
-Section* instance_setVariable() {
+Section* instance_setVariable()
+{
 	return new sSetVariable();
 }
 
-sSetVariable::sSetVariable() {
+sSetVariable::sSetVariable()
+{
 	type = SectionType::SetVariable;
 }
 
 
-bool sSetVariable::load() {
+bool sSetVariable::load()
+{
 	// Register the variables
 	m_pExpr = new MathDriver(this);
 	std::string string_expr;
@@ -39,20 +43,28 @@ bool sSetVariable::load() {
 	return true;
 }
 
-void sSetVariable::init() {
+void sSetVariable::init()
+{
 }
 
-void sSetVariable::exec() {
+void sSetVariable::exec()
+{
 	// Evaluate the expression
 	m_pExpr->Expression.value();
 }
 
-void sSetVariable::end() {
+void sSetVariable::end()
+{
 }
 
-std::string sSetVariable::debug() {
+void sSetVariable::loadDebugStatic()
+{
 	std::stringstream ss;
-	ss << "+ setVariable id: " << identifier << " layer: " << layer << std::endl;
 	ss << "  expression: " << m_pExpr->expression << std::endl;
-	return ss.str();
+	debugStatic = ss.str();
+}
+
+std::string sSetVariable::debug()
+{
+	return debugStatic;
 }

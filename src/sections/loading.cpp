@@ -7,7 +7,6 @@ public:
 	void		init();
 	void		exec();
 	void		end();
-	std::string debug();
 
 private:
 	Texture	*m_pTexFront		= nullptr;
@@ -23,15 +22,18 @@ private:
 
 // ******************************************************************
 
-Section* instance_loading() {
+Section* instance_loading()
+{
 	return new sLoading();
 }
 
-sLoading::sLoading() {
+sLoading::sLoading()
+{
 	type = SectionType::Loading;
 }
 
-bool sLoading::load() {
+bool sLoading::load()
+{
 	// script validation
 	if ((this->param.size() != 3) || (this->strings.size() != 3)) {
 		Logger::error("Loading [%s]: 3 strings and 3 params needed. Using default values.", this->identifier.c_str());
@@ -66,11 +68,13 @@ bool sLoading::load() {
 	return true;
 }
 
-void sLoading::init() {
+void sLoading::init()
+{
 	
 }
 
-void sLoading::exec() {
+void sLoading::exec()
+{
 	// Prevent a crash if any texture is not found
 	if (m_pTexBar == nullptr || m_pTexBack == nullptr || m_pTexFront == nullptr) {
 		return;
@@ -105,10 +109,7 @@ void sLoading::exec() {
 	GLDRV->swapBuffers();
 }
 
-void sLoading::end() {
+void sLoading::end()
+{
 	
-}
-
-std::string sLoading::debug() {
-	return std::string();
 }

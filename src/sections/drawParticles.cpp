@@ -10,6 +10,7 @@ public:
 	void		init();
 	void		exec();
 	void		end();
+	void		loadDebugStatic();
 	std::string debug();
 
 private:
@@ -29,15 +30,18 @@ private:
 
 // ******************************************************************
 
-Section* instance_drawParticles() {
+Section* instance_drawParticles() 
+{
 	return new sDrawParticles();
 }
 
-sDrawParticles::sDrawParticles() {
+sDrawParticles::sDrawParticles() 
+{
 	type = SectionType::DrawParticles;
 }
 
-bool sDrawParticles::load() {
+bool sDrawParticles::load()
+{
 	// script validation
 	if ((param.size() != 1) || (strings.size() < 4)) {
 		Logger::error("Draw Particles [%s]: 1 param (Particles number) and 4 strings needed (1 for shader files and 3 for positioning)", identifier.c_str());
@@ -94,13 +98,15 @@ bool sDrawParticles::load() {
 	return true;
 }
 
-void sDrawParticles::init() {
+void sDrawParticles::init() 
+{
 }
 
 
 static float lastTime = 0;
 
-void sDrawParticles::exec() {
+void sDrawParticles::exec()
+{
 	// Start evaluating blending
 	EvalBlendingStart();
 
@@ -141,13 +147,21 @@ void sDrawParticles::exec() {
 
 }
 
-void sDrawParticles::end() {
+void sDrawParticles::end()
+{
 	m_pParticleMesh->shutdown();
 }
 
-std::string sDrawParticles::debug() {
+void sDrawParticles::loadDebugStatic()
+{
 	std::stringstream ss;
-	ss << "+ DrawParticles id: " << identifier << " layer: " << layer << std::endl;
-	ss << "  numParticles: " << m_iNumParticles << std::endl;
+	ss << "Num Particles: " << m_iNumParticles << std::endl;
+	debugStatic = ss.str();
+}
+
+std::string sDrawParticles::debug()
+{
+	std::stringstream ss;
+	ss << debugStatic;
 	return ss.str();
 }

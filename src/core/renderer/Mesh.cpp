@@ -78,6 +78,11 @@ void Mesh::loadUniqueVerticesPos()
 
 }
 
+Material* Mesh::getMaterial()
+{
+	return &m_material;
+}
+
 // initializes all the buffer objects/arrays
 void Mesh::setupMesh()
 {
