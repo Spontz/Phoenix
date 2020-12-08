@@ -306,7 +306,7 @@ void imGuiDriver::drawSesctionInfo()
 	ImGui::SetNextWindowPos(ImVec2(2.0f * static_cast<float>(m_vp.width) / 3.0f, 0.0f), ImGuiCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width) / 3.0f, static_cast<float>(m_vp.height + (m_vp.y * 2))), ImGuiCond_Once);
 
-	if (!ImGui::Begin("Section Stack", &show_sesctionInfo))
+	if (!ImGui::Begin("Section Stack", &show_sesctionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
 	{
 		// Early out if the window is collapsed, as an optimization.
 		ImGui::End();
@@ -325,7 +325,6 @@ void imGuiDriver::drawSesctionInfo()
 		if (ImGui::CollapsingHeader(s.c_str()))
 		{
 			ImGui::Text(ds->debug().c_str());
-			ImGui::Separator();
 		}
 	}
 	m_expandAllSectionsChanged = false;
