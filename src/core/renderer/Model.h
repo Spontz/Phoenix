@@ -32,6 +32,10 @@ public:
 	glm::mat4			m_matView;			// View matrix
 	glm::mat4			m_matBaseModel;		// Base model matrix (the intial matrix of all sub-meshes)
 	glm::mat4			m_matMVP;			// Model-View-Projection matrix
+
+	glm::mat4			m_matPrevProjection;// Projection matrix
+	glm::mat4			m_matPrevView;		// View matrix
+	glm::mat4			m_matPrevMVP;		// Model-View-Projection matrix
 	
 	std::vector<Camera*>	m_camera;
 

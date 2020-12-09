@@ -137,7 +137,7 @@ void sDrawSkybox::end()
 void sDrawSkybox::loadDebugStatic()
 {
 	std::stringstream ss;
-	for (auto file : m_pCubemap->filename) {
+	for (auto &file : m_pCubemap->filename) {
 		ss << "File: " << file << std::endl;
 	}
 	debugStatic = ss.str();

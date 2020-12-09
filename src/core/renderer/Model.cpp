@@ -28,12 +28,16 @@ Model::Model()
 	m_matView(glm::mat4(1)),
 	m_matBaseModel(glm::mat4(1)),
 	m_matMVP(glm::mat4(1)),
+	m_matPrevProjection(glm::mat4(1)),
+	m_matPrevView(glm::mat4(1)),
+	m_matPrevMVP(glm::mat4(1)),
 	m_matGlobalInverseTransform(glm::mat4(1)),
 	m_statNumAnimations(0),
 	m_numBones(0),
 	m_statNumCameras(0),
 	m_statNumMeshes(0),
 	m_statNumVertices(0),
+	m_statNumBones(0),
 	m_pScene(nullptr),
 	playAnimation (false),		// By default, animations are disabled
 	useCamera (false),			// By default, we don't use the model camera
@@ -69,16 +73,31 @@ void Model::Draw(GLuint shaderID, float currentTime)
 	}
 
 	// Send the matrices
-	glUniformMatrix4fv(glGetUniformLocation(shaderID, "projection"), 1, GL_FALSE, &(m_matProjection[0][0]));
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "projection"), 1, GL_FALSE, &(m_matProjection[0][0])); // TODO: Not to be stored here: What happens if we are drawing multiple instances of the same object?
 	glUniformMatrix4fv(glGetUniformLocation(shaderID, "view"), 1, GL_FALSE, &(m_matView[0][0]));
 
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "prev_projection"), 1, GL_FALSE, &(m_matPrevProjection[0][0])); // TODO: Not to be stored here: What happens if we are drawing multiple instances of the same object?
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "prev_view"), 1, GL_FALSE, &(m_matPrevView[0][0]));
+
 	// Then, send the model matrice of each mesh and draw them
-	for (unsigned int i = 0; i < meshes.size(); i++) {
-		glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, &(meshes[i].m_modelMatrix[0][0]));
-		m_matMVP = m_matProjection * m_matView * meshes[i].m_modelMatrix;
+	for (auto &mesh : meshes) {
+		// Send model matrix
+		glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, &(mesh.m_matModel[0][0]));
+		m_matMVP = m_matProjection * m_matView * mesh.m_matModel;
 		glUniformMatrix4fv(glGetUniformLocation(shaderID, "MVP"), 1, GL_FALSE, &(m_matMVP[0][0]));
-		meshes[i].Draw(shaderID);
+
+		// Send previous model matrix
+		glUniformMatrix4fv(glGetUniformLocation(shaderID, "prev_model"), 1, GL_FALSE, &(mesh.m_matPrevModel[0][0]));
+		m_matPrevMVP = m_matPrevProjection * m_matPrevView * mesh.m_matPrevModel;
+		glUniformMatrix4fv(glGetUniformLocation(shaderID, "prev_MVP"), 1, GL_FALSE, &(m_matPrevMVP[0][0]));
+		mesh.m_matPrevModel = mesh.m_matModel;
+
+		// Draw
+		mesh.Draw(shaderID);
 	}
+
+	m_matPrevProjection = m_matProjection;
+	m_matPrevView = m_matView;
 }
 
 void Model::setAnimation(unsigned int a)
@@ -347,8 +366,8 @@ Mesh Model::processMesh(std::string nodeName, aiMesh *mesh, const aiScene *scene
 
 void Model::setMeshesModelTransform()
 {
-	for (int i = 0; i < meshes.size(); i++)
-		meshes[i].m_modelMatrix = this->m_matBaseModel;
+	for (auto &mesh : meshes)
+		mesh.m_matModel = m_matBaseModel;
 }
 
 /////////////// Bones calculations
@@ -436,7 +455,7 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 
 	for (unsigned int i = 0; i < m_statNumMeshes; i++) {
 		if (NodeName == this->meshes[i].m_nodeName) {
-			this->meshes[i].m_modelMatrix *= m_matGlobalInverseTransform * GlobalTransformation;
+			this->meshes[i].m_matModel *= m_matGlobalInverseTransform * GlobalTransformation;
 			/*Logger::info(LogLevel::low, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %i [time: %.3f]", NodeName.c_str(), i, AnimationTime);
 			glm::mat4 M = GlobalTransformation;
 			Logger::info(LogLevel::low, "M: [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f]",

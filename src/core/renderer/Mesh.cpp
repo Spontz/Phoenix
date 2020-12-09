@@ -31,7 +31,8 @@ void VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
 
 Mesh::Mesh(const aiScene* pScene, std::string nodeName, const aiMesh *pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial *pMaterial, std::string directory, std::string filename)
 	: 
-	m_modelMatrix(glm::mat4(1.0)),
+	m_matModel(glm::mat4(1.0f)),
+	m_matPrevModel(glm::mat4(1.0f)),
 	m_nodeName(nodeName),
 	m_pMesh(pMesh),
 	m_vertices(vertices),

@@ -181,15 +181,15 @@ void sDrawScene::exec() {
 	m_pModel->m_matBaseModel = m_mModel;
 
 	// Set previousmatrices for being used in special effects like like MotionBlur
-	m_pShader->setValue("prev_projection", m_mPrevProjection);
+	//m_pShader->setValue("prev_projection", m_mPrevProjection);
 	//if (CameraNumber < 0)
-		m_pShader->setValue("prev_view", m_mPrevView);
-	m_pShader->setValue("prev_model", m_mPrevModel);
+		//m_pShader->setValue("prev_view", m_mPrevView);
+	//m_pShader->setValue("prev_model", m_mPrevModel);
 
 	m_mPrevProjection = m_mProjection;
 	//if (CameraNumber < 0)
 		m_mPrevView = m_mView;
-	m_mPrevModel = m_mModel;
+	//m_mPrevModel = m_mModel;
 	// End MotionBlur
 
 
@@ -217,7 +217,7 @@ void sDrawScene::loadDebugStatic() {
 	ss << "Meshes: " << m_pModel->m_statNumMeshes << ", Vertex: " << m_pModel->m_statNumVertices << std::endl;
 	ss << "Animations: " << m_pModel->m_statNumAnimations << ", Bones: " << m_pModel->m_statNumBones << std::endl;
 	ss << "Cameras: " << m_pModel->m_statNumCameras << std::endl;
-	for (auto mesh : m_pModel->meshes) {
+	for (auto &mesh : m_pModel->meshes) {
 		ss << "+Mesh name: " << mesh.m_nodeName << std::endl;
 		ss << " Vertices: " << mesh.m_numVertices << std::endl;
 		mat = mesh.getMaterial();
@@ -226,7 +226,7 @@ void sDrawScene::loadDebugStatic() {
 		ss << "  Material.Kd:" << glm::to_string(mat->colDiffuse) << std::endl;
 		ss << "  Material.Ks:" << glm::to_string(mat->colSpecular) << std::endl;
 		ss << "  Material.KsStrenght:" << std::to_string(mat->strenghtSpecular) << std::endl;
-		for (auto texture : mat->textures) {
+		for (auto &texture : mat->textures) {
 			ss << "  Texture shader name: " << texture.shaderName << std::endl;
 			ss << "  Texture file: " << texture.tex->filename << std::endl;
 		}

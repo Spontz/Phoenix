@@ -61,7 +61,8 @@ class Mesh {
 public:
 	std::vector<glm::vec3>		unique_vertices_pos;	// Unique vertices cartesian positions
 	std::vector<glm::vec3>		unique_vertices_polar;	// Unique vertices polar position (x=distance, y=alpha, z=beta)
-	glm::mat4					m_modelMatrix;			// Model Matrix for positioning the mesh
+	glm::mat4					m_matModel;				// Model Matrix for positioning the mesh
+	glm::mat4					m_matPrevModel;			// Previous model Matrix for positioning the mesh (useful for effects like motion blur)
 	std::string					m_nodeName;
 	uint32_t					m_numVertices;
 
