@@ -1,9 +1,7 @@
-/vcpkg
-/phoenix_vs2019
-/phoenix_vs2017
-/third_party
-/data_*
-/imgui.ini
-/demo_log.txt
-/camera.cam
-
+/Phoenix/vcpkg
+/Phoenix/phoenix_vs2019
+/Phoenix/third_party
+/Phoenix/data_*
+/Phoenix/imgui.ini
+/Phoenix/demo_log.txt
+/Phoenix/camera.cam
