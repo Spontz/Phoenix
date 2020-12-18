@@ -5,21 +5,24 @@
 
 #include "core/renderer/Video.h"
 
-class VideoManager final {
+namespace Phoenix {
 
-private:
-	using CVideoMap = std::map<CVideoSource, Video*>;
+	class VideoManager final {
 
-public:
-	VideoManager(bool bForceReload);
-	~VideoManager();
+	private:
+		using CVideoMap = std::map<CVideoSource, Video*>;
 
-public:
-	// Returns a video (and loads it if required)
-	Video* addVideo(CVideoSource const& videoDesc);
+	public:
+		VideoManager(bool bForceReload);
+		~VideoManager();
 
-private:
-	CVideoMap VideoMap_;
-	// Force video reloading on each getVideo call (required for slave mode)
-	const bool m_bForceReload;
-};
+	public:
+		// Returns a video (and loads it if required)
+		Video* addVideo(CVideoSource const& videoDesc);
+
+	private:
+		CVideoMap VideoMap_;
+		// Force video reloading on each getVideo call (required for slave mode)
+		const bool m_bForceReload;
+	};
+}

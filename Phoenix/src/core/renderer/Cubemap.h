@@ -6,20 +6,23 @@
 #include "main.h"
 #include <string>
 
-class Cubemap {
-public:
-	std::vector<std::string> filename;
-	std::vector<int> width;
-	std::vector<int> height;
-	float mem;
-	GLuint cubemapID;
+namespace Phoenix {
 
-	Cubemap();
-	virtual ~Cubemap();
+	class Cubemap {
+	public:
+		std::vector<std::string> filename;
+		std::vector<int> width;
+		std::vector<int> height;
+		float mem;
+		GLuint cubemapID;
 
-	bool load(std::vector<std::string> faces, bool flip);
-	void bind(GLuint TexUnit = 0) const;
+		Cubemap();
+		virtual ~Cubemap();
 
-private:
+		bool load(std::vector<std::string> faces, bool flip);
+		void bind(GLuint TexUnit = 0) const;
 
-};
+	private:
+
+	};
+}

@@ -19,7 +19,7 @@
 // 3) Performs screen space operations to smooth and light ~isosurface
 //    WIP: pos + normal reconstruction from z?
 
-namespace sections {
+namespace Phoenix {
 	class SPH : public Section {
 		// IS units.
 

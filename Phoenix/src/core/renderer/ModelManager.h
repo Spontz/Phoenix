@@ -7,16 +7,16 @@
 #include <vector>
 #include "core/renderer/Model.h"
 
+namespace Phoenix {
 
-class ModelManager {
-public:
-	std::vector<Model*> model;	// Model list
+	class ModelManager {
+	public:
+		std::vector<Model*> model;	// Model list
 
-	ModelManager();
-	virtual ~ModelManager();
-	Model* addModel(std::string path);
-private:
+		ModelManager();
+		virtual ~ModelManager();
+		Model* addModel(std::string path);
+	private:
 
-
-	
-};
+	};
+}

@@ -3,18 +3,21 @@
 
 #pragma once
 
-class MathDriver {
-	
-public:
-	
-	std::string					expression;
-	exprtk::symbol_table<float>	SymbolTable;
-	exprtk::expression<float>	Expression;
-	exprtk::parser<float>		Parser;
+namespace Phoenix {
 
-	MathDriver(Section *sec);
-	bool compileFormula();
+	class MathDriver {
 
-private:
+	public:
 
-};
+		std::string					expression;
+		exprtk::symbol_table<float>	SymbolTable;
+		exprtk::expression<float>	Expression;
+		exprtk::parser<float>		Parser;
+
+		MathDriver(Section* sec);
+		bool compileFormula();
+
+	private:
+
+	};
+}

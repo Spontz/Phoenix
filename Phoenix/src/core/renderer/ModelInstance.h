@@ -18,22 +18,25 @@
 #include <map>
 #include <vector>
 
-class ModelInstance
-{
-public:
-	Model*			model;			// Model to draw
-	unsigned int	amount;			// Amount of instances to draw
-	glm::mat4*		modelMatrix;	// Model matrice of each instance
-	glm::mat4*		prev_modelMatrix;	// Previous model matrice of each instance (useful for effects like motion blur)
-	unsigned int	matricesBuffer;
+namespace Phoenix {
 
-	ModelInstance(Model* model, unsigned int amount);
-	virtual ~ModelInstance();
+	class ModelInstance
+	{
+	public:
+		Model* model;			// Model to draw
+		unsigned int	amount;			// Amount of instances to draw
+		glm::mat4* modelMatrix;	// Model matrice of each instance
+		glm::mat4* prev_modelMatrix;	// Previous model matrice of each instance (useful for effects like motion blur)
+		unsigned int	matricesBuffer;
 
-	void DrawInstanced(GLuint shaderID);
-	void copyMatrices(int instance);
-	
-private:
+		ModelInstance(Model* model, unsigned int amount);
+		virtual ~ModelInstance();
 
-};
+		void DrawInstanced(GLuint shaderID);
+		void copyMatrices(int instance);
 
+	private:
+
+	};
+
+}

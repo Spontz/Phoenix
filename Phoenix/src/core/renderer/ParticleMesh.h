@@ -7,28 +7,31 @@
 #include "core/renderer/ShaderVars.h"
 #include "core/renderer/VertexArray.h"
 
-class ParticleMesh
-{
-public:
+namespace Phoenix {
 
-	struct Particle
+	class ParticleMesh
 	{
-		glm::vec3	Pos;	// Particle initial position
-		glm::vec4	Col;	// Particle initial color
+	public:
+
+		struct Particle
+		{
+			glm::vec3	Pos;	// Particle initial position
+			glm::vec4	Col;	// Particle initial color
+		};
+
+		ParticleMesh(int numParticles);
+		~ParticleMesh();
+
+		bool startup(std::vector<Particle> Pos = { });
+		void render(float currentTime);
+		void shutdown();
+
+		int				m_numParticles;
+
+	private:
+		Particle* m_particles;
+		VertexArray* m_VertexArray;
+
+		void initialize_particles(std::vector<Particle> Pos = { });
 	};
-
-	ParticleMesh(int numParticles);
-	~ParticleMesh();
-
-	bool startup(std::vector<Particle> Pos = { });
-	void render(float currentTime);
-	void shutdown();
-
-	int				m_numParticles;
-
-private:
-	Particle		*m_particles;
-	VertexArray		*m_VertexArray;
-
-	void initialize_particles(std::vector<Particle> Pos = { });
-};
+}

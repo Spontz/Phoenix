@@ -6,24 +6,27 @@
 #include <memory>
 #include "core/renderer/Buffer.h"
 
-class VertexArray
-{
-public:
-	VertexArray();
-	virtual ~VertexArray();
+namespace Phoenix {
 
-	virtual void Bind() const;
-	virtual void Unbind() const;
+	class VertexArray
+	{
+	public:
+		VertexArray();
+		virtual ~VertexArray();
 
-	virtual void AddVertexBuffer(VertexBuffer* vertexBuffer);
-	virtual void SetIndexBuffer(IndexBuffer* indexBuffer);
+		virtual void Bind() const;
+		virtual void Unbind() const;
 
-	virtual const std::vector<VertexBuffer*>& GetVertexBuffers() const { return m_VertexBuffers; }
-	virtual const IndexBuffer* GetIndexBuffer() const { return m_IndexBuffer; }
+		virtual void AddVertexBuffer(VertexBuffer* vertexBuffer);
+		virtual void SetIndexBuffer(IndexBuffer* indexBuffer);
 
-private:
-	uint32_t					m_RendererID;				// Our "VAO"
-	uint32_t					m_VertexBufferIndex = 0;
-	std::vector<VertexBuffer*>	m_VertexBuffers;
-	IndexBuffer*				m_IndexBuffer;
-};
+		virtual const std::vector<VertexBuffer*>& GetVertexBuffers() const { return m_VertexBuffers; }
+		virtual const IndexBuffer* GetIndexBuffer() const { return m_IndexBuffer; }
+
+	private:
+		uint32_t					m_RendererID;				// Our "VAO"
+		uint32_t					m_VertexBufferIndex = 0;
+		std::vector<VertexBuffer*>	m_VertexBuffers;
+		IndexBuffer* m_IndexBuffer;
+	};
+}

@@ -4,7 +4,7 @@
 
 #include "sph.hpp"
 
-namespace sections {
+namespace Phoenix {
 
 	float smoothing_kernel_double_cos(glm::vec3 const& p0, glm::vec3 const& p1) {
 		constexpr float h = 1.0f;

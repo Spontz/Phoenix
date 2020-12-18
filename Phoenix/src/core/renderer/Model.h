@@ -17,85 +17,88 @@
 #include <map>
 #include <vector>
 
-class Model
-{
-public:
-	std::vector<Mesh>	meshes;
-	std::string			directory;			// Path of the model file
-	std::string			filename;			// Name of the model file
-	std::string			filepath;			// Full path of the model file
-	bool				playAnimation;		// Do we want to compute the transofrmations for playing animations?
-	bool				useCamera;			// Do we want to use the camera of the model?
+namespace Phoenix {
 
-	// Matrices
-	glm::mat4			m_matProjection;	// Projection matrix
-	glm::mat4			m_matView;			// View matrix
-	glm::mat4			m_matBaseModel;		// Base model matrix (the intial matrix of all sub-meshes)
-	glm::mat4			m_matMVP;			// Model-View-Projection matrix
+	class Model
+	{
+	public:
+		std::vector<Mesh>	meshes;
+		std::string			directory;			// Path of the model file
+		std::string			filename;			// Name of the model file
+		std::string			filepath;			// Full path of the model file
+		bool				playAnimation;		// Do we want to compute the transofrmations for playing animations?
+		bool				useCamera;			// Do we want to use the camera of the model?
 
-	glm::mat4			m_matPrevProjection;// Projection matrix
-	glm::mat4			m_matPrevView;		// View matrix
-	glm::mat4			m_matPrevMVP;		// Model-View-Projection matrix
-	
-	std::vector<Camera*>	m_camera;
+		// Matrices
+		glm::mat4			m_matProjection;	// Projection matrix
+		glm::mat4			m_matView;			// View matrix
+		glm::mat4			m_matBaseModel;		// Base model matrix (the intial matrix of all sub-meshes)
+		glm::mat4			m_matMVP;			// Model-View-Projection matrix
 
-	// Stats
-	uint32_t			m_statNumVertices;
-	uint32_t			m_statNumMeshes;
-	uint32_t			m_statNumCameras;
-	uint32_t			m_statNumAnimations;
-	uint32_t			m_statNumBones;
+		glm::mat4			m_matPrevProjection;// Projection matrix
+		glm::mat4			m_matPrevView;		// View matrix
+		glm::mat4			m_matPrevMVP;		// Model-View-Projection matrix
 
-	Model();
-	virtual ~Model();
+		std::vector<Camera*>	m_camera;
 
-	// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
-	bool Load(const std::string& path);
-	// draws the model, and thus all its meshes
-	void Draw(GLuint shaderID, float currentTime);
-	void setAnimation(unsigned int a);
-	void setCamera(unsigned int c);
+		// Stats
+		uint32_t			m_statNumVertices;
+		uint32_t			m_statNumMeshes;
+		uint32_t			m_statNumCameras;
+		uint32_t			m_statNumAnimations;
+		uint32_t			m_statNumBones;
 
-	// Load unique vertices
-	void loadUniqueVertices();
+		Model();
+		virtual ~Model();
 
-private:
-	Assimp::Importer	m_Importer;
-	const aiScene*		m_pScene;
-	glm::mat4			m_matGlobalInverseTransform; // Global transformation matrix for nodes (vertices relative to bones)
-	// Bones info
-	std::map<std::string, unsigned int> m_BoneMapping;	// maps a bone name to its index
-	std::vector<BoneInfo>	m_BoneInfo;
-	uint32_t				m_numBones;
-	unsigned int			m_currentCamera;			// Current Camera
-	unsigned int			m_currentAnimation;			// Current Animation
-	double					m_animDuration;				// Animation duration in seconds
+		// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
+		bool Load(const std::string& path);
+		// draws the model, and thus all its meshes
+		void Draw(GLuint shaderID, float currentTime);
+		void setAnimation(unsigned int a);
+		void setCamera(unsigned int c);
 
-	bool					m_bLoadedUniqueVertices;	// Have we loaded the unique vertices for each mesh?
+		// Load unique vertices
+		void loadUniqueVertices();
 
-	// Get Stats form the model
-	void getStats();
+	private:
+		Assimp::Importer	m_Importer;
+		const aiScene* m_pScene;
+		glm::mat4			m_matGlobalInverseTransform; // Global transformation matrix for nodes (vertices relative to bones)
+		// Bones info
+		std::map<std::string, unsigned int> m_BoneMapping;	// maps a bone name to its index
+		std::vector<BoneInfo>	m_BoneInfo;
+		uint32_t				m_numBones;
+		unsigned int			m_currentCamera;			// Current Camera
+		unsigned int			m_currentAnimation;			// Current Animation
+		double					m_animDuration;				// Animation duration in seconds
 
-	// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
-	void processNode(aiNode *node, const aiScene *scene);
-	Mesh processMesh(std::string nodeName, aiMesh *mesh, const aiScene *scene);
+		bool					m_bLoadedUniqueVertices;	// Have we loaded the unique vertices for each mesh?
 
-	// Process the scene cameras
-	void processCameras(const aiScene* scene);
+		// Get Stats form the model
+		void getStats();
 
-	// Set mesh transformations
-	void setMeshesModelTransform();
+		// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
+		void processNode(aiNode* node, const aiScene* scene);
+		Mesh processMesh(std::string nodeName, aiMesh* mesh, const aiScene* scene);
 
-	// Bones Calculations
-	void setBoneTransformations(GLuint shaderProgram, float currentTime);
-	void boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transforms);
-	// Bones Transformations
-	void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-	void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-	void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-	unsigned int FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
-	unsigned int FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
-	unsigned int FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
-	const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
-	void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
-};
+		// Process the scene cameras
+		void processCameras(const aiScene* scene);
+
+		// Set mesh transformations
+		void setMeshesModelTransform();
+
+		// Bones Calculations
+		void setBoneTransformations(GLuint shaderProgram, float currentTime);
+		void boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transforms);
+		// Bones Transformations
+		void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+		void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+		void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+		unsigned int FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
+		unsigned int FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
+		unsigned int FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
+		const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
+		void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
+	};
+}

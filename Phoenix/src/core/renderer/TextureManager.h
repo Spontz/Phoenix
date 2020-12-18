@@ -8,23 +8,24 @@
 #include "core/renderer/Texture.h"
 #include "core/renderer/Cubemap.h"
 
-class TextureManager {
-public:
-	std::vector<Texture*>	texture;	// Texture list
-	std::vector<Cubemap*>	cubemap;	// Cubemap list
-	float					mem;		// Texture memory in MegaBytes
-	bool					forceLoad;	// Force texture loading each time we add a texture (should be enabled when working on slave mode)
+namespace Phoenix {
 
-	TextureManager();
-	virtual ~TextureManager();
-	Texture* addTexture(std::string path, bool flip = true, std::string type = "texture_diffuse");
-	Texture* addTextureFromMem(const unsigned char* data, int len, bool flip, std::string type = "texture_diffuse");
-	Cubemap* addCubemap(std::vector<std::string> path, bool flip);
-	int	getOpenGLTextureID(int index);
-	void initTextureStates();
+	class TextureManager {
+	public:
+		std::vector<Texture*>	texture;	// Texture list
+		std::vector<Cubemap*>	cubemap;	// Cubemap list
+		float					mem;		// Texture memory in MegaBytes
+		bool					forceLoad;	// Force texture loading each time we add a texture (should be enabled when working on slave mode)
 
-private:
+		TextureManager();
+		virtual ~TextureManager();
+		Texture* addTexture(std::string path, bool flip = true, std::string type = "texture_diffuse");
+		Texture* addTextureFromMem(const unsigned char* data, int len, bool flip, std::string type = "texture_diffuse");
+		Cubemap* addCubemap(std::vector<std::string> path, bool flip);
+		int	getOpenGLTextureID(int index);
+		void initTextureStates();
 
+	private:
 
-	
-};
+	};
+}
