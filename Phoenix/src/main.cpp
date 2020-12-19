@@ -36,10 +36,10 @@ int main(int argc, char* argv[]) {
 
 	PX_PROFILE_BEGIN_SESSION("DataLoad", "PhoenixProfile-DataLoad.json");
 	Phoenix::Logger::info(Phoenix::LogLevel::med, "Loading Scripts...");
-	if (!demo.load_config())
+	if (!demo.loadSpoConfig())
 		return 0;
 	demo.initNetwork(); // After loading config, we init the network
-	demo.load_spos();
+	demo.loadSpoFiles();
 	PX_PROFILE_END_SESSION();
 
 	Phoenix::Logger::info(Phoenix::LogLevel::high, "Initializing demo...");

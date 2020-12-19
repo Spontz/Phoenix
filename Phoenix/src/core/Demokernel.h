@@ -98,6 +98,10 @@ namespace Phoenix {
 		int m_mouseX, m_mouseY;						// Mouse global coordinates
 		int m_mouseXvar, m_mouseYvar;				// Mouse variation from the center of the screen
 
+		// Window parameters
+		bool m_overrideWindowConfigParams;	// Override Window config file parameters
+		int m_windowPosX, m_windowPosY, m_windowWidth, m_windowHeight;	// Window properties
+
 		// network slave mode
 		const bool m_slaveMode;						// Are we in Slave mode?
 
@@ -127,9 +131,9 @@ namespace Phoenix {
 		std::string getFolder(std::string path);
 
 		// Scripts (SPO files) management
-		bool load_config();
-		void load_spos();
-		bool load_scriptFromNetwork(std::string sScript);
+		bool loadSpoConfig();
+		void loadSpoFiles();
+		bool loadScriptFromNetwork(std::string sScript);
 
 
 		// Demo control

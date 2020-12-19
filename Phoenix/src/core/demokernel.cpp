@@ -27,6 +27,7 @@ namespace Phoenix {
 		m_pCamera(nullptr),
 		m_status(-1),
 		m_demoName("Phoneix Spontz Demoengine"),
+		m_dataFolder("./data/"),
 		m_debug_fontSize(1.0f),
 #ifdef _DEBUG
 		m_debug(true),
@@ -57,7 +58,12 @@ namespace Phoenix {
 		m_iLoadedSections(0),
 		m_exitDemo(false),
 		m_pRes(nullptr),
-		m_videoManager(m_slaveMode == 1)
+		m_videoManager(m_slaveMode == 1),
+		m_overrideWindowConfigParams(false),
+		m_windowPosX(30),
+		m_windowPosY(30),
+		m_windowWidth(640),
+		m_windowHeight(480)
 	{
 		memset(m_fVar, 0, MULTIPURPOSE_VARS * sizeof(float));
 		memset(m_fBeat, 0, MAX_BEATS * sizeof(float));
@@ -65,11 +71,33 @@ namespace Phoenix {
 
 	void demokernel::getArguments(int argc, char* argv[]) {
 
-		if (argc > 1) {
-			m_dataFolder = argv[1];
-		}
-		else {
-			m_dataFolder = "./data/"; // Set the demo folder to the current project file (the "./" is not really required)
+		std::vector <std::string> sources;
+		for (int i = 1; i < argc; ++i) {
+			std::string arg = argv[i];
+			if (arg == "-datafolder") {
+				if (i + 1 < argc) { // Make sure there is another argument
+					m_dataFolder = argv[++i];
+				}
+				else {
+					std::cout << "-datafolder option requires the path to the new folder" << std::endl;
+				}
+			}
+			else if (arg == "-window") {
+				if (i + 4 < argc) { // We need 4 more arguments
+					m_overrideWindowConfigParams = true;
+					m_windowPosX = std::stoi(argv[++i]);
+					m_windowPosY = std::stoi(argv[++i]);
+					m_windowWidth = std::stoi(argv[++i]);
+					m_windowHeight = std::stoi(argv[++i]);
+					std::cout << std::to_string(m_windowPosX) << std::to_string(m_windowPosY) << std::to_string(m_windowWidth) << std::to_string(m_windowHeight) << std::endl;
+				}
+				else {
+					std::cout << "-window option requires 4 parameters: X, Y, Width and Height, for example: -window 10 10 640 480" << std::endl;
+				}
+			}
+			else {
+				sources.push_back(argv[i]);
+			}
 		}
 	}
 
@@ -334,7 +362,7 @@ namespace Phoenix {
 			m_pRes = new Resource();
 	}
 
-	bool demokernel::load_config()
+	bool demokernel::loadSpoConfig()
 	{
 		struct _finddata_t FindData;
 		intptr_t hFile;
@@ -373,7 +401,7 @@ namespace Phoenix {
 		return true;
 	}
 
-	void demokernel::load_spos()
+	void demokernel::loadSpoFiles()
 	{
 		struct _finddata_t FindData;
 		intptr_t hFile;
@@ -395,7 +423,7 @@ namespace Phoenix {
 		Logger::info(LogLevel::med, "Finished loading all files.");
 	}
 
-	bool demokernel::load_scriptFromNetwork(std::string sScript)
+	bool demokernel::loadScriptFromNetwork(std::string sScript)
 	{
 		SpoReader spo;
 		spo.readAsciiFromNetwork(sScript);

@@ -235,7 +235,7 @@ namespace Phoenix {
 	void SectionManager::updateSection(const std::string& identifier, const std::string& sScript)
 	{
 		this->deleteSection(identifier);
-		DEMO->load_scriptFromNetwork(sScript);
+		DEMO->loadScriptFromNetwork(sScript);
 	}
 
 	std::vector<std::string> SectionManager::splitIdentifiers(const std::string& identifiers) {

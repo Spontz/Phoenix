@@ -152,7 +152,7 @@ namespace Phoenix {
 		else if (sType == "section") {
 			// Sections processing
 			if (sAction == "new") {
-				if (DEMO->load_scriptFromNetwork(Message[3]) != 0) {
+				if (DEMO->loadScriptFromNetwork(Message[3]) != 0) {
 					sResult = "NOK";
 					sInfo = "Section load failed";
 				}

@@ -250,7 +250,7 @@ namespace Phoenix {
 		//glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
+		
 		m_glfw_window = glfwCreateWindow(
 			config.framebuffer_width,
 			config.framebuffer_height,
@@ -258,6 +258,13 @@ namespace Phoenix {
 			config.fullScreen ? glfwGetPrimaryMonitor() : nullptr,
 			nullptr
 		);
+		// Check if we ned to overwride parameters
+		if (m_demo.m_overrideWindowConfigParams) {
+			config.framebuffer_width = m_demo.m_windowWidth;
+			config.framebuffer_height = m_demo.m_windowHeight;
+			resizeWindow(m_demo.m_windowWidth, m_demo.m_windowHeight);
+			moveWindow(m_demo.m_windowPosX, m_demo.m_windowPosY);
+		}
 
 		if (!m_glfw_window) {
 			glfwTerminate();
@@ -279,6 +286,9 @@ namespace Phoenix {
 		glfwSetMouseButtonCallback(m_glfw_window, mouseButton_callback);
 
 		glfwSetScrollCallback(m_glfw_window, mouseScroll_callback);
+
+		
+
 
 		// Initialize glad
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
