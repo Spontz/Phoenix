@@ -116,6 +116,8 @@ namespace Phoenix {
 		void			SetCurrentViewport(Viewport const& viewport);
 
 		void	calcMousePos(float x, float y);
+		void	moveWindow(int x, int y);
+		void	resizeWindow(int width, int height);
 		void	ProcessInput();
 
 		void	swapBuffers();

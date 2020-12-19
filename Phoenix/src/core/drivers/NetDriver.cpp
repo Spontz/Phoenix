@@ -129,6 +129,16 @@ namespace Phoenix {
 				float time = std::stof(Message[3]);
 				DEMO->setEndTime(time);
 			}
+			else if (sAction == "windowPos") {
+				int x = std::stoi(Message[3]);
+				int y = std::stoi(Message[4]);
+				GLDRV->moveWindow(x, y);
+			}
+			else if (sAction == "windowSize") {
+				int width = std::stoi(Message[3]);
+				int height = std::stoi(Message[4]);
+				GLDRV->resizeWindow(width, height);
+			}
 			else if (sAction == "ping") {
 			}
 			else if (sAction == "end") {

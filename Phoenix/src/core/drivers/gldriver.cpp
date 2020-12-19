@@ -712,4 +712,14 @@ namespace Phoenix {
 			this->m_mouseY = y_coord;
 		}
 	}
+	void glDriver::moveWindow(int x, int y)
+	{
+		if (m_glfw_window)
+			glfwSetWindowPos(m_glfw_window, x, y);
+	}
+	void glDriver::resizeWindow(int width, int height)
+	{
+		if (m_glfw_window)
+			glfwSetWindowSize(m_glfw_window, width, height);
+	}
 }
