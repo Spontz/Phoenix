@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 	#ifdef _DEBUG
 		Phoenix::Logger::setLogLevel(Phoenix::LogLevel::low); // Define the lowest log detail level
 	#else
-		Logger::setLogLevel(LogLevel::high); // Define the highest log detail level
+		Phoenix::Logger::setLogLevel(Phoenix::LogLevel::high); // Define the highest log detail level
 	#endif
 
 	// Initialize the GL Framework
