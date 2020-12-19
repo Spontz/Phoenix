@@ -4,7 +4,7 @@ Welcome to the infamous Spontz demoengine, each line of code has been made with 
 This engine is essentially a mix of code from everywhere, but main credits goes to:
 
 * Kolian: The main designed of the original 'Inferno/Dragon' Spontz demoengine
-* Spöntz members: Isaac2, merlucin, madgoblin, shotgan, xphere
+* Spöntz members: Isaac2, Khrome, merlucin, madgoblin, shotgan, xphere
 * Yan Chernikov / aka 'The Cherno': Always a good inspiration, a guide and a master: https://github.com/TheCherno
 * jmorton06 / Lumos engine: https://github.com/jmorton06/Lumos
 
