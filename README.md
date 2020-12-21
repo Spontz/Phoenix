@@ -19,4 +19,5 @@ The main libraries used are:
 * exprtk: C++ mathematical expression evaluator: https://github.com/ArashPartow/exprtk
 * FFMpeg: https://github.com/FFmpeg/FFmpeg
 * Dear ImGUI: Graphical User interface: https://github.com/ocornut/imgui
+* dyad.c: Networking library: https://github.com/rxi/dyad
 * FreeType: font rendering libraries: https://github.com/freetype
