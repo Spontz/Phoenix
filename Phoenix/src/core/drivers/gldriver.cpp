@@ -11,12 +11,19 @@ namespace Phoenix {
 
 	// GLFW CALLBACKS ***************************************************
 
-	void glDriver::glfwError_callback(int, const char* err_str)
+	void glDriver::glDebugMessage_Callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+	{
+		Logger::info(LogLevel::low, "Error GL callback: %s type = 0x%x, severity = 0x%x, message = %s",
+			(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+			type, severity, message);
+	}
+
+	void glDriver::glfwErrorCallback(int, const char* err_str)
 	{
 		Logger::error("GLFW Error: %s", err_str);
 	}
 
-	void glDriver::glfwWindowSize_callback(GLFWwindow* p_glfw_window, int width, int height) {
+	void glDriver::glfwWindowSizeCallback(GLFWwindow* p_glfw_window, int width, int height) {
 		GLDRV->OnWindowSizeChanged(p_glfw_window, width, height);
 	}
 
@@ -47,7 +54,7 @@ namespace Phoenix {
 		initRender(true);
 	}
 
-	void glDriver::mouseMove_callback(GLFWwindow* p_glfw_window, double xpos, double ypos)
+	void glDriver::glMouseMoveCallback(GLFWwindow* p_glfw_window, double xpos, double ypos)
 	{
 		if (GLDRV->m_demo.m_debug && !(ImGui::GetIO().WantCaptureMouse)) {
 			float x = static_cast<float>(xpos);
@@ -77,7 +84,7 @@ namespace Phoenix {
 		}
 	}
 
-	void glDriver::mouseButton_callback(GLFWwindow* p_glfw_window, int button, int action, int mods)
+	void glDriver::glfwMouseButtonCallback(GLFWwindow* p_glfw_window, int button, int action, int mods)
 	{
 		if (GLDRV->m_demo.m_debug && !(ImGui::GetIO().WantCaptureMouse)) {
 			if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
@@ -89,20 +96,13 @@ namespace Phoenix {
 
 
 	// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-	void glDriver::mouseScroll_callback(GLFWwindow* p_glfw_window, double xoffset, double yoffset)
+	void glDriver::glfwMouseScrollCallback(GLFWwindow* p_glfw_window, double xoffset, double yoffset)
 	{
 		if (GLDRV->m_demo.m_debug && !(ImGui::GetIO().WantCaptureMouse))
 			GLDRV->m_demo.m_pCamera->ProcessMouseScroll((float)yoffset);
 	}
 
-	void glDriver::glDebugMessage_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
-	{
-		Logger::info(LogLevel::low, "Error GL callback: %s type = 0x%x, severity = 0x%x, message = %s",
-			(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-			type, severity, message);
-	}
-
-	void glDriver::key_callback(GLFWwindow* p_glfw_window, int key, int scancode, int action, int mods) {
+	void glDriver::glfwKeyCallback(GLFWwindow* p_glfw_window, int key, int scancode, int action, int mods) {
 
 		demokernel& demo = GLDRV->m_demo;
 
@@ -210,16 +210,15 @@ namespace Phoenix {
 		m_mouseY(0),
 
 		fbo{ tGLFboFormat{0.0f,0.0f,0,0,0,0,0,"",0} },
-		config{ tGLConfig{ false, 640, 480, (float)16.0f / 9.0f, 0,0,0} },
-		exprTk_current_viewport{ tExprTkViewport {0,0,0} }
+		m_exprtkCurrentViewport{ tExprTkViewport {0,0,0} }
 	{
 		// Config
 		config.framebuffer_width = 640;
 		config.framebuffer_height = 480;
 		config.framebuffer_aspect_ratio = UIntFraction{ 16,9 }.GetRatio();
-		config.fullScreen = 0;
-		config.stencil = 0;
-		config.multisampling = 0;
+		config.fullScreen = false;
+		config.stencil = false;
+		config.multisampling = false;
 		config.vsync = 0;
 
 		for (auto i = 0; i < FBO_BUFFERS; ++i) {
@@ -236,7 +235,7 @@ namespace Phoenix {
 			return;
 		}
 		else {
-			glfwSetErrorCallback(glfwError_callback);
+			glfwSetErrorCallback(glfwErrorCallback);
 		}
 	}
 
@@ -280,12 +279,12 @@ namespace Phoenix {
 		glfwMakeContextCurrent(m_glfw_window);
 
 		// Configure GLFW callbacks
-		glfwSetWindowSizeCallback(m_glfw_window, glfwWindowSize_callback);
-		glfwSetKeyCallback(m_glfw_window, key_callback);
-		glfwSetCursorPosCallback(m_glfw_window, mouseMove_callback);
-		glfwSetMouseButtonCallback(m_glfw_window, mouseButton_callback);
+		glfwSetWindowSizeCallback(m_glfw_window, glfwWindowSizeCallback);
+		glfwSetKeyCallback(m_glfw_window, glfwKeyCallback);
+		glfwSetCursorPosCallback(m_glfw_window, glMouseMoveCallback);
+		glfwSetMouseButtonCallback(m_glfw_window, glfwMouseButtonCallback);
 
-		glfwSetScrollCallback(m_glfw_window, mouseScroll_callback);
+		glfwSetScrollCallback(m_glfw_window, glfwMouseScrollCallback);
 
 		
 
@@ -319,7 +318,7 @@ namespace Phoenix {
 		if (m_demo.m_debug) {
 			glEnable(GL_DEBUG_OUTPUT);
 			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-			glDebugMessageCallback(glDebugMessage_callback, 0);
+			glDebugMessageCallback(glDebugMessage_Callback, 0);
 			// If you want to disable all error messages, except the API error messages, then you have to disable all messages first and the enable explicitly the API error messages:
 			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
 			glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, NULL, GL_TRUE);
@@ -488,9 +487,9 @@ namespace Phoenix {
 
 		m_current_viewport = viewport;
 
-		exprTk_current_viewport.width = static_cast<float>(viewport.width);
-		exprTk_current_viewport.height = static_cast<float>(viewport.height);
-		exprTk_current_viewport.aspect_ratio = m_current_viewport.GetAspectRatio();
+		m_exprtkCurrentViewport.width = static_cast<float>(viewport.width);
+		m_exprtkCurrentViewport.height = static_cast<float>(viewport.height);
+		m_exprtkCurrentViewport.aspect_ratio = m_current_viewport.GetAspectRatio();
 	}
 
 	void glDriver::SetFramebuffer() {

@@ -50,7 +50,7 @@ namespace Phoenix {
 		static glDriver& GetInstance();
 		tGLFboFormat	fbo[FBO_BUFFERS];
 		tGLConfig		config;
-		tExprTkViewport	exprTk_current_viewport; // Viewport variables for ExprTk
+		tExprTkViewport	m_exprtkCurrentViewport; // Viewport variables for ExprTk
 		float			m_mouseX, m_mouseY;
 
 	private:
@@ -68,13 +68,13 @@ namespace Phoenix {
 
 	private:
 		// Callbacks
-		static void glDebugMessage_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
-		static void glfwError_callback(int, const char* err_str);
-		static void key_callback(GLFWwindow* p_glfw_window, int key, int scancode, int action, int mods);
-		static void mouseScroll_callback(GLFWwindow* p_glfw_window, double xoffset, double yoffset);
-		static void mouseMove_callback(GLFWwindow* p_glfw_window, double xpos, double ypos);
-		static void mouseButton_callback(GLFWwindow* p_glfw_window, int button, int action, int mods);
-		static void glfwWindowSize_callback(GLFWwindow* p_glfw_window, int width, int height);
+		static void glDebugMessage_Callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+		static void glfwErrorCallback(int, const char* err_str);
+		static void glfwKeyCallback(GLFWwindow* p_glfw_window, int key, int scancode, int action, int mods);
+		static void glfwMouseScrollCallback(GLFWwindow* p_glfw_window, double xoffset, double yoffset);
+		static void glMouseMoveCallback(GLFWwindow* p_glfw_window, double xpos, double ypos);
+		static void glfwMouseButtonCallback(GLFWwindow* p_glfw_window, int button, int action, int mods);
+		static void glfwWindowSizeCallback(GLFWwindow* p_glfw_window, int width, int height);
 		void OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int height);
 
 		void	initFbos();

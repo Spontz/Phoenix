@@ -94,9 +94,9 @@ namespace Phoenix {
 		}
 
 		// Graphic constants
-		SymbolTable.add_variable("vpWidth", GLDRV->exprTk_current_viewport.width);
-		SymbolTable.add_variable("vpHeight", GLDRV->exprTk_current_viewport.height);
-		SymbolTable.add_variable("aspectRatio", GLDRV->exprTk_current_viewport.aspect_ratio);
+		SymbolTable.add_variable("vpWidth", GLDRV->m_exprtkCurrentViewport.width);
+		SymbolTable.add_variable("vpHeight", GLDRV->m_exprtkCurrentViewport.height);
+		SymbolTable.add_variable("aspectRatio", GLDRV->m_exprtkCurrentViewport.aspect_ratio);
 
 		// Fbo constants
 		SymbolTable.add_variable("fbo0Width", GLDRV->fbo[0].width);
