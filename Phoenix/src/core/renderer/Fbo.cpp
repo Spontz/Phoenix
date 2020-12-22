@@ -6,20 +6,26 @@
 
 namespace Phoenix {
 
-	Fbo::Fbo() : use_linear(true), m_colorAttachment(0)
+	Fbo::Fbo()
+		:
+		engineFormat("FBO not inited"),
+		width(0),
+		height(0),
+		iformat(0),
+		format(0),
+		components(0),
+		ttype(0),
+		use_linear(true),
+		numAttachments(1),		// By default, 1 attachment
+		m_frameBuffer(0),
+		m_depthAttachment(0),
+		m_colorAttachment(nullptr)
 	{
-		engineFormat = "FBO not inited";
-		width = 0;
-		height = 0;
-		iformat = 0;
-		format = 0;
-		ttype = 0;
-		numAttachments = 1; // By default, 1 attachment
 	}
 
 	Fbo::~Fbo()
 	{
-		if (m_colorAttachment != nullptr) {
+		if (m_frameBuffer) {
 			glDeleteFramebuffers(1, &m_frameBuffer);
 			glDeleteRenderbuffers(1, &m_depthAttachment);
 			glDeleteTextures(this->numAttachments, m_colorAttachment);
@@ -68,7 +74,7 @@ namespace Phoenix {
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_colorAttachment[i], 0);
 			}
 			// create a depth buffer object for depth and stencil attachment (we won't be sampling these)
-			glGenRenderbuffers(1, &m_depthAttachment);
+			glGenRenderbuffers(1, &m_depthAttachment);	// TODO: Replace this for glCreateRenderbuffers?? use glCreateTextures??
 			glBindRenderbuffer(GL_RENDERBUFFER, m_depthAttachment);
 			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthAttachment);

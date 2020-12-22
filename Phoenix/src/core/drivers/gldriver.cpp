@@ -28,30 +28,38 @@ namespace Phoenix {
 	}
 
 	void glDriver::OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int height) {
-		// Get a minimal window size
-		width = std::max(width, 1);
-		height = std::max(height, 1);
+		if (!m_windowResizing)
+		{
+			m_windowResizing = true;
+			// Get a minimal window size
+			width = std::max(width, 1);
+			height = std::max(height, 1);
 
-		config.framebuffer_width = width;
-		config.framebuffer_height = height;
+			config.framebuffer_width = width;
+			config.framebuffer_height = height;
 
-		// Change the debug font Size when we resize the screen
-		m_imGui->changeFontSize(m_demo.m_debug_fontSize, width, height);
+			// Change the debug font Size when we resize the screen
+			m_imGui->changeFontSize(m_demo.m_debug_fontSize, width, height);
 
-		// RT will be set to FB later
-		//GLDRV->current_rt_width_ = width;
-		//GLDRV->current_rt_height_ = height;
+			// RT will be set to FB later
+			//GLDRV->current_rt_width_ = width;
+			//GLDRV->current_rt_height_ = height;
 
-		m_mouse_lastxpos = static_cast<float>(width) / 2.0f;
-		m_mouse_lastypos = static_cast<float>(height) / 2.0f;
+			m_mouse_lastxpos = static_cast<float>(width) / 2.0f;
+			m_mouse_lastypos = static_cast<float>(height) / 2.0f;
 
-		// Recalculate viewport sizes
-		SetCurrentViewport(GetFramebufferViewport());
+			// Recalculate viewport sizes
+			SetCurrentViewport(GetFramebufferViewport());
 
-		// Recalculate fbo's with the new window size
-		initFbos();
+			// Recalculate fbo's with the new window size
+			initFbos();
 
-		initRender(true);
+			initRender(true);
+			//Logger::info(LogLevel::low, "Window Size: %d,%d", width, height);
+			//Logger::info(LogLevel::low, "Current viewport Size: %d,%d, Pos: %d, %d", m_current_viewport.width, m_current_viewport.height, m_current_viewport.x, m_current_viewport.y);
+			//Logger::info(LogLevel::low, "Current viewport exprtk: %.2f,%.2f, aspect: %.2f", m_exprtkCurrentViewport.width, m_exprtkCurrentViewport.height, m_exprtkCurrentViewport.aspect_ratio);
+			m_windowResizing = false;
+		}
 	}
 
 	void glDriver::glMouseMoveCallback(GLFWwindow* p_glfw_window, double xpos, double ypos)
@@ -201,15 +209,12 @@ namespace Phoenix {
 		m_timeLastFrame(0.0f),
 		m_glfw_window(nullptr),
 		m_imGui(nullptr),
-
 		m_current_viewport{ 0,0,0,0 },
-
 		m_mouse_lastxpos(0),
 		m_mouse_lastypos(0),
 		m_mouseX(0),
 		m_mouseY(0),
-
-		fbo{ tGLFboFormat{0.0f,0.0f,0,0,0,0,0,"",0} },
+		m_windowResizing(false),
 		m_exprtkCurrentViewport{ tExprTkViewport {0,0,0} }
 	{
 		// Config
@@ -221,10 +226,17 @@ namespace Phoenix {
 		config.multisampling = false;
 		config.vsync = 0;
 
-		for (auto i = 0; i < FBO_BUFFERS; ++i) {
-			fbo[i].width = 0;
-			fbo[i].height = 0;
-			fbo[i].ratio = 0;
+		// Fbo's config
+		for (tGLFboFormat& i_fbo : fbo) {
+			i_fbo.width = 0;
+			i_fbo.height = 0;
+			i_fbo.tex_iformat = 0;
+			i_fbo.tex_format = 0;
+			i_fbo.tex_type = 0;
+			i_fbo.tex_components = 0;
+			i_fbo.ratio = 0;
+			i_fbo.format = "";
+			i_fbo.numColorAttachments = 0;
 		}
 	}
 

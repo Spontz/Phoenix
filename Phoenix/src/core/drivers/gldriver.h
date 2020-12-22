@@ -62,6 +62,7 @@ namespace Phoenix {
 		float			m_timeLastFrame;
 		float			m_timeDelta;
 		float			m_mouse_lastxpos, m_mouse_lastypos;
+		bool			m_windowResizing;
 
 	public:
 		glDriver();
