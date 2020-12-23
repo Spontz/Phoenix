@@ -13,7 +13,7 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		Fbo* m_pFbo = nullptr;
+		Fbo*		m_pFbo = nullptr;
 		uint32_t	m_uFboNum = 0;
 		uint32_t	m_uFboAttachment = 0;
 		bool		m_bClearScreen = true;	// Clear Screen buffer
@@ -77,6 +77,8 @@ namespace Phoenix {
 
 		glDisable(GL_DEPTH_TEST);
 		{
+			m_pFbo = m_demo.m_fboManager.fbo[m_uFboNum]; // We reload the Fbo, because it may be changed when resizing the screen
+
 			m_demo.m_pRes->Draw_QuadFBOFS(m_pFbo, m_uFboAttachment);
 		}
 		glEnable(GL_DEPTH_TEST);

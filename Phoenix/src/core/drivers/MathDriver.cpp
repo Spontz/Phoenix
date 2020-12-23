@@ -99,61 +99,61 @@ namespace Phoenix {
 		SymbolTable.add_variable("aspectRatio", GLDRV->m_exprtkCurrentViewport.aspect_ratio);
 
 		// Fbo constants
-		SymbolTable.add_variable("fbo0Width", GLDRV->fbo[0].width);
-		SymbolTable.add_variable("fbo0Height", GLDRV->fbo[0].height);
-		SymbolTable.add_variable("fbo1Width", GLDRV->fbo[1].width);
-		SymbolTable.add_variable("fbo1Height", GLDRV->fbo[1].height);
-		SymbolTable.add_variable("fbo2Width", GLDRV->fbo[2].width);
-		SymbolTable.add_variable("fbo2Height", GLDRV->fbo[2].height);
-		SymbolTable.add_variable("fbo3Width", GLDRV->fbo[3].width);
-		SymbolTable.add_variable("fbo3Height", GLDRV->fbo[3].height);
-		SymbolTable.add_variable("fbo4Width", GLDRV->fbo[4].width);
-		SymbolTable.add_variable("fbo4Height", GLDRV->fbo[4].height);
+		SymbolTable.add_variable("fbo0Width", GLDRV->fboConfig[0].width);
+		SymbolTable.add_variable("fbo0Height", GLDRV->fboConfig[0].height);
+		SymbolTable.add_variable("fbo1Width", GLDRV->fboConfig[1].width);
+		SymbolTable.add_variable("fbo1Height", GLDRV->fboConfig[1].height);
+		SymbolTable.add_variable("fbo2Width", GLDRV->fboConfig[2].width);
+		SymbolTable.add_variable("fbo2Height", GLDRV->fboConfig[2].height);
+		SymbolTable.add_variable("fbo3Width", GLDRV->fboConfig[3].width);
+		SymbolTable.add_variable("fbo3Height", GLDRV->fboConfig[3].height);
+		SymbolTable.add_variable("fbo4Width", GLDRV->fboConfig[4].width);
+		SymbolTable.add_variable("fbo4Height", GLDRV->fboConfig[4].height);
 
-		SymbolTable.add_variable("fbo5Width", GLDRV->fbo[5].width);
-		SymbolTable.add_variable("fbo5Height", GLDRV->fbo[5].height);
-		SymbolTable.add_variable("fbo6Width", GLDRV->fbo[6].width);
-		SymbolTable.add_variable("fbo6Height", GLDRV->fbo[6].height);
-		SymbolTable.add_variable("fbo7Width", GLDRV->fbo[7].width);
-		SymbolTable.add_variable("fbo7Height", GLDRV->fbo[7].height);
-		SymbolTable.add_variable("fbo8Width", GLDRV->fbo[8].width);
-		SymbolTable.add_variable("fbo8Height", GLDRV->fbo[8].height);
-		SymbolTable.add_variable("fbo9Width", GLDRV->fbo[9].width);
-		SymbolTable.add_variable("fbo9Height", GLDRV->fbo[9].height);
+		SymbolTable.add_variable("fbo5Width", GLDRV->fboConfig[5].width);
+		SymbolTable.add_variable("fbo5Height", GLDRV->fboConfig[5].height);
+		SymbolTable.add_variable("fbo6Width", GLDRV->fboConfig[6].width);
+		SymbolTable.add_variable("fbo6Height", GLDRV->fboConfig[6].height);
+		SymbolTable.add_variable("fbo7Width", GLDRV->fboConfig[7].width);
+		SymbolTable.add_variable("fbo7Height", GLDRV->fboConfig[7].height);
+		SymbolTable.add_variable("fbo8Width", GLDRV->fboConfig[8].width);
+		SymbolTable.add_variable("fbo8Height", GLDRV->fboConfig[8].height);
+		SymbolTable.add_variable("fbo9Width", GLDRV->fboConfig[9].width);
+		SymbolTable.add_variable("fbo9Height", GLDRV->fboConfig[9].height);
 
-		SymbolTable.add_variable("fbo10Width", GLDRV->fbo[10].width);
-		SymbolTable.add_variable("fbo10Height", GLDRV->fbo[10].height);
-		SymbolTable.add_variable("fbo11Width", GLDRV->fbo[11].width);
-		SymbolTable.add_variable("fbo11Height", GLDRV->fbo[11].height);
-		SymbolTable.add_variable("fbo12Width", GLDRV->fbo[12].width);
-		SymbolTable.add_variable("fbo12Height", GLDRV->fbo[12].height);
-		SymbolTable.add_variable("fbo13Width", GLDRV->fbo[13].width);
-		SymbolTable.add_variable("fbo13Height", GLDRV->fbo[13].height);
-		SymbolTable.add_variable("fbo14Width", GLDRV->fbo[14].width);
-		SymbolTable.add_variable("fbo14Height", GLDRV->fbo[14].height);
+		SymbolTable.add_variable("fbo10Width", GLDRV->fboConfig[10].width);
+		SymbolTable.add_variable("fbo10Height", GLDRV->fboConfig[10].height);
+		SymbolTable.add_variable("fbo11Width", GLDRV->fboConfig[11].width);
+		SymbolTable.add_variable("fbo11Height", GLDRV->fboConfig[11].height);
+		SymbolTable.add_variable("fbo12Width", GLDRV->fboConfig[12].width);
+		SymbolTable.add_variable("fbo12Height", GLDRV->fboConfig[12].height);
+		SymbolTable.add_variable("fbo13Width", GLDRV->fboConfig[13].width);
+		SymbolTable.add_variable("fbo13Height", GLDRV->fboConfig[13].height);
+		SymbolTable.add_variable("fbo14Width", GLDRV->fboConfig[14].width);
+		SymbolTable.add_variable("fbo14Height", GLDRV->fboConfig[14].height);
 
-		SymbolTable.add_variable("fbo15Width", GLDRV->fbo[15].width);
-		SymbolTable.add_variable("fbo15Height", GLDRV->fbo[15].height);
-		SymbolTable.add_variable("fbo16Width", GLDRV->fbo[16].width);
-		SymbolTable.add_variable("fbo16Height", GLDRV->fbo[16].height);
-		SymbolTable.add_variable("fbo17Width", GLDRV->fbo[17].width);
-		SymbolTable.add_variable("fbo17Height", GLDRV->fbo[17].height);
-		SymbolTable.add_variable("fbo18Width", GLDRV->fbo[18].width);
-		SymbolTable.add_variable("fbo18Height", GLDRV->fbo[18].height);
-		SymbolTable.add_variable("fbo19Width", GLDRV->fbo[19].width);
-		SymbolTable.add_variable("fbo19Height", GLDRV->fbo[19].height);
+		SymbolTable.add_variable("fbo15Width", GLDRV->fboConfig[15].width);
+		SymbolTable.add_variable("fbo15Height", GLDRV->fboConfig[15].height);
+		SymbolTable.add_variable("fbo16Width", GLDRV->fboConfig[16].width);
+		SymbolTable.add_variable("fbo16Height", GLDRV->fboConfig[16].height);
+		SymbolTable.add_variable("fbo17Width", GLDRV->fboConfig[17].width);
+		SymbolTable.add_variable("fbo17Height", GLDRV->fboConfig[17].height);
+		SymbolTable.add_variable("fbo18Width", GLDRV->fboConfig[18].width);
+		SymbolTable.add_variable("fbo18Height", GLDRV->fboConfig[18].height);
+		SymbolTable.add_variable("fbo19Width", GLDRV->fboConfig[19].width);
+		SymbolTable.add_variable("fbo19Height", GLDRV->fboConfig[19].height);
 
 		// Fbo 20 to 24 are of a fixed size
-		SymbolTable.add_constant("fbo20Width", GLDRV->fbo[20].width);
-		SymbolTable.add_constant("fbo20Height", GLDRV->fbo[20].height);
-		SymbolTable.add_constant("fbo21Width", GLDRV->fbo[21].width);
-		SymbolTable.add_constant("fbo21Height", GLDRV->fbo[21].height);
-		SymbolTable.add_constant("fbo22Width", GLDRV->fbo[22].width);
-		SymbolTable.add_constant("fbo22Height", GLDRV->fbo[22].height);
-		SymbolTable.add_constant("fbo23Width", GLDRV->fbo[23].width);
-		SymbolTable.add_constant("fbo23Height", GLDRV->fbo[23].height);
-		SymbolTable.add_constant("fbo24Width", GLDRV->fbo[24].width);
-		SymbolTable.add_constant("fbo24Height", GLDRV->fbo[24].height);
+		SymbolTable.add_constant("fbo20Width", GLDRV->fboConfig[20].width);
+		SymbolTable.add_constant("fbo20Height", GLDRV->fboConfig[20].height);
+		SymbolTable.add_constant("fbo21Width", GLDRV->fboConfig[21].width);
+		SymbolTable.add_constant("fbo21Height", GLDRV->fboConfig[21].height);
+		SymbolTable.add_constant("fbo22Width", GLDRV->fboConfig[22].width);
+		SymbolTable.add_constant("fbo22Height", GLDRV->fboConfig[22].height);
+		SymbolTable.add_constant("fbo23Width", GLDRV->fboConfig[23].width);
+		SymbolTable.add_constant("fbo23Height", GLDRV->fboConfig[23].height);
+		SymbolTable.add_constant("fbo24Width", GLDRV->fboConfig[24].width);
+		SymbolTable.add_constant("fbo24Height", GLDRV->fboConfig[24].height);
 	}
 
 	bool MathDriver::compileFormula()

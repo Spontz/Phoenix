@@ -6,6 +6,7 @@
 #include "main.h"
 #include "core/drivers/imGuiDriver.h"
 #include "core/renderer/Viewport.h"
+#include "core/renderer/FboManager.h"
 
 namespace Phoenix {
 
@@ -14,17 +15,6 @@ namespace Phoenix {
 #define GLDRV_MAX_COLOR_ATTACHMENTS 4
 
 // ******************************************************************
-
-	struct tGLFboFormat {
-		float width, height;
-		int tex_iformat;
-		int tex_format;
-		int tex_type;
-		int tex_components;
-		int ratio;
-		std::string format;
-		int numColorAttachments;
-	};
 
 	struct tGLConfig {
 		bool			fullScreen;
@@ -48,8 +38,8 @@ namespace Phoenix {
 
 	public:
 		static glDriver& GetInstance();
-		tGLFboFormat	fbo[FBO_BUFFERS];
 		tGLConfig		config;
+		FboConfig		fboConfig[FBO_BUFFERS];
 		tExprTkViewport	m_exprtkCurrentViewport; // Viewport variables for ExprTk
 		float			m_mouseX, m_mouseY;
 
@@ -82,12 +72,7 @@ namespace Phoenix {
 		void	initStates();
 
 		bool	checkGLError(char* pOut);
-
-		int		getTextureFormatByName(std::string const& name);
-		int		getTextureInternalFormatByName(std::string const& name);
-		int		getTextureTypeByName(std::string const& name);
-		int		getTextureComponentsByName(std::string const& name);
-
+		
 	public:
 		void	initFramework();
 		bool	initGraphics();
@@ -128,23 +113,6 @@ namespace Phoenix {
 
 	private:
 
-		struct tGLTextureTable {
-			std::string	name;
-			int			tex_iformat; // internalformat
-			int			tex_format;
-			int			tex_type;
-			int			tex_components;
-		};
-
-		const std::vector<tGLTextureTable> textureModes = {
-			{ "RGB",			GL_RGB8,				GL_RGB,				GL_UNSIGNED_BYTE,	3 },
-			{ "RGBA",			GL_RGBA8,				GL_RGBA,			GL_UNSIGNED_BYTE,	4 },
-			{ "RGB_16F",		GL_RGB16F,				GL_RGB,				GL_FLOAT,			3 },
-			{ "RGBA_16F",		GL_RGBA16F,				GL_RGBA,			GL_FLOAT,			4 },
-			{ "RGB_32F",		GL_RGB32F,				GL_RGB,				GL_FLOAT,			3 },
-			{ "RGBA_32F",		GL_RGBA32F,				GL_RGBA,			GL_FLOAT,			4 },
-			{ "RG_16F",			GL_RG16F,				GL_RG,				GL_FLOAT,			2 },
-			{ "DEPTH",			GL_DEPTH_COMPONENT,		GL_DEPTH_COMPONENT,	GL_FLOAT,			1 }
-		};
+		
 	};
 }

@@ -28,33 +28,33 @@ namespace Phoenix {
 		if (m_frameBuffer) {
 			glDeleteFramebuffers(1, &m_frameBuffer);
 			glDeleteRenderbuffers(1, &m_depthAttachment);
-			glDeleteTextures(this->numAttachments, m_colorAttachment);
+			glDeleteTextures(numAttachments, m_colorAttachment);
 			delete[] m_colorAttachment;
 		}
 	}
 
-	bool Fbo::upload(std::string EngineFormat, int index, int Width, int Height, int iFormat, int Format, int Type, unsigned int numColorAttachments)
+	bool Fbo::upload(std::string EngineFormat, int Width, int Height, int iFormat, int Format, int Type, unsigned int numColorAttachments)
 	{
 		if ((Width == 0) || (Height == 0)) {
 			Logger::error("Fbo error: Size is zero!");
 			return false;
 		}
-		this->engineFormat = EngineFormat;
-		this->width = Width;
-		this->height = Height;
-		this->iformat = iFormat;
-		this->format = Format;
-		this->ttype = Type;
-		this->numAttachments = numColorAttachments;
+		engineFormat = EngineFormat;
+		width = Width;
+		height = Height;
+		iformat = iFormat;
+		format = Format;
+		ttype = Type;
+		numAttachments = numColorAttachments;
 
 		// Check Color attachments
-		if (this->numAttachments <= 0) {
-			Logger::error("Fbo::upload: Requested %d attachments for fbo_%d, but should be at least 1", this->numAttachments, index);
-			this->numAttachments = 1;
+		if (numAttachments <= 0) { // TODO: This validation is nonsense
+			Logger::error("Fbo::upload: Requested %d attachments, but should be at least 1", numAttachments);
+			numAttachments = 1;
 		}
-		if (this->numAttachments > GLDRV_MAX_COLOR_ATTACHMENTS) {
-			Logger::error("Fbo::upload: MAX number of attachments reached. Requested %d attachments for fbo_%d, but max attachments are: %d", this->numAttachments, index, GLDRV_MAX_COLOR_ATTACHMENTS);
-			this->numAttachments = GLDRV_MAX_COLOR_ATTACHMENTS;
+		if (numAttachments > GLDRV_MAX_COLOR_ATTACHMENTS) {
+			Logger::error("Fbo::upload: MAX number of attachments reached. Requested %d attachments, but max attachments are: %d", numAttachments, GLDRV_MAX_COLOR_ATTACHMENTS);
+			numAttachments = GLDRV_MAX_COLOR_ATTACHMENTS;
 		}
 
 		// Setup our Framebuffer
@@ -62,7 +62,7 @@ namespace Phoenix {
 		if (EngineFormat != "DEPTH") { // If its not a depth texture, means it's a color texture! :)
 			glBindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer);
 			// Create the color attachment(s) texture(s)
-			this->m_colorAttachment = new GLuint[numAttachments];
+			m_colorAttachment = new GLuint[numAttachments];
 			glCreateTextures(GL_TEXTURE_2D, numAttachments, m_colorAttachment);
 			for (unsigned int i = 0; i < numAttachments; i++) {
 				glBindTexture(GL_TEXTURE_2D, m_colorAttachment[i]);
@@ -90,11 +90,11 @@ namespace Phoenix {
 				attachments[i] = GL_COLOR_ATTACHMENT0 + i;
 			}
 
-			glDrawBuffers(this->numAttachments, attachments);
+			glDrawBuffers(numAttachments, attachments);
 		}
 		else {	// If it's a Depth texture...
 			// create depth texture
-			this->m_colorAttachment = new GLuint[this->numAttachments];
+			m_colorAttachment = new GLuint[numAttachments];
 			glCreateTextures(GL_TEXTURE_2D, 1, m_colorAttachment);
 			for (unsigned int i = 0; i < numAttachments; i++) {
 				glBindTexture(GL_TEXTURE_2D, m_colorAttachment[i]);
@@ -105,7 +105,7 @@ namespace Phoenix {
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 				// attach depth texture as FBO's depth buffer
 				glBindFramebuffer(GL_FRAMEBUFFER, (this->m_frameBuffer));
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->m_colorAttachment[i], 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_colorAttachment[i], 0);
 				glDrawBuffer(GL_NONE);
 				glReadBuffer(GL_NONE);
 			}
@@ -116,10 +116,10 @@ namespace Phoenix {
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			switch (status) {
 			case GL_FRAMEBUFFER_UNSUPPORTED:
-				Logger::error("Fbo::upload: Error uploading %s fbo '%d' (id='%d'): glCheckFramebufferStatus returned GL_FRAMEBUFFER_UNSUPPORTED. Choose other format, this is not supported in the current system.", this->engineFormat.c_str(), index, this->m_frameBuffer);
+				Logger::error("Fbo::upload: Error uploading %s: glCheckFramebufferStatus returned GL_FRAMEBUFFER_UNSUPPORTED. Choose other format, this is not supported in the current system.", engineFormat.c_str());
 				break;
 			default:
-				Logger::error("Fbo::upload: Error uploading %s fbo '%d' (id='%d'): Invalid framebuffer status.", this->engineFormat.c_str(), index, this->m_frameBuffer);
+				Logger::error("Fbo::upload: Error uploading %s: Invalid framebuffer status.", engineFormat.c_str());
 				break;
 			}
 			return false;
@@ -135,13 +135,13 @@ namespace Phoenix {
 	void Fbo::bind() const
 	{
 		// Bind buffers and make attachments
-		glBindFramebuffer(GL_FRAMEBUFFER, this->m_frameBuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer);
 	}
 
 	void Fbo::bind_tex(GLuint TexUnit, GLuint attachment) const
 	{
 		if (attachment < this->numAttachments)
-			glBindTextureUnit(TexUnit, this->m_colorAttachment[attachment]);
+			glBindTextureUnit(TexUnit, m_colorAttachment[attachment]);
 	}
 
 }

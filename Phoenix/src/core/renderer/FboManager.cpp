@@ -7,12 +7,18 @@
 namespace Phoenix {
 
 	// Init vars
-	FboManager::FboManager() {
+	FboManager::FboManager()
+		:
+		mem(0),
+		currentFbo(-1),
+		clearColor(false),
+		clearDepth(false)
+	{
 		fbo.clear();
-		mem = 0;
-		currentFbo = -1;
-		clearColor = false;
-		clearDepth = false;
+	}
+
+	void FboManager::init()
+	{
 	}
 
 	void FboManager::bind(int fbo_num, bool clearColor, bool clearDepth)
@@ -48,10 +54,8 @@ namespace Phoenix {
 
 	void FboManager::bind_tex(int fbo_num, GLuint texUnit, GLuint attachment)
 	{
-		if (fbo_num < fbo.size()) {
-			Fbo* my_fbo = fbo[fbo_num];
-			my_fbo->bind_tex(texUnit, attachment);
-		}
+		if (fbo_num < fbo.size())
+			fbo[fbo_num]->bind_tex(texUnit, attachment);
 	}
 
 	void FboManager::unbind(bool clearColor, bool clearDepth)
@@ -67,17 +71,25 @@ namespace Phoenix {
 	}
 
 	// Adds a Fbo into the queue, returns the ID of the texture added
-	int FboManager::addFbo(std::string engine_format, int width, int height, int iformat, int format, int type, int components, unsigned int numColorAttachments) {
+	int FboManager::addFbo(const FboConfig& cfg)
+	{
 		int fbo_id = -1;
+		int iformat = getInternalFormat(cfg.format);
+		int format = getFormat(cfg.format);
+		int type = getType(cfg.format);
+		int components = getComponents(cfg.format);
+		int colorAttachments = cfg.numColorAttachments;
+
+		
 		Fbo* new_fbo = new Fbo();
-		if (new_fbo->upload(engine_format, (int)fbo.size(), width, height, iformat, format, type, numColorAttachments)) {
+		if (new_fbo->upload(cfg.format, static_cast<int>(cfg.width), static_cast<int>(cfg.height), iformat, format, type, colorAttachments)) {
 			fbo.push_back(new_fbo);
 			mem += (float)(new_fbo->width * new_fbo->height * components) / 1048576.0f;		// increase the texture mem
 			fbo_id = (int)fbo.size() - 1;
 			Logger::info(LogLevel::med, "Fbo Color %d loaded OK. Overall fbo Memory: %.3fMb", fbo_id, mem);
 		}
 		else {
-			Logger::error("Could not load fbo with the current format: Width: %d, Height: %d, iformat: %d, format: %d, type: %d", width, height, iformat, format, type);
+			Logger::error("Could not load fbo with the current format: Width: %d, Height: %d, iformat: %d, format: %d, type: %d", cfg.width, cfg.height, iformat, format, type);
 			return -1;
 		}
 		return fbo_id;
@@ -85,11 +97,11 @@ namespace Phoenix {
 
 	void FboManager::clearFbos()
 	{
-		for (int i = 0; i < this->fbo.size(); i++) {
-			delete this->fbo[i];
+		for (int i = 0; i < fbo.size(); i++) {
+			delete fbo[i];
 		}
-		this->fbo.clear();
-		this->mem = 0;
+		fbo.clear();
+		mem = 0;
 	}
 
 	int FboManager::getOpenGLTextureID(unsigned int index, unsigned int attachment)
@@ -103,5 +115,42 @@ namespace Phoenix {
 		}
 		else
 			return -1;
+	}
+
+
+	int FboManager::getFormat(std::string const& name) {
+		for (int i = 0; i < FboFormat.size(); i++) {
+			if (name == FboFormat[i].name) {
+				return FboFormat[i].tex_format;
+			}
+		}
+		return -1;
+	}
+
+	int FboManager::getInternalFormat(std::string const& name) {
+		for (int i = 0; i < FboFormat.size(); i++) {
+			if (name == FboFormat[i].name) {
+				return FboFormat[i].tex_iformat;
+			}
+		}
+		return -1;
+	}
+
+	int FboManager::getType(std::string const& name) {
+		for (int i = 0; i < FboFormat.size(); i++) {
+			if (name == FboFormat[i].name) {
+				return FboFormat[i].tex_type;
+			}
+		}
+		return -1;
+	}
+
+	int FboManager::getComponents(std::string const& name) {
+		for (int i = 0; i < FboFormat.size(); i++) {
+			if (name == FboFormat[i].name) {
+				return FboFormat[i].tex_components;
+			}
+		}
+		return -1;
 	}
 }

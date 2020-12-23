@@ -28,7 +28,7 @@ namespace Phoenix {
 	}
 
 	void glDriver::OnWindowSizeChanged(GLFWwindow* p_glfw_window, int width, int height) {
-		if (!m_windowResizing)
+		if (!m_windowResizing) // Prevent that the callback re-call this function when resizing process is in progress
 		{
 			m_windowResizing = true;
 			// Get a minimal window size
@@ -227,16 +227,12 @@ namespace Phoenix {
 		config.vsync = 0;
 
 		// Fbo's config
-		for (tGLFboFormat& i_fbo : fbo) {
-			i_fbo.width = 0;
-			i_fbo.height = 0;
-			i_fbo.tex_iformat = 0;
-			i_fbo.tex_format = 0;
-			i_fbo.tex_type = 0;
-			i_fbo.tex_components = 0;
-			i_fbo.ratio = 0;
-			i_fbo.format = "";
-			i_fbo.numColorAttachments = 0;
+		for (FboConfig& fboCfg : fboConfig) {
+			fboCfg.format = "none";
+			fboCfg.width = 0;
+			fboCfg.height = 0;
+			fboCfg.ratio = 0;
+			fboCfg.numColorAttachments = 0;
 		}
 	}
 
@@ -297,9 +293,6 @@ namespace Phoenix {
 		glfwSetMouseButtonCallback(m_glfw_window, glfwMouseButtonCallback);
 
 		glfwSetScrollCallback(m_glfw_window, glfwMouseScrollCallback);
-
-		
-
 
 		// Initialize glad
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -521,30 +514,25 @@ namespace Phoenix {
 			}
 
 			// init fbo's for Bloom
-			tGLFboFormat bloomFbo;
+			FboConfig bloomFbo;
 			bloomFbo.format = "RGB_16F";
 			bloomFbo.numColorAttachments = 1;
-			bloomFbo.ratio = 4;
-			bloomFbo.width = static_cast<float>(config.framebuffer_width) / static_cast <float>(bloomFbo.ratio);
-			bloomFbo.height = static_cast<float>(config.framebuffer_height) / static_cast <float>(bloomFbo.ratio);
-			bloomFbo.tex_iformat = getTextureInternalFormatByName(bloomFbo.format);
-			bloomFbo.tex_format = getTextureFormatByName(bloomFbo.format);
-			bloomFbo.tex_type = getTextureTypeByName(bloomFbo.format);
-			bloomFbo.tex_components = getTextureComponentsByName(bloomFbo.format);
-
+			bloomFbo.ratio = 4;		// We use a division by 4 vs the framebuffer size
+			bloomFbo.width = static_cast<float>(config.framebuffer_width) / static_cast<float>(bloomFbo.ratio);
+			bloomFbo.height = static_cast<float>(config.framebuffer_height) / static_cast<float>(bloomFbo.ratio);
+						
 			int res = 0;
 			for (int i = 0; i < EFXBLOOM_FBO_BUFFERS; i++) {
-				res = m_demo.m_efxBloomFbo.addFbo(bloomFbo.format, (int)bloomFbo.width, (int)bloomFbo.height, bloomFbo.tex_iformat, bloomFbo.tex_format, bloomFbo.tex_type, bloomFbo.tex_components, bloomFbo.numColorAttachments);
-				if (res >= 0)
-					Logger::info(LogLevel::low, "EfxBloom Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, bloomFbo.width, bloomFbo.height, bloomFbo.format.c_str(), bloomFbo.tex_components, bloomFbo.tex_format, bloomFbo.tex_iformat, bloomFbo.tex_type);
+				if (m_demo.m_efxBloomFbo.addFbo(bloomFbo) >= 0)
+					Logger::info(LogLevel::low, "EfxBloom Fbo %i uploaded: width: %.0f, height: %.0f, format: %s", i, bloomFbo.width, bloomFbo.height, bloomFbo.format.c_str());
 				else
-					Logger::error("Error in efxBloom Fbo definition: Efx_Fbo number %i has a non recongised format: '%s', please blame the coder.", i, bloomFbo.format.c_str());
+					Logger::error("Error in efxBloom Fbo definition: m_efxBloomFbo number %i", i);
 			}
 
 		}
 
 		////////////// efxAccum FBO Manager: internal FBO's that are being used by the engine effects
-		// TODO: Que pasa si varios efectos de Accum se lanzan a la vez? no pueden usar la misma textura, asi que se mezclarán! deberíamos tener una fbo por cada efecto? es un LOCURON!!
+		// TODO: Que pasa si varios efectos de Accum se lanzan a la vez? no pueden usar la misma textura, asi que se mezclarán! deberíamos tener una fboConfig por cada efecto? es un LOCURON!!
 		{
 			// Clear Fbo's, if there is any
 			if (m_demo.m_efxAccumFbo.fbo.size() > 0) {
@@ -553,24 +541,19 @@ namespace Phoenix {
 			}
 
 			// init fbo's for Accum
-			tGLFboFormat accumFbo;
+			FboConfig accumFbo;
 			accumFbo.format = "RGBA_16F";
 			accumFbo.numColorAttachments = 1;
-			accumFbo.ratio = 1;
-			accumFbo.width = static_cast<float>(config.framebuffer_width) / static_cast <float>(accumFbo.ratio);
-			accumFbo.height = static_cast<float>(config.framebuffer_height) / static_cast <float>(accumFbo.ratio);
-			accumFbo.tex_iformat = getTextureInternalFormatByName(accumFbo.format);
-			accumFbo.tex_format = getTextureFormatByName(accumFbo.format);
-			accumFbo.tex_type = getTextureTypeByName(accumFbo.format);
-			accumFbo.tex_components = getTextureComponentsByName(accumFbo.format);
+			accumFbo.ratio = 1;	// Same size as the framebuffer
+			accumFbo.width = static_cast<float>(config.framebuffer_width) / static_cast<float>(accumFbo.ratio);
+			accumFbo.height = static_cast<float>(config.framebuffer_height) / static_cast<float>(accumFbo.ratio);
 
 			int res = 0;
 			for (int i = 0; i < EFXACCUM_FBO_BUFFERS; i++) {
-				res = m_demo.m_efxAccumFbo.addFbo(accumFbo.format, (int)accumFbo.width, (int)accumFbo.height, accumFbo.tex_iformat, accumFbo.tex_format, accumFbo.tex_type, accumFbo.tex_components, accumFbo.numColorAttachments);
-				if (res >= 0)
-					Logger::info(LogLevel::low, "EfxAccum Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, accumFbo.width, accumFbo.height, accumFbo.format.c_str(), accumFbo.tex_components, accumFbo.tex_format, accumFbo.tex_iformat, accumFbo.tex_type);
+				if (m_demo.m_efxAccumFbo.addFbo(accumFbo) >= 0)
+					Logger::info(LogLevel::low, "EfxAccum Fbo %i uploaded: width: %.0f, height: %.0f, format: %s", i, accumFbo.width, accumFbo.height, accumFbo.format.c_str());
 				else
-					Logger::error("Error in efxAccum Fbo definition: Efx_Fbo number %i has a non recongised format: '%s', please blame the coder.", i, accumFbo.format.c_str());
+					Logger::error("Error in efxAccum Fbo definition: m_efxAccumFbo number %i", i);
 			}
 
 		}
@@ -584,25 +567,15 @@ namespace Phoenix {
 
 		// init fbo's
 		for (int i = 0; i < FBO_BUFFERS; i++) {
-			if (((this->fbo[i].width != 0) && (this->fbo[i].height != 0)) || (this->fbo[i].ratio != 0)) {
-				if (this->fbo[i].ratio != 0) {
-					this->fbo[i].width = (float)(config.framebuffer_width / this->fbo[i].ratio);
-					this->fbo[i].height = (float)(config.framebuffer_height / this->fbo[i].ratio);
-				}
-
-				this->fbo[i].tex_iformat = getTextureInternalFormatByName(this->fbo[i].format);
-				this->fbo[i].tex_format = getTextureFormatByName(this->fbo[i].format);
-				this->fbo[i].tex_type = getTextureTypeByName(this->fbo[i].format);
-				this->fbo[i].tex_components = getTextureComponentsByName(this->fbo[i].format);
-				// Check if the format is valid
-				if (this->fbo[i].tex_format > 0) {
-					m_demo.m_fboManager.addFbo(this->fbo[i].format, (int)this->fbo[i].width, (int)this->fbo[i].height, this->fbo[i].tex_iformat, this->fbo[i].tex_format, this->fbo[i].tex_type, this->fbo[i].tex_components, this->fbo[i].numColorAttachments);
-					Logger::info(LogLevel::low, "Fbo %i uploaded: width: %.0f, height: %.0f, format: %s, components: %i, GLformat: %i, GLiformat: %i, GLtype: %i", i, this->fbo[i].width, this->fbo[i].height, this->fbo[i].format.c_str(), this->fbo[i].tex_components, this->fbo[i].tex_format, this->fbo[i].tex_iformat, this->fbo[i].tex_type);
-				}
-				else {
-					Logger::error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, this->fbo[i].format);
-				}
+			if (fboConfig[i].ratio != 0) {
+				fboConfig[i].width = static_cast<float>(config.framebuffer_width) / static_cast<float>(fboConfig[i].ratio);
+				fboConfig[i].height = static_cast<float>(config.framebuffer_height) / static_cast<float>(fboConfig[i].ratio);
 			}
+			
+			if (m_demo.m_fboManager.addFbo(fboConfig[i]) >= 0)
+				Logger::info(LogLevel::low, "Fbo %i uploaded: width: %.0f, height: %.0f, format: %s", i, fboConfig[i].width, fboConfig[i].height, fboConfig[i].format.c_str());
+			else
+				Logger::error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, fboConfig[i].format.c_str());
 		}
 
 	}
@@ -683,41 +656,6 @@ namespace Phoenix {
 		return sv;
 	}
 
-	int glDriver::getTextureFormatByName(std::string const& name) {
-		for (int i = 0; i < textureModes.size(); i++) {
-			if (name == textureModes[i].name) {
-				return textureModes[i].tex_format;
-			}
-		}
-		return -1;
-	}
-
-	int glDriver::getTextureInternalFormatByName(std::string const& name) {
-		for (int i = 0; i < textureModes.size(); i++) {
-			if (name == textureModes[i].name) {
-				return textureModes[i].tex_iformat;
-			}
-		}
-		return -1;
-	}
-
-	int glDriver::getTextureTypeByName(std::string const& name) {
-		for (int i = 0; i < textureModes.size(); i++) {
-			if (name == textureModes[i].name) {
-				return textureModes[i].tex_type;
-			}
-		}
-		return -1;
-	}
-
-	int glDriver::getTextureComponentsByName(std::string const& name) {
-		for (int i = 0; i < textureModes.size(); i++) {
-			if (name == textureModes[i].name) {
-				return textureModes[i].tex_components;
-			}
-		}
-		return -1;
-	}
 
 	void glDriver::calcMousePos(float x, float y) {
 		Viewport vp = this->GetCurrentViewport();
