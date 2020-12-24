@@ -8,7 +8,7 @@
 
 namespace Phoenix {
 
-	class Fbo {
+	class Fbo final {
 	public:
 
 		int				width, height;
@@ -21,7 +21,7 @@ namespace Phoenix {
 		GLuint*			m_colorAttachment;		// Our handle to the Color buffer(s) attachment(s)
 
 		Fbo();
-		virtual ~Fbo();
+		~Fbo();
 
 		bool upload(std::string EngineFormat, int Width, int Height, int iFormat, int Format, int Type, unsigned int numColorAttachments);
 		void bind() const;

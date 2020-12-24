@@ -97,9 +97,9 @@ namespace Phoenix {
 
 	void FboManager::clearFbos()
 	{
-		for (int i = 0; i < fbo.size(); i++) {
-			delete fbo[i];
-		}
+		for (auto& pFbo : fbo)
+			delete pFbo;
+		
 		fbo.clear();
 		mem = 0;
 	}
