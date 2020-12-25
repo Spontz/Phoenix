@@ -1,5 +1,5 @@
 # Phoenix :: Spontz demo Engine
-Welcome to the infamous Phoenix :: Spontz demoengine, each line of code has been made with lot of suffering and pain :)
+Welcome to the infamous Phoenix :: Spontz demoengine. Be ware that each line of code has been made with lot of suffering and pain. And that could be extent to you if you try to understand.
 
 This engine is essentially a mix of code from everywhere, but main credits goes to:
 
