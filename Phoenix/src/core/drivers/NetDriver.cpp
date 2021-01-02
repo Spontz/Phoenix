@@ -7,44 +7,34 @@
 #include "core/demokernel.h"
 
 namespace Phoenix {
-
-
 	// globals /////////////////////////////////////////////////////////////////////////////////////////
-
 	auto const kDelimiterChar = '\x1f';
 	auto const kDelimiterString = "\x1f";
 
-
 	// public static ///////////////////////////////////////////////////////////////////////////////////
-
 	NetDriver& NetDriver::GetInstance() {
 		static NetDriver obj;
 		return obj;
 	}
 
-
 	// constructors/destructor /////////////////////////////////////////////////////////////////////////
-
 	NetDriver::NetDriver()
 		:
 		m_iPortReceive(28000),
 		m_iPortSend(28001),
 		m_bInitialized_(false),
 		m_bConnectedToEditor_(false),
-		m_pServConnect_(nullptr)
-	{
+		m_pServConnect_(nullptr) {
 	}
 
-	NetDriver::~NetDriver()
-	{
+	NetDriver::~NetDriver() {
 		dyad_shutdown();
 	}
 
 
 	// public
 
-	void NetDriver::init()
-	{
+	void NetDriver::init() {
 		dyad_init();
 
 		dyad_Stream* serv = dyad_newStream();
@@ -61,8 +51,7 @@ namespace Phoenix {
 		m_bInitialized_ = true;
 	}
 
-	void NetDriver::connectToEditor()
-	{
+	void NetDriver::connectToEditor() {
 		// Listener for sending messages to the editor
 		Logger::info(
 			LogLevel::med,
@@ -75,18 +64,15 @@ namespace Phoenix {
 		dyad_connect(m_pServConnect_, "127.0.0.1", m_iPortSend);
 	}
 
-	void NetDriver::update() const
-	{
+	void NetDriver::update() const {
 		dyad_update();
 	}
 
-	const char* NetDriver::getVersion() const
-	{
+	const char* NetDriver::getVersion() const {
 		return dyad_getVersion();
 	}
 
-	std::string NetDriver::processMessage(const std::string& sMessage) const
-	{
+	std::string NetDriver::processMessage(const std::string& sMessage) const {
 		// Outcoming information
 		std::string sResult = "OK";		// Result of the operation
 		std::string sInfo = "";			// Information message
@@ -110,77 +96,59 @@ namespace Phoenix {
 			// Commands processing
 			if (sAction == "pause") {
 				DEMO->pauseDemo();
-			}
-			else if (sAction == "play") {
+			} else if (sAction == "play") {
 				DEMO->playDemo();
-			}
-			else if (sAction == "restart") {
+			} else if (sAction == "restart") {
 				DEMO->restartDemo();
-			}
-			else if (sAction == "startTime") {
+			} else if (sAction == "startTime") {
 				float time = std::stof(Message[3]);
 				DEMO->setStartTime(time);
-			}
-			else if (sAction == "currentTime") {
+			} else if (sAction == "currentTime") {
 				float time = std::stof(Message[3]);
 				DEMO->setCurrentTime(time);
-			}
-			else if (sAction == "endTime") {
+			} else if (sAction == "endTime") {
 				float time = std::stof(Message[3]);
 				DEMO->setEndTime(time);
-			}
-			else if (sAction == "windowPos") {
+			} else if (sAction == "windowPos") {
 				int x = std::stoi(Message[3]);
 				int y = std::stoi(Message[4]);
 				GLDRV->moveWindow(x, y);
-			}
-			else if (sAction == "windowSize") {
+			} else if (sAction == "windowSize") {
 				int width = std::stoi(Message[3]);
 				int height = std::stoi(Message[4]);
 				GLDRV->resizeWindow(width, height);
-			}
-			else if (sAction == "ping") {
-			}
-			else if (sAction == "end") {
+			} else if (sAction == "ping") {
+				sResult = "pong";
+			} else if (sAction == "end") {
 				DEMO->m_exitDemo = true;
-			}
-			else {
+			} else {
 				sResult = "NOK";
 				sInfo = "Unknown command (" + sAction + "): " + sMessage;
 			}
-		}
-		else if (sType == "section") {
+		} else if (sType == "section") {
 			// Sections processing
 			if (sAction == "new") {
 				if (DEMO->loadScriptFromNetwork(Message[3]) != 0) {
 					sResult = "NOK";
 					sInfo = "Section load failed";
 				}
-			}
-			else if (sAction == "toggle") {
+			} else if (sAction == "toggle") {
 				DEMO->m_sectionManager.toggleSection(Message[3]);
-			}
-			else if (sAction == "delete") {
+			} else if (sAction == "delete") {
 				DEMO->m_sectionManager.deleteSection(Message[3]);
-			}
-			else if (sAction == "update") {
+			} else if (sAction == "update") {
 				DEMO->m_sectionManager.updateSection(Message[3], Message[4]);
-			}
-			else if (sAction == "setStartTime") {
+			} else if (sAction == "setStartTime") {
 				DEMO->m_sectionManager.setSectionsStartTime(Message[3], Message[4]);
-			}
-			else if (sAction == "setEndTime") {
+			} else if (sAction == "setEndTime") {
 				DEMO->m_sectionManager.setSectionsEndTime(Message[3], Message[4]);
-			}
-			else if (sAction == "setLayer") {
+			} else if (sAction == "setLayer") {
 				DEMO->m_sectionManager.setSectionLayer(Message[3], Message[4]);
-			}
-			else {
+			} else {
 				sResult = "NOK";
 				sInfo = "Unknown section command (" + sAction + "): " + sMessage;
 			}
-		}
-		else {
+		} else {
 			sResult = "NOK";
 			sInfo = "Unknown network message type (" + sType + "): " + sMessage;
 		}
@@ -199,17 +167,14 @@ namespace Phoenix {
 		return sResponse;
 	}
 
-	void NetDriver::sendMessage(std::string const& sMessage) const
-	{
+	void NetDriver::sendMessage(std::string const& sMessage) const {
 		if (!m_bConnectedToEditor_)
 			return;
 
 		dyad_write(m_pServConnect_, sMessage.c_str(), static_cast<int>(sMessage.size()));
 	}
 
-
 	// private static //////////////////////////////////////////////////////////////////////////////////
-
 	void NetDriver::dyadOnData(dyad_Event* const pDyadEvent) {
 		const std::string sResponse = NetDriver::GetInstance().processMessage(pDyadEvent->data);
 
@@ -218,13 +183,11 @@ namespace Phoenix {
 		dyad_end(pDyadEvent->stream);
 	}
 
-	void NetDriver::dyadOnAccept(dyad_Event* const pDyadEvent)
-	{
+	void NetDriver::dyadOnAccept(dyad_Event* const pDyadEvent) {
 		dyad_addListener(pDyadEvent->remote, DYAD_EVENT_DATA, dyadOnData, nullptr);
 	}
 
-	void NetDriver::dyadOnListen(dyad_Event* const pDyadEvent)
-	{
+	void NetDriver::dyadOnListen(dyad_Event* const pDyadEvent) {
 		Logger::info(
 			LogLevel::med,
 			"Network listener started in port: %d",
@@ -232,13 +195,11 @@ namespace Phoenix {
 		);
 	}
 
-	void NetDriver::dyadOnError(dyad_Event* const pDyadEvent)
-	{
+	void NetDriver::dyadOnError(dyad_Event* const pDyadEvent) {
 		Logger::error("Network server error: %s", pDyadEvent->msg);
 	}
 
-	void NetDriver::dyadOnConnect(dyad_Event* const pDyadEvent)
-	{
+	void NetDriver::dyadOnConnect(dyad_Event* const pDyadEvent) {
 		NetDriver::GetInstance().m_bConnectedToEditor_ = true;
 
 		Logger::info(
@@ -248,11 +209,8 @@ namespace Phoenix {
 		);
 	}
 
-
 	// private /////////////////////////////////////////////////////////////////////////////////////////
-
-	std::vector<std::string> NetDriver::splitMessage(const std::string& message) const
-	{
+	std::vector<std::string> NetDriver::splitMessage(const std::string& message) const {
 		std::vector<std::string> strings;
 		std::istringstream f(message);
 		std::string s;
