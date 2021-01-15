@@ -91,7 +91,7 @@ namespace Phoenix {
 		void setupMesh();
 
 		// Setup materials for drawing
-		void DrawMaterials(GLuint shaderID);
+		void setMaterialShaderVars(GLuint shaderID);
 
 
 	};

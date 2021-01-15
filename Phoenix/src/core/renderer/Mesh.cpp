@@ -114,7 +114,7 @@ namespace Phoenix {
 	}
 
 
-	void Mesh::DrawMaterials(GLuint shaderID)
+	void Mesh::setMaterialShaderVars(GLuint shaderID)
 	{
 		// Send material properties
 		glUniform3fv(glGetUniformLocation(shaderID, "Material.Ka"), 1, &m_material.colAmbient[0]);
@@ -141,7 +141,7 @@ namespace Phoenix {
 	void Mesh::Draw(GLuint shaderID)
 	{
 		// Setup materials for drawing
-		DrawMaterials(shaderID);
+		setMaterialShaderVars(shaderID);
 
 		// draw mesh
 		m_VertexArray->Bind();

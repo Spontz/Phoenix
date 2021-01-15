@@ -73,7 +73,7 @@ namespace Phoenix {
         {
             Mesh* my_mesh = &(model->meshes[i]);
 
-            my_mesh->DrawMaterials(shaderID);
+            my_mesh->setMaterialShaderVars(shaderID);
 
             // Update matrices buffers to GPU
             std::vector<VertexBuffer*> vb = my_mesh->m_VertexArray->GetVertexBuffers();
