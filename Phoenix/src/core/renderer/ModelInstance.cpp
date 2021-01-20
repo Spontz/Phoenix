@@ -69,23 +69,20 @@ namespace Phoenix {
 
     void ModelInstance::DrawInstanced(GLuint shaderID)
     {
-        for (unsigned int i = 0; i < model->meshes.size(); i++)
+        for (auto& mesh : model->meshes)
         {
-            Mesh* my_mesh = &(model->meshes[i]);
-
-            my_mesh->setMaterialShaderVars(shaderID);
+            mesh.setMaterialShaderVars(shaderID);
 
             // Update matrices buffers to GPU
-            std::vector<VertexBuffer*> vb = my_mesh->m_VertexArray->GetVertexBuffers();
+            std::vector<VertexBuffer*> vb = mesh.m_VertexArray->GetVertexBuffers();
             vb[1]->SetData(&modelMatrix[0], amount * sizeof(glm::mat4)); // TODO: Get rid of this hardcode
 
             // draw mesh
-            model->meshes[i].m_VertexArray->Bind();
-            glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(model->meshes[i].m_indices.size()), GL_UNSIGNED_INT, 0, static_cast<GLsizei>(amount));
+            mesh.m_VertexArray->Bind();
+            glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(mesh.m_indices.size()), GL_UNSIGNED_INT, 0, static_cast<GLsizei>(amount));
             vb[1]->Unbind();
-            model->meshes[i].m_VertexArray->Unbind();
+            mesh.m_VertexArray->Unbind();
         }
-
         // always good practice to set everything back to defaults once configured.
         //glBindTextureUnit(0, 0); --> TODO: This gives error on some graphics card (https://community.intel.com/t5/Graphics/intel-uhd-graphics-630-with-latest-driver-will-cause-error-when/td-p/1161376)
         glActiveTexture(GL_TEXTURE0);
