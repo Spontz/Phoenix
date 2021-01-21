@@ -113,9 +113,9 @@ namespace Phoenix {
 
 		// Load model properties
 		m_pModel = new ModelInstance(model_to_draw, num_obj_instances);
-		m_pModel->model->playAnimation = m_bPlayAnimation;
-		if (m_pModel->model->playAnimation)
-			m_pModel->model->setAnimation(m_iAnimationNumber);
+		m_pModel->pModel->playAnimation = m_bPlayAnimation;
+		if (m_pModel->pModel->playAnimation)
+			m_pModel->pModel->setAnimation(m_iAnimationNumber);
 
 
 		m_pExprPosition = new MathDriver(this);
@@ -190,9 +190,9 @@ namespace Phoenix {
 			glClear(GL_DEPTH_BUFFER_BIT);
 
 		// Set model properties
-		m_pModel->model->playAnimation = m_bPlayAnimation;
-		if (m_pModel->model->playAnimation)
-			m_pModel->model->setAnimation(m_iAnimationNumber);
+		m_pModel->pModel->playAnimation = m_bPlayAnimation;
+		if (m_pModel->pModel->playAnimation)
+			m_pModel->pModel->setAnimation(m_iAnimationNumber);
 
 		// Load shader
 		m_pShader->use();
@@ -250,7 +250,7 @@ namespace Phoenix {
 			}
 		}
 		*/
-		m_pModel->DrawInstanced(m_pShader->ID);
+		m_pModel->drawInstanced(m_pShader->ID);
 
 		// For MotionBlur: store the previous matrix
 		m_mPrevProjection = projection;
@@ -273,8 +273,8 @@ namespace Phoenix {
 		std::stringstream ss;
 		ss << "Matrix file: " << m_pModelRef->filename << std::endl;
 		ss << "Objects in matrix to be drawn: " << m_fNumObjects << std::endl;
-		ss << "Model file: " << m_pModel->model->filename << std::endl;
-		ss << "Meshes in each model: " << m_pModel->model->m_statNumMeshes << ", Vertex: " << m_pModel->model->m_statNumVertices << std::endl;;
+		ss << "Model file: " << m_pModel->pModel->filename << std::endl;
+		ss << "Meshes in each model: " << m_pModel->pModel->m_statNumMeshes << ", Vertex: " << m_pModel->pModel->m_statNumVertices << std::endl;;
 		debugStatic = ss.str();
 	}
 
@@ -317,7 +317,7 @@ namespace Phoenix {
 				// Copy previous model object matrix, before model matrix changes
 				m_pModel->copyMatrices(object);
 
-				my_obj_model = &(m_pModel->modelMatrix[object]);
+				my_obj_model = &(m_pModel->pModelMatrix[object]);
 				*my_obj_model = matrixModel;
 				*my_obj_model = glm::translate(*my_obj_model, m_pModelRef->meshes[i].unique_vertices_pos[j]);
 
@@ -337,5 +337,7 @@ namespace Phoenix {
 				m_fCurrObjID = (float)object;
 			}
 		}
+
+		m_pModel->updateMatrices(); // Update Matrices to GPU
 	}
 }
