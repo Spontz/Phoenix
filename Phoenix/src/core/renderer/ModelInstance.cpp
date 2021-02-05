@@ -67,11 +67,11 @@ namespace Phoenix {
 
 	}
 
-	void ModelInstance::drawInstanced(GLuint shaderID)
+	void ModelInstance::drawInstanced(GLuint shaderID, uint32_t startTexUnit)
 	{
 		for (auto& mesh : pModel->meshes)
 		{
-			mesh.setMaterialShaderVars(shaderID);
+			mesh.setMaterialShaderVars(shaderID, startTexUnit);
 
 			// draw mesh
 			mesh.m_VertexArray->Bind();
@@ -79,10 +79,6 @@ namespace Phoenix {
 			
 			mesh.m_VertexArray->Unbind();
 		}
-		// always good practice to set everything back to defaults once configured.
-		//glBindTextureUnit(0, 0); --> TODO: This gives error on some graphics card (https://community.intel.com/t5/Graphics/intel-uhd-graphics-630-with-latest-driver-will-cause-error-when/td-p/1161376)
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	void ModelInstance::copyMatrices(int instance)

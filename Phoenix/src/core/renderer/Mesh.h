@@ -70,7 +70,7 @@ namespace Phoenix {
 
 		Mesh(const aiScene* pScene, std::string nodeName, const aiMesh* pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial* pMaterial, std::string directory, std::string filename);
 		// render the mesh
-		void Draw(GLuint shaderID);
+		void Draw(GLuint shaderID, uint32_t startTexUnit = 0);
 
 		// Loads the unique vertices positions
 		void loadUniqueVerticesPos();
@@ -91,8 +91,6 @@ namespace Phoenix {
 		void setupMesh();
 
 		// Setup materials for drawing
-		void setMaterialShaderVars(GLuint shaderID);
-
-
+		void setMaterialShaderVars(GLuint shaderID, uint32_t startTexUnit = 0);
 	};
 }

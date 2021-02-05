@@ -117,7 +117,7 @@ namespace Phoenix {
 		for (int i = 0; i < uniform.size(); i++) {
 			m_pVars->ReadString(uniform[i].c_str());
 		}
-
+		
 		// Set shader variables values
 		m_pVars->setValues();
 
@@ -198,7 +198,7 @@ namespace Phoenix {
 		// Set the other shader variable values
 		m_pVars->setValues();
 
-		m_pModel->Draw(m_pShader->ID, m_fAnimationTime);
+		m_pModel->Draw(m_pShader->ID, m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
 
 		glUseProgram(0);
 		if (m_bDrawWireframe)

@@ -34,7 +34,7 @@ namespace Phoenix {
 
 		void updateMatrices();
 
-		void drawInstanced(GLuint shaderID);
+		void drawInstanced(GLuint shaderID, uint32_t startTexUnit = 0);
 		void copyMatrices(int instance);
 
 	private:

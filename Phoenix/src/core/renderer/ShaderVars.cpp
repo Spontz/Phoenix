@@ -18,37 +18,24 @@ namespace Phoenix {
 		char	var_name[MAXSIZE_VAR_NAME];
 		char	var_type[MAXSIZE_VAR_TYPE];
 		char	var_value[MAXSIZE_VAR_EVAL];
-		int		var_UnitId = 0;	// Texture Unit ID - Useful for sampler2D
-
+		
 		std::vector<std::string>	vars;
 
 		splitString(string_var, vars, ' ');	// Split the main string by spaces
 
-		if (vars.size() < 3) {
+		if (vars.size() != 3) {
 			Logger::error("Error reading Shader Variable [section: %s], format is: 'uniform <var_type> <var_name> <var_value>', but the string was: 'uniform %s'", my_section->type_str.c_str(), string_var);
 			return false;
 		}
 
-		if (vars[0] != "sampler2D") {
-			strcpy(var_type, vars[0].c_str());
-			strcpy(var_name, vars[1].c_str());
-			for (int i = 3; i < vars.size(); i++) // Concatenate the rest of strings (if any)
-				vars[2] += " " + vars[i];
-			strcpy(var_value, vars[2].c_str());
+		strcpy(var_type, vars[0].c_str());
+		strcpy(var_name, vars[1].c_str());
+		for (int i = 3; i < vars.size(); i++) // Concatenate the rest of strings (if any)
+			vars[2] += " " + vars[i];
+		strcpy(var_value, vars[2].c_str());
 
-			Logger::info(LogLevel::med, "Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_value);
-		}
-		else {	// If its a sampler, we need also the ID
-			strcpy(var_type, vars[0].c_str());
-			strcpy(var_name, vars[1].c_str());
-			var_UnitId = std::atoi(vars[2].c_str());
-			if (vars.size() != 4) {
-				Logger::error("Error reading Shader Variable [section: %s], sampler2D format is: 'uniform sampler2D <texture_name> <texture_unit_id> <texture_value>', but the string was: 'uniform %s'", my_section->type_str.c_str(), string_var);
-				return false;
-			}
-			strcpy(var_value, vars[3].c_str());
-			Logger::info(LogLevel::med, "Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], id [%d], value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_UnitId, var_value);
-		}
+		Logger::info(LogLevel::med, "Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_value);
+		
 
 		if (strcmp(var_type, "float") == 0)	// FLOAT detected
 		{
@@ -151,7 +138,7 @@ namespace Phoenix {
 			varSampler2D* var = new varSampler2D();
 			strcpy(var->name, var_name);
 			var->loc = my_shader->getUniformLocation(var->name);
-			var->texUnitID = var_UnitId;
+			var->texUnitID = static_cast<int>(sampler2D.size());
 			// If sampler2D is a fbo...
 			if (0 == strncmp("fbo", var_value, 3)) {
 				var->isFBO = true;

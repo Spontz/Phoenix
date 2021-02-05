@@ -250,7 +250,7 @@ namespace Phoenix {
 			}
 		}
 		*/
-		m_pModel->drawInstanced(m_pShader->ID);
+		m_pModel->drawInstanced(m_pShader->ID, static_cast<uint32_t>(m_pVars->sampler2D.size()));
 
 		// For MotionBlur: store the previous matrix
 		m_mPrevProjection = projection;

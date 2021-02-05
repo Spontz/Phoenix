@@ -57,7 +57,7 @@ namespace Phoenix {
 		filepath = "";
 	}
 
-	void Model::Draw(GLuint shaderID, float currentTime)
+	void Model::Draw(GLuint shaderID, float currentTime, uint32_t startTexUnit)
 	{
 		// Load the model transformation on all sub-meshes
 		setMeshesModelTransform();
@@ -94,7 +94,7 @@ namespace Phoenix {
 			mesh.m_matPrevModel = mesh.m_matModel;
 
 			// Draw
-			mesh.Draw(shaderID);
+			mesh.Draw(shaderID, startTexUnit);
 		}
 
 		m_matPrevProjection = m_matProjection;

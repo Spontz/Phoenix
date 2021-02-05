@@ -54,7 +54,7 @@ namespace Phoenix {
 		// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
 		bool Load(const std::string& path);
 		// draws the model, and thus all its meshes
-		void Draw(GLuint shaderID, float currentTime);
+		void Draw(GLuint shaderID, float currentTime, uint32_t startTexUnit = 0);
 		void setAnimation(unsigned int a);
 		void setCamera(unsigned int c);
 

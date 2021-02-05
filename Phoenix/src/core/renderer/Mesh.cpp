@@ -114,7 +114,7 @@ namespace Phoenix {
 	}
 
 
-	void Mesh::setMaterialShaderVars(GLuint shaderID)
+	void Mesh::setMaterialShaderVars(GLuint shaderID, uint32_t startTexUnit)
 	{
 		// Send material properties
 		glUniform3fv(glGetUniformLocation(shaderID, "Material.Ka"), 1, &m_material.colAmbient[0]);
@@ -124,6 +124,7 @@ namespace Phoenix {
 
 		// Send textures
 		unsigned int numTextures = static_cast<unsigned int>(m_material.textures.size());
+		// TODO: Check thta startTexUnit + numtextures is less than the total texture units we can draw (normally, 32)
 		for (unsigned int i = 0; i < numTextures; i++)
 		{
 			if (!(m_material.textures[i].tex)) // Avoid illegal access
@@ -131,27 +132,22 @@ namespace Phoenix {
 			// TODO: Remove this c_str() command could improve performance?
 			// TODO: Deberíamos cargar la ultima texture unit que se ha usado, y emepzar desde allí, en vez de empezar desde 0, ya que puede
 			// que se haya usado alguna texture unit anteriormente (por ejemplo, para shadowmaps)
-			glUniform1i(glGetUniformLocation(shaderID, m_material.textures[i].shaderName.c_str()), i);
+			glUniform1i(glGetUniformLocation(shaderID, m_material.textures[i].shaderName.c_str()), i+startTexUnit);
 			// and finally bind the texture
-			m_material.textures[i].tex->bind(i);
+			m_material.textures[i].tex->bind(i+startTexUnit);
 		}
 	}
 
 	// render the mesh
-	void Mesh::Draw(GLuint shaderID)
+	void Mesh::Draw(GLuint shaderID, uint32_t startTexUnit)
 	{
 		// Setup materials for drawing
-		setMaterialShaderVars(shaderID);
+		setMaterialShaderVars(shaderID, startTexUnit);
 
 		// draw mesh
 		m_VertexArray->Bind();
 		glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, NULL);
 		m_VertexArray->Unbind();
-
-		// always good practice to set everything back to defaults once configured.
-		//glBindTextureUnit(0, 0); --> TODO: This gives error on some graphics card (https://community.intel.com/t5/Graphics/intel-uhd-graphics-630-with-latest-driver-will-cause-error-when/td-p/1161376)
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 }

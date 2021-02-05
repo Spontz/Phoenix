@@ -245,7 +245,7 @@ namespace Phoenix {
 				// For MotionBlur, we send the previous model matrix
 				m_pShader->setValue("prev_model", m_pmPrevModel[object]);
 
-				m_pModel->Draw(m_pShader->ID, m_fAnimationTime);
+				m_pModel->Draw(m_pShader->ID, m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
 
 				object++;
 				m_fCurrObjID = (float)object;
