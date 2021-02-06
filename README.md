@@ -1,7 +1,3 @@
-<p align="center">
-  <img width="400" height="400" src="/img/spontzLogo.jpg">
-</p>
-
 # Phoenix :: Spontz demo Engine
 Welcome to the infamous Phoenix :: Spontz demoengine. Be ware that each line of code has been made with lot of suffering and pain. And that could be extent to you if you try to understand.
 
@@ -25,3 +21,8 @@ The main libraries used are:
 * Dear ImGUI: Graphical User interface: https://github.com/ocornut/imgui
 * dyad.c: Networking library: https://github.com/rxi/dyad
 * FreeType: font rendering libraries: https://github.com/freetype
+
+
+<p align="center">
+  <img width="400" height="400" src="/img/spontzLogo.jpg">
+</p>
