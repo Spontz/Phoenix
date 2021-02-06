@@ -33,6 +33,7 @@ namespace Phoenix {
     struct varSampler2D final : public varBase {
         Texture* texture;   // Texture
         int      fboNum;    // Fbo number
+        int      fboAttachment; // Fbo attachment
         int      texUnitID; // Texture unit ID
         bool     isFBO;     // is the Sampler2D an FBO?
     };

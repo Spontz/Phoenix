@@ -135,29 +135,49 @@ namespace Phoenix {
 		}
 		else if (strcmp(var_type, "sampler2D") == 0)	// Texture (sampler2D) detected
 		{
-			varSampler2D* var = new varSampler2D();
-			strcpy(var->name, var_name);
-			var->loc = my_shader->getUniformLocation(var->name);
-			var->texUnitID = static_cast<int>(sampler2D.size());
-			// If sampler2D is a fbo...
-			if (0 == strncmp("fbo", var_value, 3)) {
-				var->isFBO = true;
-				int fbonum;
-				sscanf(var_value, "fbo%d", &fbonum);
-				if (fbonum<0 || fbonum>(FBO_BUFFERS - 1)) {
+			if (0 == strncmp("fbo", var_value, 3)) // If it's an fbo
+			{
+				int fboNum;
+				sscanf(var_value, "fbo%d", &fboNum);
+				if (fboNum<0 || fboNum>(FBO_BUFFERS - 1)) {
 					Logger::error("Section %s: sampler2D fbo not correct, it should be 'fboX', where X=>0 and X<=%d, you choose: %s", this->my_section->identifier.c_str(), (FBO_BUFFERS - 1), var_value);
 					return false;
 				}
-				else {
-					var->fboNum = fbonum;
+				int fboAttachments = DEMO->m_fboManager.fbo[fboNum]->numAttachments;
+				for (int i = 0; i < fboAttachments; i++)
+				{
+					varSampler2D* var = new varSampler2D();
+
+					var->isFBO = true;
+					var->fboNum = fboNum;
+					var->fboAttachment = i;
+					strcpy(var->name, var_name);
+
+					if (fboAttachments > 1)
+					{
+						// TODO: Guarrada, to delete and change char to string
+						char i_str[2];
+						snprintf(i_str, 2, "%d", i);
+						strcat(var->name, "[");
+						strcat(var->name, i_str);
+						strcat(var->name, "]");
+					}
+					
+					var->loc = my_shader->getUniformLocation(var->name);
+					var->texUnitID = static_cast<int>(sampler2D.size());
+					sampler2D.push_back(var);
 				}
 			}
-			// Is it s a normal texture...
-			else {
+			else // If it's a normal texture....
+			{
+				varSampler2D* var = new varSampler2D();
+				strcpy(var->name, var_name);
+				var->loc = my_shader->getUniformLocation(var->name);
+				var->texUnitID = static_cast<int>(sampler2D.size());
 				var->isFBO = false;
 				var->texture = DEMO->m_textureManager.addTexture(DEMO->m_dataFolder + var_value);
+				sampler2D.push_back(var);
 			}
-			sampler2D.push_back(var);
 		}
 		return true;
 	}
@@ -217,7 +237,7 @@ namespace Phoenix {
 			if (my_sampler2D->isFBO) {
 				//Fbo* my_fbo = DEMO->fboManager.fbo[my_sampler2D->fboNum];
 				//glBindTextureUnit(my_sampler2D->texUnitID, my_fbo->m_colorAttachment[0]);
-				glBindTextureUnit(my_sampler2D->texUnitID, DEMO->m_fboManager.getOpenGLTextureID(my_sampler2D->fboNum));
+				glBindTextureUnit(my_sampler2D->texUnitID, DEMO->m_fboManager.getOpenGLTextureID(my_sampler2D->fboNum, my_sampler2D->fboAttachment));
 			}
 			else
 				glBindTextureUnit(my_sampler2D->texUnitID, my_sampler2D->texture->m_textureID);
