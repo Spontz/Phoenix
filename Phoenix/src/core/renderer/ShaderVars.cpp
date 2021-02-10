@@ -176,7 +176,10 @@ namespace Phoenix {
 				var->texUnitID = static_cast<int>(sampler2D.size());
 				var->isFBO = false;
 				var->texture = DEMO->m_textureManager.addTexture(DEMO->m_dataFolder + var_value);
-				sampler2D.push_back(var);
+				if (var->texture) // If texture is valid
+					sampler2D.push_back(var);
+				else
+					delete var;
 			}
 		}
 		return true;
