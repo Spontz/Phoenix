@@ -26,7 +26,7 @@ namespace Phoenix {
 		std::string			directory;			// Path of the model file
 		std::string			filename;			// Name of the model file
 		std::string			filepath;			// Full path of the model file
-		bool				playAnimation;		// Do we want to compute the transofrmations for playing animations?
+		bool				playAnimation;		// Do we want to compute the transformations for playing animations?
 		bool				useCamera;			// Do we want to use the camera of the model?
 
 		// Matrices
@@ -62,20 +62,21 @@ namespace Phoenix {
 		void loadUniqueVertices();
 
 	private:
-		Assimp::Importer	m_Importer;
-		const aiScene* m_pScene;
-		glm::mat4			m_matGlobalInverseTransform; // Global transformation matrix for nodes (vertices relative to bones)
+		Assimp::Importer					m_Importer;
+		const aiScene						*m_pScene;
+		glm::mat4							m_matGlobalInverseTransform;// Global transformation matrix for nodes (vertices relative to bones)
 		// Bones info
-		std::map<std::string, unsigned int> m_BoneMapping;	// maps a bone name to its index
-		std::vector<BoneInfo>	m_BoneInfo;
-		uint32_t				m_numBones;
-		unsigned int			m_currentCamera;			// Current Camera
-		unsigned int			m_currentAnimation;			// Current Animation
-		double					m_animDuration;				// Animation duration in seconds
+		std::map<std::string, unsigned int>	m_BoneMapping;				// maps a bone name to its index
+		std::vector<BoneInfo>				m_BoneInfo;
+		std::vector<glm::mat4>				m_boneTransforms;			// Bone transformations
+		uint32_t							m_numBones;
+		unsigned int						m_currentCamera;			// Current Camera
+		unsigned int						m_currentAnimation;			// Current Animation
+		double								m_animDuration;				// Animation duration in seconds
 
-		bool					m_bLoadedUniqueVertices;	// Have we loaded the unique vertices for each mesh?
+		bool								m_bLoadedUniqueVertices;	// Have we loaded the unique vertices for each mesh?
 
-		// Get Stats form the model
+		// Get Stats from the model
 		void getStats();
 
 		// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
@@ -90,7 +91,7 @@ namespace Phoenix {
 
 		// Bones Calculations
 		void setBoneTransformations(GLuint shaderProgram, float currentTime);
-		void boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transforms);
+		void boneTransform(float timeInSeconds);
 		// Bones Transformations
 		void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
 		void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);

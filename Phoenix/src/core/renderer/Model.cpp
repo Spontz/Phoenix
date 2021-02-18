@@ -105,6 +105,7 @@ namespace Phoenix {
 	{
 		if (a < m_statNumAnimations) {
 			m_currentAnimation = a;
+			m_animDuration = m_pScene->mAnimations[m_currentAnimation]->mDuration; // Load anim duration
 		}
 		else
 			Logger::error("The animation number [%i] is not available in the file [%s]", a, filename.c_str());
@@ -344,6 +345,9 @@ namespace Phoenix {
 				// Store the bone mapping: Bone Name + Bone Position in array
 				m_BoneInfo[BoneIndex].BoneOffset = mat4_cast(mesh->mBones[i]->mOffsetMatrix);
 				m_BoneMapping[boneName] = BoneIndex;
+
+				// Allocate space for the bone transformation matrix
+				m_boneTransforms.push_back(glm::mat4(1.0f));
 			}
 			else
 			{
@@ -378,34 +382,30 @@ namespace Phoenix {
 		// TODO: Hacer que los Transforms sea una propiedad de cada uno del Bone, asi no se tiene q hacer
 		// Resize ni cosas raras, y asi ya tenemos un vector de transformaciones de tamaño fijo
 		if (m_pScene->HasAnimations()) {
+			boneTransform(currentTime);
+			if (m_boneTransforms.size()>0)
+				glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)m_boneTransforms.size(), GL_FALSE, &m_boneTransforms[0][0][0]);
+			/*
 			std::vector<glm::mat4> Transforms;
 			boneTransform(currentTime, Transforms);
 			if (Transforms.size() > 0)
 				glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, &Transforms[0][0][0]);
+				*/
 		}
 	}
 
 
-	void Model::boneTransform(float timeInSeconds, std::vector<glm::mat4>& Transforms)
+	void Model::boneTransform(float timeInSeconds)
 	{
-		//TODO: I think that this line does not make any sense... because its overwritten later
-		m_animDuration = (float)m_pScene->mAnimations[m_currentAnimation]->mDuration;
-
-		// Calc animation duration
-		unsigned int numPosKeys = m_pScene->mAnimations[m_currentAnimation]->mChannels[0]->mNumPositionKeys;
-		m_animDuration = m_pScene->mAnimations[m_currentAnimation]->mChannels[0]->mPositionKeys[numPosKeys - 1].mTime;
-
 		float TicksPerSecond = (float)(m_pScene->mAnimations[m_currentAnimation]->mTicksPerSecond != 0 ?
 			m_pScene->mAnimations[m_currentAnimation]->mTicksPerSecond : 25.0f);
 		float TimeInTicks = timeInSeconds * TicksPerSecond;
 		float AnimationTime = (float)fmod(TimeInTicks, m_animDuration);
 
 		ReadNodeHeirarchy(AnimationTime, m_pScene->mRootNode, glm::mat4(1.0f));
-
-		Transforms.resize(m_numBones);
-
+		
 		for (unsigned int i = 0; i < m_numBones; i++) {
-			Transforms[i] = m_BoneInfo[i].FinalTransformation;
+			m_boneTransforms[i] = m_BoneInfo[i].FinalTransformation;
 		}
 	}
 

@@ -161,7 +161,10 @@ namespace Phoenix {
 			case TextureStorageType::IndexCompressed:
 			case TextureStorageType::IndexNonCompressed:
 			{
-				int index = std::stoi(filepath.C_Str());
+				std::string s_filepath = filepath.C_Str();
+				s_filepath.erase(std::remove(s_filepath.begin(), s_filepath.end(), '*'), s_filepath.end()); // For some reason, some formats include the "*" character. I'm removing it
+
+				int index = std::stoi(s_filepath.c_str());
 				if (index < 0 || index >= (int)m_pScene->mNumTextures) {
 					Logger::error("Error loading indexed texture, the specified texture number [%d] is not available", index);
 				}
