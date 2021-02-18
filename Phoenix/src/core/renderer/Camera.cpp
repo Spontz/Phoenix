@@ -109,11 +109,10 @@ namespace Phoenix {
 
 	void Camera::ProcessMouseScroll(float yoffset)
 	{
-		if (Zoom >= 1.0f && Zoom <= 179.0f)
-			Zoom -= yoffset;
-		if (Zoom <= 1.0f)
+		Zoom -= yoffset;
+		if (Zoom < 1.0f)
 			Zoom = 1.0f;
-		if (Zoom >= 179.0f)
+		if (Zoom > 179.0f)
 			Zoom = 179.0f;
 	}
 
