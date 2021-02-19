@@ -124,17 +124,14 @@ namespace Phoenix {
 
 		// Send textures
 		unsigned int numTextures = static_cast<unsigned int>(m_material.textures.size());
-		// TODO: Check thta startTexUnit + numtextures is less than the total texture units we can draw (normally, 32)
+		unsigned int texUnit = startTexUnit;
 		for (unsigned int i = 0; i < numTextures; i++)
 		{
-			if (!(m_material.textures[i].tex)) // Avoid illegal access
+			if (!(m_material.textures[i].tex))	// Avoid illegal access
 				return;
-			// TODO: Remove this c_str() command could improve performance?
-			// TODO: Deberíamos cargar la ultima texture unit que se ha usado, y emepzar desde allí, en vez de empezar desde 0, ya que puede
-			// que se haya usado alguna texture unit anteriormente (por ejemplo, para shadowmaps)
-			glUniform1i(glGetUniformLocation(shaderID, m_material.textures[i].shaderName.c_str()), i+startTexUnit);
-			// and finally bind the texture
-			m_material.textures[i].tex->bind(i+startTexUnit);
+			texUnit = startTexUnit + i;			// TODO: Check that texUnit is not greater than max TexUnits supported (normally, 32)
+			glUniform1i(glGetUniformLocation(shaderID, m_material.textures[i].shaderName.c_str()), texUnit);
+			m_material.textures[i].tex->bind(texUnit);
 		}
 	}
 
