@@ -21,11 +21,13 @@ namespace Phoenix {
 
 	struct BoneInfo
 	{
-		glm::mat4 BoneOffset;
-		glm::mat4 FinalTransformation;
+		int			id;
+		glm::mat4	BoneOffset;
+		glm::mat4	FinalTransformation;
 
 		BoneInfo()
 		{
+			id = -1;
 			BoneOffset = glm::mat4(0.0f);
 			FinalTransformation = glm::mat4(0.0f);
 		}
@@ -81,11 +83,11 @@ namespace Phoenix {
 	private:
 		friend class ModelInstance;			// We allod ModelInstance class to access private memebers
 
-		const aiMesh* m_pMesh;		// ASSIMP mesh object
+		const aiMesh*				m_pMesh;		// ASSIMP mesh object
 		std::vector<unsigned int>	m_indices;		// Indices
 		std::vector<Vertex>			m_vertices;		// Vertices
 		Material					m_material;		// Material
-		VertexArray* m_VertexArray;	// Vertex Array Object
+		VertexArray*				m_VertexArray;	// Vertex Array Object
 
 		// initializes all the buffer objects/arrays
 		void setupMesh();

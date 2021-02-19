@@ -66,8 +66,7 @@ namespace Phoenix {
 		const aiScene						*m_pScene;
 		glm::mat4							m_matGlobalInverseTransform;// Global transformation matrix for nodes (vertices relative to bones)
 		// Bones info
-		std::map<std::string, unsigned int>	m_BoneMapping;				// maps a bone name to its index
-		std::vector<BoneInfo>				m_BoneInfo;
+		std::map<std::string, BoneInfo>		m_boneInfoMap;				// maps a bone name to its information
 		std::vector<glm::mat4>				m_boneTransforms;			// Bone transformations
 		uint32_t							m_numBones;
 		unsigned int						m_currentCamera;			// Current Camera

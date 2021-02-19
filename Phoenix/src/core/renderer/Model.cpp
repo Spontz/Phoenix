@@ -329,36 +329,38 @@ namespace Phoenix {
 
 		// Process Bones of this mesh and loads it into the "BoneInfo" and "BoneMapping" lists
 		// BoneInfo and BoneMapping are like an indexed database of bones (TODO: Put all the Bones stuff in a Class)
-		for (unsigned int i = 0; i < mesh->mNumBones; ++i)
+		for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
 		{
-			unsigned int BoneIndex = 0;
-			std::string boneName(mesh->mBones[i]->mName.data);
+			int boneID = -1;
+			std::string boneName(mesh->mBones[boneIndex]->mName.C_Str());
 
-			if (m_BoneMapping.find(boneName) == m_BoneMapping.end())
+			if (m_boneInfoMap.find(boneName) == m_boneInfoMap.end())
 			{
 				// Allocate an index for the new bone
-				BoneIndex = m_numBones;
-				m_numBones++;
 				BoneInfo bi;
-				m_BoneInfo.push_back(bi);
-
+				bi.id = m_numBones;
+				bi.BoneOffset = mat4_cast(mesh->mBones[boneIndex]->mOffsetMatrix);
 				// Store the bone mapping: Bone Name + Bone Position in array
-				m_BoneInfo[BoneIndex].BoneOffset = mat4_cast(mesh->mBones[i]->mOffsetMatrix);
-				m_BoneMapping[boneName] = BoneIndex;
+				m_boneInfoMap[boneName] = bi;
+				boneID = m_numBones;
+				m_numBones++;
 
 				// Allocate space for the bone transformation matrix
 				m_boneTransforms.push_back(glm::mat4(1.0f));
 			}
 			else
 			{
-				BoneIndex = m_BoneMapping[boneName];
+				boneID = m_boneInfoMap[boneName].id;
 			}
 
-			for (unsigned int j = 0; j < mesh->mBones[i]->mNumWeights; ++j)
+			auto weights = mesh->mBones[boneIndex]->mWeights;
+			auto numWeights = mesh->mBones[boneIndex]->mNumWeights;
+			
+			for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
 			{
-				unsigned int VertexID = mesh->mBones[i]->mWeights[j].mVertexId;
-				float Weight = mesh->mBones[i]->mWeights[j].mWeight;
-				vertices[VertexID].Bone.AddBoneData(BoneIndex, Weight);
+				unsigned int VertexID = weights[weightIndex].mVertexId;
+				float Weight = weights[weightIndex].mWeight;
+				vertices[VertexID].Bone.AddBoneData(boneID, Weight);
 			}
 		}
 
@@ -385,12 +387,6 @@ namespace Phoenix {
 			boneTransform(currentTime);
 			if (m_boneTransforms.size()>0)
 				glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)m_boneTransforms.size(), GL_FALSE, &m_boneTransforms[0][0][0]);
-			/*
-			std::vector<glm::mat4> Transforms;
-			boneTransform(currentTime, Transforms);
-			if (Transforms.size() > 0)
-				glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)Transforms.size(), GL_FALSE, &Transforms[0][0][0]);
-				*/
 		}
 	}
 
@@ -403,9 +399,10 @@ namespace Phoenix {
 		float AnimationTime = (float)fmod(TimeInTicks, m_animDuration);
 
 		ReadNodeHeirarchy(AnimationTime, m_pScene->mRootNode, glm::mat4(1.0f));
-		
-		for (unsigned int i = 0; i < m_numBones; i++) {
-			m_boneTransforms[i] = m_BoneInfo[i].FinalTransformation;
+
+		// TODO: There should be anothr way to do this, although it works :)
+		for (auto const& bone : m_boneInfoMap) {
+			m_boneTransforms[bone.second.id] = bone.second.FinalTransformation;
 		}
 	}
 
@@ -453,11 +450,10 @@ namespace Phoenix {
 
 
 		// Now we need to apply the Matrix to the corresponding object
-
 		for (unsigned int i = 0; i < m_statNumMeshes; i++) {
 			if (NodeName == this->meshes[i].m_nodeName) {
 				this->meshes[i].m_matModel *= m_matGlobalInverseTransform * GlobalTransformation;
-				/*Logger::info(LogLevel::low, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %i [time: %.3f]", NodeName.c_str(), i, AnimationTime);
+				/*Logger::info(LogLevel::low, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %boneIndex [time: %.3f]", NodeName.c_str(), boneIndex, AnimationTime);
 				glm::mat4 M = GlobalTransformation;
 				Logger::info(LogLevel::low, "M: [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f]",
 					M[0][0], M[0][1], M[0][2], M[0][3],
@@ -474,9 +470,8 @@ namespace Phoenix {
 			}
 		}
 
-		if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) {
-			unsigned int BoneIndex = m_BoneMapping[NodeName];
-			m_BoneInfo[BoneIndex].FinalTransformation = m_matGlobalInverseTransform * GlobalTransformation * m_BoneInfo[BoneIndex].BoneOffset;
+		if (m_boneInfoMap.find(NodeName) != m_boneInfoMap.end()) {
+			m_boneInfoMap[NodeName].FinalTransformation = m_matGlobalInverseTransform * GlobalTransformation * m_boneInfoMap[NodeName].BoneOffset;
 		}
 
 		for (unsigned int i = 0; i < pNode->mNumChildren; i++) {
