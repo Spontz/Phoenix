@@ -162,7 +162,7 @@ namespace Phoenix {
 			case TextureStorageType::IndexNonCompressed:
 			{
 				std::string s_filepath = filepath.C_Str();
-				s_filepath.erase(std::remove(s_filepath.begin(), s_filepath.end(), '*'), s_filepath.end()); // For some reason, some formats include the "*" character. I'm removing it
+				s_filepath.erase(std::remove(s_filepath.begin(), s_filepath.end(), '*'), s_filepath.end()); // We need to remove the '*' character in order to get the index number
 
 				int index = std::stoi(s_filepath.c_str());
 				if (index < 0 || index >= (int)m_pScene->mNumTextures) {
