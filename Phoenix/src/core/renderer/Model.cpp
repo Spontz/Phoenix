@@ -356,7 +356,7 @@ namespace Phoenix {
 			auto weights = mesh->mBones[boneIndex]->mWeights;
 			auto numWeights = mesh->mBones[boneIndex]->mNumWeights;
 			
-			for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+			for (uint32_t weightIndex = 0; weightIndex < numWeights; ++weightIndex)
 			{
 				unsigned int VertexID = weights[weightIndex].mVertexId;
 				float Weight = weights[weightIndex].mWeight;
