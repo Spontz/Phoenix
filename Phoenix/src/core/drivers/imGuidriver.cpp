@@ -180,7 +180,7 @@ namespace Phoenix {
 		ImGui::Text("Cam Speed: %.3f", m_demo.m_pCamera->MovementSpeed);
 		ImGui::Text("Cam Pos: %.1f,%.1f,%.1f", m_demo.m_pCamera->Position.x, m_demo.m_pCamera->Position.y, m_demo.m_pCamera->Position.z);
 		ImGui::Text("Cam Front: %.1f,%.1f,%.1f", m_demo.m_pCamera->Front.x, m_demo.m_pCamera->Front.y, m_demo.m_pCamera->Front.z);
-		ImGui::Text("Cam Yaw: %.1f, Pitch: %.1f, Roll: %.1f, Zoom: %.1f", m_demo.m_pCamera->Yaw, m_demo.m_pCamera->Pitch, m_demo.m_pCamera->Roll, m_demo.m_pCamera->Zoom);
+		ImGui::Text("Cam Yaw: %.1f, Pitch: %.1f, Roll: %.1f, Fov: %.1f", m_demo.m_pCamera->Yaw, m_demo.m_pCamera->Pitch, m_demo.m_pCamera->Roll, m_demo.m_pCamera->Fov);
 		if (m_demo.m_slaveMode)
 			ImGui::Text("Slave Mode ON");
 		else

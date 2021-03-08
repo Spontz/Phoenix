@@ -43,7 +43,7 @@ namespace Phoenix {
 
 			SymbolTable.add_variable("cam_yaw", DEMO->m_pCamera->Yaw);
 			SymbolTable.add_variable("cam_pitch", DEMO->m_pCamera->Pitch);
-			SymbolTable.add_variable("cam_zoom", DEMO->m_pCamera->Zoom);
+			SymbolTable.add_variable("cam_fov", DEMO->m_pCamera->Fov);
 		}
 		else {
 			SymbolTable.add_constant("cam_posX", 0);
@@ -56,7 +56,7 @@ namespace Phoenix {
 
 			SymbolTable.add_constant("cam_yaw", 0);
 			SymbolTable.add_constant("cam_pitch", 0);
-			SymbolTable.add_constant("cam_zoom", 0);
+			SymbolTable.add_constant("cam_fov", 0);
 		}
 
 		// Light values

@@ -166,9 +166,8 @@ namespace Phoenix {
 			}
 			else
 			{
-				glm::mat4 mView = m_demo.m_pCamera->GetViewMatrix();
-				float zoom = m_demo.m_pCamera->Zoom;
-				glm::mat4 mProjection = glm::perspective(glm::radians(zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
+				glm::mat4 mView = m_demo.m_pCamera->getViewMatrix();
+				glm::mat4 mProjection = m_demo.m_pCamera->getProjectionMatrix();
 
 				mModel = glm::translate(mModel, m_vTranslation);
 				mModel = glm::rotate(mModel, glm::radians(m_vRotation.x), glm::vec3(1, 0, 0));

@@ -200,13 +200,8 @@ namespace Phoenix {
 		// End ShadowMapping
 
 		// view/projection transformations
-		glm::mat4 projection = glm::perspective(
-			glm::radians(m_demo.m_pCamera->Zoom),
-			//GLDRV->GetCurrentViewport().GetAspectRatio(),
-			GLDRV->GetFramebufferViewport().GetAspectRatio(),
-			0.1f, 10000.0f
-		);
-		glm::mat4 view = m_demo.m_pCamera->GetViewMatrix();
+		glm::mat4 projection = m_demo.m_pCamera->getProjectionMatrix();
+		glm::mat4 view = m_demo.m_pCamera->getViewMatrix();
 		m_pShader->setValue("projection", projection);	// TODO: Should we send the projection/view matrices here?
 		m_pShader->setValue("view", view);
 		m_pModel->m_matProjection = projection;			// TODO2: Or should we copy them into the model like we do here?

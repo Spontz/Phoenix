@@ -69,7 +69,7 @@ namespace Phoenix {
 		// If we use camera, override the matrix view for the camera view
 		if (this->useCamera) {
 			if ((m_currentCamera >= 0) && (m_currentCamera < m_camera.size())) {
-				m_matView = m_camera[m_currentCamera]->GetMatrix();
+				m_matView = m_camera[m_currentCamera]->getMatrix();
 			}
 		}
 

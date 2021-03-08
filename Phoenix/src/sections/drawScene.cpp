@@ -158,16 +158,12 @@ namespace Phoenix {
 		// End ShadowMapping
 
 		// view/projection transformations
-		m_mProjection = glm::perspective(
-			glm::radians(m_demo.m_pCamera->Zoom),
-			GLDRV->GetFramebufferViewport().GetAspectRatio(),
-			0.1f, 10000.0f
-		);
+		m_mProjection = m_demo.m_pCamera->getProjectionMatrix();
 
 		//m_pShader->setValue("projection", m_mProjection);
 		m_pModel->m_matProjection = m_mProjection;
 
-		m_mView = m_demo.m_pCamera->GetViewMatrix();
+		m_mView = m_demo.m_pCamera->getViewMatrix();
 		//if (CameraNumber < 0)
 		//	m_pShader->setValue("view", m_mView);
 		m_pModel->m_matView = m_mView;

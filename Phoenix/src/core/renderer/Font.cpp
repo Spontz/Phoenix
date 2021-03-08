@@ -22,7 +22,7 @@ namespace Phoenix {
 		shdr_font = DEMO->m_shaderManager.addShader(shader_path);
 
 		if (shdr_font) {
-			projection = DEMO->m_pCamera->getOrthoMatrix_Projection();
+			projection = DEMO->m_pCamera->getOrthoProjectionMatrix();
 			shdr_font->use();
 		}
 		else {

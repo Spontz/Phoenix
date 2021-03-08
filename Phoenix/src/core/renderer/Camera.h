@@ -30,6 +30,8 @@ namespace Phoenix {
 		static const float DEFAULT_CAM_SENSITIVITY;
 		static const float DEFAULT_CAM_VFOV;
 		static const float DEFAULT_CAM_ROLL;
+		static const float DEFAULT_CAM_NEAR;
+		static const float DEFAULT_CAM_FAR;
 
 	public:
 		std::string		Name;
@@ -39,7 +41,7 @@ namespace Phoenix {
 		glm::vec3		Up;
 		glm::vec3		Right;
 		glm::vec3		WorldUp;
-		glm::mat4		Matrix;
+		glm::mat4		Matrix;	// Matrix: used for scenes with a saved matrix
 
 		// Euler Angles
 		float Yaw;
@@ -50,7 +52,11 @@ namespace Phoenix {
 		float MovementSpeed;
 		float RollSpeed;
 		float MouseSensitivity;
-		float Zoom;
+		float Fov;
+
+		// Camera frustrum
+		float Near;
+		float Far;
 
 		// Constructor with vectors
 		Camera(
@@ -61,21 +67,24 @@ namespace Phoenix {
 			float roll = DEFAULT_CAM_ROLL
 		);
 
-		void		Reset();
+		void		reset();
 		// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
-		glm::mat4	GetViewMatrix() const;
-		glm::mat4	GetMatrix() const;
+		glm::mat4	getViewMatrix() const;
+		glm::mat4	getProjectionMatrix() const;
+		glm::mat4	getOrthoProjectionMatrix() const;
+		glm::mat4	getOrthoViewMatrix() const;
+		glm::mat4	getMatrix() const;
+
 		// Processes input received from any keyboard-like input system
 		// Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-		void		ProcessKeyboard(CameraMovement direction, float deltaTime);
+		void		processKeyboard(CameraMovement direction, float deltaTime);
 		// Processes input received from a mouse input system. Expects the offset value in both the x and y direction
-		void		ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true);
+		void		processMouseMovement(float xoffset, float yoffset, bool constrainPitch = true);
 		// Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
-		void		ProcessMouseScroll(float yoffset);
-		void		CapturePos();
-		void		setCamera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float pitch, float roll, float zoom);
-		glm::mat4	getOrthoMatrix_Projection() const;
-		glm::mat4	getOrthoMatrix_View() const;
+		void		processMouseScroll(float yoffset);
+		void		capturePos();
+		void		setCamera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float pitch, float roll, float fov);
+
 
 	private:
 		// Calculates the front vector from the Camera's (updated) Euler Angles

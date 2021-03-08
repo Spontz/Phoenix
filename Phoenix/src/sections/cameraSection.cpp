@@ -20,7 +20,7 @@ namespace Phoenix {
 		float		m_fCamYaw = 0;
 		float		m_fCamPitch = 0;
 		float		m_fCamRoll = 0;
-		float		m_fCamZoom = 0;
+		float		m_fCamFov = 0;
 
 		MathDriver* m_pExprCamera = nullptr;	// A equation containing the calculations of the camera
 	} camera_section;
@@ -71,7 +71,7 @@ namespace Phoenix {
 		m_pExprCamera->SymbolTable.add_variable("Yaw", m_fCamYaw);
 		m_pExprCamera->SymbolTable.add_variable("Pitch", m_fCamPitch);
 		m_pExprCamera->SymbolTable.add_variable("Roll", m_fCamRoll);
-		m_pExprCamera->SymbolTable.add_variable("Zoom", m_fCamZoom);
+		m_pExprCamera->SymbolTable.add_variable("Fov", m_fCamFov);
 
 
 		if (!m_pExprCamera->compileFormula())
@@ -102,7 +102,7 @@ namespace Phoenix {
 
 			m_demo.m_pCamera->setCamera(glm::vec3(new_pos[0], new_pos[1], new_pos[2]) + m_vCamPos,
 				glm::vec3(new_pos[3], new_pos[4], new_pos[5]),
-				new_pos[6] + m_fCamYaw, new_pos[7] + m_fCamPitch, new_pos[8] + m_fCamRoll, new_pos[9] + m_fCamZoom);
+				new_pos[6] + m_fCamYaw, new_pos[7] + m_fCamPitch, new_pos[8] + m_fCamRoll, new_pos[9] + m_fCamFov);
 		}
 
 

@@ -77,7 +77,7 @@ namespace Phoenix {
 				GLDRV->m_mouse_lastxpos = x;
 				GLDRV->m_mouse_lastypos = y;
 
-				GLDRV->m_demo.m_pCamera->ProcessMouseMovement(xoffset, yoffset);
+				GLDRV->m_demo.m_pCamera->processMouseMovement(xoffset, yoffset);
 			}
 			if (glfwGetMouseButton(p_glfw_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
 				GLDRV->m_mouse_lastxpos = x;
@@ -107,7 +107,7 @@ namespace Phoenix {
 	void glDriver::glfwMouseScrollCallback(GLFWwindow* p_glfw_window, double xoffset, double yoffset)
 	{
 		if (GLDRV->m_demo.m_debug && !(ImGui::GetIO().WantCaptureMouse))
-			GLDRV->m_demo.m_pCamera->ProcessMouseScroll((float)yoffset);
+			GLDRV->m_demo.m_pCamera->processMouseScroll((float)yoffset);
 	}
 
 	void glDriver::glfwKeyCallback(GLFWwindow* p_glfw_window, int key, int scancode, int action, int mods) {
@@ -152,9 +152,9 @@ namespace Phoenix {
 
 
 				else if (key == KEY_CAPTURE)
-					demo.m_pCamera->CapturePos();
+					demo.m_pCamera->capturePos();
 				else if (key == KEY_CAMRESET)
-					demo.m_pCamera->Reset();
+					demo.m_pCamera->reset();
 				else if (key == KEY_MULTIPLIER)
 					demo.m_pCamera->MovementSpeed *= 2.0f;
 				else if (key == KEY_DIVIDER) {
@@ -186,17 +186,17 @@ namespace Phoenix {
 
 		if (m_demo.m_debug) {
 			if (glfwGetKey(m_glfw_window, KEY_FORWARD) == GLFW_PRESS)
-				m_demo.m_pCamera->ProcessKeyboard(CameraMovement::FORWARD, GLDRV->m_timeDelta);
+				m_demo.m_pCamera->processKeyboard(CameraMovement::FORWARD, GLDRV->m_timeDelta);
 			if (glfwGetKey(m_glfw_window, KEY_BACKWARD) == GLFW_PRESS)
-				m_demo.m_pCamera->ProcessKeyboard(CameraMovement::BACKWARD, GLDRV->m_timeDelta);
+				m_demo.m_pCamera->processKeyboard(CameraMovement::BACKWARD, GLDRV->m_timeDelta);
 			if (glfwGetKey(m_glfw_window, KEY_STRAFELEFT) == GLFW_PRESS)
-				m_demo.m_pCamera->ProcessKeyboard(CameraMovement::LEFT, GLDRV->m_timeDelta);
+				m_demo.m_pCamera->processKeyboard(CameraMovement::LEFT, GLDRV->m_timeDelta);
 			if (glfwGetKey(m_glfw_window, KEY_STRAFERIGHT) == GLFW_PRESS)
-				m_demo.m_pCamera->ProcessKeyboard(CameraMovement::RIGHT, GLDRV->m_timeDelta);
+				m_demo.m_pCamera->processKeyboard(CameraMovement::RIGHT, GLDRV->m_timeDelta);
 			if (glfwGetKey(m_glfw_window, KEY_ROLLRIGHT) == GLFW_PRESS)
-				m_demo.m_pCamera->ProcessKeyboard(CameraMovement::ROLL_RIGHT, GLDRV->m_timeDelta);
+				m_demo.m_pCamera->processKeyboard(CameraMovement::ROLL_RIGHT, GLDRV->m_timeDelta);
 			if (glfwGetKey(m_glfw_window, KEY_ROLLLEFT) == GLFW_PRESS)
-				m_demo.m_pCamera->ProcessKeyboard(CameraMovement::ROLL_LEFT, GLDRV->m_timeDelta);
+				m_demo.m_pCamera->processKeyboard(CameraMovement::ROLL_LEFT, GLDRV->m_timeDelta);
 		}
 
 	}
@@ -390,12 +390,8 @@ namespace Phoenix {
 		glm::mat4 MVP;
 		glm::mat4 VP;
 
-		glm::mat4 projection = glm::perspective(
-			glm::radians(m_demo.m_pCamera->Zoom),
-			GetFramebufferViewport().GetAspectRatio(),
-			0.1f, 10000.0f
-		);
-		glm::mat4 view = m_demo.m_pCamera->GetViewMatrix();
+		glm::mat4 projection = m_demo.m_pCamera->getProjectionMatrix();
+		glm::mat4 view = m_demo.m_pCamera->getViewMatrix();
 
 		VP = projection * view;
 

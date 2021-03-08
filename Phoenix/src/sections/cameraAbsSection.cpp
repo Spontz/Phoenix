@@ -23,14 +23,14 @@ namespace Phoenix {
 		float		m_fCamYaw = 0;
 		float		m_fCamPitch = 0;
 		float		m_fCamRoll = 0;
-		float		m_fCamZoom = 0;
+		float		m_fCamFov = 0;
 
 		// Final cam position variables
 		glm::vec3	m_vCamFinalPos = { 0, 0, 0 };
 		float		m_fCamFinalYaw = 0;
 		float		m_fCamFinalPitch = 0;
 		float		m_fCamFinalRoll = 0;
-		float		m_fCamFinalZoom = 0;
+		float		m_fCamFinalFov = 0;
 
 		MathDriver* m_pExprCamera = nullptr;	// A equation containing the calculations of the camera
 	};
@@ -81,7 +81,7 @@ namespace Phoenix {
 		m_pExprCamera->SymbolTable.add_variable("c_yaw", m_fCamYaw);
 		m_pExprCamera->SymbolTable.add_variable("c_pitch", m_fCamPitch);
 		m_pExprCamera->SymbolTable.add_variable("c_roll", m_fCamRoll);
-		m_pExprCamera->SymbolTable.add_variable("c_zoom", m_fCamZoom);
+		m_pExprCamera->SymbolTable.add_variable("c_fov", m_fCamFov);
 
 		m_pExprCamera->SymbolTable.add_variable("PosX", m_vCamFinalPos.x);
 		m_pExprCamera->SymbolTable.add_variable("PosY", m_vCamFinalPos.y);
@@ -90,7 +90,7 @@ namespace Phoenix {
 		m_pExprCamera->SymbolTable.add_variable("Yaw", m_fCamFinalYaw);
 		m_pExprCamera->SymbolTable.add_variable("Pitch", m_fCamFinalPitch);
 		m_pExprCamera->SymbolTable.add_variable("Roll", m_fCamFinalRoll);
-		m_pExprCamera->SymbolTable.add_variable("Zoom", m_fCamFinalZoom);
+		m_pExprCamera->SymbolTable.add_variable("Fov", m_fCamFinalFov);
 
 		if (!m_pExprCamera->compileFormula())
 			return false;
@@ -119,14 +119,14 @@ namespace Phoenix {
 			m_fCamYaw = new_pos[6];
 			m_fCamPitch = new_pos[7];
 			m_fCamRoll = new_pos[8];
-			m_fCamZoom = new_pos[9];
+			m_fCamFov = new_pos[9];
 
 			// apply formula modifications
 			m_pExprCamera->Expression.value();
 
 			DEMO->m_pCamera->setCamera(m_vCamFinalPos,
 				glm::vec3(new_pos[3], new_pos[4], new_pos[5]),
-				m_fCamFinalYaw, m_fCamFinalPitch, m_fCamFinalRoll, m_fCamFinalZoom);
+				m_fCamFinalYaw, m_fCamFinalPitch, m_fCamFinalRoll, m_fCamFinalFov);
 		}
 	}
 

@@ -117,8 +117,8 @@ namespace Phoenix {
 
 		glDepthMask(GL_FALSE); // Disable depth buffer writting
 
-		glm::mat4 projection = glm::perspective(glm::radians(m_demo.m_pCamera->Zoom), GLDRV->GetCurrentViewport().GetAspectRatio(), 0.1f, 10000.0f);
-		glm::mat4 view = m_demo.m_pCamera->GetViewMatrix();
+		glm::mat4 projection = m_demo.m_pCamera->getProjectionMatrix();
+		glm::mat4 view = m_demo.m_pCamera->getViewMatrix();
 
 		// render the loaded model
 		glm::mat4 model = glm::mat4(1.0f);
