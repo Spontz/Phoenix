@@ -161,7 +161,6 @@ namespace Phoenix {
 			}
 
 			lineNum++;
-			std::cout << line << std::endl;
 		}
 		source = end_stream.str();
 	}
