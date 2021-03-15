@@ -1,11 +1,11 @@
-// main.cpp
+// Phoenix main launcher
 // Spontz Demogroup
 
 #define PHOENIX_MAIN
 
-#include "main.h"
+#include "Engine/src/main.h"
 
-#include "debug/Instrumentor.h"
+//#include "Engine/src/debug/Instrumentor.h"
 
 int main(int argc, char* argv[]) {
 	auto& demo = Phoenix::demokernel::GetInstance();
@@ -34,13 +34,13 @@ int main(int argc, char* argv[]) {
 
 	Phoenix::Logger::info(Phoenix::LogLevel::high, "Phoenix Visuals Engine starting up: Let's make some noise!");
 
-	PX_PROFILE_BEGIN_SESSION("DataLoad", "PhoenixProfile-DataLoad.json");
+	//PX_PROFILE_BEGIN_SESSION("DataLoad", "PhoenixProfile-DataLoad.json");
 	Phoenix::Logger::info(Phoenix::LogLevel::med, "Loading Scripts...");
 	if (!demo.loadSpoConfig())
 		return 0;
 	demo.initNetwork(); // After loading config, we init the network
 	demo.loadSpoFiles();
-	PX_PROFILE_END_SESSION();
+	//PX_PROFILE_END_SESSION();
 
 	Phoenix::Logger::info(Phoenix::LogLevel::high, "Initializing demo...");
 	if (!demo.initDemo()) {
@@ -48,10 +48,10 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
-	PX_PROFILE_BEGIN_SESSION("Runtime", "PhoenixProfile-Runtime.json");
+	//PX_PROFILE_BEGIN_SESSION("Runtime", "PhoenixProfile-Runtime.json");
 	Phoenix::Logger::info(Phoenix::LogLevel::high, "Initializing main loop...");
 	demo.mainLoop();
-	PX_PROFILE_END_SESSION();
+	//PX_PROFILE_END_SESSION();
 
 	Phoenix::Logger::info(Phoenix::LogLevel::high, "Closing demo. We hope you enjoyed watching this demo! See you next time! Watch more at www.spontz.org.");
 	demo.closeDemo();
