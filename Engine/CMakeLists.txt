@@ -27,7 +27,7 @@ message("  Debugger Work directory is: ${DEBUGGER_WD}")
 
 # Link libraries
 target_link_libraries(${SubProject} PRIVATE ${OPENGL_LIBRARIES})
-target_link_libraries(${SubProject} PRIVATE glm)
+target_link_libraries(${SubProject} PRIVATE glm::glm)
 target_link_libraries(${SubProject} PRIVATE ${FFMPEG_LIBRARIES})
 target_link_libraries(${SubProject} PRIVATE glad::glad)
 target_link_libraries(${SubProject} PRIVATE Freetype::Freetype)

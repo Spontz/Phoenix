@@ -1,8 +1,9 @@
 # 2018-2021, Spontz
 
 set(SubProject "Editor")
-set(SubProject_SOURCE_DIR ${PROJECT_SOURCE_DIR}/${SubProject})
 set(SubProject_OutputName "Editor")
+set(SubProject_SOURCE_DIR ${PROJECT_SOURCE_DIR}/${SubProject})
+
 
 # Show some debug info
 message("\n-- Building ${SubProject}")
@@ -37,7 +38,7 @@ set_target_properties(${SubProject} PROPERTIES OUTPUT_NAME ${SubProject_OutputNa
 # Link libraries
 target_link_libraries(${SubProject} PRIVATE Engine)
 target_link_libraries(${SubProject} PRIVATE ${OPENGL_LIBRARIES})
-target_link_libraries(${SubProject} PRIVATE glm)
+target_link_libraries(${SubProject} PRIVATE glm::glm)
 target_link_libraries(${SubProject} PRIVATE ${FFMPEG_LIBRARIES})
 target_link_libraries(${SubProject} PRIVATE glad::glad)
 target_link_libraries(${SubProject} PRIVATE Freetype::Freetype)
