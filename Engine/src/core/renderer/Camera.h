@@ -105,7 +105,7 @@ namespace Phoenix {
 		
 	private:
 		// Calculates the front vector from the Camera's (updated) Euler Angles
-		void		setRollMatrix(glm::mat3x3& m, glm::vec3 f);
+		void		setRollMatrix(glm::mat3& m, glm::vec3 f);
 		void		updateCameraVectors();
 	};
 }

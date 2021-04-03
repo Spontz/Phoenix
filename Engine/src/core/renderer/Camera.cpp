@@ -85,10 +85,8 @@ namespace Phoenix {
 			return glm::lookAt(Position, Position + Front, Up);
 		case CameraType::TARGET:
 			Front = normalize(At - Position);
-			//const auto m1 = glm::lookAt({ 0,0,0 }, forward, m_vCamUp); // m_vCamUp should be normalized
-			//
-			const auto m1 = glm::orientation(Front, Up); // m_vCamUp should be normalized
-			const auto mRot = glm::orientate4(glm::vec3(Pitch, Roll, Yaw));
+			const auto m1 = glm::lookAt({ 0,0,0 }, Front, Up); // m_vCamUp should be normalized
+			const auto mRot = glm::orientate4(glm::vec3(glm::radians(Pitch), glm::radians(Roll), glm::radians(Yaw)));
 			const auto mTrans = glm::translate(-Position);
 			return (m1 * mRot * mTrans);
 			
@@ -208,7 +206,7 @@ namespace Phoenix {
 	}
 
 	// Calculates the front vector from the Camera's (updated) Euler Angles
-	void Camera::setRollMatrix(glm::mat3x3& m, glm::vec3 f) {
+	void Camera::setRollMatrix(glm::mat3& m, glm::vec3 f) {
 		float rcos = glm::cos(glm::radians(Roll));
 		float rsin = glm::sin(glm::radians(Roll));
 
@@ -235,7 +233,7 @@ namespace Phoenix {
 		Front = glm::normalize(front);
 
 		//	control the rotate view
-		glm::mat3x3 rollMatrix;
+		glm::mat3 rollMatrix;
 		setRollMatrix(rollMatrix, front);
 
 		// Also re-calculate the Right and Up vector
