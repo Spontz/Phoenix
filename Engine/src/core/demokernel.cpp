@@ -133,7 +133,7 @@ namespace Phoenix {
 			Logger::info(LogLevel::med, "\t%s", extension.c_str());
 
 		// Create the camera
-		m_pCamera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+		m_pCamera = new Camera(Camera::DEFAULT_POSITION, Camera::DEFAULT_CAM_YAW, Camera::DEFAULT_CAM_PITCH , Camera::DEFAULT_CAM_ROLL);
 
 		// Start loading Basic resources
 		m_pRes->loadAllResources();

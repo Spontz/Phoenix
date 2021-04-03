@@ -19,6 +19,7 @@ namespace Phoenix {
 		// built-in sections
 		{"camera",				SectionType::CameraSec},
 		{"cameraAbs",			SectionType::CameraAbsSec},
+		{"cameraTarget",		SectionType::CameraTarget},
 		{"light",				SectionType::LightSec},
 		{"drawScene",			SectionType::DrawScene},
 		{"drawSceneMatrix",		SectionType::DrawSceneMatrix},
@@ -84,7 +85,10 @@ namespace Phoenix {
 			mySection = instance_camera();
 			break;
 		case SectionType::CameraAbsSec:
-			mySection = instance_cameraAbsSection();
+			mySection = instance_cameraAbs();
+			break;
+		case SectionType::CameraTarget:
+			mySection = instance_cameraTarget();
 			break;
 		case SectionType::LightSec:
 			mySection = instance_light();

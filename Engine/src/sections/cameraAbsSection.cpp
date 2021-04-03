@@ -37,7 +37,7 @@ namespace Phoenix {
 
 	// ******************************************************************
 
-	Section* instance_cameraAbsSection()
+	Section* instance_cameraAbs()
 	{
 		return new sCameraAbs();
 	}

@@ -19,7 +19,7 @@ namespace Phoenix {
 		shutdown();
 	}
 
-	bool ParticleMesh::startup(std::vector<Particle> Part)
+	bool ParticleMesh::startup(std::vector<Particle> const& Part)
 	{
 		// Application memory particle buffers (double buffered)
 		m_particles = new Particle[m_numParticles];
@@ -79,6 +79,9 @@ namespace Phoenix {
 	{
 		delete[] m_particles;
 		delete[] m_VertexArray;
+
+		m_particles = nullptr;
+		m_VertexArray = nullptr;
 	}
 
 }

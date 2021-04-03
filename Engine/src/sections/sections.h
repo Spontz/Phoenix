@@ -9,7 +9,8 @@ namespace Phoenix {
 	Section* instance_loading();
 	Section* instance_sound();
 	Section* instance_camera();
-	Section* instance_cameraAbsSection();
+	Section* instance_cameraAbs();
+	Section* instance_cameraTarget();
 	Section* instance_light();
 	Section* instance_fboBind();
 	Section* instance_fboUnbind();

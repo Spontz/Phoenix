@@ -14,6 +14,7 @@ namespace Phoenix {
 
         CameraSec,
         CameraAbsSec,
+        CameraTarget,
         LightSec,
         ObjectShader,
         ObjectAnimShader,

@@ -201,12 +201,10 @@ namespace Phoenix {
 			//glm::vec3 cam_up = glm::vec3(aiCam->mUp.x, aiCam->mUp.y, aiCam->mUp.z);
 			// TODO: Read FOV, YAW and PITCH
 
-			Camera* cam = new Camera();
-			cam->Name = aiCam->mName.C_Str();
 			aiMatrix4x4 mat;
 			aiCam->GetCameraMatrix(mat);
-			cam->Matrix = mat4_cast(mat);
-
+			Camera* cam = new Camera(mat4_cast(mat));
+			cam->Name = aiCam->mName.C_Str();
 			m_camera.push_back(cam);
 		}
 	}

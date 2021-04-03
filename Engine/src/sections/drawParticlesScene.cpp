@@ -8,6 +8,7 @@ namespace Phoenix {
 	struct sDrawParticlesScene : public Section {
 	public:
 		sDrawParticlesScene();
+		~sDrawParticlesScene();
 		bool		load();
 		void		init();
 		void		exec();
@@ -43,6 +44,11 @@ namespace Phoenix {
 	sDrawParticlesScene::sDrawParticlesScene()
 	{
 		type = SectionType::DrawParticlesScene;
+	}
+
+	sDrawParticlesScene::~sDrawParticlesScene()
+	{
+		m_pParticleMesh->shutdown();
 	}
 
 	bool sDrawParticlesScene::load()
@@ -182,7 +188,6 @@ namespace Phoenix {
 
 	void sDrawParticlesScene::end()
 	{
-		m_pParticleMesh->shutdown();
 	}
 
 	void sDrawParticlesScene::loadDebugStatic()

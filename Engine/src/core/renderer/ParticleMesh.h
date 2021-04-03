@@ -22,7 +22,7 @@ namespace Phoenix {
 		ParticleMesh(int numParticles);
 		~ParticleMesh();
 
-		bool startup(std::vector<Particle> Pos = { });
+		bool startup(std::vector<Particle> const& Pos = {});
 		void render(float currentTime);
 		void shutdown();
 

@@ -6,60 +6,98 @@
 
 namespace Phoenix {
 
-	// Default camera values
-	const float Camera::DEFAULT_CAM_YAW = -90.0f;
-	const float Camera::DEFAULT_CAM_PITCH = 0.0f;
-	const float Camera::DEFAULT_CAM_ROLL = 0.0f;
-	const float Camera::DEFAULT_CAM_SPEED = 15.0f;
-	const float Camera::DEFAULT_CAM_ROLL_SPEED = 40.0f;
-	const float Camera::DEFAULT_CAM_SENSITIVITY = 0.1f;
-	const float Camera::DEFAULT_CAM_VFOV = 45.0f;
-	const float Camera::DEFAULT_CAM_NEAR = 0.1f;
-	const float Camera::DEFAULT_CAM_FAR = 10000.0f;
-
-	Camera::Camera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float pitch, float roll)
+	Camera::Camera(glm::vec3 const& position, float yaw, float pitch, float roll)
 	{
-		Name = "Default";
-		Front = glm::vec3(0.0f, 0.0f, -1.0f);
+		camType = CameraType::FREE;
+		Name = "Free Camera";
+		
 		MovementSpeed = DEFAULT_CAM_SPEED;
 		RollSpeed = DEFAULT_CAM_ROLL_SPEED;
 		MouseSensitivity = DEFAULT_CAM_SENSITIVITY;
 		Fov = DEFAULT_CAM_VFOV;
+		Near = DEFAULT_CAM_NEAR;
+		Far = DEFAULT_CAM_FAR;
 
 		Position = position;
-		WorldUp = up;
+		WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 		Yaw = yaw;
 		Pitch = pitch;
 		Roll = roll;
 
+		
+		updateCameraVectors();
+	}
+
+	Camera::Camera(glm::vec3 const& position, glm::vec3 const& at, glm::vec3 const& up, float yaw, float pitch, float roll)
+	{
+		camType = CameraType::TARGET;
+		Name = "Target + Free";
+		
+		MovementSpeed = DEFAULT_CAM_SPEED;
+		RollSpeed = DEFAULT_CAM_ROLL_SPEED;
+		MouseSensitivity = DEFAULT_CAM_SENSITIVITY;
+		Fov = DEFAULT_CAM_VFOV;
 		Near = DEFAULT_CAM_NEAR;
 		Far = DEFAULT_CAM_FAR;
 
-		updateCameraVectors();
+		Position = position;
+		At = at;
+		Up = up;
+		Yaw = yaw;
+		Pitch = pitch;
+		Roll = roll;
+
+		//updateCameraVectors();
+	}
+
+	Camera::Camera(glm::mat4 const& matrix)
+	{
+		Name = "Matrix Raw";
+		Matrix = matrix;
 	}
 
 	void Camera::reset()
 	{
+		// TODO: Fix this
+		//camType = CameraType::FREE;
+
 		Front = glm::vec3(0.0f, 0.0f, -1.0f);
 		MovementSpeed = DEFAULT_CAM_SPEED;
 		MouseSensitivity = DEFAULT_CAM_SENSITIVITY;
 		Fov = DEFAULT_CAM_VFOV;
-
-		Position = glm::vec3(0.0f, 0.0f, 3.0f);
-		WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+		Near = DEFAULT_CAM_NEAR;
+		Far = DEFAULT_CAM_FAR;
 		Yaw = DEFAULT_CAM_YAW;
 		Pitch = DEFAULT_CAM_PITCH;
 		Roll = DEFAULT_CAM_ROLL;
 
-		Near = DEFAULT_CAM_NEAR;
-		Far = DEFAULT_CAM_FAR;
+		Position = glm::vec3(0.0f, 0.0f, 3.0f);
+		WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 		updateCameraVectors();
 	}
 
-	glm::mat4 Camera::getViewMatrix() const
+	glm::mat4 Camera::getViewMatrix() const // TODO: Implementar en el mismo getViewMatrix el obtener la matriz 'raw' (la que devielve con el getMatrix), y quitar el método getMatrix
 	{
-		return glm::lookAt(Position, Position + Front, Up);
+		switch (camType)
+		{
+		case CameraType::FREE:
+			return glm::lookAt(Position, Position + Front, Up);
+		case CameraType::TARGET:
+			Front = normalize(At - Position);
+			//const auto m1 = glm::lookAt({ 0,0,0 }, forward, m_vCamUp); // m_vCamUp should be normalized
+			//
+			const auto m1 = glm::orientation(Front, Up); // m_vCamUp should be normalized
+			const auto mRot = glm::orientate4(glm::vec3(Pitch, Roll, Yaw));
+			const auto mTrans = glm::translate(-Position);
+			return (m1 * mRot * mTrans);
+			
+		case CameraType::RAW_MATRIX:
+			return Matrix;
+		default:
+			throw std::runtime_error("Invalid camera type");
+		}
+		
 	}
 
 	glm::mat4 Camera::getProjectionMatrix() const
@@ -168,7 +206,6 @@ namespace Phoenix {
 		Fov = fov;
 		updateCameraVectors();
 	}
-
 
 	// Calculates the front vector from the Camera's (updated) Euler Angles
 	void Camera::setRollMatrix(glm::mat3x3& m, glm::vec3 f) {
