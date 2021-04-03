@@ -142,7 +142,7 @@ namespace Phoenix {
 		Emitter.resize(m_uiNumEmitters);
 
 		m_fCurrentEmitter = 0;
-		Emitter[0].Type = PARTICLE_TYPE_EMITTER;
+		Emitter[0].Type = ParticleType::Emitter;
 		Emitter[0].Pos = glm::vec3(0, 0, 0);
 		Emitter[0].Vel = glm::vec3(0, 0, 0);
 		Emitter[0].Col = glm::vec3(1, 0, 0);
@@ -154,7 +154,7 @@ namespace Phoenix {
 		for (int i = 0; i < model->meshes.size(); i++) {
 			for (int j = 0; j < model->meshes[i].unique_vertices_pos.size(); j++) {
 				exprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
-				Emitter[numEmitter].Type = PARTICLE_TYPE_EMITTER;
+				Emitter[numEmitter].Type = e_particle::emitter;
 				Emitter[numEmitter].Pos = model->meshes[i].unique_vertices_pos[j];
 				Emitter[numEmitter].Vel = velocity + (emitterRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat()));
 				Emitter[numEmitter].Col = color;

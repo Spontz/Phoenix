@@ -13,16 +13,14 @@ namespace Phoenix {
 		using CVideoMap = std::map<CVideoSource, Video*>;
 
 	public:
-		VideoManager(bool bForceReload);
+		VideoManager() {};
 		~VideoManager();
 
 	public:
 		// Returns a video (and loads it if required)
-		Video* addVideo(CVideoSource const& videoDesc);
+		Video* addVideo(CVideoSource const& videoDesc, bool ForceReload);
 
 	private:
 		CVideoMap VideoMap_;
-		// Force video reloading on each getVideo call (required for slave mode)
-		const bool m_bForceReload;
 	};
 }

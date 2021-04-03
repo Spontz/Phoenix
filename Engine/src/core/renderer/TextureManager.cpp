@@ -21,7 +21,7 @@ namespace Phoenix {
 		mem = 0;
 	}
 
-	Texture* TextureManager::addTexture(std::string path, bool flip, std::string type) {
+	Texture* TextureManager::addTexture(std::string_view const& path, bool flip, std::string_view const& type) {
 		unsigned int i;
 		Texture* p_tex = nullptr;
 
@@ -39,10 +39,10 @@ namespace Phoenix {
 				texture.push_back(new_tex);
 				mem += new_tex->mem;
 				p_tex = new_tex;
-				Logger::info(LogLevel::med, "Texture %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path.c_str(), texture.size() - 1, mem);
+				Logger::info(LogLevel::med, "Texture %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path.data(), texture.size() - 1, mem);
 			}
 			else {
-				Logger::error("Could not load texture: %s", path.c_str());
+				Logger::error("Could not load texture: %s", path.data());
 				delete new_tex;
 			}
 
@@ -53,17 +53,17 @@ namespace Phoenix {
 				if (p_tex->load(path, flip)) {
 					p_tex->type = type;
 					mem += p_tex->mem;
-					Logger::info(LogLevel::med, "Texture %s [id: %d] force reload OK. Overall texture Memory: %.3fMb", path.c_str(), i, mem);
+					Logger::info(LogLevel::med, "Texture %s [id: %d] force reload OK. Overall texture Memory: %.3fMb", path.data(), i, mem);
 				}
 				else
-					Logger::error("Could not load texture: %s", path.c_str());
+					Logger::error("Could not load texture: %s", path.data());
 			}
 		}
 
 		return p_tex;
 	}
 
-	Texture* TextureManager::addTextureFromMem(const unsigned char* data, int len, bool flip, std::string type) {
+	Texture* TextureManager::addTextureFromMem(const unsigned char* data, int len, bool flip, std::string_view const& type) {
 		Texture* p_tex = nullptr;
 
 		Texture* new_tex = new Texture();
@@ -83,7 +83,7 @@ namespace Phoenix {
 	}
 
 	// Adds a Cubemap into the queue, returns the Number of the cubemap added
-	Cubemap* TextureManager::addCubemap(std::vector<std::string> path, bool flip)
+	Cubemap* TextureManager::addCubemap(std::vector<std::string> const& path, bool flip)
 	{
 		unsigned int i;
 		Cubemap* p_cubemap = nullptr;

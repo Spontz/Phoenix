@@ -34,7 +34,9 @@ namespace Phoenix {
 	// steps in the motion
 	class Spline final {
 	public:
-		std::vector<KeyFrame*>	key;
+		~Spline();
+
+		std::vector<KeyFrame*>	key;		// todo: remove raw pointers
 		int						keys;		// KeyNumber
 		float					steps;		// total steps of the spline
 		int						channels;	// Columns
@@ -43,7 +45,6 @@ namespace Phoenix {
 		float					duration;	// Spline duration in seconds
 
 		Spline();
-		~Spline();
 
 		static void Hermite(float t, float* h1, float* h2, float* h3, float* h4);
 		void MotionCalcStep(ChanVec resVec, float step);

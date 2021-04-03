@@ -142,7 +142,7 @@ namespace Phoenix {
 		std::istringstream f(m_scriptData);
 		std::string line;
 		int lineNum = 0; // Line counter
-		std::string sec_type;
+
 		int sec_id = -1;
 		Section* new_sec = NULL;
 		Spline* new_spl = NULL;
@@ -180,7 +180,6 @@ namespace Phoenix {
 		std::istringstream f(m_scriptData);
 		std::string line;
 		int lineNum = 0; // Line counter
-		std::string sec_type;
 		Section* new_sec = NULL;
 		Spline* new_spl = NULL;
 		int command = -1;

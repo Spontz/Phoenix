@@ -68,7 +68,8 @@ namespace Phoenix {
 				-1, // hack: hardcoded, take from spo
 				10, // hack: hardcoded, take from spo
 				1.0 // hack: hardcoded, take from spo
-			}
+			},
+			m_demo.m_slaveMode
 		);
 		if (!m_pVideo)
 			return false;

@@ -37,6 +37,22 @@ namespace Phoenix {
 		type = SectionType::LightSec;
 	}
 
+
+	std::string& replaceString(std::string& subj, std::string_view const& old_str, std::string_view const& new_str)
+	{
+		size_t pos;
+		do {
+			pos = subj.find(old_str);
+			if (pos != std::string::npos)
+			{
+				subj.erase(pos, old_str.size());
+				subj.insert(pos, new_str);
+			}
+		} while (std::string::npos != pos);
+
+		return subj;
+	}
+
 	bool sLight::load()
 	{
 		// script validation
@@ -70,7 +86,7 @@ namespace Phoenix {
 		std::string expr;
 		for (int i = 0; i < strings.size(); i++)
 			expr += strings[i];
-		expr = Util::replaceString(expr, "light_", "light" + std::to_string(m_iLightNum) + "_");	// Adds the name of the light that we want to modify
+		expr = replaceString(expr, "light_", "light" + std::to_string(m_iLightNum) + "_");	// Adds the name of the light that we want to modify
 		m_pExprLight->expression = expr;															// Loads the expression, properly composed
 		m_pExprLight->Expression.register_symbol_table(m_pExprLight->SymbolTable);
 		if (!m_pExprLight->compileFormula())

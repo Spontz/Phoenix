@@ -18,12 +18,8 @@ namespace Phoenix {
 
 	Spline::~Spline()
 	{
-		key.clear();
-		keys = 0;
-		steps = 0;
-		channels = 0;
-		filename = "";
-		duration = 0;
+		for (auto const& pKeyFrame : key)
+			delete pKeyFrame;
 	}
 
 	// Compute Hermite spline coeficients for t, where 0 <= t <= 1.
@@ -61,17 +57,17 @@ namespace Phoenix {
 
 
 		// If there is but one key, the values are constant.
-		if (this->keys == 1) {
-			for (i = 0; i < this->channels; i++)
-				resVec[i] = this->key[0]->cv[i];
+		if (keys == 1) {
+			for (i = 0; i < channels; i++)
+				resVec[i] = key[0]->cv[i];
 			return;
 		}
 
 		// Get keyframe pair to evaluate. This should be within the range
 		// of the motion or this will raise an illegal access (fixed).
 		int cnt = 0;
-		for (cnt = 0; cnt < this->keys; cnt++) {
-			if (this->key[cnt]->step >= step)
+		for (cnt = 0; cnt < keys; cnt++) {
+			if (key[cnt]->step >= step)
 				break;
 		}
 		// Prevent invalid access when step is 0
@@ -79,12 +75,12 @@ namespace Phoenix {
 			cnt--;
 		}
 
-		key0 = this->key[cnt];
-		key1 = this->key[cnt + 1];
+		key0 = key[cnt];
+		key1 = key[cnt + 1];
 		// Check if we have previous and next keys
 		if (cnt - 1 < 0)
 			have_prev_key = false;
-		if (cnt + 2 >= this->keys)
+		if (cnt + 2 >= keys)
 			have_next_key = false;
 
 		step -= key0->step;
@@ -103,27 +99,27 @@ namespace Phoenix {
 
 			// First we check if Key0 is not the step 0 or 1
 			if (have_prev_key)
-				adj0 = tlength / (key1->step - this->key[cnt - 1]->step);
+				adj0 = tlength / (key1->step - key[cnt - 1]->step);
 
 			// First we check if its not the last step or last step+1
 			if (have_next_key)
-				adj1 = tlength / (this->key[cnt + 2]->step - key0->step);
+				adj1 = tlength / (key[cnt + 2]->step - key0->step);
 		}
 
 		// Compute the channel components.
-		for (i = 0; i < this->channels; i++) {
+		for (i = 0; i < channels; i++) {
 			d10 = key1->cv[i] - key0->cv[i];
 
 			if (!key1->linear) {
 				if (!have_prev_key)
 					dd0 = 0.5f * (dd0a + dd0b) * d10;
 				else
-					dd0 = adj0 * (dd0a * (key0->cv[i] - this->key[cnt - 1]->cv[i]) + dd0b * d10);
+					dd0 = adj0 * (dd0a * (key0->cv[i] - key[cnt - 1]->cv[i]) + dd0b * d10);
 
 				if (!have_next_key)
 					ds1 = 0.5f * (ds1a + ds1b) * d10;
 				else
-					ds1 = adj1 * (ds1a * d10 + ds1b * (this->key[cnt + 2]->cv[i] - key1->cv[i]));
+					ds1 = adj1 * (ds1a * d10 + ds1b * (key[cnt + 2]->cv[i] - key1->cv[i]));
 
 				res = key0->cv[i] * h1 + key1->cv[i] * h2 + dd0 * h3 + ds1 * h4;
 			}
@@ -136,22 +132,59 @@ namespace Phoenix {
 	}
 
 
+	int getFloatVector(char* line, float* vector, int max) {
+
+		char result[256], * s;
+		int chan, offset, n;
+
+		chan = 0;
+		offset = 0;
+		do {
+			// read separators
+			s = &line[offset];
+			while ((s[0] == '{') || (s[0] == ' ') || (s[0] == ',') || (s[0] == '\t')) {
+				s++;
+				offset++;
+			}
+
+			// read the float
+			n = 0;
+			while (((s[0] >= '0') && (s[0] <= '9')) || (s[0] == '.') || (s[0] == '-')) {
+				result[n++] = s++[0];
+				offset++;
+			}
+			result[n] = 0;
+
+			// convert string to float
+			if (n > 0) {
+				if (chan >= max)
+					return -1;// error("Script parser: too many floats in vector '%s'", line);
+				sscanf(result, "%f", &vector[chan]);
+				chan++;
+			}
+
+		} while (n > 0);
+
+		return chan;
+	}
+
+
 	bool Spline::load()
 	{
 		char line[512];
 		FILE* f;
 		int chan;
 
-		f = fopen(this->filename.c_str(), "rt");
+		f = fopen(filename.c_str(), "rt");
 		if (!f) {
-			Logger::error("Error loading spline file: %s", this->filename.c_str());
+			Logger::error("Error loading spline file: %s", filename.c_str());
 			return false;
 		}
 
-		this->key.clear();
-		this->keys = 0;
-		this->steps = 0;
-		this->channels = 0;
+		key.clear();
+		keys = 0;
+		steps = 0;
+		channels = 0;
 
 		for (;;) {
 
@@ -160,46 +193,49 @@ namespace Phoenix {
 			// comments or empty line
 			if ((line[0] == ';') || (line[0] == '\n') || (line[0] == '\r')) continue;
 
-			KeyFrame* new_key = new KeyFrame;
-			chan = Util::getFloatVector(line, new_key->cv, kszKeyFrameNumChannels);
+			KeyFrame new_key;
+			chan = getFloatVector(line, new_key.cv, kszKeyFrameNumChannels);
 
 			if (chan == -1) {
-				Logger::error("Spline load error: too many floats in file: %s, line: '%s'", this->filename.c_str(), line);
+				Logger::error("Spline load error: too many floats in file: %s, line: '%s'", filename.c_str(), line);
+				fclose(f);
 				return false;
 			}
 
-			if (this->channels == 0) {
+			if (channels == 0) {
 				if (chan == 0) {
-					Logger::error("Spline: incorrect format in %s", this->filename.c_str());
+					Logger::error("Spline: incorrect format in %s", filename.c_str());
+					fclose(f);
 					return false;
 				}
-				this->channels = chan;
+				channels = chan;
 			}
 			else {
-				if (this->channels != chan) {
-					Logger::error("Spline: incorrect channel in %s", this->filename.c_str());
+				if (channels != chan) {
+					Logger::error("Spline: incorrect channel in %s", filename.c_str());
+					fclose(f);
 					return false;
 				}
 
 			}
 
-			new_key->tens = 0;
-			new_key->cont = 0;
-			new_key->bias = 0;
-			new_key->linear = 0;
+			new_key.tens = 0;
+			new_key.cont = 0;
+			new_key.bias = 0;
+			new_key.linear = 0;
 
-			this->key.push_back(new_key);
-			this->keys++;
+			key.push_back(new KeyFrame(new_key));
+			keys++;
 
 		}
 
 		fclose(f);
 
 		// Calculate the steps of each key based in the duration
-		this->steps = this->duration;
-		float motionStepTime = this->steps / (this->keys - 1);
-		for (int i = 0; i < this->keys; i++)
-			this->key[i]->step = motionStepTime * i;
+		steps = duration;
+		float motionStepTime = steps / (keys - 1);
+		for (int i = 0; i < keys; i++)
+			key[i]->step = motionStepTime * i;
 
 		return true;
 	}

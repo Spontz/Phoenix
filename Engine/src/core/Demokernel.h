@@ -48,9 +48,12 @@ namespace Phoenix {
 	public:
 		std::string		m_dataFolder;	// Path to "data" folder
 		std::string		m_demoName;
-		const bool		m_debug;
-		const float		m_debug_fontSize;
-		const LogLevel	m_logLevel;
+
+	// private: (hack: create getters)
+		bool		m_debug;
+		float		m_debug_fontSize;
+		LogLevel	m_logLevel;
+		bool		m_slaveMode;
 
 		// misc
 		bool			m_loop;
@@ -101,9 +104,6 @@ namespace Phoenix {
 		// Window parameters
 		bool m_overrideWindowConfigParams;	// Override Window config file parameters
 		int m_windowPosX, m_windowPosY, m_windowWidth, m_windowHeight;	// Window properties
-
-		// network slave mode
-		const bool m_slaveMode;						// Are we in Slave mode?
 
 
 		float m_fVar[MULTIPURPOSE_VARS];			// Multi-purpose variables, shared across sections

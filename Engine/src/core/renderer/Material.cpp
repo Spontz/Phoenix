@@ -132,7 +132,7 @@ namespace Phoenix {
 					filepath = m_ModelFilename.substr(0, m_ModelFilename.find_last_of('.')) + ".jpg";	// In that case, we change this to "<model_name.jpg>"
 				fullpath = m_ModelDirectory + "/" + filepath.C_Str();
 				textureStack tex;
-				tex.tex = DEMO->m_textureManager.addTexture(fullpath.c_str(), false, typeName);
+				tex.tex = DEMO->m_textureManager.addTexture(fullpath, false, typeName);
 				tex.blendOperation = operation;
 				tex.strength = blendFactor;
 				if (tex.tex) {

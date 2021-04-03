@@ -35,19 +35,19 @@ namespace Phoenix {
 		this->emissionTime = emissionTime;
 		this->particleLifeTime = particleLifeTime;
 
-		ZERO_MEM(m_transformFeedback);
-		ZERO_MEM(m_particleBuffer);
+		m_transformFeedback = {};
+		m_particleBuffer = {};
 	}
 
 
 	ParticleSystem::~ParticleSystem()
 	{
 		if (m_transformFeedback[0] != 0) {
-			glDeleteTransformFeedbacks(2, m_transformFeedback);
+			glDeleteTransformFeedbacks(2, m_transformFeedback.data());
 		}
 
 		if (m_particleBuffer[0] != 0) {
-			glDeleteBuffers(2, m_particleBuffer);
+			glDeleteBuffers(2, m_particleBuffer.data());
 		}
 	}
 
@@ -61,7 +61,7 @@ namespace Phoenix {
 
 		// Init the particle emitters
 		for (unsigned int i = 0; i < numEmitters; i++) {
-			Particles[i].Type = PARTICLE_TYPE_EMITTER;
+			Particles[i].Type = ParticleType::Emitter;
 			Particles[i].Pos = emitter[i].Pos;
 			Particles[i].Vel = emitter[i].Vel;
 			Particles[i].Col = emitter[i].Col;
@@ -73,8 +73,8 @@ namespace Phoenix {
 		glBindVertexArray(m_VAO);
 
 		// Gen buffers
-		glGenTransformFeedbacks(2, m_transformFeedback);	// Transform Feedback object
-		glGenBuffers(2, m_particleBuffer);					// Transform Feedback buffer
+		glGenTransformFeedbacks(2, m_transformFeedback.data());	// Transform Feedback object
+		glGenBuffers(2, m_particleBuffer.data());				// Transform Feedback buffer
 
 		// Info for Opengl4.5 tranform feedback buffer creation: https://cpp.hotexamples.com/examples/-/-/glNamedBufferStorage/cpp-glnamedbufferstorage-function-examples.html
 
@@ -125,7 +125,9 @@ namespace Phoenix {
 		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
 		glVertexAttribBinding(LOC_TYPE, BINDING_UPDATE);
 
-		SAFE_DELETE_ARRAY(Particles);
+		delete[] Particles;
+		Particles = nullptr;
+
 		// Make sure the VAO is not changed from the outside
 		glBindVertexArray(0);
 
@@ -190,7 +192,7 @@ namespace Phoenix {
 
 		// Change data and move some random positions
 		for (unsigned int i = 0; i < nParts; i++) {
-			m_emitterData[i].Type = PARTICLE_TYPE_EMITTER;
+			m_emitterData[i].Type = ParticleType::Emitter;
 			float sphere = 4 * 3.1415f * ((float)(i) / ((float)nParts));
 			m_emitterData[i].Pos = glm::vec3(glm::sin(sphere), 3.0 * glm::sin(m_time / 2.0), glm::cos(sphere));
 			m_emitterData[i].Vel = glm::vec3(0.0f, 10.0f, 0.0f);

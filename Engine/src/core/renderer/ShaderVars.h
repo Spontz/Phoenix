@@ -13,7 +13,7 @@ namespace Phoenix {
     static constexpr size_t MAXSIZE_VAR_EVAL = 512; // Max size of a variable equation
 
     struct varBase {
-        char		name[MAXSIZE_VAR_NAME] = "\0";
+        std::string	name;
         GLint		loc = -1;
         MathDriver* eva = nullptr;
     };

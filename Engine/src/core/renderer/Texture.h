@@ -28,7 +28,7 @@ namespace Phoenix {
 		Texture();
 		virtual ~Texture();
 
-		bool load(const std::string& file_name, bool flip);
+		bool load(std::string_view const& file_name, bool flip);
 		bool loadFromMem(const unsigned char* data, int len, bool flip);
 		bool keepData();	// Stores data texture in memory
 		void freeData();	// Frees data texture from memory

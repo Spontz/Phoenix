@@ -30,10 +30,8 @@ namespace Phoenix {
 			return;
 		}
 
-
 		shdr_font->setValue("projection", projection);
 		Logger::info(LogLevel::low, "Font shader loaded OK");
-
 
 		if (FT_Init_FreeType(&ft)) {
 			Logger::error("Freetype library could not be initializad");
@@ -42,14 +40,12 @@ namespace Phoenix {
 		Logger::info(LogLevel::low, "FreeType lib loaded OK");
 
 		FT_Face face;
-		if (ft) {
-			if (FT_New_Face(ft, font_path.c_str(), 0, &face)) {
-				Logger::error("Freetype library could not load font: %s", font_path.c_str());
-				return;
-			}
-			FT_Set_Pixel_Sizes(face, 0, size);
-			Logger::info(LogLevel::low, "Font %s loaded OK", font_path.c_str());
+		if (FT_New_Face(ft, font_path.c_str(), 0, &face)) {
+			Logger::error("Freetype library could not load font: %s", font_path.c_str());
+			return;
 		}
+		FT_Set_Pixel_Sizes(face, 0, size);
+		Logger::info(LogLevel::low, "Font %s loaded OK", font_path.c_str());
 
 		FT_GlyphSlot glyphSlot = face->glyph;
 
@@ -103,7 +99,7 @@ namespace Phoenix {
 				(GLuint)(glyphSlot->advance.x) >> 6 // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
 			};
 			//Logger::info(LogLevel::low, "Inserted char %c, size: %dx%d, offset: %.4f, offsetSize: %.4f", c, character.Size.x, character.Size.y, character.coordOffset.x, (float)(character.Size.x) / (float)width);
-			Characters.insert(std::pair<GLchar, Char>(c, character));
+			Characters.emplace(c, character);
 
 			ox += char_width;
 		}

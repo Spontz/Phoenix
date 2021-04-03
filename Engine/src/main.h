@@ -21,5 +21,4 @@ static_assert(FBO_BUFFERS >= 25);
 
 #include "core/Demokernel.h"
 #include "core/utils/Logger.h"
-#include "core/utils/Utilities.h"
 #include "core/resource/Resource.h"

@@ -6,12 +6,6 @@
 
 namespace Phoenix {
 
-	VideoManager::VideoManager(bool bForceReload)
-		:
-		m_bForceReload(bForceReload)
-	{
-	}
-
 	VideoManager::~VideoManager()
 	{
 		Logger::info(LogLevel::med, "Unloading videos...");
@@ -19,7 +13,7 @@ namespace Phoenix {
 			delete i.second;
 	}
 
-	Video* VideoManager::addVideo(CVideoSource const& VideoSource)
+	Video* VideoManager::addVideo(CVideoSource const& VideoSource, bool bForceReload)
 	{
 		// If the video is already loaded just return it
 		// If the video is not loaded load and return it
@@ -27,7 +21,7 @@ namespace Phoenix {
 
 		if (it != VideoMap_.end()) {
 			auto pVideo = it->second;
-			if (m_bForceReload) {
+			if (bForceReload) {
 				// Reload video acording to m_bForceReload
 				if (!pVideo->load(VideoSource)) {
 					// Handle reload error

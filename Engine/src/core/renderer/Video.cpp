@@ -248,7 +248,16 @@ namespace Phoenix {
 		}
 
 		m_pFrame = av_frame_alloc();
+		if (!m_pFrame) {
+			Logger::error("%s: failed to allocated memory for m_pFrame", __FILE__);
+			return false;
+		}
+
 		m_pGLFrame = av_frame_alloc();
+		if (!m_pGLFrame) {
+			Logger::error("%s: failed to allocated memory for m_pGLFrame", __FILE__);
+			return false;
+		}
 
 		// Allocate te data buffer for the glFrame
 		const auto iSize = av_image_get_buffer_size(
@@ -271,11 +280,6 @@ namespace Phoenix {
 			m_pCodecContext->height,
 			1
 		);
-
-		if (!m_pFrame || !m_pGLFrame) {
-			Logger::error("%s: failed to allocated memory for AVFrame", __FILE__);
-			return false;
-		}
 
 		// Create the convert Context, used by the OpenGLFrame
 		m_pConvertContext = sws_getContext(

@@ -58,7 +58,6 @@ namespace Phoenix {
 		m_iLoadedSections(0),
 		m_exitDemo(false),
 		m_pRes(nullptr),
-		m_videoManager(m_slaveMode == 1),
 		m_overrideWindowConfigParams(false),
 		m_windowPosX(30),
 		m_windowPosY(30),

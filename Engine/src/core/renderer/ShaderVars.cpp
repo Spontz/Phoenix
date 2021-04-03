@@ -15,10 +15,8 @@ namespace Phoenix {
 
 	bool ShaderVars::ReadString(const char* string_var)
 	{
-		char	var_name[MAXSIZE_VAR_NAME];
-		char	var_type[MAXSIZE_VAR_TYPE];
-		char	var_value[MAXSIZE_VAR_EVAL];
-		
+		// std::string	var_name, var_type, var_value;
+	
 		std::vector<std::string>	vars;
 
 		splitString(string_var, vars, ' ');	// Split the main string by spaces
@@ -28,31 +26,37 @@ namespace Phoenix {
 			return false;
 		}
 
-		strcpy(var_type, vars[0].c_str());
-		strcpy(var_name, vars[1].c_str());
-		for (int i = 3; i < vars.size(); i++) // Concatenate the rest of strings (if any)
-			vars[2] += " " + vars[i];
-		strcpy(var_value, vars[2].c_str());
+		auto var_type = vars[0];
+		auto var_name = vars[1];
+		auto var_value = vars[2];
 
-		Logger::info(LogLevel::med, "Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], value [%s]", my_section->type_str.c_str(), my_shader->ID, var_type, var_name, var_value);
+		Logger::info(
+			LogLevel::med,
+			"Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], value [%s]",
+			my_section->type_str.c_str(),
+			my_shader->ID,
+			var_type.c_str(),
+			var_name.c_str(),
+			var_value.c_str()
+		);
 		
 
-		if (strcmp(var_type, "float") == 0)	// FLOAT detected
+		if (var_type == "float")	// FLOAT detected
 		{
 			varFloat* var = new varFloat();
-			strcpy(var->name, var_name);
-			var->loc = my_shader->getUniformLocation(var->name);
+			var->name = var_name;
+			var->loc = my_shader->getUniformLocation(var->name.c_str());
 			var->eva = new MathDriver(this->my_section);
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value);
 			var->eva->compileFormula();
 			vfloat.push_back(var);
 		}
-		else if (strcmp(var_type, "vec2") == 0)	// VEC2 detected
+		else if (var_type == "vec2")	// VEC2 detected
 		{
 			varVec2* var = new varVec2();
-			strcpy(var->name, var_name);
-			var->loc = my_shader->getUniformLocation(var->name);
+			var->name = var_name;
+			var->loc = my_shader->getUniformLocation(var->name.c_str());
 			var->eva = new MathDriver(this->my_section);
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value[0]);
@@ -60,11 +64,11 @@ namespace Phoenix {
 			var->eva->compileFormula();
 			vec2.push_back(var);
 		}
-		else if (strcmp(var_type, "vec3") == 0)	// VEC3 detected
+		else if (var_type == "vec3")	// VEC3 detected
 		{
 			varVec3* var = new varVec3();
-			strcpy(var->name, var_name);
-			var->loc = my_shader->getUniformLocation(var->name);
+			var->name = var_name;
+			var->loc = my_shader->getUniformLocation(var->name.c_str());
 			var->eva = new MathDriver(this->my_section);
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value[0]);
@@ -73,11 +77,11 @@ namespace Phoenix {
 			var->eva->compileFormula();
 			vec3.push_back(var);
 		}
-		else if (strcmp(var_type, "vec4") == 0)	// VEC4 detected
+		else if (var_type == "vec4")	// VEC4 detected
 		{
 			varVec4* var = new varVec4();
-			strcpy(var->name, var_name);
-			var->loc = my_shader->getUniformLocation(var->name);
+			var->name = var_name;
+			var->loc = my_shader->getUniformLocation(var->name.c_str());
 			var->eva = new MathDriver(this->my_section);
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value[0]);
@@ -87,11 +91,11 @@ namespace Phoenix {
 			var->eva->compileFormula();
 			vec4.push_back(var);
 		}
-		else if (strcmp(var_type, "mat3") == 0)	// MAT3 detected
+		else if (var_type == "mat3")	// MAT3 detected
 		{
 			varMat3* var = new varMat3();
-			strcpy(var->name, var_name);
-			var->loc = my_shader->getUniformLocation(var->name);
+			var->name =var_name;
+			var->loc = my_shader->getUniformLocation(var->name.c_str());
 			var->eva = new MathDriver(this->my_section);
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value[0][0]);
@@ -106,11 +110,11 @@ namespace Phoenix {
 			var->eva->compileFormula();
 			mat3.push_back(var);
 		}
-		else if (strcmp(var_type, "mat4") == 0)	// MAT4 detected
+		else if (var_type == "mat4")	// MAT4 detected
 		{
 			varMat4* var = new varMat4();
-			strcpy(var->name, var_name);
-			var->loc = my_shader->getUniformLocation(var->name);
+			var->name = var_name;
+			var->loc = my_shader->getUniformLocation(var->name.c_str());
 			var->eva = new MathDriver(this->my_section);
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value[0][0]);
@@ -133,12 +137,12 @@ namespace Phoenix {
 
 			mat4.push_back(var);
 		}
-		else if (strcmp(var_type, "sampler2D") == 0)	// Texture (sampler2D) detected
+		else if (var_type == "sampler2D")	// Texture (sampler2D) detected
 		{
-			if (0 == strncmp("fbo", var_value, 3)) // If it's an fbo
+			if (var_value.substr(0,3) == "fbo") // If it's an fbo
 			{
-				int fboNum;
-				sscanf(var_value, "fbo%d", &fboNum);
+				auto const fboNum = std::stoi(var_value.substr(3));
+
 				if (fboNum<0 || fboNum>(FBO_BUFFERS - 1)) {
 					Logger::error("Section %s: sampler2D fbo not correct, it should be 'fboX', where X=>0 and X<=%d, you choose: %s", this->my_section->identifier.c_str(), (FBO_BUFFERS - 1), var_value);
 					return false;
@@ -151,19 +155,12 @@ namespace Phoenix {
 					var->isFBO = true;
 					var->fboNum = fboNum;
 					var->fboAttachment = i;
-					strcpy(var->name, var_name);
+					var->name = var_name;
 
 					if (fboAttachments > 1)
-					{
-						// TODO: Guarrada, to delete and change char to string
-						char i_str[2];
-						snprintf(i_str, 2, "%d", i);
-						strcat(var->name, "[");
-						strcat(var->name, i_str);
-						strcat(var->name, "]");
-					}
+						var->name += "[" + std::to_string(i) + "]";
 					
-					var->loc = my_shader->getUniformLocation(var->name);
+					var->loc = my_shader->getUniformLocation(var->name.c_str());
 					var->texUnitID = static_cast<int>(sampler2D.size());
 					sampler2D.push_back(var);
 				}
@@ -171,8 +168,8 @@ namespace Phoenix {
 			else // If it's a normal texture....
 			{
 				varSampler2D* var = new varSampler2D();
-				strcpy(var->name, var_name);
-				var->loc = my_shader->getUniformLocation(var->name);
+				var->name = var_name;
+				var->loc = my_shader->getUniformLocation(var->name.c_str());
 				var->texUnitID = static_cast<int>(sampler2D.size());
 				var->isFBO = false;
 				var->texture = DEMO->m_textureManager.addTexture(DEMO->m_dataFolder + var_value);
@@ -201,41 +198,41 @@ namespace Phoenix {
 		for (i = 0; i < vfloat.size(); i++) {
 			my_vfloat = vfloat[i];
 			my_vfloat->eva->Expression.value();
-			my_shader->setValue(my_vfloat->name, my_vfloat->value);
+			my_shader->setValue(my_vfloat->name.c_str(), my_vfloat->value);
 		}
 
 		for (i = 0; i < vec2.size(); i++) {
 			my_vec2 = vec2[i];
 			my_vec2->eva->Expression.value();
-			my_shader->setValue(my_vec2->name, my_vec2->value);
+			my_shader->setValue(my_vec2->name.c_str(), my_vec2->value);
 		}
 
 		for (i = 0; i < vec3.size(); i++) {
 			my_vec3 = vec3[i];
 			my_vec3->eva->Expression.value();
-			my_shader->setValue(my_vec3->name, my_vec3->value);
+			my_shader->setValue(my_vec3->name.c_str(), my_vec3->value);
 		}
 		for (i = 0; i < vec4.size(); i++) {
 			my_vec4 = vec4[i];
 			my_vec4->eva->Expression.value();
-			my_shader->setValue(my_vec4->name, my_vec4->value);
+			my_shader->setValue(my_vec4->name.c_str(), my_vec4->value);
 		}
 
 		for (i = 0; i < mat3.size(); i++) {
 			my_mat3 = mat3[i];
 			my_mat3->eva->Expression.value();
-			my_shader->setValue(my_mat3->name, my_mat3->value);
+			my_shader->setValue(my_mat3->name.c_str(), my_mat3->value);
 		}
 
 		for (i = 0; i < mat4.size(); i++) {
 			my_mat4 = mat4[i];
 			my_mat4->eva->Expression.value();
-			my_shader->setValue(my_mat4->name, my_mat4->value);
+			my_shader->setValue(my_mat4->name.c_str(), my_mat4->value);
 		}
 
 		for (i = 0; i < sampler2D.size(); i++) {
 			my_sampler2D = sampler2D[i];
-			my_shader->setValue(my_sampler2D->name, my_sampler2D->texUnitID);
+			my_shader->setValue(my_sampler2D->name.c_str(), my_sampler2D->texUnitID);
 			// TODO: This ugly and dirty. This is needed because when we rezise the screen, the FBO's are recalculated (therefore texGLid is changed), therefoere we need to look everytime if the texGLid id has changed
 			if (my_sampler2D->isFBO) {
 				//Fbo* my_fbo = DEMO->fboManager.fbo[my_sampler2D->fboNum];

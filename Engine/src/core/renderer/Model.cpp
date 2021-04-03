@@ -251,8 +251,6 @@ namespace Phoenix {
 		// data to fill
 		std::vector<Vertex> vertices;
 		std::vector<unsigned int> indices;
-		std::vector<int> textures;
-
 
 		Logger::info(LogLevel::low, "Loading mesh: %s", mesh->mName.C_Str());
 

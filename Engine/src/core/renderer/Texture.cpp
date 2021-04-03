@@ -15,6 +15,9 @@ namespace Phoenix {
 		m_mipmapLevels = 1;
 		mem = 0;
 		textureData = nullptr;
+		width = -1;
+		height = -1;
+		components = -1;
 	}
 
 	Texture::~Texture()
@@ -28,7 +31,7 @@ namespace Phoenix {
 		freeData();
 	}
 
-	bool Texture::load(const std::string& file_name, bool flip)
+	bool Texture::load(std::string_view const& file_name, bool flip)
 	{
 		// If we already have loaded this texture, we unload it first
 		if (m_textureID > 0) {

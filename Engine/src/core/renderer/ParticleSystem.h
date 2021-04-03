@@ -6,10 +6,15 @@
 #include "main.h"
 #include "core/renderer/ShaderVars.h"
 
+#include <array>
+
 namespace Phoenix {
 
-#define PARTICLE_TYPE_EMITTER 0
-#define PARTICLE_TYPE_SHELL 1
+
+enum struct ParticleType : int32_t {
+	Emitter = 0,
+	Shell = 1		// todo: never used
+};
 
 	struct Particle
 	{
@@ -17,7 +22,7 @@ namespace Phoenix {
 		glm::vec3 Vel;	// Velocity:	loc 1 (vec3)
 		glm::vec3 Col;	// Color:		loc 2 (vec3)
 		float lifeTime;	// lifeTime:	loc 3 (float)
-		int Type;		// type:		loc 4 (int)
+		ParticleType Type;// type:		loc 4 (int32_t)
 	};
 
 	class ParticleSystem
@@ -54,8 +59,8 @@ namespace Phoenix {
 		unsigned int m_currVB;			// Variable that indicates the current VB (The value is 0 or 1)
 		unsigned int m_currTFB;			// Variable that indicates the current TFB (The value is 0 or 1)
 		GLuint m_VAO;					// Vertex Array Object buffer
-		GLuint m_particleBuffer[2];		// Vertex Buffer: input
-		GLuint m_transformFeedback[2];	// Transform feedback buffers: output
+		std::array<GLuint, 2> m_particleBuffer;		// Vertex Buffer: input
+		std::array<GLuint,2> m_transformFeedback;	// Transform feedback buffers: output
 		Particle* m_emitterData;		// Emitter info (for updating emitters positions)
 		Shader* particleSystemShader;
 		Shader* billboardShader;
