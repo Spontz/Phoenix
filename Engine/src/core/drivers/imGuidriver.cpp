@@ -20,6 +20,7 @@ namespace Phoenix {
 		show_sound(false),
 		show_version(false),
 		show_grid(false),
+		show_help(false),
 		m_fontScale(1.0f),
 		m_numFboSetToDraw(0),
 		m_numFboAttachmentToDraw(0),
@@ -85,6 +86,8 @@ namespace Phoenix {
 				drawSound();
 			if (show_grid)
 				drawGridConfig();
+			if (show_help)
+				drawHelp();
 		}
 		endDraw();
 	}
@@ -164,6 +167,7 @@ namespace Phoenix {
 				ImGui::MenuItem("Show section stack", "5", &show_sesctionInfo);
 				ImGui::MenuItem("Show sound information", "6", &show_sound);
 				ImGui::MenuItem("Show grid panel", "7", &show_grid);
+				ImGui::MenuItem("Show help", "9", &show_help);
 				ImGui::MenuItem("Show versions", "0", &show_version);
 				ImGui::EndMenu();
 			}
@@ -269,7 +273,7 @@ namespace Phoenix {
 
 	void imGuiDriver::drawGridConfig()
 	{
-		ImVec2 size = ImVec2(static_cast<float>(m_vp.width) / 4, 120.0f);
+		ImVec2 size = ImVec2(static_cast<float>(m_vp.width) / 1.75f, 160.0f);
 		ImVec2 pos = ImVec2(m_vp.width + m_vp.x - size.x, m_vp.height + m_vp.y - size.y);
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
@@ -281,19 +285,59 @@ namespace Phoenix {
 		}
 		ImVec2 win = ImGui::GetWindowSize();
 		ImGui::Checkbox("Enable grid", &m_demo.m_debug_drawGrid);
-		if (ImGui::SliderFloat("Size", &m_demo.m_pRes->m_gridSize, -50, 50, "%.1f"))
+		ImGui::NewLine();
+		ImGui::Checkbox("Draw X Axis", &m_demo.m_debug_drawGridAxisX); ImGui::SameLine();
+		ImGui::Checkbox("Draw Y Axis", &m_demo.m_debug_drawGridAxisY); ImGui::SameLine();
+		ImGui::Checkbox("Draw Z Axis", &m_demo.m_debug_drawGridAxisZ);
+		if (ImGui::SliderFloat("Size", &m_demo.m_pRes->m_gridSize, 0, 50, "%.1f"))
 		{
-			//	if (m_demo.m_pRes->m_gridSize < 1)
-			//		m_demo.m_pRes->m_gridSize = 1;
+			if (m_demo.m_pRes->m_gridSize < 0)
+				m_demo.m_pRes->m_gridSize = 0;
+			if (m_demo.m_pRes->m_gridSize > 50)
+				m_demo.m_pRes->m_gridSize = 50;
 			m_demo.m_pRes->Load_Grid();
 		}
 		if (ImGui::SliderInt("Slices", &m_demo.m_pRes->m_gridSlices, 1, 100))
 		{
 			if (m_demo.m_pRes->m_gridSlices < 1)
 				m_demo.m_pRes->m_gridSlices = 1;
+			if (m_demo.m_pRes->m_gridSlices > 100)
+				m_demo.m_pRes->m_gridSlices = 100;
 			m_demo.m_pRes->Load_Grid();
 		}
 
+		ImGui::End();
+	}
+
+	void imGuiDriver::drawHelp()
+	{
+		ImVec2 size = ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height));
+		ImVec2 pos = ImVec2(0, 0);
+		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
+
+		if (!ImGui::Begin("Help commands", &show_help))
+		{
+			ImGui::End();
+			return;
+		}
+		ImGui::Text("Display information:\n \
+			1 Show Information (FPS, demo status, time, texture memory used, and other information)\n \
+			2 Show FPS Histogram\n \
+			3 Show FBO's\n \
+			4 Change FBO attachments to see\n \
+			5 Show which sections that are being drawn, and some information related to them\n \
+			6 Show sound information(spectrum analyzer)\n \
+			0 Show engine and libraries versions\n \
+			ENTER Print time on log file");
+		ImGui::NewLine();
+		ImGui::Text("Playback control\n \
+			F1 - PLAY / PAUSE\n \
+			F2 REWIND\n \
+			F3 FASTFORWARD\n \
+			F4 RESTART");
+		ImGui::NewLine();
+		
 		ImGui::End();
 	}
 

@@ -30,6 +30,7 @@ namespace Phoenix {
 		bool	show_sound;
 		bool	show_version;
 		bool	show_grid;
+		bool	show_help;
 
 
 		int32_t			m_numFboSetToDraw;
@@ -83,6 +84,7 @@ namespace Phoenix {
 		void drawFbo();
 		void drawSound();
 		void drawGridConfig();
+		void drawHelp();
 
 	};
 }

@@ -36,7 +36,7 @@ namespace Phoenix {
 		m_pTVImage(nullptr),
 		m_pGrid(nullptr),
 		m_gridSize(1.0f),
-		m_gridSlices(10)
+		m_gridSlices(11)
 	{
 		m_pShdrObjColor = m_pShdrQuadDepth = m_pShdrQuadTex = m_pShdrQuadTexPVM = m_pShdrQuadTexAlpha = m_pShdrQuadTexModel = m_pShdrQuadTexVFlipModel = m_pShdrSkybox = m_pShdrGrid = nullptr;
 	}
@@ -241,12 +241,22 @@ namespace Phoenix {
 		std::vector<glm::vec3> vertices;
 		std::vector<uint32_t> indices;
 
+		float start = -0.5;
+		float end = 0.5;
+		float step = 1.0f / static_cast<float>(m_gridSlices);
+
 		for (int j = 0; j <= m_gridSlices; ++j) {
 			for (int i = 0; i <= m_gridSlices; ++i) {
+				float x = m_gridSize * (start + static_cast<float>(i)  * step);
+				float y = 0;
+				float z = m_gridSize * (start + static_cast<float>(j) * step);
+				vertices.push_back(glm::vec3(x, y, z));
+				/*
 				float x = m_gridSize * ((float)i / (float)m_gridSlices);
 				float y = 0;
 				float z = m_gridSize * ((float)j / (float)m_gridSlices);
 				vertices.push_back(glm::vec3(x, y, z));
+				*/
 			}
 		}
 

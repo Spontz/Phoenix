@@ -148,7 +148,8 @@ namespace Phoenix {
 					GLDRV->guiDrawSound();
 				else if (key == KEY_SHOWGRIDPANEL)
 					GLDRV->guiDrawGridPanel();
-
+				else if (key == KEY_SHOWHELP)
+					GLDRV->guiDrawHelpPanel();
 
 
 				else if (key == KEY_CAPTURE)
@@ -385,7 +386,7 @@ namespace Phoenix {
 		}
 	}
 
-	void glDriver::drawGrid()
+	void glDriver::drawGrid(bool drawAxisX, bool drawAxisY, bool drawAxisZ)
 	{
 		glm::mat4 MVP;
 		glm::mat4 VP;
@@ -395,23 +396,32 @@ namespace Phoenix {
 
 		VP = projection * view;
 
-		// X Axis
 		glm::mat4 model = glm::mat4(1.0f);
-		MVP = VP * model;
-		m_demo.m_pRes->Draw_Grid(glm::vec3(1, 0, 0), &MVP);
+
+		// X Axis
+		if (drawAxisX)
+		{
+			MVP = VP * model;
+			m_demo.m_pRes->Draw_Grid(glm::vec3(1, 0, 0), &MVP);
+		}
 
 		// Y Axis
-		model = glm::mat4(1.0f);
-		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
-		MVP = VP * model;
-		m_demo.m_pRes->Draw_Grid(glm::vec3(0, 1, 0), &MVP);
+		if (drawAxisY)
+		{
+			model = glm::mat4(1.0f);
+			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+			MVP = VP * model;
+			m_demo.m_pRes->Draw_Grid(glm::vec3(0, 1, 0), &MVP);
+		}
 
 		// Z Axis
-		model = glm::mat4(1.0f);
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 0, 1));
-		MVP = VP * model;
-		m_demo.m_pRes->Draw_Grid(glm::vec3(0, 0, 1), &MVP);
-
+		if (drawAxisZ)
+		{
+			model = glm::mat4(1.0f);
+			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 0, 1));
+			MVP = VP * model;
+			m_demo.m_pRes->Draw_Grid(glm::vec3(0, 0, 1), &MVP);
+		}
 	}
 
 	void glDriver::drawGui()
@@ -447,6 +457,11 @@ namespace Phoenix {
 	void glDriver::guiDrawGridPanel()
 	{
 		m_imGui->show_grid = !m_imGui->show_grid;
+	}
+
+	void glDriver::guiDrawHelpPanel()
+	{
+		m_imGui->show_help = !m_imGui->show_help;
 	}
 
 	void glDriver::guiDrawFbo()

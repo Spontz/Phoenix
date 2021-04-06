@@ -37,6 +37,9 @@ namespace Phoenix {
 		m_logLevel(LogLevel::high),
 #endif
 		m_debug_drawGrid(true),
+		m_debug_drawGridAxisX(true),
+		m_debug_drawGridAxisY(true),
+		m_debug_drawGridAxisZ(true),
 		m_loop(true),
 		m_sound(true),
 		m_demoRunTime(0),
@@ -676,7 +679,7 @@ namespace Phoenix {
 		// Show grid only if we are in Debug
 		if (m_debug && m_debug_drawGrid) {
 			PX_PROFILE_SCOPE("DrawGrid");
-			GLDRV->drawGrid();
+			GLDRV->drawGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
 		}
 
 		// Run Exec sections
