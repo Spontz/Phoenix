@@ -63,6 +63,9 @@ namespace Phoenix {
 		bool		m_expandAllSections;
 		bool		m_expandAllSectionsChanged;
 
+		ImGuiTextBuffer		m_helpText;
+
+
 		Viewport	m_vp;
 
 

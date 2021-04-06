@@ -7,6 +7,39 @@
 
 namespace Phoenix {
 
+	static const std::string helpText = \
+		"Display information:\n" \
+		"--------------------\n" \
+		"1 Show Information (FPS, demo status, time, texture memory used, and other information)\n" \
+		"2 Show FPS Histogram\n" \
+		"3 Show FBO's\n" \
+		"4 Change FBO attachments to see\n" \
+		"5 Show which sections that are being drawn, and some information related to them\n" \
+		"6 Show sound information(spectrum analyzer)\n" \
+		"7 Show Grid\n" \
+		"9 Show this help :)\n" \
+		"0 Show engine and libraries versions\n" \
+		"ENTER Print time on log file\n\n" \
+		"Playback control:\n" \
+		"-----------------\n" \
+		"F1 PLAY / PAUSE\n" \
+		"F2 REWIND\n" \
+		"F3 FASTFORWARD\n" \
+		"F4 RESTART\n\n" \
+		"Camera control:\n" \
+		"---------------\n" \
+		"Capture camera position: SPACE\n" \
+		"Move camera forward: W\n" \
+		"Move camera backwards: S\n" \
+		"Move camera left: A\n" \
+		"Move camera right: D\n" \
+		"Roll camera left: Q\n" \
+		"Roll camera right: E\n" \
+		"Increase Camera Speed: PAGE UP\n" \
+		"Decrease Camera Speed: PAGE DOWN\n" \
+		"Change FOV: Mouse scroll wheel\n" \
+		"Reset camera position: R";
+
 
 	imGuiDriver::imGuiDriver()
 		:
@@ -43,6 +76,10 @@ namespace Phoenix {
 
 		for (int i = 0; i < RENDERTIME_SAMPLES; i++)
 			m_renderTimes[i] = 0.0f;
+
+		// Prepare the text
+		m_helpText.appendf(helpText.c_str());
+
 	}
 
 	imGuiDriver::~imGuiDriver()
@@ -312,32 +349,17 @@ namespace Phoenix {
 	void imGuiDriver::drawHelp()
 	{
 		ImVec2 size = ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height));
-		ImVec2 pos = ImVec2(0, 0);
+		ImVec2 pos = ImVec2(static_cast<float>(m_vp.x), static_cast<float>(m_vp.y));
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
 
+		
 		if (!ImGui::Begin("Help commands", &show_help))
 		{
 			ImGui::End();
 			return;
 		}
-		ImGui::Text("Display information:\n \
-			1 Show Information (FPS, demo status, time, texture memory used, and other information)\n \
-			2 Show FPS Histogram\n \
-			3 Show FBO's\n \
-			4 Change FBO attachments to see\n \
-			5 Show which sections that are being drawn, and some information related to them\n \
-			6 Show sound information(spectrum analyzer)\n \
-			0 Show engine and libraries versions\n \
-			ENTER Print time on log file");
-		ImGui::NewLine();
-		ImGui::Text("Playback control\n \
-			F1 - PLAY / PAUSE\n \
-			F2 REWIND\n \
-			F3 FASTFORWARD\n \
-			F4 RESTART");
-		ImGui::NewLine();
-		
+		ImGui::TextUnformatted(m_helpText.begin(), m_helpText.end());
 		ImGui::End();
 	}
 
