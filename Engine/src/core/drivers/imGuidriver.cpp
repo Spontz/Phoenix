@@ -320,7 +320,6 @@ namespace Phoenix {
 			ImGui::End();
 			return;
 		}
-		ImVec2 win = ImGui::GetWindowSize();
 		ImGui::Checkbox("Enable grid", &m_demo.m_debug_drawGrid);
 		ImGui::NewLine();
 		ImGui::Checkbox("Draw X Axis", &m_demo.m_debug_drawGridAxisX); ImGui::SameLine();
@@ -352,7 +351,6 @@ namespace Phoenix {
 		ImVec2 pos = ImVec2(static_cast<float>(m_vp.x), static_cast<float>(m_vp.y));
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
-
 		
 		if (!ImGui::Begin("Help commands", &show_help))
 		{
