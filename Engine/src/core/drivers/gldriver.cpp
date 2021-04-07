@@ -118,50 +118,66 @@ namespace Phoenix {
 			if (key == KEY_EXIT)
 				demo.m_exitDemo = true;
 			if (demo.m_debug) {
-				if (key == KEY_FASTFORWARD)
+				switch (key) {
+				case KEY_FASTFORWARD:
 					demo.fastforwardDemo();
-				else if (key == KEY_REWIND)
+					break;
+				case KEY_REWIND:
 					demo.rewindDemo();
-				else if (key == KEY_TIME)
+					break;
+				case KEY_TIME:
 					Logger::info(LogLevel::high, "Demo time: %.4f", demo.m_demoRunTime);
-				else if (key == KEY_PLAY_PAUSE) {
+					break;
+				case KEY_PLAY_PAUSE:
 					if (demo.m_status == DemoStatus::PLAY)
 						demo.pauseDemo();
 					else
 						demo.playDemo();
-				}
-				else if (key == KEY_RESTART)
+					break;
+				case KEY_RESTART:
 					demo.restartDemo();
-				else if (key == KEY_SHOWINFO)
+					break;
+				case KEY_SHOWINFO:
 					GLDRV->guiDrawInfo();
-				else if (key == KEY_SHOWVERSION)
+					break;
+				case KEY_SHOWVERSION:
 					GLDRV->guiDrawVersion();
-				else if (key == KEY_SHOWFPSHIST)
+					break;
+				case KEY_SHOWFPSHIST:
 					GLDRV->guiDrawFpsHistogram();
-				else if (key == KEY_SHOWFBO)
+					break;
+				case KEY_SHOWFBO:
 					GLDRV->guiDrawFbo();
-				else if (key == KEY_CHANGEATTACH)
+					break;
+				case KEY_CHANGEATTACH:
 					GLDRV->guiChangeAttachment();
-				else if (key == KEY_SHOWSECTIONINFO)
+					break;
+				case KEY_SHOWSECTIONINFO:
 					GLDRV->guiDrawSections();
-				else if (key == KEY_SHOWSOUND)
+					break;
+				case KEY_SHOWSOUND:
 					GLDRV->guiDrawSound();
-				else if (key == KEY_SHOWGRIDPANEL)
+					break;
+				case KEY_SHOWGRIDPANEL:
 					GLDRV->guiDrawGridPanel();
-				else if (key == KEY_SHOWHELP)
+					break;
+				case KEY_SHOWHELP:
 					GLDRV->guiDrawHelpPanel();
-
-
-				else if (key == KEY_CAPTURE)
+					break;
+				case KEY_CAM_CAPTURE:
 					demo.m_pCamera->capturePos();
-				else if (key == KEY_CAMRESET)
+					break;
+				case KEY_CAM_RESET:
 					demo.m_pCamera->reset();
-				else if (key == KEY_MULTIPLIER)
+					break;
+				case KEY_CAM_MULTIPLIER:
 					demo.m_pCamera->MovementSpeed *= 2.0f;
-				else if (key == KEY_DIVIDER) {
+					break;
+				case KEY_CAM_DIVIDER:
 					demo.m_pCamera->MovementSpeed /= 2.0f;
+					break;
 				}
-
+				
 			}
 		}
 		if (action == GLFW_RELEASE && demo.m_debug == TRUE) {
@@ -186,17 +202,17 @@ namespace Phoenix {
 		PX_PROFILE_FUNCTION();
 
 		if (m_demo.m_debug) {
-			if (glfwGetKey(m_glfw_window, KEY_FORWARD) == GLFW_PRESS)
+			if (glfwGetKey(m_glfw_window, KEY_CAM_FORWARD) == GLFW_PRESS)
 				m_demo.m_pCamera->processKeyboard(CameraMovement::FORWARD, GLDRV->m_timeDelta);
-			if (glfwGetKey(m_glfw_window, KEY_BACKWARD) == GLFW_PRESS)
+			if (glfwGetKey(m_glfw_window, KEY_CAM_BACKWARD) == GLFW_PRESS)
 				m_demo.m_pCamera->processKeyboard(CameraMovement::BACKWARD, GLDRV->m_timeDelta);
-			if (glfwGetKey(m_glfw_window, KEY_STRAFELEFT) == GLFW_PRESS)
+			if (glfwGetKey(m_glfw_window, KEY_CAM_STRAFE_LEFT) == GLFW_PRESS)
 				m_demo.m_pCamera->processKeyboard(CameraMovement::LEFT, GLDRV->m_timeDelta);
-			if (glfwGetKey(m_glfw_window, KEY_STRAFERIGHT) == GLFW_PRESS)
+			if (glfwGetKey(m_glfw_window, KEY_CAM_STRAFE_RIGHT) == GLFW_PRESS)
 				m_demo.m_pCamera->processKeyboard(CameraMovement::RIGHT, GLDRV->m_timeDelta);
-			if (glfwGetKey(m_glfw_window, KEY_ROLLRIGHT) == GLFW_PRESS)
+			if (glfwGetKey(m_glfw_window, KEY_CAM_ROLL_RIGHT) == GLFW_PRESS)
 				m_demo.m_pCamera->processKeyboard(CameraMovement::ROLL_RIGHT, GLDRV->m_timeDelta);
-			if (glfwGetKey(m_glfw_window, KEY_ROLLLEFT) == GLFW_PRESS)
+			if (glfwGetKey(m_glfw_window, KEY_CAM_ROLL_LEFT) == GLFW_PRESS)
 				m_demo.m_pCamera->processKeyboard(CameraMovement::ROLL_LEFT, GLDRV->m_timeDelta);
 		}
 
