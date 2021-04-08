@@ -24,7 +24,8 @@ namespace Phoenix {
 	demokernel::demokernel()
 		:
 		m_pText(nullptr),
-		m_pCamera(nullptr),
+		m_pActiveCamera(nullptr),
+		m_pDefaultCamera(nullptr),
 		m_status(-1),
 		m_demoName("Phoneix Spontz Demoengine"),
 		m_dataFolder("./data/"),
@@ -134,9 +135,10 @@ namespace Phoenix {
 		for (const auto& extension : extensions)
 			Logger::info(LogLevel::med, "\t%s", extension.c_str());
 
-		// Create the camera
-		m_pCamera = new Camera(Camera::DEFAULT_POSITION, Camera::DEFAULT_CAM_YAW, Camera::DEFAULT_CAM_PITCH , Camera::DEFAULT_CAM_ROLL);
-
+		// Create the camera, by default a "projection free"
+		m_pDefaultCamera = new CameraProjectionFree(Camera::DEFAULT_CAM_POSITION);
+		m_pActiveCamera = m_pDefaultCamera;
+		
 		// Start loading Basic resources
 		m_pRes->loadAllResources();
 
@@ -672,7 +674,6 @@ namespace Phoenix {
 		}
 
 
-
 		// prepare engine for render
 		GLDRV->initRender(true);
 
@@ -681,6 +682,9 @@ namespace Phoenix {
 			PX_PROFILE_SCOPE("DrawGrid");
 			GLDRV->drawGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
 		}
+
+		// Set the default camera
+		m_pActiveCamera = m_pDefaultCamera;
 
 		// Run Exec sections
 		Logger::info(LogLevel::low, "  Running Exec Sections...");

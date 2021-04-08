@@ -167,6 +167,23 @@ namespace Phoenix {
 		ImGui::GetIO().FontGlobalScale = m_fontScale;
 	}
 
+
+	void imGuiDriver::drawCameraInfo(Camera* pCamera)
+	{
+		if (pCamera != nullptr) {
+			ImGui::Text("  Name: %s, Type: %d", pCamera->TypeStr.c_str(), pCamera->Type);
+			ImGui::Text("  Speed: %.3f", pCamera->getMovementSpeed());
+			glm::vec3 camPosition = pCamera->getPosition();
+			ImGui::Text("  Pos: %.1f,%.1f,%.1f", camPosition.x, camPosition.y, camPosition.z);
+			glm::vec3 camTarget = pCamera->getTarget();
+			ImGui::Text("  Target: %.1f,%.1f,%.1f", camTarget.x, camTarget.y, camTarget.z);
+			glm::vec3 camFront = pCamera->getFront();
+			ImGui::Text("  Front: %.1f,%.1f,%.1f", camFront.x, camFront.y, camFront.z);
+			ImGui::Text("  Yaw: %.1f, Pitch: %.1f, Roll: %.1f, Fov: %.1f", pCamera->getYaw(), pCamera->getPitch(), pCamera->getRoll(), pCamera->getFov());
+			ImGui::Text("  Frustum Near: %.1f, Far: %.1f", pCamera->getFrustumNear(), pCamera->getFrustumFar());
+		}
+	}
+
 	void imGuiDriver::drawInfo() {
 
 		// Get Demo status
@@ -213,19 +230,29 @@ namespace Phoenix {
 
 		// Draw Info
 			//ImGui::Text("Font: %.3f", m_fontScale);	// Show font size
+		
 		ImGui::Text("Fps: %.0f", m_demo.m_fps);
 		ImGui::Text("Demo status: %s", demoStatus.c_str());
 		ImGui::Text("Time: %.2f/%.2f", m_demo.m_demoRunTime, m_demo.m_demoEndTime);
 		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->getCPUload());
 		ImGui::Text("Texture mem used: %.2fmb", m_demo.m_textureManager.mem + m_demo.m_fboManager.mem + m_demo.m_efxBloomFbo.mem + m_demo.m_efxAccumFbo.mem);
-		ImGui::Text("Cam Speed: %.3f", m_demo.m_pCamera->MovementSpeed);
-		ImGui::Text("Cam Pos: %.1f,%.1f,%.1f", m_demo.m_pCamera->Position.x, m_demo.m_pCamera->Position.y, m_demo.m_pCamera->Position.z);
-		ImGui::Text("Cam Front: %.1f,%.1f,%.1f", m_demo.m_pCamera->Front.x, m_demo.m_pCamera->Front.y, m_demo.m_pCamera->Front.z);
-		ImGui::Text("Cam Yaw: %.1f, Pitch: %.1f, Roll: %.1f, Fov: %.1f", m_demo.m_pCamera->Yaw, m_demo.m_pCamera->Pitch, m_demo.m_pCamera->Roll, m_demo.m_pCamera->Fov);
 		if (m_demo.m_slaveMode)
 			ImGui::Text("Slave Mode ON");
 		else
 			ImGui::Text("Slave Mode OFF");
+
+		if (ImGui::TreeNode("Active camera info"))
+		{
+			drawCameraInfo(m_demo.m_pActiveCamera);
+			ImGui::TreePop();
+		}
+		
+		if (ImGui::TreeNode("Default camera info"))
+		{
+			drawCameraInfo(m_demo.m_pDefaultCamera);
+			ImGui::TreePop();
+		}
+
 		ImGui::End();
 	}
 
@@ -360,6 +387,7 @@ namespace Phoenix {
 		ImGui::TextUnformatted(m_helpText.begin(), m_helpText.end());
 		ImGui::End();
 	}
+
 
 	// Draws the information of all the sections that are being drawn
 	void imGuiDriver::drawSesctionInfo()

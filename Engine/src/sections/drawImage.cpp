@@ -154,8 +154,8 @@ namespace Phoenix {
 			}
 			else
 			{
-				glm::mat4 mView = m_demo.m_pCamera->getViewMatrix();
-				glm::mat4 mProjection = m_demo.m_pCamera->getProjectionMatrix();
+				glm::mat4 mView = m_demo.m_pActiveCamera->getView();
+				glm::mat4 mProjection = m_demo.m_pActiveCamera->getProjection();
 
 				mModel = glm::translate(mModel, m_vTranslation);
 				mModel = glm::rotate(mModel, glm::radians(m_vRotation.x), glm::vec3(1, 0, 0));

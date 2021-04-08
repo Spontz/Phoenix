@@ -158,12 +158,12 @@ namespace Phoenix {
 		// End ShadowMapping
 
 		// view/projection transformations
-		m_mProjection = m_demo.m_pCamera->getProjectionMatrix();
+		m_mProjection = m_demo.m_pActiveCamera->getProjection();
 
 		//m_pShader->setValue("projection", m_mProjection);
 		m_pModel->m_matProjection = m_mProjection;
 
-		m_mView = m_demo.m_pCamera->getViewMatrix();
+		m_mView = m_demo.m_pActiveCamera->getView();
 		//if (CameraNumber < 0)
 		//	m_pShader->setValue("view", m_mView);
 		m_pModel->m_matView = m_mView;

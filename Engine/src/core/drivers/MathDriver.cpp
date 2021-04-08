@@ -32,18 +32,19 @@ namespace Phoenix {
 		}
 
 		// Camera values
-		if (DEMO->m_pCamera != NULL) {
-			SymbolTable.add_variable("cam_posX", DEMO->m_pCamera->Position.x);
-			SymbolTable.add_variable("cam_posY", DEMO->m_pCamera->Position.y);
-			SymbolTable.add_variable("cam_posZ", DEMO->m_pCamera->Position.z);
+		if (DEMO->m_pActiveCamera != NULL) {
+			SymbolTable.add_variable("cam_posX", DEMO->m_pActiveCamera->m_Position.x);
+			SymbolTable.add_variable("cam_posY", DEMO->m_pActiveCamera->m_Position.y);
+			SymbolTable.add_variable("cam_posZ", DEMO->m_pActiveCamera->m_Position.z);
 
-			SymbolTable.add_variable("cam_upX", DEMO->m_pCamera->Up.x);
-			SymbolTable.add_variable("cam_upY", DEMO->m_pCamera->Up.y);
-			SymbolTable.add_variable("cam_upZ", DEMO->m_pCamera->Up.z);
+			SymbolTable.add_variable("cam_upX", DEMO->m_pActiveCamera->m_Up.x);
+			SymbolTable.add_variable("cam_upY", DEMO->m_pActiveCamera->m_Up.y);
+			SymbolTable.add_variable("cam_upZ", DEMO->m_pActiveCamera->m_Up.z);
 
-			SymbolTable.add_variable("cam_yaw", DEMO->m_pCamera->Yaw);
-			SymbolTable.add_variable("cam_pitch", DEMO->m_pCamera->Pitch);
-			SymbolTable.add_variable("cam_fov", DEMO->m_pCamera->Fov);
+			SymbolTable.add_variable("cam_yaw", DEMO->m_pActiveCamera->m_Yaw);
+			SymbolTable.add_variable("cam_pitch", DEMO->m_pActiveCamera->m_Pitch);
+			SymbolTable.add_variable("cam_roll", DEMO->m_pActiveCamera->m_Roll); 
+			SymbolTable.add_variable("cam_fov", DEMO->m_pActiveCamera->m_Fov);
 		}
 		else {
 			SymbolTable.add_constant("cam_posX", 0);
@@ -52,11 +53,12 @@ namespace Phoenix {
 
 			SymbolTable.add_constant("cam_upX", 0);
 			SymbolTable.add_constant("cam_upY", 0);
-			SymbolTable.add_constant("cam_upZ", 100);
+			SymbolTable.add_constant("cam_upZ", 1);
 
 			SymbolTable.add_constant("cam_yaw", 0);
 			SymbolTable.add_constant("cam_pitch", 0);
-			SymbolTable.add_constant("cam_fov", 0);
+			SymbolTable.add_constant("cam_roll", 0);
+			SymbolTable.add_constant("cam_fov", 0);			
 		}
 
 		// Light values

@@ -28,9 +28,10 @@ namespace Phoenix {
 		GLuint		textureID;		// ID handle of the texture atlas
 		GLuint		width, height;	// Texture atlas size
 		GLuint		VAO, VBO;		// Buffer objects for drawing the text
-		Shader* shdr_font;		// Shader used for drawing the text
+		Shader*		shdr_font;		// Shader used for drawing the text
 		FT_Library	ft;
 		std::map<GLchar, Char> Characters;
+		Camera		*m_pCam;	// Camera to be used for displaying chars
 
 	};
 }

@@ -15,6 +15,7 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
+		Camera*		m_pCam = nullptr;
 		bool		m_bFreeCam = false;
 		glm::vec3	m_vCamPos = { 0, 0, 0 };
 		float		m_fCamYaw = 0;
@@ -43,6 +44,9 @@ namespace Phoenix {
 			Logger::error("Camera [%s]: 1 spline and 1 param needed", identifier.c_str());
 			return false;
 		}
+
+		// TODO: To be able to define the camera type?
+		m_pCam = new CameraProjectionFree(Camera::DEFAULT_CAM_POSITION);
 
 		// Load parameters
 		m_bFreeCam = static_cast<bool>(param[0]);
@@ -99,13 +103,15 @@ namespace Phoenix {
 
 			// apply formula modifications
 			m_pExprCamera->Expression.value();
+			
+			glm::vec3 Position = glm::vec3(new_pos[0], new_pos[1], new_pos[2]) + m_vCamPos;
+			m_pCam->setPosition(Position);
+			m_pCam->setUpVector(glm::vec3(new_pos[3], new_pos[4], new_pos[5]));
+			m_pCam->setAngles(new_pos[6] + m_fCamYaw, new_pos[7] + m_fCamPitch, new_pos[8] + m_fCamRoll);
+			m_pCam->setFov(new_pos[9] + m_fCamFov);
 
-			m_demo.m_pCamera->setCamera(glm::vec3(new_pos[0], new_pos[1], new_pos[2]) + m_vCamPos,
-				glm::vec3(new_pos[3], new_pos[4], new_pos[5]),
-				new_pos[6] + m_fCamYaw, new_pos[7] + m_fCamPitch, new_pos[8] + m_fCamRoll, new_pos[9] + m_fCamFov);
+			DEMO->m_pActiveCamera = m_pCam;
 		}
-
-
 	}
 
 	void sCamera::end()
@@ -114,10 +120,14 @@ namespace Phoenix {
 
 	void sCamera::loadDebugStatic()
 	{
+		std::stringstream ss;
+		ss << "Type: " << m_pCam->TypeStr << std::endl;
+		ss << "Free cam: " << (m_bFreeCam ? "Yes":"No") << std::endl;
+		debugStatic = ss.str();
 	}
 
 	std::string sCamera::debug()
 	{
-		return "";
+		return debugStatic;
 	}
 }

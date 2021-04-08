@@ -106,8 +106,8 @@ namespace Phoenix {
 		Light* my_light = m_demo.m_lightManager.light[m_iLightNum];
 
 		if (m_bLinkPosToCamera) {
-			my_light->position = m_demo.m_pCamera->Position;
-			my_light->direction = m_demo.m_pCamera->Position + (m_demo.m_pCamera->Front * 10.0f); // TODO: Remove this hardcode! XD
+			my_light->position = m_demo.m_pActiveCamera->getPosition();
+			my_light->direction = m_demo.m_pActiveCamera->getPosition() + (m_demo.m_pActiveCamera->getFront() * 10.0f); // TODO: Remove this hardcode! XD
 		}
 
 

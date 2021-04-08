@@ -117,8 +117,8 @@ namespace Phoenix {
 
 		glDepthMask(GL_FALSE); // Disable depth buffer writting
 
-		glm::mat4 projection = m_demo.m_pCamera->getProjectionMatrix();
-		glm::mat4 view = m_demo.m_pCamera->getViewMatrix();
+		glm::mat4 projection = m_demo.m_pActiveCamera->getProjection();
+		glm::mat4 view = m_demo.m_pActiveCamera->getView();
 
 		// render the loaded model
 		glm::mat4 model = glm::mat4(1.0f);
@@ -134,7 +134,7 @@ namespace Phoenix {
 		m_pShader->setValue("gTime", runTime);	// Send the Time
 		m_pShader->setValue("gVP", projection * view);	// Set Projection x View matrix
 		m_pShader->setValue("gModel", model);			// Set Model matrix
-		m_pShader->setValue("gCameraPos", m_demo.m_pCamera->Position);		// Set camera position
+		m_pShader->setValue("gCameraPos", m_demo.m_pActiveCamera->getPosition());		// Set camera position
 		m_pShader->setValue("gNumParticles", (float)m_iNumParticles);	// Set the total number of particles
 
 		// Set the other shader variable values

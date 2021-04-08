@@ -5,6 +5,7 @@
 
 #include "main.h"
 #include "core/renderer/Viewport.h"
+#include "core/renderer/Camera.h"
 
 namespace Phoenix {
 
@@ -88,6 +89,7 @@ namespace Phoenix {
 		void drawSound();
 		void drawGridConfig();
 		void drawHelp();
+		void drawCameraInfo(Camera* pCamera);
 
 	};
 }

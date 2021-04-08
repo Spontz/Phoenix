@@ -1,8 +1,6 @@
 ﻿// Camera.h
 // Spontz Demogroup
 
-// Right Handed. Degrees. Column Major.
-
 #pragma once
 
 #include "main.h"
@@ -20,92 +18,101 @@ namespace Phoenix {
 	};
 
 	enum class CameraType : int {
-		FREE = 0,
-		TARGET = 1,
-		RAW_MATRIX = 2
+		NONE = 0,
+		PROJ_FREE = 1,		// Free: FPS like camera, only using euler angles
+		PROJ_TARGET = 2,	// Target: Using a target, euler angles are also available
+		RAW_MATRIX = 3,		// RAW_Matrix: Useful when a matrix is given (f.i.: when reading an animated camera from a 3d file)
+		ORTHOGONAL = 4		// Orthogonal camera
 	};
 
-	// An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 	class Camera
 	{
+		// Friend Classes
+		friend class CameraProjectionFree;
+		friend class CameraProjectionTarget;
+		friend class CameraRawMatrix;
+		friend class MathDriver;
+
 	public:
 		// Default camera values
-		static constexpr glm::vec3 DEFAULT_POSITION = {0,0,3};
+		static constexpr glm::vec3 DEFAULT_CAM_POSITION = { 0, 0, 3 };
+		static constexpr glm::vec3 DEFAULT_CAM_TARGET = { 0, 0, 0 };
+		static constexpr glm::vec3 DEFAULT_CAM_UP = { 0, 1, 0 };
+		static constexpr glm::vec3 DEFAULT_CAM_RIGHT = { 0, 0, 0 };
+		static constexpr glm::vec3 DEFAULT_CAM_WORLD_UP = { 0, 1, 0 };
+		static constexpr glm::vec3 DEFAULT_CAM_FRONT = { 0, 0, 0 };
 		static constexpr float DEFAULT_CAM_YAW = -90.0f;
 		static constexpr float DEFAULT_CAM_PITCH = 0.0f;
 		static constexpr float DEFAULT_CAM_ROLL = 0.0f;
-		static constexpr float DEFAULT_CAM_SPEED = 15.0f;
+		static constexpr float DEFAULT_CAM_FOV = 45.0f;
+		static constexpr float DEFAULT_CAM_MOVEMENT_SPEED = 15.0f;
 		static constexpr float DEFAULT_CAM_ROLL_SPEED = 40.0f;
 		static constexpr float DEFAULT_CAM_SENSITIVITY = 0.1f;
-		static constexpr float DEFAULT_CAM_VFOV = 45.0f;
+
 		static constexpr float DEFAULT_CAM_NEAR = 0.1f;
 		static constexpr float DEFAULT_CAM_FAR = 10000.0f;
 
 	public:
-		CameraType		camType;
+		CameraType		Type;
+		std::string		TypeStr;
 
-		std::string		Name;
-		// Camera Attributes
-		glm::vec3		Position;
-		glm::vec3		At;
-		glm::vec3		Up;
-		glm::vec3		Right;
-		glm::vec3		WorldUp;
-		glm::mat4		Matrix;	// Matrix: used for scenes with a saved matrix
+	public:
+		Camera();
+		virtual ~Camera() = default;
 
-		mutable glm::vec3		Front;	// TODO: To be changed by a function
-				
-		// Euler Angles
-		float Yaw;
-		float Pitch;
-		float Roll;
-
-		// Camera options
-		float MovementSpeed;
-		float RollSpeed;
-		float MouseSensitivity;
-		float Fov;
-
-		// Camera frustrum
-		float Near;
-		float Far;
-
-		// Free camera
-		Camera(glm::vec3 const& position, float yaw, float pitch, float roll);
-		// Target + Free camera
-		Camera(
-			glm::vec3 const& position,
-			glm::vec3 const& at,
-			glm::vec3 const& up = glm::vec3(0.0f, 1.0f, 0.0f),
-			float yaw = DEFAULT_CAM_YAW,
-			float pitch = DEFAULT_CAM_PITCH,
-			float roll = DEFAULT_CAM_ROLL
-		);
-		// Raw Matrix
-		Camera(glm::mat4 const& matrix);
-
-
-		void		reset();
-		// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
-		glm::mat4	getViewMatrix() const;
-		glm::mat4	getProjectionMatrix() const;
-		glm::mat4	getOrthoProjectionMatrix() const;
-		glm::mat4	getOrthoViewMatrix() const;
-		glm::mat4	getMatrix() const;
-
-		// Processes input received from any keyboard-like input system
-		// Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-		void		processKeyboard(CameraMovement direction, float deltaTime);
-		// Processes input received from a mouse input system. Expects the offset value in both the x and y direction
-		void		processMouseMovement(float xoffset, float yoffset, bool constrainPitch = true);
-		// Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
-		void		processMouseScroll(float yoffset);
-		void		capturePos();
-		void		setCamera(glm::vec3 const& position, glm::vec3 const& up, float yaw, float pitch, float roll, float fov);
+		virtual const glm::mat4 getProjection() { return glm::mat4(1.0f); };
+		virtual const glm::mat4 getView() { return glm::mat4(1.0f); };
 		
+		const glm::vec3& getPosition() { return m_Position; };
+		const glm::vec3& getTarget() { return m_Target; };
+		const glm::vec3& getFront() { return m_Front; };
+
+		const float& getMovementSpeed() { return m_MovementSpeed; };
+		const float& getYaw() { return m_Yaw; };
+		const float& getPitch() { return m_Pitch; };
+		const float& getRoll() { return m_Roll; };
+		const float& getFov() { return m_Fov; };
+		const float& getFrustumNear() { return m_FrustumNear; };
+		const float& getFrustumFar() { return m_FrustumFar; };
+
+		virtual void	processKeyboard(CameraMovement direction, float deltaTime) {};
+		virtual void	processMouseMovement(float xoffset, float yoffset, bool constrainPitch = true) {};
+		virtual void	processMouseScroll(float yoffset) {};
+		virtual void	multiplyMovementSpeed(float speed) {};
+		virtual void	divideMovementSpeed(float speed) {};
+		virtual void	capturePos() {};
+		virtual void	reset() {};
+		
+		virtual void	setViewMatrix(glm::mat4 const& matrix) {};
+		virtual void	setPosition(glm::vec3 const& position) { m_Position = position; };
+		virtual void	setTarget(glm::vec3 const& target) { m_Target = target; };
+		virtual void	setUpVector(glm::vec3 const& up) { m_Up = up; };
+		virtual void	setFov(float fov) { m_Fov = fov; };
+		virtual void	setAngles(float yaw, float pitch, float roll);
+		virtual void	setFrustum(float frustum_near, float frustum_far);
+
+
 	private:
-		// Calculates the front vector from the Camera's (updated) Euler Angles
-		void		setRollMatrix(glm::mat3& m, glm::vec3 f);
-		void		updateCameraVectors();
+		glm::vec3				m_Position = DEFAULT_CAM_POSITION;
+		glm::vec3				m_Target = DEFAULT_CAM_TARGET;
+		glm::vec3				m_Up = DEFAULT_CAM_UP;
+		const glm::vec3			m_WorldUp = DEFAULT_CAM_WORLD_UP;		// Reference to where is the UP of our world
+		glm::vec3				m_Right = DEFAULT_CAM_RIGHT;
+		mutable glm::vec3		m_Front = DEFAULT_CAM_FRONT;	// TODO: To be changed by a function
+
+		// Euler angles
+		float m_Yaw = DEFAULT_CAM_YAW;
+		float m_Pitch = DEFAULT_CAM_PITCH;
+		float m_Roll = DEFAULT_CAM_ROLL;
+		float m_Fov = DEFAULT_CAM_FOV;
+
+		// Camera behaviour
+		float m_MovementSpeed = DEFAULT_CAM_MOVEMENT_SPEED;
+		float m_RollSpeed = DEFAULT_CAM_ROLL_SPEED;
+		float m_MouseSensitivity = DEFAULT_CAM_SENSITIVITY;
+
+		// Frustum
+		float m_FrustumNear = DEFAULT_CAM_NEAR;
+		float m_FrustumFar = DEFAULT_CAM_FAR;
 	};
 }

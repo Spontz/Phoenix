@@ -17,12 +17,15 @@ namespace Phoenix {
 		VBO(0),
 		shdr_font(nullptr)
 	{
+		// Create the camera
+		m_pCam = new CameraOrthogonal();
+
 		// Load the shader
 		glm::mat4 projection;
 		shdr_font = DEMO->m_shaderManager.addShader(shader_path);
 
 		if (shdr_font) {
-			projection = DEMO->m_pCamera->getOrthoProjectionMatrix();
+			projection = m_pCam->getProjection();
 			shdr_font->use();
 		}
 		else {

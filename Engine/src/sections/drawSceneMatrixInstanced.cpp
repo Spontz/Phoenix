@@ -202,8 +202,8 @@ namespace Phoenix {
 		// End ShadowMapping
 
 		// view/projection transformations
-		glm::mat4 projection = m_demo.m_pCamera->getProjectionMatrix();
-		glm::mat4 view = m_demo.m_pCamera->getViewMatrix();
+		glm::mat4 projection = m_demo.m_pActiveCamera->getProjection();
+		glm::mat4 view = m_demo.m_pActiveCamera->getView();
 		m_pShader->setValue("projection", projection);
 		m_pShader->setValue("view", view);
 		// For MotionBlur: send the previous matrix

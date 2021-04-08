@@ -69,7 +69,7 @@ namespace Phoenix {
 		// If we use camera, override the matrix view for the camera view
 		if (this->useCamera) {
 			if ((m_currentCamera >= 0) && (m_currentCamera < m_camera.size())) {
-				m_matView = m_camera[m_currentCamera]->getMatrix();
+				m_matView = m_camera[m_currentCamera]->getView();
 			}
 		}
 
@@ -203,8 +203,8 @@ namespace Phoenix {
 
 			aiMatrix4x4 mat;
 			aiCam->GetCameraMatrix(mat);
-			Camera* cam = new Camera(mat4_cast(mat));
-			cam->Name = aiCam->mName.C_Str();
+			Camera* cam = new CameraRawMatrix(mat4_cast(mat));
+			cam->TypeStr = aiCam->mName.C_Str();
 			m_camera.push_back(cam);
 		}
 	}
@@ -461,8 +461,8 @@ namespace Phoenix {
 		}
 
 		for (unsigned int i = 0; i < m_pScene->mNumCameras; i++) {
-			if (NodeName == this->m_camera[i]->Name) {
-				this->m_camera[i]->Matrix = glm::inverse(GlobalTransformation);
+			if (NodeName == this->m_camera[i]->TypeStr) {
+				this->m_camera[i]->setViewMatrix (glm::inverse(GlobalTransformation));
 			}
 		}
 

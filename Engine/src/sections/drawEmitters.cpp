@@ -190,8 +190,8 @@ namespace Phoenix {
 
 		glDepthMask(GL_FALSE); // Disable depth buffer writting
 
-		glm::mat4 projection = m_demo.m_pCamera->getProjectionMatrix();
-		glm::mat4 view = m_demo.m_pCamera->getViewMatrix();
+		glm::mat4 projection = m_demo.m_pActiveCamera->getProjection();
+		glm::mat4 view = m_demo.m_pActiveCamera->getView();
 
 		// render the loaded model
 		glm::mat4 model = glm::mat4(1.0f);
@@ -212,7 +212,7 @@ namespace Phoenix {
 		}
 		m_pPartSystem->force = m_vForce;
 
-		m_pPartSystem->Render(deltaTime, vp, model, m_demo.m_pCamera->Position);
+		m_pPartSystem->Render(deltaTime, vp, model, m_demo.m_pActiveCamera->getPosition());
 
 
 		// End evaluating blending

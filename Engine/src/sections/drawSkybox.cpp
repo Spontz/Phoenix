@@ -106,8 +106,8 @@ namespace Phoenix {
 		m_demo.m_pRes->m_pShdrSkybox->use(); // TODO: Do not use the Resource shader for skybox, and use our own shader!
 
 		// view/projection transformations
-		glm::mat4 projection = m_demo.m_pCamera->getProjectionMatrix();
-		glm::mat4 view = glm::mat4(glm::mat3(m_demo.m_pCamera->getViewMatrix())); // remove translation from the view matrix
+		glm::mat4 projection = m_demo.m_pActiveCamera->getProjection();
+		glm::mat4 view = glm::mat4(glm::mat3(m_demo.m_pActiveCamera->getView())); // remove translation from the view matrix
 		m_demo.m_pRes->m_pShdrSkybox->setValue("projection", projection);
 		m_demo.m_pRes->m_pShdrSkybox->setValue("view", view);
 

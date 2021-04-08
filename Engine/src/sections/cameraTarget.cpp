@@ -16,11 +16,11 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
+		Camera*		m_pCam = nullptr;
 		bool		m_bFreeCam = false;
 
-		glm::vec3	m_vCamPos = { 0, 0, 0 };
-		glm::vec3	m_vCamAt = { 0, 0, 1 };
-		glm::vec3	m_vCamUp = { 0, 1, 0 };
+		glm::vec3	m_vCamPos = { 0, 0, 3 };
+		glm::vec3	m_vCamAt = { 0, 0, 0 };
 
 		float		m_fCamYaw = 0;
 		float		m_fCamPitch = 0;
@@ -46,10 +46,13 @@ namespace Phoenix {
 	bool sCameraTarget::load()
 	{
 		// script validation
-		if ((param.size() != 1) || (strings.size() < 2)) {
-			Logger::error("Camera Target [%s]: 1 param and 4 strings needed", this->identifier.c_str());
+		if ((param.size() != 1) || (strings.size() < 3)) {
+			Logger::error("Camera Target [%s]: 1 param and 3 strings needed", this->identifier.c_str());
 			return false;
 		}
+
+		// TODO: To be able to define the camera type?
+		m_pCam = new CameraProjectionTarget(Camera::DEFAULT_CAM_POSITION, Camera::DEFAULT_CAM_TARGET);
 
 		// Load parameters
 		m_bFreeCam = static_cast<bool>(this->param[0]);
@@ -68,10 +71,6 @@ namespace Phoenix {
 		m_pExprCamera->SymbolTable.add_variable("AtX", m_vCamAt.x);
 		m_pExprCamera->SymbolTable.add_variable("AtY", m_vCamAt.y);
 		m_pExprCamera->SymbolTable.add_variable("AtZ", m_vCamAt.z);
-
-		m_pExprCamera->SymbolTable.add_variable("UpX", m_vCamUp.x);
-		m_pExprCamera->SymbolTable.add_variable("UpY", m_vCamUp.y);
-		m_pExprCamera->SymbolTable.add_variable("UpZ", m_vCamUp.z);
 
 		m_pExprCamera->SymbolTable.add_variable("Yaw", m_fCamYaw);
 		m_pExprCamera->SymbolTable.add_variable("Pitch", m_fCamPitch);
@@ -98,8 +97,16 @@ namespace Phoenix {
 		// apply formula modifications
 		m_pExprCamera->Expression.value();
 
-		*DEMO->m_pCamera = Camera(m_vCamPos, m_vCamAt, m_vCamUp, m_fCamYaw, m_fCamPitch, m_fCamRoll);
+		m_pCam->setPosition(m_vCamPos);
+		m_pCam->setTarget(m_vCamAt);
+		m_pCam->setAngles(m_fCamYaw, m_fCamPitch, m_fCamRoll);
+		m_pCam->setFov(m_fCamFov);
+		DEMO->m_pActiveCamera = m_pCam;
 
+		// Latest change with Isaac
+		//*DEMO->m_pCamera = Camera(m_vCamPos, m_vCamAt, m_vCamUp, m_fCamYaw, m_fCamPitch, m_fCamRoll);
+
+		// OLD
 		//DEMO->m_pCamera->setCamera(m_vCamPos, forward, m_vCamUp, m_fCamFov);
 	
 	}
@@ -110,10 +117,14 @@ namespace Phoenix {
 
 	void sCameraTarget::loadDebugStatic()
 	{
+		std::stringstream ss;
+		ss << "Type: " << m_pCam->TypeStr << std::endl;
+		ss << "Free cam: " << (m_bFreeCam ? "Yes" : "No") << std::endl;
+		debugStatic = ss.str();
 	}
 
 	std::string sCameraTarget::debug()
 	{
-		return "";
+		return debugStatic;
 	}
 }

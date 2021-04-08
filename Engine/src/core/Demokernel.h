@@ -20,6 +20,7 @@ namespace Phoenix { class demokernel; }
 #include "core/renderer/LightManager.h"
 #include "core/renderer/Font.h"
 #include "core/renderer/Camera.h"
+#include "core/renderer/CameraTypes.h"
 #include "core/renderer/Light.h"
 #include "core/utils/logger.h"
 
@@ -77,8 +78,9 @@ namespace Phoenix {
 		ModelManager	m_modelManager;
 		ShaderManager	m_shaderManager;
 		LightManager	m_lightManager;
-		Camera* m_pCamera;
-		Font* m_pText;
+		Camera*			m_pActiveCamera;			// Current Active Camera
+		Camera*			m_pDefaultCamera;			// Default Camera when no camera is defined
+		Font*			m_pText;
 
 		// Resources
 		Resource* m_pRes;
