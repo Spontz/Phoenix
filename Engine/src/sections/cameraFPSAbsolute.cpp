@@ -4,10 +4,10 @@
 
 namespace Phoenix {
 
-	struct sCameraAbs : public Section {
+	struct sCameraFPSAbsolute : public Section {
 
 	public:
-		sCameraAbs();
+		sCameraFPSAbsolute();
 		bool		load();
 		void		init();
 		void		exec();
@@ -38,27 +38,27 @@ namespace Phoenix {
 
 	// ******************************************************************
 
-	Section* instance_cameraAbs()
+	Section* instance_cameraFPSAbsolute()
 	{
-		return new sCameraAbs();
+		return new sCameraFPSAbsolute();
 	}
 
 
-	sCameraAbs::sCameraAbs()
+	sCameraFPSAbsolute::sCameraFPSAbsolute()
 	{
-		type = SectionType::CameraAbsSec;
+		type = SectionType::CameraFPSAbsolute;
 	}
 
-	bool sCameraAbs::load()
+	bool sCameraFPSAbsolute::load()
 	{
 		// script validation
 		if ((spline.size() != 1) || (param.size() != 1) || (strings.size() < 2)) {
-			Logger::error("Camera [%s]: 1 spline, 1 param and 2 strings needed", this->identifier.c_str());
+			Logger::error("Camera FPS Absolute [%s]: 1 spline, 1 param and 2 strings needed", this->identifier.c_str());
 			return false;
 		}
 
-		// TODO: To be able to define the camera type?
-		m_pCam = new CameraProjectionFree(Camera::DEFAULT_CAM_POSITION);
+		// Create the Camera class
+		m_pCam = new CameraProjectionFPS(Camera::DEFAULT_CAM_POSITION);
 
 		// Load parameters
 		m_bFreeCam = static_cast<bool>(this->param[0]);
@@ -103,11 +103,11 @@ namespace Phoenix {
 		return true;
 	}
 
-	void sCameraAbs::init()
+	void sCameraFPSAbsolute::init()
 	{
 	}
 
-	void sCameraAbs::exec()
+	void sCameraFPSAbsolute::exec()
 	{
 		// If freeCam is active, we do nothing
 		if (m_bFreeCam)
@@ -137,11 +137,11 @@ namespace Phoenix {
 		}
 	}
 
-	void sCameraAbs::end()
+	void sCameraFPSAbsolute::end()
 	{
 	}
 
-	void sCameraAbs::loadDebugStatic()
+	void sCameraFPSAbsolute::loadDebugStatic()
 	{
 		std::stringstream ss;
 		ss << "Type: " << m_pCam->TypeStr << std::endl;
@@ -149,7 +149,7 @@ namespace Phoenix {
 		debugStatic = ss.str();
 	}
 
-	std::string sCameraAbs::debug()
+	std::string sCameraFPSAbsolute::debug()
 	{
 		return debugStatic;
 	}

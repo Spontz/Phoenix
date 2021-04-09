@@ -136,7 +136,7 @@ namespace Phoenix {
 			Logger::info(LogLevel::med, "\t%s", extension.c_str());
 
 		// Create the camera, by default a "projection free"
-		m_pDefaultCamera = new CameraProjectionFree(Camera::DEFAULT_CAM_POSITION);
+		m_pDefaultCamera = new CameraProjectionFPS(Camera::DEFAULT_CAM_POSITION);
 		m_pActiveCamera = m_pDefaultCamera;
 		
 		// Start loading Basic resources

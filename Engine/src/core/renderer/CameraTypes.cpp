@@ -9,26 +9,26 @@ namespace Phoenix {
 
 	/////////
 	// Projection Free Camera: Like an "FPS" camera: The target is not locked, the target is changed with the Euler Angles
-	CameraProjectionFree::CameraProjectionFree(glm::vec3 const& position)
+	CameraProjectionFPS::CameraProjectionFPS(glm::vec3 const& position)
 	{
-		Type = CameraType::PROJ_FREE;
-		TypeStr = "Projection free";
+		Type = CameraType::PROJ_FPS;
+		TypeStr = "Projection FPS";
 
 		m_Position = position;
 	}
 
-	const glm::mat4 CameraProjectionFree::getProjection()
+	const glm::mat4 CameraProjectionFPS::getProjection()
 	{
 		return glm::perspective(glm::radians(m_Fov), GLDRV->GetFramebufferViewport().GetAspectRatio(), m_FrustumNear, m_FrustumFar);
 	}
 
-	const glm::mat4 CameraProjectionFree::getView()
+	const glm::mat4 CameraProjectionFPS::getView()
 	{
 		updateCameraVectors(); // Calculate the Front position considering the Euler angles
 		return glm::lookAt(m_Position, m_Position + m_Front, m_Up);
 	}
 
-	void CameraProjectionFree::processKeyboard(CameraMovement direction, float deltaTime)
+	void CameraProjectionFPS::processKeyboard(CameraMovement direction, float deltaTime)
 	{
 		const float velocity = m_MovementSpeed * deltaTime;
 		const float velocity_roll = m_RollSpeed * deltaTime;
@@ -57,7 +57,7 @@ namespace Phoenix {
 		//updateCameraVectors();
 	}
 
-	void CameraProjectionFree::processMouseMovement(float xoffset, float yoffset, bool constrainPitch)
+	void CameraProjectionFPS::processMouseMovement(float xoffset, float yoffset, bool constrainPitch)
 	{
 		xoffset *= m_MouseSensitivity;
 		yoffset *= m_MouseSensitivity;
@@ -78,7 +78,7 @@ namespace Phoenix {
 		//updateCameraVectors();
 	}
 
-	void CameraProjectionFree::processMouseScroll(float yoffset)
+	void CameraProjectionFPS::processMouseScroll(float yoffset)
 	{
 		m_Fov -= yoffset;
 		if (m_Fov < 1.0f)
@@ -87,22 +87,22 @@ namespace Phoenix {
 			m_Fov = 179.0f;
 	}
 
-	void CameraProjectionFree::multiplyMovementSpeed(float speed)
+	void CameraProjectionFPS::multiplyMovementSpeed(float speed)
 	{
 		m_MovementSpeed *= speed;
 	}
 
-	void CameraProjectionFree::divideMovementSpeed(float speed)
+	void CameraProjectionFPS::divideMovementSpeed(float speed)
 	{
 		m_MovementSpeed /= speed;
 	}
 
-	void CameraProjectionFree::capturePos()
+	void CameraProjectionFPS::capturePos()
 	{
 		std::ofstream camFile;
 		//string message;
 		char message[1024];
-		camFile.open("camera_free.cam", std::ios::out | std::ios::app);
+		camFile.open("camera_fps.cam", std::ios::out | std::ios::app);
 		sprintf_s(message, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
 			m_Position.x, m_Position.y, m_Position.z,
 			m_Up.x, m_Up.y, m_Up.z,
@@ -112,7 +112,7 @@ namespace Phoenix {
 		camFile.close();
 	}
 
-	void CameraProjectionFree::reset()
+	void CameraProjectionFPS::reset()
 	{
 		m_Position = DEFAULT_CAM_POSITION;
 		m_Target = DEFAULT_CAM_TARGET;
@@ -135,7 +135,7 @@ namespace Phoenix {
 		m_FrustumFar = DEFAULT_CAM_FAR;
 	}
 
-	void CameraProjectionFree::setRollMatrix(glm::mat3& m, glm::vec3 f)
+	void CameraProjectionFPS::setRollMatrix(glm::mat3& m, glm::vec3 f)
 	{
 		float rcos = glm::cos(glm::radians(m_Roll));
 		float rsin = glm::sin(glm::radians(m_Roll));
@@ -153,7 +153,7 @@ namespace Phoenix {
 		m[2][2] = rcos + (1 - rcos) * f.z * f.z;
 	}
 
-	void CameraProjectionFree::updateCameraVectors()
+	void CameraProjectionFPS::updateCameraVectors()
 	{
 
 		// Calculate the new Front vector
@@ -174,13 +174,13 @@ namespace Phoenix {
 
 	/////////
 	// Projection Target Camera: Similar to ProjectionFree camera, but target can be specified manually
-	CameraProjectionTarget::CameraProjectionTarget(glm::vec3 const& position, glm::vec3 const& at)
+	CameraProjectionTarget::CameraProjectionTarget(glm::vec3 const& position, glm::vec3 const& target)
 	{
 		Type = CameraType::PROJ_TARGET;
 		TypeStr = "Projection target";
 
 		m_Position = position;
-		m_Target = at;
+		m_Target = target;
 	}
 
 	const glm::mat4 CameraProjectionTarget::getProjection()

@@ -19,7 +19,7 @@ namespace Phoenix {
 
 	enum class CameraType : int {
 		NONE = 0,
-		PROJ_FREE = 1,		// Free: FPS like camera, only using euler angles
+		PROJ_FPS = 1,		// FPS like camera, only using euler angles
 		PROJ_TARGET = 2,	// Target: Using a target, euler angles are also available
 		RAW_MATRIX = 3,		// RAW_Matrix: Useful when a matrix is given (f.i.: when reading an animated camera from a 3d file)
 		ORTHOGONAL = 4		// Orthogonal camera
@@ -28,7 +28,7 @@ namespace Phoenix {
 	class Camera
 	{
 		// Friend Classes
-		friend class CameraProjectionFree;
+		friend class CameraProjectionFPS;
 		friend class CameraProjectionTarget;
 		friend class CameraRawMatrix;
 		friend class MathDriver;

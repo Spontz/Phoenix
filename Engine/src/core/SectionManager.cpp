@@ -17,8 +17,8 @@ namespace Phoenix {
 		{"loading", SectionType::Loading },
 
 		// built-in sections
-		{"camera",				SectionType::CameraSec},
-		{"cameraAbs",			SectionType::CameraAbsSec},
+		{"cameraFPS",			SectionType::CameraFPS},
+		{"cameraFPSAbsolute",	SectionType::CameraFPSAbsolute},
 		{"cameraTarget",		SectionType::CameraTarget},
 		{"light",				SectionType::LightSec},
 		{"drawScene",			SectionType::DrawScene},
@@ -81,11 +81,11 @@ namespace Phoenix {
 		case SectionType::SetVariable:
 			mySection = instance_setVariable();
 			break;
-		case SectionType::CameraSec:
-			mySection = instance_camera();
+		case SectionType::CameraFPS:
+			mySection = instance_cameraFPS();
 			break;
-		case SectionType::CameraAbsSec:
-			mySection = instance_cameraAbs();
+		case SectionType::CameraFPSAbsolute:
+			mySection = instance_cameraFPSAbsolute();
 			break;
 		case SectionType::CameraTarget:
 			mySection = instance_cameraTarget();

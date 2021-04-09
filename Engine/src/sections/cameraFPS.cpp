@@ -4,9 +4,9 @@
 
 namespace Phoenix {
 
-	struct sCamera : public Section {
+	struct sCameraFPS : public Section {
 	public:
-		sCamera();
+		sCameraFPS();
 		bool		load();
 		void		init();
 		void		exec();
@@ -28,29 +28,28 @@ namespace Phoenix {
 
 	// ******************************************************************
 
-	Section* instance_camera()
+	Section* instance_cameraFPS()
 	{
-		return new sCamera();
+		return new sCameraFPS();
 	}
-	sCamera::sCamera()
+	sCameraFPS::sCameraFPS()
 	{
-		type = SectionType::CameraSec;
+		type = SectionType::CameraFPS;
 	}
 
-	bool sCamera::load()
+	bool sCameraFPS::load()
 	{
 		// script validation
 		if ((spline.size() != 1) || (param.size() != 1)) {
-			Logger::error("Camera [%s]: 1 spline and 1 param needed", identifier.c_str());
+			Logger::error("Camera FPS [%s]: 1 spline and 1 param needed", identifier.c_str());
 			return false;
 		}
 
-		// TODO: To be able to define the camera type?
-		m_pCam = new CameraProjectionFree(Camera::DEFAULT_CAM_POSITION);
+		// Create the Camera class
+		m_pCam = new CameraProjectionFPS(Camera::DEFAULT_CAM_POSITION);
 
 		// Load parameters
 		m_bFreeCam = static_cast<bool>(param[0]);
-
 
 		// Load the camera splines
 		for (int i = 0; i < spline.size(); i++) {
@@ -85,11 +84,11 @@ namespace Phoenix {
 		return true;
 	}
 
-	void sCamera::init()
+	void sCameraFPS::init()
 	{
 	}
 
-	void sCamera::exec()
+	void sCameraFPS::exec()
 	{
 		// If freeCam is active, we do nothing
 		if (m_bFreeCam)
@@ -114,11 +113,11 @@ namespace Phoenix {
 		}
 	}
 
-	void sCamera::end()
+	void sCameraFPS::end()
 	{
 	}
 
-	void sCamera::loadDebugStatic()
+	void sCameraFPS::loadDebugStatic()
 	{
 		std::stringstream ss;
 		ss << "Type: " << m_pCam->TypeStr << std::endl;
@@ -126,7 +125,7 @@ namespace Phoenix {
 		debugStatic = ss.str();
 	}
 
-	std::string sCamera::debug()
+	std::string sCameraFPS::debug()
 	{
 		return debugStatic;
 	}

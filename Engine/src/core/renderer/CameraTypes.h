@@ -7,12 +7,12 @@
 
 namespace Phoenix {
 
-	// Projection Free Camera: Like an "FPS" camera: The target is not locked, the target is changed with the Euler Angles
-	class CameraProjectionFree final : public Camera
+	// Projection FPS Camera: Like an "FPS" camera: The target is not locked, the target is changed with the Euler Angles
+	class CameraProjectionFPS final : public Camera
 	{
 	public:
 
-		CameraProjectionFree(glm::vec3 const& position);
+		CameraProjectionFPS(glm::vec3 const& position);
 
 		const glm::mat4 getProjection();
 		const glm::mat4 getView();
@@ -40,7 +40,7 @@ namespace Phoenix {
 	{
 	public:
 
-		CameraProjectionTarget(glm::vec3 const& position, glm::vec3 const& at);
+		CameraProjectionTarget(glm::vec3 const& position, glm::vec3 const& target);
 
 		const glm::mat4 getProjection();
 		const glm::mat4 getView();
