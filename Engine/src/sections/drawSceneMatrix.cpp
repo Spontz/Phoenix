@@ -261,11 +261,14 @@ namespace Phoenix {
 
 	void sDrawSceneMatrix::end()
 	{
+		// We should not destroy anything here because section can be reused or re-executed
 		// Free Mem
+		/*
 		if (m_pMatrixObjModel)
 			delete[] m_pMatrixObjModel;
 		if (m_pmPrevModel)
 			delete[] m_pmPrevModel;
+		*/
 	}
 
 	void sDrawSceneMatrix::loadDebugStatic()

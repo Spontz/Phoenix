@@ -151,7 +151,6 @@ namespace Phoenix {
 
 	void sDrawParticles::end()
 	{
-		m_pParticleMesh->shutdown();
 	}
 
 	void sDrawParticles::loadDebugStatic()

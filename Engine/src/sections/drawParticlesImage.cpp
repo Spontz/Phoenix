@@ -180,7 +180,6 @@ namespace Phoenix {
 
 	void sDrawParticlesImage::end()
 	{
-		m_pParticleMesh->shutdown();
 	}
 
 	void sDrawParticlesImage::loadDebugStatic()
