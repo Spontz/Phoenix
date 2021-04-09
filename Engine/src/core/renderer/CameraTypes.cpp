@@ -99,17 +99,31 @@ namespace Phoenix {
 
 	void CameraProjectionFPS::capturePos()
 	{
+		std::string fileName = "camera_fps.cam";
+		std::string s = "\t"; // Separator
+
+		// Check if file exists
+		std::ifstream infile(fileName);
+		bool fileExists = infile.good();
+
+		// write into file
 		std::ofstream camFile;
-		//string message;
-		char message[1024];
-		camFile.open("camera_fps.cam", std::ios::out | std::ios::app);
-		sprintf_s(message, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
-			m_Position.x, m_Position.y, m_Position.z,
-			m_Up.x, m_Up.y, m_Up.z,
-			m_Yaw, m_Pitch, m_Roll, m_Fov,
-			m_FrustumNear, m_FrustumFar);
-		camFile << message << "\n";
-		camFile.close();
+		std::stringstream ss;
+
+		camFile.open(fileName, std::ios::out | std::ios::app);
+		if (camFile.is_open())
+		{
+			// Check if we need to add header
+			if (!fileExists)
+				ss << ";cPosX\tcPosY\tcPosZ\tcUpX\tcUpY\tcUpZ\tcYaw\tcPitch\tcRoll\tcFov\tcNear\tcFar" << std::endl;
+		
+			ss << std::to_string(m_Position.x) + s + std::to_string(m_Position.y) + s + std::to_string(m_Position.z) + s + \
+				std::to_string(m_Up.x) + s + std::to_string(m_Up.y) + s + std::to_string(m_Up.z) + s + \
+				std::to_string(m_Yaw) + s + std::to_string(m_Pitch) + s + std::to_string(m_Roll) + s + std::to_string(m_Fov) + s + \
+				std::to_string(m_FrustumNear) + s + std::to_string(m_FrustumFar) << std::endl;
+			camFile << ss.str();
+			camFile.close();
+		}
 	}
 
 	void CameraProjectionFPS::reset()
@@ -264,18 +278,31 @@ namespace Phoenix {
 
 	void CameraProjectionTarget::capturePos()
 	{
+		std::string fileName = "camera_target.cam";
+		std::string s = "\t"; // Separator
+
+		// Check if file exists
+		std::ifstream infile(fileName);
+		bool fileExists = infile.good();
+
+		// write into file
 		std::ofstream camFile;
-		//string message;
-		char message[1024];
-		camFile.open("camera_target.cam", std::ios::out | std::ios::app);
-		sprintf_s(message, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
-			m_Position.x, m_Position.y, m_Position.z,
-			m_Target.x, m_Target.y, m_Target.z,
-			m_Up.x, m_Up.y, m_Up.z,
-			m_Yaw, m_Pitch, m_Roll, m_Fov,
-			m_FrustumNear, m_FrustumFar);
-		camFile << message << "\n";
-		camFile.close();
+		std::stringstream ss;
+
+		camFile.open(fileName, std::ios::out | std::ios::app);
+		if (camFile.is_open())
+		{
+			// Check if we need to add header
+			if (!fileExists)
+				ss << ";cPosX\tcPosY\tcPosZ\tcTargetX\tcTargetY\tcTargetZ\tcYaw\tcPitch\tcRoll\tcFov\tcNear\tcFar" << std::endl;
+
+			ss << std::to_string(m_Position.x) + s + std::to_string(m_Position.y) + s + std::to_string(m_Position.z) + s + \
+				std::to_string(m_Target.x) + s + std::to_string(m_Target.y) + s + std::to_string(m_Target.z) + s + \
+				std::to_string(m_Yaw) + s + std::to_string(m_Pitch) + s + std::to_string(m_Roll) + s + std::to_string(m_Fov) + s + \
+				std::to_string(m_FrustumNear) + s + std::to_string(m_FrustumFar) << std::endl;
+			camFile << ss.str();
+			camFile.close();
+		}
 	}
 
 	void CameraProjectionTarget::reset()
