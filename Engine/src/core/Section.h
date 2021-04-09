@@ -13,7 +13,6 @@ namespace Phoenix {
         Loading,
 
         CameraFPS,
-        CameraFPSAbsolute,
         CameraTarget,
         LightSec,
         ObjectShader,

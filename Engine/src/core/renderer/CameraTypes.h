@@ -56,11 +56,6 @@ namespace Phoenix {
 		void	divideMovementSpeed(float speed);
 		void	capturePos();
 		void	reset();
-
-	private:
-		// Calculates the front vector from the Camera's (updated) Euler Angles
-		void		setRollMatrix(glm::mat3& m, glm::vec3 f);
-		void		updateCameraVectors();
 	};
 
 	// Orthogonal camera : TODO: at this moment everything is hardcoded, it needs to be configured properly

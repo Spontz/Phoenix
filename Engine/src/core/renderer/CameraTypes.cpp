@@ -205,16 +205,16 @@ namespace Phoenix {
 
 		switch (direction) {
 		case CameraMovement::FORWARD:
-			m_Position += m_Front * velocity;
+			m_Position += glm::vec3(0,0,1) * velocity;
 			break;
 		case CameraMovement::BACKWARD:
-			m_Position -= m_Front * velocity;
+			m_Position -= glm::vec3(0,0,1) * velocity;
 			break;
 		case CameraMovement::LEFT:
-			m_Position -= m_Right * velocity;
+			m_Position -= glm::vec3(1, 0, 0) * velocity;
 			break;
 		case CameraMovement::RIGHT:
-			m_Position += m_Right * velocity;
+			m_Position += glm::vec3(1, 0, 0) * velocity;
 			break;
 		case CameraMovement::ROLL_LEFT:
 			m_Roll += velocity_roll;

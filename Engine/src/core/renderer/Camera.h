@@ -38,7 +38,7 @@ namespace Phoenix {
 		static constexpr glm::vec3 DEFAULT_CAM_POSITION = { 0, 0, 3 };
 		static constexpr glm::vec3 DEFAULT_CAM_TARGET = { 0, 0, 0 };
 		static constexpr glm::vec3 DEFAULT_CAM_UP = { 0, 1, 0 };
-		static constexpr glm::vec3 DEFAULT_CAM_RIGHT = { 0, 0, 0 };
+		static constexpr glm::vec3 DEFAULT_CAM_RIGHT = { 1, 0, 0 };
 		static constexpr glm::vec3 DEFAULT_CAM_WORLD_UP = { 0, 1, 0 };
 		static constexpr glm::vec3 DEFAULT_CAM_FRONT = { 0, 0, 0 };
 		static constexpr float DEFAULT_CAM_YAW = -90.0f;

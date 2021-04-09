@@ -18,7 +18,6 @@ namespace Phoenix {
 
 		// built-in sections
 		{"cameraFPS",			SectionType::CameraFPS},
-		{"cameraFPSAbsolute",	SectionType::CameraFPSAbsolute},
 		{"cameraTarget",		SectionType::CameraTarget},
 		{"light",				SectionType::LightSec},
 		{"drawScene",			SectionType::DrawScene},
@@ -83,9 +82,6 @@ namespace Phoenix {
 			break;
 		case SectionType::CameraFPS:
 			mySection = instance_cameraFPS();
-			break;
-		case SectionType::CameraFPSAbsolute:
-			mySection = instance_cameraFPSAbsolute();
 			break;
 		case SectionType::CameraTarget:
 			mySection = instance_cameraTarget();
