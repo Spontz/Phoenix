@@ -174,6 +174,7 @@ namespace Phoenix {
 		switch (m_iCameraMode)
 		{
 		case CameraMode::FREE:				// FREE camera: Do nothing
+			DEMO->m_pActiveCamera = m_pCam;
 			return;
 			break;
 		case CameraMode::ONLY_SPLINE:		// Only spline: Do not use formulas
