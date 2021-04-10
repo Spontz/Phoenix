@@ -5,9 +5,6 @@
 
 namespace Phoenix {
 #define BUFFER_SAMPLES	512
-#define	DEFAULT_ENERGY	1.0f
-	//#define	BEAT_RATIO		1.4f
-	//#define FADE_OUT		4.0f
 
 	struct sSound : public Section {
 	public:
@@ -56,8 +53,6 @@ namespace Phoenix {
 			return false;
 		}
 
-
-
 		m_fVolume = param[0];
 		if (m_fVolume < 0) {
 			m_fVolume = 0;
@@ -75,9 +70,7 @@ namespace Phoenix {
 		m_fFadeOut = param[3];
 
 		// Clean variables
-		for (auto i = 0; i < BUFFER_SAMPLES; i++) {
-			m_fEnergy[i] = DEFAULT_ENERGY;
-		}
+		memset(m_fEnergy, 0, BUFFER_SAMPLES * sizeof(float));
 		m_fIntensity = 0;
 		m_iPosition = 1;
 
@@ -100,9 +93,7 @@ namespace Phoenix {
 			return;
 
 		// Clean variables
-		for (auto i = 0; i < BUFFER_SAMPLES; i++) {
-			m_fEnergy[i] = DEFAULT_ENERGY;
-		}
+		memset(m_fEnergy, 0, BUFFER_SAMPLES * sizeof(float));
 		m_fIntensity = 0;
 		m_iPosition = 1;
 
