@@ -16,6 +16,7 @@ namespace Phoenix {
 
 	private:
 		bool		m_bClearDepth = true;
+		bool		m_bEnableDepthTest = true;
 		bool		m_bDrawWireframe = false;
 		bool		m_bPlayAnimation = false;	// Do we want to play the animation?
 		float		m_fCameraNumber = -1;		// Number of the camera to use (-1 = means to not use camera)
@@ -54,9 +55,9 @@ namespace Phoenix {
 	}
 
 	bool sDrawScene::load() {
-		if ((this->param.size() != 4) || (this->strings.size() < 7)) {
+		if ((this->param.size() != 5) || (this->strings.size() < 7)) {
 			Logger::error(
-				"DrawScene [%s]: 4 param (Enable Depth buffer, enable wireframe, enable animation & "
+				"DrawScene [%s]: 5 param (Enable depth buffer, enable depth test, enable wireframe, enable animation & "
 				"animation number) and 7 strings needed (model, shader, CameraNumber, aTime & "
 				"three more for object positioning)",
 				identifier.c_str());
@@ -65,9 +66,11 @@ namespace Phoenix {
 
 		// Load parameters
 		m_bClearDepth = static_cast<bool>(param[0]);
-		m_bDrawWireframe = static_cast<bool>(param[1]);
-		m_bPlayAnimation = static_cast<bool>(param[2]);
-		m_iAnimationNumber = static_cast<int>(param[3]);
+		m_bEnableDepthTest = static_cast<bool>(param[1]);
+
+		m_bDrawWireframe = static_cast<bool>(param[2]);
+		m_bPlayAnimation = static_cast<bool>(param[3]);
+		m_iAnimationNumber = static_cast<int>(param[4]);
 
 		// Load model and shader
 		m_pModel = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[0]);
@@ -140,6 +143,8 @@ namespace Phoenix {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		if (m_bClearDepth)
 			glClear(GL_DEPTH_BUFFER_BIT);
+		if (!m_bEnableDepthTest)
+			glDisable(GL_DEPTH_TEST);
 
 		// Set model properties
 		m_pModel->playAnimation = m_bPlayAnimation;
@@ -199,6 +204,10 @@ namespace Phoenix {
 		glUseProgram(0);
 		if (m_bDrawWireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		if (!m_bEnableDepthTest)
+			glEnable(GL_DEPTH_TEST);
+
 
 		// End evaluating blending
 		EvalBlendingEnd();
