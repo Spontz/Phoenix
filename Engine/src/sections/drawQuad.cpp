@@ -14,10 +14,8 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		bool		m_bClearScreen = true;		// Clear Screen buffer
-		bool		m_bClearDepth = true;		// Clear Depth buffer
-		Shader* m_pShader = nullptr;	// Shader to apply
-		ShaderVars* m_pVars = nullptr;	// Shader variables
+		Shader*		m_pShader = nullptr;	// Shader to apply
+		ShaderVars*	m_pVars = nullptr;	// Shader variables
 	};
 
 	// ******************************************************************
@@ -41,9 +39,10 @@ namespace Phoenix {
 			return false;
 		}
 
+		render_enableDepthTest = false;
 		// Load parameters
-		m_bClearScreen = static_cast<bool>(param[0]);
-		m_bClearDepth = static_cast<bool>(param[1]);
+		render_clearColor = static_cast<bool>(param[0]);
+		render_clearDepth = static_cast<bool>(param[1]);
 
 		// Load shader
 		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
@@ -72,24 +71,17 @@ namespace Phoenix {
 
 	void sDrawQuad::exec()
 	{
-		m_pShader->use();
-		// Clear the screen and depth buffers depending of the parameters passed by the user
-		if (m_bClearScreen) glClear(GL_COLOR_BUFFER_BIT);
-		if (m_bClearDepth) glClear(GL_DEPTH_BUFFER_BIT);
-
-		// Set new shader variables values
-		m_pVars->setValues();
-
-		// Render scene
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
 		EvalBlendingStart();
-
-		glDisable(GL_DEPTH_TEST);
 		{
+			m_pShader->use();
+			m_pVars->setValues();
 			m_demo.m_pRes->Draw_QuadFS();
 		}
-		glEnable(GL_DEPTH_TEST);
-
+		// End evaluating blending and set render states back
 		EvalBlendingEnd();
+		setRenderStatesEnd();
 	}
 
 	void sDrawQuad::end()

@@ -15,8 +15,6 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		bool		m_bClearScreen = false;	// Clear Screen buffer
-		bool		m_bClearDepth = false;	// Clear Depth buffer
 		bool		m_bFullscreen = true;		// Draw image at fullscreen?
 		bool		m_bFitToContent = false;	// Fit to content: true:respect image aspect ratio, false:stretch to viewport/quad
 
@@ -56,8 +54,9 @@ namespace Phoenix {
 			return false;
 		}
 
-		m_bClearScreen = static_cast<bool>(param[0]);
-		m_bClearDepth = static_cast<bool>(param[1]);
+		render_enableDepthTest = false;
+		render_clearColor = static_cast<bool>(param[0]);
+		render_clearDepth = static_cast<bool>(param[1]);
 		m_bFullscreen = static_cast<bool>(param[2]);
 		m_bFitToContent = static_cast<bool>(param[3]);
 
@@ -114,18 +113,14 @@ namespace Phoenix {
 
 	void sDrawImage::exec()
 	{
-		if (m_bClearScreen)
-			glClear(GL_COLOR_BUFFER_BIT);
-
-		if (m_bClearDepth)
-			glClear(GL_DEPTH_BUFFER_BIT);
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
+		EvalBlendingStart();
 
 		// Evaluate the expression if we are not in fullscreen
 		if (!m_bFullscreen)
 			m_pExprPosition->Expression.value();
 
-		EvalBlendingStart();
-		glDisable(GL_DEPTH_TEST);
 		{
 			m_pShader->use();
 			glm::mat4 mModel = glm::identity<glm::mat4>();
@@ -203,8 +198,9 @@ namespace Phoenix {
 			m_demo.res->Draw_QuadFS();
 			*/
 		}
-		glEnable(GL_DEPTH_TEST);
+		// End evaluating blending and set render states back
 		EvalBlendingEnd();
+		setRenderStatesEnd();
 	}
 
 	void sDrawImage::end()

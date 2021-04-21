@@ -14,8 +14,6 @@ namespace Phoenix {
 
 	private:
 		unsigned int	m_uiFboNum = 0;
-		bool			m_bClearScreen = true;		// Clear Screen buffer
-		bool			m_bClearDepth = false;	// Clear Depth buffer
 	};
 
 	// ******************************************************************
@@ -40,8 +38,8 @@ namespace Phoenix {
 
 		// load parameters
 		m_uiFboNum = static_cast<unsigned int>(param[0]);
-		m_bClearScreen = static_cast<bool>(param[1]);
-		m_bClearDepth = static_cast<bool>(param[2]);
+		render_clearColor = static_cast<bool>(param[1]);
+		render_clearDepth = static_cast<bool>(param[2]);
 
 		if (m_uiFboNum >= m_demo.m_fboManager.fbo.size()) {
 			Logger::error("FboBind [%s]: The fbo number %i cannot be accessed, check graphics.spo file", identifier.c_str(), m_uiFboNum);
@@ -58,9 +56,8 @@ namespace Phoenix {
 
 	void sFboBind::exec()
 	{
-
 		// Enable the buffer in which we are going to paint
-		m_demo.m_fboManager.bind(m_uiFboNum, m_bClearScreen, m_bClearDepth);
+		m_demo.m_fboManager.bind(m_uiFboNum, render_clearColor, render_clearDepth);
 	}
 
 	void sFboBind::end()

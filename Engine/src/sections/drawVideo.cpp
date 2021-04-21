@@ -17,8 +17,6 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		bool		m_bClearScreen = false;	// Clear Screen buffer
-		bool		m_bClearDepth = false;	// Clear Depth buffer
 		bool		m_bFullscreen = true;		// Draw video at fullscreen?
 		bool		m_bFitToContent = false;	// Fit to content: true:respect video aspect ratio, false:stretch to viewport.
 
@@ -28,9 +26,9 @@ namespace Phoenix {
 
 		float		m_fVideoAspectRatio = 1.0f;
 		float		m_fRenderAspectRatio = 1.0f;
-		Video* m_pVideo = nullptr;
-		Shader* m_pShader = nullptr;
-		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
+		Video*		m_pVideo = nullptr;
+		Shader*		m_pShader = nullptr;
+		MathDriver*	m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
 		ShaderVars* m_pVars = nullptr;	// Shader variables
 	};
 
@@ -56,8 +54,9 @@ namespace Phoenix {
 			return false;
 		}
 
-		m_bClearScreen = static_cast<bool>(param[0]);
-		m_bClearDepth = static_cast<bool>(param[1]);
+		render_enableDepthTest = false;
+		render_clearColor = static_cast<bool>(param[0]);
+		render_clearDepth = static_cast<bool>(param[1]);
 		m_bFullscreen = static_cast<bool>(param[2]);
 		m_bFitToContent = static_cast<bool>(param[3]);
 
@@ -123,20 +122,17 @@ namespace Phoenix {
 
 	void sDrawVideo::exec()
 	{
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
+		EvalBlendingStart();
+
+		// Render the video frame if needed
 		m_pVideo->renderVideo(runTime);
-
-		if (m_bClearScreen)
-			glClear(GL_COLOR_BUFFER_BIT);
-
-		if (m_bClearDepth)
-			glClear(GL_DEPTH_BUFFER_BIT);
 
 		// Evaluate the expression if we are not in fullscreen
 		if (!m_bFullscreen)
 			m_pExprPosition->Expression.value();
 
-		EvalBlendingStart();
-		glDisable(GL_DEPTH_TEST);
 		{
 			m_pShader->use();
 			glm::mat4 mModel = glm::identity<glm::mat4>();
@@ -190,9 +186,10 @@ namespace Phoenix {
 			m_demo.m_pRes->Draw_QuadFS(); // Draw a quad with the video
 
 		}
-		glEnable(GL_DEPTH_TEST);
 
+		// End evaluating blending and set render states back
 		EvalBlendingEnd();
+		setRenderStatesEnd();
 	}
 
 	void sDrawVideo::end()

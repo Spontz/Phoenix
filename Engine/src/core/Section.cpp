@@ -25,7 +25,12 @@ namespace Phoenix {
 		blendEquation(0),
 		sfactor(0),
 		dfactor(0),
-		debugStatic("")
+		debugStatic(""),
+		render_drawWireframe(false),
+		render_clearColor(false),
+		render_clearDepth(false),
+		render_enableDepthTest(true),
+		render_enableDepthMask(true)		
 	{
 	}
 
@@ -54,6 +59,38 @@ namespace Phoenix {
 			if (blendEquation > 0)
 				glBlendEquation(GL_FUNC_ADD);
 		}
+	}
+
+	void Section::setRenderStatesStart()
+	{
+		// Clear color
+		if (render_clearColor)	
+			glClear(GL_COLOR_BUFFER_BIT);
+		// Clear depth
+		if (render_clearDepth)	
+			glClear(GL_DEPTH_BUFFER_BIT);
+		// Wireframe mode
+		if(render_drawWireframe)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		// Disable depth test
+		if (!render_enableDepthTest)
+			glDisable(GL_DEPTH_TEST);
+		// Disable Depth Mask
+		if (!render_enableDepthMask)
+			glDepthMask(GL_FALSE);
+	}
+
+	void Section::setRenderStatesEnd()
+	{
+		// Restore fill mode (defualt mode)
+		if (render_drawWireframe)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		// Restore Depth Test (default mode)
+		if (!render_enableDepthTest)
+			glEnable(GL_DEPTH_TEST);
+		// Restore Depth Mask writing (default mode)
+		if (!render_enableDepthMask)
+			glDepthMask(GL_TRUE);
 	}
 
 

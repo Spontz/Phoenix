@@ -15,15 +15,13 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		bool			m_bClearScreen = true;		// Clear Screen buffer
-		bool			m_bClearDepth = false;	// Clear Depth buffer
-		unsigned int	m_uiFboNum = 0;		// Fbo to use (must have 2 color attachments!)
+		unsigned int	m_uiFboNum = 0;					// Fbo to use (must have 2 color attachments!)
 		float			m_fSourceInfluence = 0.5f;		// Source influence (0 to 1)
 		float			m_fAccumInfluence = 0.5f;		// Accumulation influence (0 to 1)
-		bool			m_bAccumBuffer = false;	// Accum buffer to use (0 or 1)
-		Shader* m_pShader = nullptr;	// Accumulation Shader to apply
-		MathDriver* m_pExprAccum = nullptr;	// Equations for the Accum effect
-		ShaderVars* m_pVars = nullptr;	// Shader variables
+		bool			m_bAccumBuffer = false;			// Accum buffer to use (0 or 1)
+		Shader*			m_pShader = nullptr;			// Accumulation Shader to apply
+		MathDriver*		m_pExprAccum = nullptr;			// Equations for the Accum effect
+		ShaderVars*		m_pVars = nullptr;				// Shader variables
 	};
 
 	// ******************************************************************
@@ -48,8 +46,9 @@ namespace Phoenix {
 		}
 
 		// Load parameters
-		m_bClearScreen = static_cast<bool>(param[0]);
-		m_bClearDepth = static_cast<bool>(param[1]);
+		render_enableDepthTest = false;
+		render_clearColor = static_cast<bool>(param[0]);
+		render_clearDepth = static_cast<bool>(param[1]);
 		m_uiFboNum = static_cast<unsigned int>(param[2]);
 		m_bAccumBuffer = false;
 
@@ -101,9 +100,10 @@ namespace Phoenix {
 
 	void sEfxAccum::exec()
 	{
-		// Clear the screen and depth buffers depending of the parameters passed by the user
-		if (m_bClearScreen) glClear(GL_COLOR_BUFFER_BIT);
-		if (m_bClearDepth) glClear(GL_DEPTH_BUFFER_BIT);
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
+		EvalBlendingStart();
+
 
 		// Calculate deltaTime
 		float deltaTime = runTime - lastTime;
@@ -112,8 +112,6 @@ namespace Phoenix {
 		// Evaluate the expression
 		m_pExprAccum->Expression.value();
 
-		EvalBlendingStart();
-		glDisable(GL_DEPTH_TEST);
 		{
 
 			{
@@ -155,9 +153,9 @@ namespace Phoenix {
 			m_demo.m_pRes->Draw_QuadFS();
 
 		}
-		glEnable(GL_DEPTH_TEST);
+		// End evaluating blending and set render states back
 		EvalBlendingEnd();
-
+		setRenderStatesEnd();
 	}
 
 	void sEfxAccum::end()

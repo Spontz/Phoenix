@@ -41,6 +41,10 @@ namespace Phoenix {
 			return false;
 		}
 
+		render_clearColor = true;
+		render_clearDepth = true;
+		render_enableDepthTest = false;
+
 		m_uiFboNum = static_cast<unsigned int>(param[0]);
 		m_uiFPSScale = static_cast<unsigned int>(param[1]);
 
@@ -79,10 +83,10 @@ namespace Phoenix {
 
 	void sEfxMotionBlur::exec()
 	{
-		EvalBlendingStart();
-		glDisable(GL_DEPTH_TEST);
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
+		EvalBlendingStart(); 
 		{
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			m_pShader->use();
 
 			// Set new shader variables values
@@ -93,8 +97,9 @@ namespace Phoenix {
 			glBindTextureUnit(1, m_uiBufferVelocity);
 			m_demo.m_pRes->Draw_QuadFS();
 		}
-		glEnable(GL_DEPTH_TEST);
+		// End evaluating blending and set render states back
 		EvalBlendingEnd();
+		setRenderStatesEnd();
 	}
 
 	void sEfxMotionBlur::end()

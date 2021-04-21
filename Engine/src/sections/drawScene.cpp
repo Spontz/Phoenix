@@ -15,9 +15,6 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		bool		m_bClearDepth = true;
-		bool		m_bEnableDepthTest = true;
-		bool		m_bDrawWireframe = false;
 		bool		m_bPlayAnimation = false;	// Do we want to play the animation?
 		float		m_fCameraNumber = -1;		// Number of the camera to use (-1 = means to not use camera)
 		int			m_iAnimationNumber = 0;		// Number of animation to play
@@ -65,10 +62,10 @@ namespace Phoenix {
 		}
 
 		// Load parameters
-		m_bClearDepth = static_cast<bool>(param[0]);
-		m_bEnableDepthTest = static_cast<bool>(param[1]);
-
-		m_bDrawWireframe = static_cast<bool>(param[2]);
+		render_clearDepth = static_cast<bool>(param[0]);
+		render_enableDepthTest = static_cast<bool>(param[1]);
+		render_drawWireframe = static_cast<bool>(param[2]);
+		
 		m_bPlayAnimation = static_cast<bool>(param[3]);
 		m_iAnimationNumber = static_cast<int>(param[4]);
 
@@ -127,24 +124,19 @@ namespace Phoenix {
 		return true;
 	}
 
-	void sDrawScene::init() {
+	void sDrawScene::init()
+	{
 
 	}
 
-	void sDrawScene::exec() {
-
-		// Start evaluating blending
+	void sDrawScene::exec()
+	{
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
 		EvalBlendingStart();
 
 		// Evaluate the expression
 		m_pExprPosition->Expression.value();
-
-		if (m_bDrawWireframe)
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		if (m_bClearDepth)
-			glClear(GL_DEPTH_BUFFER_BIT);
-		if (!m_bEnableDepthTest)
-			glDisable(GL_DEPTH_TEST);
 
 		// Set model properties
 		m_pModel->playAnimation = m_bPlayAnimation;
@@ -202,15 +194,10 @@ namespace Phoenix {
 		m_pModel->Draw(m_pShader->ID, m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
 
 		glUseProgram(0);
-		if (m_bDrawWireframe)
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		if (!m_bEnableDepthTest)
-			glEnable(GL_DEPTH_TEST);
-
-
-		// End evaluating blending
+		// End evaluating blending and set render states back
 		EvalBlendingEnd();
+		setRenderStatesEnd();
 	}
 
 	void sDrawScene::end() {

@@ -12,8 +12,6 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		bool	m_bClearScreen = true;		// Clear Screen buffer
-		bool	m_bClearDepth = false;	// Clear Depth buffer
 	} fbounbind_section;
 
 	// ******************************************************************
@@ -37,8 +35,8 @@ namespace Phoenix {
 		}
 
 		// load parameters
-		m_bClearScreen = static_cast<bool>(param[0]);
-		m_bClearDepth = static_cast<bool>(param[1]);
+		render_clearColor = static_cast<bool>(param[0]);
+		render_clearDepth = static_cast<bool>(param[1]);
 		return true;
 	}
 
@@ -50,7 +48,7 @@ namespace Phoenix {
 	void sFboUnbind::exec()
 	{
 		// Unbind the fbo
-		m_demo.m_fboManager.unbind(m_bClearScreen, m_bClearDepth);
+		m_demo.m_fboManager.unbind(render_clearColor, render_clearDepth);
 	}
 
 	void sFboUnbind::end()

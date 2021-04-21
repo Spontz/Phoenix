@@ -15,14 +15,12 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		bool			m_bClearScreen = true;		// Clear Screen buffer
-		bool			m_bClearDepth = false;	// Clear Depth buffer
-		unsigned int	m_uiFboNum = 0;		// Fbo to use (must have 2 color attachments!)
-		float			m_fBlurAmount = 1;		// Blur layers to apply
-		Shader* m_pShaderBlur = nullptr;	// Blur Shader to apply
-		Shader* m_pShaderBloom = nullptr;	// Bloom Shader to apply
-		MathDriver* m_pExprBloom = nullptr;	// Equations for the Bloom effect
-		ShaderVars* m_pVars = nullptr;	// Shader variables
+		unsigned int	m_uiFboNum = 0;				// Fbo to use (must have 2 color attachments!)
+		float			m_fBlurAmount = 1;			// Blur layers to apply
+		Shader*			m_pShaderBlur = nullptr;	// Blur Shader to apply
+		Shader*			m_pShaderBloom = nullptr;	// Bloom Shader to apply
+		MathDriver*		m_pExprBloom = nullptr;		// Equations for the Bloom effect
+		ShaderVars*		m_pVars = nullptr;			// Shader variables
 	};
 
 	// ******************************************************************
@@ -47,8 +45,9 @@ namespace Phoenix {
 		}
 
 		// Load parameters
-		m_bClearScreen = static_cast<bool>(param[0]);
-		m_bClearDepth = static_cast<bool>(param[1]);
+		render_enableDepthTest = false;
+		render_clearColor = static_cast<bool>(param[0]);
+		render_clearDepth = static_cast<bool>(param[1]);
 		m_uiFboNum = static_cast<unsigned int>(param[2]);
 
 		// Check if the fbo can be used for the effect
@@ -105,16 +104,13 @@ namespace Phoenix {
 
 	void sEfxBloom::exec()
 	{
-		// Clear the screen and depth buffers depending of the parameters passed by the user
-		if (m_bClearScreen) glClear(GL_COLOR_BUFFER_BIT);
-		if (m_bClearDepth) glClear(GL_DEPTH_BUFFER_BIT);
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
+		EvalBlendingStart();
 
 		// Evaluate the expression
 		m_pExprBloom->Expression.value();
 
-
-		EvalBlendingStart();
-		glDisable(GL_DEPTH_TEST);
 		{
 			// First step: Blur the image from the "fbo attachment 1", and store it in our efxBloom fbo manager (efxBloomFbo)
 			bool horizontal = true;
@@ -162,9 +158,9 @@ namespace Phoenix {
 			m_demo.m_fboManager.bindCurrent();
 			m_demo.m_pRes->Draw_QuadFS();
 		}
-		glEnable(GL_DEPTH_TEST);
+		// End evaluating blending and set render states back
 		EvalBlendingEnd();
-
+		setRenderStatesEnd();
 	}
 
 	void sEfxBloom::end()

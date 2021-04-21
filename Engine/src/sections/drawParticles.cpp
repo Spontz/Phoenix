@@ -18,16 +18,16 @@ namespace Phoenix {
 	private:
 		// Particle engine variables
 		int				m_iNumParticles = 0;
-		ParticleMesh* m_pParticleMesh = nullptr;
-		Shader* m_pShader = nullptr;
+		ParticleMesh*	m_pParticleMesh = nullptr;
+		Shader*			m_pShader = nullptr;
 
 		// Particle Matrix positioning (for all the model)
 		glm::vec3		m_vTranslation = { 0, 0, 0 };
 		glm::vec3		m_vRotation = { 0, 0, 0 };
 		glm::vec3		m_vScale = { 1, 1, 1 };
 
-		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
-		ShaderVars* m_pVars = nullptr;	// For storing any other shader variables
+		MathDriver*		m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
+		ShaderVars*		m_pVars = nullptr;	// For storing any other shader variables
 	};
 
 	// ******************************************************************
@@ -57,6 +57,7 @@ namespace Phoenix {
 		if (!m_pShader)
 			return false;
 
+		render_enableDepthMask = false;
 		// Particles number
 		m_iNumParticles = static_cast<int>(param[0]);
 
@@ -105,17 +106,14 @@ namespace Phoenix {
 	}
 
 
-	static float lastTime = 0;
-
 	void sDrawParticles::exec()
 	{
-		// Start evaluating blending
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
 		EvalBlendingStart();
 
 		// Evaluate the expression
 		m_pExprPosition->Expression.value();
-
-		glDepthMask(GL_FALSE); // Disable depth buffer writting
 
 		glm::mat4 projection = m_demo.m_pActiveCamera->getProjection();
 		glm::mat4 view = m_demo.m_pActiveCamera->getView();
@@ -143,10 +141,9 @@ namespace Phoenix {
 		// Render particles
 		m_pParticleMesh->render(runTime);
 
-		// End evaluating blending
-		glDepthMask(GL_TRUE); // Enable depth buffer writting
+		// End evaluating blending and set render states back
 		EvalBlendingEnd();
-
+		setRenderStatesEnd();
 	}
 
 	void sDrawParticles::end()

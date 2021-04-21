@@ -14,8 +14,8 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		Shader* m_pShader = nullptr;	// Fader Shader to apply
-		ShaderVars* p_Vars = nullptr;	// Shader variables
+		Shader*		m_pShader = nullptr;// Fader Shader to apply
+		ShaderVars*	p_Vars = nullptr;	// Shader variables
 	};
 
 	// ******************************************************************
@@ -44,6 +44,9 @@ namespace Phoenix {
 		if (!m_pShader)
 			return false;
 
+		// render states
+		render_enableDepthTest = false;
+
 		// Configure Fader shader
 		m_pShader->use();
 		p_Vars = new ShaderVars(this, m_pShader);
@@ -65,8 +68,9 @@ namespace Phoenix {
 
 	void sEfxFader::exec()
 	{
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
 		EvalBlendingStart();
-		glDisable(GL_DEPTH_TEST);
 		{
 			m_pShader->use();
 			// Set shader variables values
@@ -74,9 +78,9 @@ namespace Phoenix {
 			// Render scene
 			m_demo.m_pRes->Draw_QuadFS();
 		}
-		glEnable(GL_DEPTH_TEST);
+		// End evaluating blending and set render states back
 		EvalBlendingEnd();
-
+		setRenderStatesEnd();
 	}
 
 	void sEfxFader::end()

@@ -15,9 +15,7 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		Cubemap* m_pCubemap = nullptr;
-		bool		m_bClearDepth = true;
-		bool		m_bDrawWireframe = false;
+		Cubemap*	m_pCubemap = nullptr;
 
 		glm::vec3	m_vRotation = { 0, 0, 0 };
 		glm::vec3	m_vScale = { 1, 1, 1 };
@@ -40,7 +38,7 @@ namespace Phoenix {
 	bool sDrawSkybox::load()
 	{
 		if ((param.size() != 2) || (strings.size() < 8)) {
-			Logger::error("DrawSkybox [%s]: 2 param and 8 strings needed: enable depthBuffer, drawWireframe + 6 strings with skybox faces, 2 strings with rot and scale", identifier.c_str());
+			Logger::error("DrawSkybox [%s]: 2 param and 8 strings needed: clear depth buffer, draw wireframe + 6 strings with skybox faces, 2 strings with rot and scale", identifier.c_str());
 			return false;
 		}
 
@@ -51,8 +49,8 @@ namespace Phoenix {
 		}
 
 		// Load parameters
-		m_bClearDepth = static_cast<bool>(param[0]);
-		m_bDrawWireframe = static_cast<bool>(param[1]);
+		render_clearDepth = static_cast<bool>(param[0]);
+		render_drawWireframe = static_cast<bool>(param[1]);
 
 		// Load the 6 textures of our cubemap
 		std::vector<std::string> faces{ m_demo.m_dataFolder + strings[0], m_demo.m_dataFolder + strings[1], m_demo.m_dataFolder + strings[2],
@@ -88,20 +86,15 @@ namespace Phoenix {
 
 	void sDrawSkybox::exec()
 	{
-		// Evaluate the expression
-		m_pExprPosition->Expression.value();
-
-		// Start evaluating blending
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
 		EvalBlendingStart();
 
 		// change depth function so depth test passes when values are equal to depth buffer's content
-		glDepthFunc(GL_LEQUAL);
+		//glDepthFunc(GL_LEQUAL); // Not needed - this is the generic Depth function - TODO: Pending testing and delete this
 
-
-		if (m_bDrawWireframe)
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		if (m_bClearDepth)
-			glClear(GL_DEPTH_BUFFER_BIT);
+		// Evaluate the expression
+		m_pExprPosition->Expression.value();
 
 		m_demo.m_pRes->m_pShdrSkybox->use(); // TODO: Do not use the Resource shader for skybox, and use our own shader!
 
@@ -123,11 +116,9 @@ namespace Phoenix {
 		m_demo.m_pRes->Draw_Skybox(m_pCubemap);
 
 
-		if (m_bDrawWireframe)
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-		// End evaluating blending
+		// End evaluating blending and set render states back
 		EvalBlendingEnd();
+		setRenderStatesEnd();
 	}
 
 	void sDrawSkybox::end()

@@ -80,6 +80,9 @@ namespace Phoenix {
 		// Load unique vertices (it can take a while)
 		m_pModel->loadUniqueVertices();
 
+		// Render states
+		render_enableDepthTest = false;
+
 		// Load Emitters and Particles config
 		m_fEmissionTime = param[0];
 		m_fParticleLifeTime = param[1];
@@ -174,14 +177,14 @@ namespace Phoenix {
 
 	void sDrawEmitterScene::exec()
 	{
-		// Start evaluating blending
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
 		EvalBlendingStart();
 
 		// Evaluate the expression
 		m_pExprPosition->Expression.value();
 
-		glDepthMask(GL_FALSE); // Disable depth buffer writting
-
+		
 		glm::mat4 projection = m_demo.m_pActiveCamera->getProjection();
 		glm::mat4 view = m_demo.m_pActiveCamera->getView();
 
@@ -206,11 +209,9 @@ namespace Phoenix {
 
 		m_pPartSystem->Render(deltaTime, vp, model, m_demo.m_pActiveCamera->getPosition());
 
-
-		// End evaluating blending
-		glDepthMask(GL_TRUE); // Enable depth buffer writting
+		// End evaluating blending and set render states back
 		EvalBlendingEnd();
-
+		setRenderStatesEnd();
 	}
 
 	void sDrawEmitterScene::end()

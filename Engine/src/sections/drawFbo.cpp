@@ -43,8 +43,10 @@ namespace Phoenix {
 		// load parameters
 		m_uFboNum = static_cast<uint32_t>(param[0]);
 		m_uFboAttachment = static_cast<uint32_t>(param[1]);
-		m_bClearScreen = static_cast<bool>(param[2]);
-		m_bClearDepth = static_cast<bool>(param[3]);
+		// Set render states
+		render_clearColor = static_cast<bool>(param[2]);
+		render_clearDepth = static_cast<bool>(param[3]);
+		render_enableDepthTest = false;
 
 		// Check for the right parameter values
 		if (m_uFboNum >= FBO_BUFFERS) {
@@ -69,21 +71,16 @@ namespace Phoenix {
 
 	void sDrawFbo::exec()
 	{
-		// Clear the screen and depth buffers depending of the parameters passed by the user
-		if (m_bClearScreen) glClear(GL_COLOR_BUFFER_BIT);
-		if (m_bClearDepth) glClear(GL_DEPTH_BUFFER_BIT);
-
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
 		EvalBlendingStart();
-
-		glDisable(GL_DEPTH_TEST);
 		{
 			m_pFbo = m_demo.m_fboManager.fbo[m_uFboNum]; // We reload the Fbo, because it may be changed when resizing the screen
-
 			m_demo.m_pRes->Draw_QuadFBOFS(m_pFbo, m_uFboAttachment);
 		}
-		glEnable(GL_DEPTH_TEST);
-
+		// End evaluating blending and set render states back
 		EvalBlendingEnd();
+		setRenderStatesEnd();
 	}
 
 	void sDrawFbo::end()

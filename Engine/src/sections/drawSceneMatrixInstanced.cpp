@@ -18,8 +18,6 @@ namespace Phoenix {
 	private:
 		void		updateMatrices(bool initPrevMatrix);
 
-		bool		m_bClearDepth = true;
-		bool		m_bDrawWireframe = false;
 		bool		m_bUpdateFormulas = true;	// Update positions on each frame?
 		bool		m_bPlayAnimation = false;// Do we want to play the animation?
 		int			m_iAnimationNumber = 0;	// Number of animation to play
@@ -69,21 +67,22 @@ namespace Phoenix {
 
 	bool sDrawSceneMatrixInstanced::load()
 	{
-		if ((param.size() != 5) || (strings.size() < 7)) {
-			Logger::error("DrawSceneMatrix [%s]: 5 param (Enable Depth buffer, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier.c_str());
+		if ((param.size() != 6) || (strings.size() < 7)) {
+			Logger::error("DrawSceneMatrix [%s]: 6 param (Enable depth buffer, enable depth test, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier.c_str());
 			return false;
 		}
 
-		// Depth Buffer Clearing Flag
-		m_bClearDepth = static_cast<bool>(param[0]);
-		m_bDrawWireframe = static_cast<bool>(param[1]);
+		// Redner Flags
+		render_clearDepth = static_cast<bool>(param[0]);
+		render_enableDepthTest = static_cast<bool>(param[1]);
+		render_drawWireframe = static_cast<bool>(param[2]);
 
 		// Update formulas on each frame
-		m_bUpdateFormulas = static_cast<bool>(param[2]);
+		m_bUpdateFormulas = static_cast<bool>(param[3]);
 
 		// Animation parameters
-		m_bPlayAnimation = static_cast<bool>(param[3]);
-		m_iAnimationNumber = static_cast<int>(param[4]);
+		m_bPlayAnimation = static_cast<bool>(param[4]);
+		m_iAnimationNumber = static_cast<int>(param[5]);
 
 		// Load ref. model, model and shader
 		m_pModelRef = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[0]);
@@ -180,14 +179,9 @@ namespace Phoenix {
 
 	void sDrawSceneMatrixInstanced::exec()
 	{
-
-		// Start evaluating blending
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
 		EvalBlendingStart();
-
-		if (m_bDrawWireframe)
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		if (m_bClearDepth)
-			glClear(GL_DEPTH_BUFFER_BIT);
 
 		// Set model properties
 		m_pModel->pModel->playAnimation = m_bPlayAnimation;
@@ -252,11 +246,10 @@ namespace Phoenix {
 		m_mPrevView = view;
 
 		glUseProgram(0);
-		if (m_bDrawWireframe)
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		// End evaluating blending
+		// End evaluating blending and set render states back
 		EvalBlendingEnd();
+		setRenderStatesEnd();
 	}
 
 	void sDrawSceneMatrixInstanced::end()
