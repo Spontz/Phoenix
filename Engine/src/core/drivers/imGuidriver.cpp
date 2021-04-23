@@ -395,6 +395,7 @@ namespace Phoenix {
 		Section* ds;
 		int sec_id;
 		std::string s;
+		ImGuiTextBuffer sectionInfoText;
 
 		ImGui::SetNextWindowPos(ImVec2(2.0f * static_cast<float>(m_vp.width) / 3.0f, 0.0f), ImGuiCond_Once);
 		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width) / 3.0f, static_cast<float>(m_vp.height + (m_vp.y * 2))), ImGuiCond_Once);
@@ -417,7 +418,9 @@ namespace Phoenix {
 				ImGui::SetNextTreeNodeOpen(m_expandAllSections);
 			if (ImGui::CollapsingHeader(s.c_str()))
 			{
-				ImGui::Text(ds->debug().c_str());
+				sectionInfoText.clear();
+				sectionInfoText.appendf(ds->debug().c_str());
+				ImGui::TextUnformatted(sectionInfoText.begin(), sectionInfoText.end());
 			}
 		}
 		m_expandAllSectionsChanged = false;
