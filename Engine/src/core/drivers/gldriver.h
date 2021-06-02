@@ -79,6 +79,7 @@ namespace Phoenix {
 		void	initRender(int clear);
 		void	drawGrid(bool drawAxisX, bool drawAxisY, bool drawAxisZ);
 		void	drawGui();
+		void	guiDrawLog();
 		void	guiDrawInfo();
 		void	guiDrawFpsHistogram();
 		void	guiDrawVersion();
@@ -88,6 +89,7 @@ namespace Phoenix {
 		void	guiDrawGridPanel();
 		void	guiDrawHelpPanel();
 		void	guiChangeAttachment();
+		void	guiAddLog(std::string message);
 
 		const std::string				getGLFWVersion();
 		const std::string				getOpenGLVersion();

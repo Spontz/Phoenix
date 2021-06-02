@@ -24,6 +24,7 @@ namespace Phoenix {
 		imGuiDriver();
 		virtual ~imGuiDriver();
 
+		bool	show_log;
 		bool	show_info;
 		bool	show_fpsHistogram;
 		bool	show_sesctionInfo;
@@ -44,6 +45,8 @@ namespace Phoenix {
 		void drawGui();
 		void close();
 		void changeFontSize(float baseSize, int width, int height);
+		void addLog(std::string message);
+		void clearLog();
 
 	private:
 		std::string m_VersionEngine;
@@ -66,6 +69,7 @@ namespace Phoenix {
 
 		ImGuiTextBuffer		m_helpText;
 
+		ImGuiTextBuffer		m_log;
 
 		Viewport	m_vp;
 
@@ -81,6 +85,7 @@ namespace Phoenix {
 
 		void startDraw();
 		void endDraw();
+		void drawLog();
 		void drawInfo();
 		void drawVersion();
 		void drawSesctionInfo();

@@ -46,6 +46,7 @@ namespace Phoenix {
 		m_demo(demokernel::GetInstance()),
 		p_glfw_window(nullptr),
 		m_io(nullptr),
+		show_log(false),
 		show_info(true),
 		show_fpsHistogram(false),
 		show_sesctionInfo(false),
@@ -109,6 +110,8 @@ namespace Phoenix {
 
 		startDraw();
 		{
+			if (show_log)
+				drawLog();
 			if (show_info)
 				drawInfo();
 			if (show_sesctionInfo)
@@ -148,6 +151,30 @@ namespace Phoenix {
 
 	}
 
+	void imGuiDriver::drawLog()
+	{
+		ImVec2 pos = ImVec2(0, m_vp.y*2.0f + 2.0f * (static_cast<float>(m_vp.height) / 3.0f));
+		ImVec2 size = ImVec2(static_cast<float>(m_vp.width + (m_vp.x*2)), static_cast<float>(m_vp.height/ 3.0f));
+		
+
+		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
+
+
+		if (!ImGui::Begin("Error Log", &show_log, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
+		{
+			ImGui::End();
+			return;
+		}
+
+		if (ImGui::Button("Clear Log"))
+		{
+			clearLog();
+		}
+		ImGui::TextUnformatted(m_log.begin(), m_log.end());
+		ImGui::End();
+	}
+
 	void imGuiDriver::close() {
 		// Close ImGui
 		ImGui_ImplOpenGL3_Shutdown();
@@ -165,6 +192,16 @@ namespace Phoenix {
 			m_fontScale = baseSize;
 
 		ImGui::GetIO().FontGlobalScale = m_fontScale;
+	}
+
+	void imGuiDriver::addLog(std::string message)
+	{
+		m_log.appendf(message.c_str());
+	}
+
+	void imGuiDriver::clearLog()
+	{
+		m_log.clear();
 	}
 
 
@@ -203,7 +240,7 @@ namespace Phoenix {
 		// Draw Menu Bar
 		ImGuiWindowFlags window_flags = 0;
 		window_flags |= ImGuiWindowFlags_MenuBar;
-		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
+		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Appearing);
 		if (!ImGui::Begin("Demo Info", &show_info, window_flags))
 		{
 			// Early out if the window is collapsed, as an optimization.
@@ -215,6 +252,7 @@ namespace Phoenix {
 		{
 			if (ImGui::BeginMenu("Panels"))
 			{
+				ImGui::MenuItem("Show Log", "BACKSPACE", &show_log);
 				ImGui::MenuItem("Show Info", "1", &show_info);
 				ImGui::MenuItem("Show FPS Histogram", "2", &show_fpsHistogram);
 				ImGui::MenuItem("Show FBO's", "3", &show_fbo);
@@ -229,8 +267,7 @@ namespace Phoenix {
 		}
 
 		// Draw Info
-			//ImGui::Text("Font: %.3f", m_fontScale);	// Show font size
-		
+		//ImGui::Text("Font: %.3f", m_fontScale);	// Show font size
 		ImGui::Text("Fps: %.0f", m_demo.m_fps);
 		ImGui::Text("Demo status: %s", demoStatus.c_str());
 		ImGui::Text("Time: %.2f/%.2f", m_demo.m_demoRunTime, m_demo.m_demoEndTime);
@@ -289,8 +326,8 @@ namespace Phoenix {
 		if (fbo_num_max >= m_demo.m_fboManager.fbo.size())
 			fbo_num_max = static_cast<int>(m_demo.m_fboManager.fbo.size()) - 1;
 
-		ImGui::SetNextWindowPos(ImVec2(0, (2.0f * static_cast<float>(m_vp.y) - offsetY + 2.0f * static_cast<float>(m_vp.height) / 3.0f)), ImGuiCond_Once);
-		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height) / 3.0f + offsetY), ImGuiCond_Once);
+		ImGui::SetNextWindowPos(ImVec2(0, (2.0f * static_cast<float>(m_vp.y) - offsetY + 2.0f * static_cast<float>(m_vp.height) / 3.0f)), ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height) / 3.0f + offsetY), ImGuiCond_Appearing);
 		float fbo_w_size = static_cast<float>(m_vp.width) / 5.0f; // 4 fbo's per row
 		float fbo_h_size = static_cast<float>(m_vp.height) / 5.0f; // height is 1/3 screensize
 
@@ -317,8 +354,8 @@ namespace Phoenix {
 
 	void imGuiDriver::drawSound()
 	{
-		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
-		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), 140.0f), ImGuiCond_Once);
+		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 0), ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), 140.0f), ImGuiCond_Appearing);
 
 		if (!ImGui::Begin("Sound analysis", &show_sound))
 		{
@@ -397,8 +434,11 @@ namespace Phoenix {
 		std::string s;
 		ImGuiTextBuffer sectionInfoText;
 
-		ImGui::SetNextWindowPos(ImVec2(2.0f * static_cast<float>(m_vp.width) / 3.0f, 0.0f), ImGuiCond_Once);
-		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width) / 3.0f, static_cast<float>(m_vp.height + (m_vp.y * 2))), ImGuiCond_Once);
+		float windowWidth = static_cast<float>(m_vp.width + (m_vp.x * 2)) / 3.0f;
+		float windowHeight = static_cast<float>(m_vp.height + (m_vp.y * 2));
+
+		ImGui::SetNextWindowPos(ImVec2(2.0f * windowWidth, 0.0f), ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Appearing);
 
 		if (!ImGui::Begin("Section Stack", &show_sesctionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
 		{
@@ -431,8 +471,8 @@ namespace Phoenix {
 	{
 		m_renderTimes[m_currentRenderTime] = m_demo.m_realFrameTime * 1000.f; // Render times in ms
 
-		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
-		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), 140.0f), ImGuiCond_Once);
+		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 0), ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width/2.0f), 140.0f), ImGuiCond_Appearing);
 
 		if (!ImGui::Begin("Render time histogram", &show_fpsHistogram))
 		{

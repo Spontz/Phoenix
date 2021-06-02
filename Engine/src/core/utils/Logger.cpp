@@ -116,6 +116,9 @@ namespace Phoenix {
 		// Output to file
 		m_ofstream << strOutputString;
 
+		// Output to screen log
+		GLDRV->guiAddLog(strOutputString);
+
 		// Output to Visual Studio
 #if defined(_DEBUG) && defined(WIN32)
 		OutputDebugStringA(strOutputString.c_str());

@@ -137,6 +137,9 @@ namespace Phoenix {
 				case KEY_RESTART:
 					demo.restartDemo();
 					break;
+				case KEY_SHOWLOG:
+					GLDRV->guiDrawLog();
+					break;
 				case KEY_SHOWINFO:
 					GLDRV->guiDrawInfo();
 					break;
@@ -445,6 +448,11 @@ namespace Phoenix {
 		m_imGui->drawGui();
 	}
 
+	void glDriver::guiDrawLog()
+	{
+		m_imGui->show_log = !m_imGui->show_log;
+	}
+
 	void glDriver::guiDrawVersion()
 	{
 		m_imGui->show_version = !m_imGui->show_version;
@@ -496,6 +504,12 @@ namespace Phoenix {
 		GLDRV->m_imGui->m_numFboAttachmentToDraw++;
 		if (GLDRV->m_imGui->m_numFboAttachmentToDraw >= GLDRV_MAX_COLOR_ATTACHMENTS)
 			GLDRV->m_imGui->m_numFboAttachmentToDraw = 0;
+	}
+
+	void glDriver::guiAddLog(std::string message)
+	{
+		if (m_imGui)
+			m_imGui->addLog(message);
 	}
 
 	Viewport glDriver::GetFramebufferViewport() const {
