@@ -209,12 +209,13 @@ namespace Phoenix {
 		std::stringstream ss;
 		Material* mat;
 		ss << "File: " << m_pModel->filename << std::endl;
-		ss << "Meshes: " << m_pModel->m_statNumMeshes << ", Vertex: " << m_pModel->m_statNumVertices << std::endl;
-		ss << "Animations: " << m_pModel->m_statNumAnimations << ", Bones: " << m_pModel->m_statNumBones << std::endl;
+		ss << "Meshes: " << m_pModel->m_statNumMeshes << std::endl;
+		ss << "Faces: " << m_pModel->m_statNumFaces << ", vertices: " << m_pModel->m_statNumVertices << std::endl;
+		ss << "Animations: " << m_pModel->m_statNumAnimations << ", bones: " << m_pModel->m_statNumBones << std::endl;
 		ss << "Cameras: " << m_pModel->m_statNumCameras << std::endl;
 		for (auto& mesh : m_pModel->meshes) {
 			ss << "+Mesh name: " << mesh.m_nodeName << std::endl;
-			ss << " Vertices: " << mesh.m_numVertices << std::endl;
+			ss << " Faces: " << mesh.m_numFaces << ", vertices: " << mesh.m_numVertices << std::endl;
 			mat = mesh.getMaterial();
 			ss << " Material name: " << mat->name << std::endl;
 			ss << "  Material.Ka:" << glm::to_string(mat->colAmbient) << std::endl;

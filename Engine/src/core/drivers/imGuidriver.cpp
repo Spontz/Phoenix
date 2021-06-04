@@ -185,8 +185,7 @@ namespace Phoenix {
 	void imGuiDriver::changeFontSize(float baseSize, int width, int height)
 	{
 
-		m_fontScale = ((float)width * (float)height) / ((640.0f * 400.0f)) * baseSize;
-		m_fontScale = m_fontScale / 2.5f;
+		m_fontScale = static_cast<float>(width+height) / (1024.0f + 768.0f) * baseSize;
 
 		if (m_fontScale < baseSize)
 			m_fontScale = baseSize;

@@ -40,6 +40,7 @@ namespace Phoenix {
 		m_vertices(vertices),
 		m_indices(indices),
 		m_numVertices(static_cast<uint32_t>(vertices.size())),
+		m_numFaces(static_cast<uint32_t>(indices.size())),
 		m_VertexArray(nullptr)
 	{
 		// Setup the material of our mesh (each mesh has only one material)

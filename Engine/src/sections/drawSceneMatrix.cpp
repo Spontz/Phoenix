@@ -270,7 +270,8 @@ namespace Phoenix {
 		ss << "Matrix file: " << m_pModelRef->filename << std::endl;
 		ss << "Objects in matrix to be drawn: " << m_fNumObjects << std::endl;
 		ss << "Model file: " << m_pModel->filename << std::endl;
-		ss << "Meshes in each model: " << m_pModel->m_statNumMeshes << ", Vertex: " << m_pModel->m_statNumVertices << std::endl;;
+		ss << "Meshes in each model: " << m_pModel->m_statNumMeshes << std::endl;
+		ss << "Faces: " << m_pModel->m_statNumFaces << ", vertices: " << m_pModel->m_statNumVertices << std::endl;
 		debugStatic = ss.str();
 	}
 

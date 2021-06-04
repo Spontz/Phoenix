@@ -69,6 +69,7 @@ namespace Phoenix {
 		glm::mat4					m_matPrevModel;			// Previous model Matrix for positioning the mesh (useful for effects like motion blur)
 		std::string					m_nodeName;
 		uint32_t					m_numVertices;
+		uint32_t					m_numFaces;
 
 		Mesh(const aiScene* pScene, std::string nodeName, const aiMesh* pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial* pMaterial, std::string directory, std::string filename);
 		// render the mesh

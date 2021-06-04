@@ -43,6 +43,7 @@ namespace Phoenix {
 
 		// Stats
 		uint32_t			m_statNumVertices;
+		uint32_t			m_statNumFaces;
 		uint32_t			m_statNumMeshes;
 		uint32_t			m_statNumCameras;
 		uint32_t			m_statNumAnimations;

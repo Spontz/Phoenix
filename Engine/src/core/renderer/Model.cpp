@@ -38,6 +38,7 @@ namespace Phoenix {
 		m_statNumCameras(0),
 		m_statNumMeshes(0),
 		m_statNumVertices(0),
+		m_statNumFaces(0),
 		m_statNumBones(0),
 		m_pScene(nullptr),
 		playAnimation(false),		// By default, animations are disabled
@@ -215,8 +216,12 @@ namespace Phoenix {
 		// Count total number of meshes and their vertices
 		m_statNumMeshes = static_cast<unsigned int>(meshes.size());
 		m_statNumVertices = 0;
-		for (uint32_t i = 0; i < m_statNumMeshes; i++)
+		m_statNumFaces = 0;
+		for (uint32_t i = 0; i < m_statNumMeshes; i++) {
 			m_statNumVertices += meshes[i].m_numVertices;
+			m_statNumFaces += meshes[i].m_numFaces;
+		}
+			
 
 		// Count total number of animations
 		m_statNumAnimations = m_pScene->mNumAnimations;
