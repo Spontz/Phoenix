@@ -171,6 +171,8 @@ namespace Phoenix {
 	void sEfxBloom::loadDebugStatic()
 	{
 		std::stringstream ss;
+		ss << "Shader Bloom: " << m_pShaderBloom->m_filepath << std::endl;
+		ss << "Shader Blur: " << m_pShaderBlur->m_filepath << std::endl;
 		ss << "Fbo: " << m_uiFboNum << std::endl;
 		debugStatic = ss.str();
 	}

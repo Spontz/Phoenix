@@ -109,6 +109,7 @@ namespace Phoenix {
 	void sEfxMotionBlur::loadDebugStatic()
 	{
 		std::stringstream ss;
+		ss << "Shader: " << m_pShader->m_filepath << std::endl;
 		ss << "Fbo: " << m_uiFboNum << ", Fps Scale: " << m_uiFPSScale << std::endl;
 		debugStatic = ss.str();
 

@@ -90,6 +90,9 @@ namespace Phoenix {
 
 	void sEfxFader::loadDebugStatic()
 	{
+		std::stringstream ss;
+		ss << "Shader: " << m_pShader->m_filepath << std::endl;
+		debugStatic = ss.str();
 	}
 
 	std::string sEfxFader::debug()

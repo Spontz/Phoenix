@@ -199,6 +199,7 @@ namespace Phoenix {
 	void sDrawVideo::loadDebugStatic()
 	{
 		std::stringstream ss;
+		ss << "Shader: " << m_pShader->m_filepath << std::endl;
 		ss << "File: " << m_pVideo->getFileName() << std::endl;
 		ss << "Fullscreen: " << m_bFullscreen << ", Fit to content: " << m_bFitToContent << std::endl;
 		debugStatic = ss.str();

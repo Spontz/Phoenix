@@ -267,6 +267,7 @@ namespace Phoenix {
 	void sDrawSceneMatrix::loadDebugStatic()
 	{
 		std::stringstream ss;
+		ss << "Shader: " << m_pShader->m_filepath << std::endl;
 		ss << "Matrix file: " << m_pModelRef->filename << std::endl;
 		ss << "Objects in matrix to be drawn: " << m_fNumObjects << std::endl;
 		ss << "Model file: " << m_pModel->filename << std::endl;

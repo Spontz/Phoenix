@@ -91,6 +91,9 @@ namespace Phoenix {
 
 	void sDrawQuad::loadDebugStatic()
 	{
+		std::stringstream ss;
+		ss << "Shader: " << m_pShader->m_filepath << std::endl;
+		debugStatic = ss.str();
 	}
 
 	std::string sDrawQuad::debug()

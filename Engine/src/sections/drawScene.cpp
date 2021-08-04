@@ -208,6 +208,7 @@ namespace Phoenix {
 	void sDrawScene::loadDebugStatic() {
 		std::stringstream ss;
 		Material* mat;
+		ss << "Shader: " << m_pShader->m_filepath << std::endl;
 		ss << "File: " << m_pModel->filename << std::endl;
 		ss << "Meshes: " << m_pModel->m_statNumMeshes << std::endl;
 		ss << "Faces: " << m_pModel->m_statNumFaces << ", vertices: " << m_pModel->m_statNumVertices << std::endl;

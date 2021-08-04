@@ -211,6 +211,7 @@ namespace Phoenix {
 	void sDrawImage::loadDebugStatic()
 	{
 		std::stringstream ss;
+		ss << "Shader: " << m_pShader->m_filepath << std::endl;
 		ss << "File: " << m_pTexture->filename << std::endl;
 		ss << "Fullscreen: " << m_bFullscreen << std::endl;
 		ss << "Fit To Content: " << m_bFitToContent << std::endl;
