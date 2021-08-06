@@ -39,7 +39,7 @@ namespace Phoenix {
 			return false;
 		}
 
-		render_enableDepthTest = false;
+		render_disableDepthTest = true;
 		// Load parameters
 		render_clearColor = static_cast<bool>(param[0]);
 		render_clearDepth = static_cast<bool>(param[1]);

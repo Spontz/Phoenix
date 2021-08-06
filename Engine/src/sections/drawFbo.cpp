@@ -46,7 +46,7 @@ namespace Phoenix {
 		// Set render states
 		render_clearColor = static_cast<bool>(param[2]);
 		render_clearDepth = static_cast<bool>(param[3]);
-		render_enableDepthTest = false;
+		render_disableDepthTest = true;
 
 		// Check for the right parameter values
 		if (m_uFboNum >= FBO_BUFFERS) {

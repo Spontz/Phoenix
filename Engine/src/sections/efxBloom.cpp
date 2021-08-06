@@ -45,7 +45,7 @@ namespace Phoenix {
 		}
 
 		// Load parameters
-		render_enableDepthTest = false;
+		render_disableDepthTest = true;
 		render_clearColor = static_cast<bool>(param[0]);
 		render_clearDepth = static_cast<bool>(param[1]);
 		m_uiFboNum = static_cast<unsigned int>(param[2]);

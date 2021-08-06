@@ -68,13 +68,13 @@ namespace Phoenix {
 	bool sDrawSceneMatrixInstanced::load()
 	{
 		if ((param.size() != 6) || (strings.size() < 7)) {
-			Logger::error("DrawSceneMatrix [%s]: 6 param (Enable depth buffer, enable depth test, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier.c_str());
+			Logger::error("DrawSceneMatrix [%s]: 6 param (do depth buffer clearing, disbale depth test, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier.c_str());
 			return false;
 		}
 
 		// Redner Flags
 		render_clearDepth = static_cast<bool>(param[0]);
-		render_enableDepthTest = static_cast<bool>(param[1]);
+		render_disableDepthTest = static_cast<bool>(param[1]);
 		render_drawWireframe = static_cast<bool>(param[2]);
 
 		// Update formulas on each frame

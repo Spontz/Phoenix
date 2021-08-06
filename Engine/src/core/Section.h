@@ -98,8 +98,8 @@ namespace Phoenix {
 		bool                        render_drawWireframe;	// Draw in wireframe (disabled by default)
 		bool						render_clearDepth;		// Clear depth buffer bit (disabled by default)
 		bool						render_clearColor;		// Clear color bit (disabled by default)
-		bool						render_enableDepthTest;	// Enable depth test (enabled by default)
-		bool						render_enableDepthMask;	// Enable depth mask writing (enabled by default)
+		bool						render_disableDepthTest;// Disable depth test (enabled by default)
+		bool						render_disableDepthMask;// Disable depth mask writing (enabled by default)
 
 	protected:
 		demokernel& m_demo;

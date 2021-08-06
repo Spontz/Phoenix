@@ -54,7 +54,7 @@ namespace Phoenix {
 	bool sDrawScene::load() {
 		if ((this->param.size() != 6) || (this->strings.size() < 7)) {
 			Logger::error(
-				"DrawScene [%s]: 5 param (depth buffer clearing, enable depth test, enable depth mask, enable wireframe, enable animation & "
+				"DrawScene [%s]: 5 param (do depth buffer clearing, disable depth test, disable depth mask, enable wireframe, enable animation & "
 				"animation number) and 7 strings needed (model, shader, CameraNumber, aTime & "
 				"three more for object positioning)",
 				identifier.c_str());
@@ -63,8 +63,8 @@ namespace Phoenix {
 
 		// Load parameters
 		render_clearDepth = static_cast<bool>(param[0]);
-		render_enableDepthTest = static_cast<bool>(param[1]);
-		render_enableDepthMask = static_cast<bool>(param[2]);
+		render_disableDepthTest = static_cast<bool>(param[1]);
+		render_disableDepthMask = static_cast<bool>(param[2]);
 		render_drawWireframe = static_cast<bool>(param[3]);
 		
 		m_bPlayAnimation = static_cast<bool>(param[4]);

@@ -81,7 +81,7 @@ namespace Phoenix {
 		m_pModel->loadUniqueVertices();
 
 		// Render states
-		render_enableDepthTest = false;
+		render_disableDepthTest = true;
 
 		// Load Emitters and Particles config
 		m_fEmissionTime = param[0];

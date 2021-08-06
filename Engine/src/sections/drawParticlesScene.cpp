@@ -59,7 +59,7 @@ namespace Phoenix {
 			return false;
 		}
 
-		render_enableDepthMask = false;
+		render_disableDepthMask = true;
 
 		// Load the shader
 		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);

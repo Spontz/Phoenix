@@ -45,7 +45,7 @@ namespace Phoenix {
 			return false;
 
 		// render states
-		render_enableDepthTest = false;
+		render_disableDepthTest = true;
 
 		// Configure Fader shader
 		m_pShader->use();

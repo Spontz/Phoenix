@@ -29,8 +29,8 @@ namespace Phoenix {
 		render_drawWireframe(false),
 		render_clearColor(false),
 		render_clearDepth(false),
-		render_enableDepthTest(true),
-		render_enableDepthMask(true)		
+		render_disableDepthTest(false),
+		render_disableDepthMask(false)		
 	{
 	}
 
@@ -73,10 +73,10 @@ namespace Phoenix {
 		if(render_drawWireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		// Disable depth test
-		if (!render_enableDepthTest)
+		if (render_disableDepthTest)
 			glDisable(GL_DEPTH_TEST);
 		// Disable Depth Mask
-		if (!render_enableDepthMask)
+		if (render_disableDepthMask)
 			glDepthMask(GL_FALSE);
 	}
 
@@ -85,11 +85,11 @@ namespace Phoenix {
 		// Restore fill mode (defualt mode)
 		if (render_drawWireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		// Restore Depth Test (default mode)
-		if (!render_enableDepthTest)
+		// Restore Depth Test (default mode: enabled)
+		if (render_disableDepthTest)
 			glEnable(GL_DEPTH_TEST);
-		// Restore Depth Mask writing (default mode)
-		if (!render_enableDepthMask)
+		// Restore Depth Mask writing (default mode: enabled)
+		if (render_disableDepthMask)
 			glDepthMask(GL_TRUE);
 	}
 

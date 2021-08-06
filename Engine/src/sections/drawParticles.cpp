@@ -57,7 +57,7 @@ namespace Phoenix {
 		if (!m_pShader)
 			return false;
 
-		render_enableDepthMask = false;
+		render_disableDepthMask = true;
 		// Particles number
 		m_iNumParticles = static_cast<int>(param[0]);
 

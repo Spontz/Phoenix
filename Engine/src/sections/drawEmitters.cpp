@@ -80,7 +80,7 @@ namespace Phoenix {
 		m_pModel->loadUniqueVertices();
 
 		// Disable depth Mask for rendering
-		render_enableDepthMask = false;
+		render_disableDepthMask = true;
 
 		// Load Emitters and Particles config
 		m_fEmissionTime = param[0];

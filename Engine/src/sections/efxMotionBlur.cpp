@@ -43,7 +43,7 @@ namespace Phoenix {
 
 		render_clearColor = true;
 		render_clearDepth = true;
-		render_enableDepthTest = false;
+		render_disableDepthTest = true;
 
 		m_uiFboNum = static_cast<unsigned int>(param[0]);
 		m_uiFPSScale = static_cast<unsigned int>(param[1]);
