@@ -4,7 +4,6 @@ set(SubProject "Launcher")
 set(SubProject_OutputName "Phoenix")
 set(SubProject_SOURCE_DIR ${PROJECT_SOURCE_DIR}/${SubProject})
 
-
 # Show some debug info
 message("\n-- Building ${SubProject}")
 message("  VCKPGG folder is: ${CMAKE_TOOLCHAIN_FILE}")
@@ -22,6 +21,7 @@ file(GLOB_RECURSE RESOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/res/*.rc)
 
 # Create executable
 add_executable(${SubProject} ${HEADER_FILES} ${SOURCE_FILES} ${RESOURCE_FILES})
+
 # Extra include folders
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/bass24/bass24/c")
@@ -46,41 +46,11 @@ target_link_libraries(${SubProject} PRIVATE glfw)
 target_link_libraries(${SubProject} PRIVATE ws2_32)
 target_link_libraries(${SubProject} PRIVATE assimp::assimp)
 target_link_libraries(${SubProject} PRIVATE bass)
-
-# HACK: Workaround for broken Dear ImGui Vcpkg port
-if(MSVC)
-	target_link_libraries(
-		${SubProject}
-		PRIVATE
-		../../vcpkg/installed/x64-windows-static/$<$<CONFIG:Debug>:debug/lib/imguid>$<$<CONFIG:Release>:lib/imgui>
-	)
-else()
-	target_link_libraries(${SubProject} PRIVATE imgui)
-endif()
-
+target_link_libraries(${SubProject} PRIVATE imgui::imgui)
 
 install(TARGETS ${SubProject} RUNTIME DESTINATION bin)
 
-# Declare Visual Studio project virtual folders
-if(MSVC_IDE)
-	# Macro to preserve source files hierarchy in the IDE
-	macro(GroupSources curdir)
-		file(GLOB children RELATIVE ${SubProject_SOURCE_DIR}/${curdir} ${SubProject_SOURCE_DIR}/${curdir}/*)
-
-		foreach(child ${children})
-			if(IS_DIRECTORY ${SubProject_SOURCE_DIR}/${curdir}/${child})
-				GroupSources(${curdir}/${child})
-			else()
-				string(REPLACE "/" "\\" groupname ${curdir})
-				string(REPLACE "src" "Sources" groupname ${groupname})
-				source_group(${groupname} FILES ${SubProject_SOURCE_DIR}/${curdir}/${child})
-			endif()
-		endforeach()
-	endmacro()
-
-	# Run macro
-	GroupSources(src)
-endif()
+create_msvc_groups()
 
 # BASS: Copy library after build
 add_custom_command(
