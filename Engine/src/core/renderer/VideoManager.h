@@ -18,7 +18,8 @@ namespace Phoenix {
 
 	public:
 		// Returns a video (and loads it if required)
-		Video* addVideo(CVideoSource const& videoDesc, bool ForceReload);
+		Video*	addVideo(CVideoSource const& videoDesc, bool ForceReload);
+		void	clear();
 
 	private:
 		CVideoMap VideoMap_;

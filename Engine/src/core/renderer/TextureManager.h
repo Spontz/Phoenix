@@ -24,5 +24,6 @@ namespace Phoenix {
 		Cubemap* addCubemap(std::vector<std::string> const& path, bool flip);
 		int	getOpenGLTextureID(int index);
 		void initTextureStates();
+		void clear();
 	};
 }

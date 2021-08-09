@@ -15,7 +15,8 @@ namespace Phoenix {
 
 		ModelManager();
 		virtual ~ModelManager();
-		Model* addModel(std::string path);
+		Model*	addModel(std::string path);
+		void	clear();
 	private:
 
 	};

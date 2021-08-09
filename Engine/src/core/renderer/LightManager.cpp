@@ -13,7 +13,7 @@ namespace Phoenix {
 
 	LightManager::~LightManager()
 	{
-		light.clear();
+		clear();
 	}
 
 	// Adds a Light into the queue
@@ -29,6 +29,11 @@ namespace Phoenix {
 		int lightNum = (int)light.size();
 		for (int i = 0; i < lightNum; i++)
 			light[i]->initColorValues();
+	}
+
+	void LightManager::clear()
+	{
+		light.clear();
 	}
 
 }

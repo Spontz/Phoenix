@@ -19,6 +19,7 @@ namespace Phoenix {
 		demokernel& m_demo;
 
 		void loadAllResources();
+		void unLoadAllResources();
 
 		void Draw_QuadFS();											// Draws a quad in fullscreen
 		void Draw_QuadFS(Texture* tex, float alpha);				// Draws a quad in fullscreen with alpha
@@ -63,5 +64,6 @@ namespace Phoenix {
 		void Load_Text_Fonts();
 		void Load_Lights();
 
+		void safeDelete(void* ptr);
 	};
 }

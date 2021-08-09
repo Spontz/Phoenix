@@ -27,25 +27,48 @@ namespace Phoenix {
 		Logger::info(LogLevel::low, "End loading engine internal resources");
 	}
 
+	void Resource::unLoadAllResources()
+	{
+		// Vertex Array Objects
+		safeDelete(m_pQuadFullScreen);
+		safeDelete(m_pSkybox);
+		safeDelete(m_pQube);
+		safeDelete(m_pGrid);
+
+		// Textures
+		safeDelete(m_pTVImage);
+
+		// Shaders
+		safeDelete(m_pShdrQuadTex);
+		safeDelete(m_pShdrQuadDepth);
+		safeDelete(m_pShdrQuadTexAlpha);
+		safeDelete(m_pShdrQuadTexModel);
+		safeDelete(m_pShdrQuadTexPVM);
+		safeDelete(m_pShdrQuadTexVFlipModel);
+		safeDelete(m_pShdrSkybox);
+		safeDelete(m_pShdrObjColor);
+		safeDelete(m_pShdrGrid);
+	}
+
 	Resource::Resource()
 		:
 		m_demo(demokernel::GetInstance()),
-		m_pQuadFullScreen(nullptr),
-		m_pSkybox(nullptr),
-		m_pQube(nullptr),
-		m_pTVImage(nullptr),
-		m_pGrid(nullptr),
+		
 		m_gridSize(1.0f),
 		m_gridSlices(11)
 	{
-		m_pShdrObjColor = m_pShdrQuadDepth = m_pShdrQuadTex = m_pShdrQuadTexPVM = m_pShdrQuadTexAlpha = m_pShdrQuadTexModel = m_pShdrQuadTexVFlipModel = m_pShdrSkybox = m_pShdrGrid = nullptr;
+		// Vertex Array Objects
+		m_pQuadFullScreen = m_pSkybox = m_pQube = m_pGrid = nullptr;
+		// Textures
+		m_pTVImage = nullptr;
+		// Shaders
+		m_pShdrQuadTex = m_pShdrQuadDepth = m_pShdrQuadTexAlpha = m_pShdrQuadTexModel = m_pShdrQuadTexPVM = m_pShdrQuadTexVFlipModel = m_pShdrSkybox = m_pShdrObjColor = m_pShdrGrid = nullptr;
+		
 	}
 
 	Resource::~Resource()
 	{
-		delete m_pQuadFullScreen;
-		delete m_pSkybox;
-		delete m_pQube;
+		unLoadAllResources();
 	}
 
 
@@ -234,6 +257,12 @@ namespace Phoenix {
 		m_demo.m_lightManager.addLight(LightType::SpotLight);
 		m_demo.m_lightManager.addLight(LightType::PointLight);
 		m_demo.m_lightManager.addLight(LightType::PointLight);
+	}
+
+	void Resource::safeDelete(void* ptr)
+	{
+		if (ptr)
+			delete ptr;
 	}
 
 	void Resource::Load_Grid()

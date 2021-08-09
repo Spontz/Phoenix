@@ -21,6 +21,8 @@ namespace Phoenix {
 		Shader* addShader(std::string filepath, std::vector<std::string> feedbackVaryings = {});
 		void unbindShaders();
 
+		void clear();
+
 	private:
 
 	};

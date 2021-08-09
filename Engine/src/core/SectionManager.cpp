@@ -57,9 +57,7 @@ namespace Phoenix {
 
 	SectionManager::~SectionManager()
 	{
-		this->section.clear();
-		this->loadSection.clear();
-		this->execSection.clear();
+		clear();
 	}
 
 
@@ -316,6 +314,13 @@ namespace Phoenix {
 		else {
 			Logger::error("Section NOT modified (setSectionLayer): %s", identifier.c_str());
 		}
+	}
+
+	void SectionManager::clear()
+	{
+		this->section.clear();
+		this->loadSection.clear();
+		this->execSection.clear();
 	}
 
 	SectionType SectionManager::getSectionType(const std::string& key)

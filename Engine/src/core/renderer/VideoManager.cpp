@@ -8,9 +8,7 @@ namespace Phoenix {
 
 	VideoManager::~VideoManager()
 	{
-		Logger::info(LogLevel::med, "Unloading videos...");
-		for (auto const& i : VideoMap_)
-			delete i.second;
+		clear();
 	}
 
 	Video* VideoManager::addVideo(CVideoSource const& VideoSource, bool bForceReload)
@@ -60,5 +58,11 @@ namespace Phoenix {
 		);
 
 		return pVideo;
+	}
+	void VideoManager::clear()
+	{
+		Logger::info(LogLevel::med, "Unloading videos...");
+		for (auto const& i : VideoMap_)
+			delete i.second;
 	}
 }

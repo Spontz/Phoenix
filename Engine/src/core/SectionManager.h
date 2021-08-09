@@ -19,13 +19,14 @@ namespace Phoenix {
 		SectionManager();
 		virtual ~SectionManager();
 
-		int addSection(const std::string& key, const std::string& DataSource, int enabled);		// Adds a Section of a given type
+		int		addSection(const std::string& key, const std::string& DataSource, int enabled);		// Adds a Section of a given type
 		void	toggleSection(const std::string& identifier);
 		void	deleteSection(const std::string& identifier);
 		void	updateSection(const std::string& identifier, const std::string& sScript);
 		void	setSectionsStartTime(const std::string& amount, const std::string& identifiers);
 		void	setSectionsEndTime(const std::string& amount, const std::string& identifiers);
 		void	setSectionLayer(const std::string& layer, const std::string& identifier);
+		void	clear();	// Clear all sections
 
 	private:
 		SectionType getSectionType(const std::string& key);

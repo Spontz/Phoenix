@@ -325,7 +325,25 @@ namespace Phoenix {
 	}
 
 	void demokernel::closeDemo() {
-		GLDRV->close();
+		Logger::info(LogLevel::low, "Closing GL driver...");
+		GLDRV->close();				// Close GL driver
+
+		Logger::info(LogLevel::low, "Clearing memory...");
+		m_sectionManager.clear();	// Delete all sections
+		m_textureManager.clear();	// Delete all textures
+		m_videoManager.clear();		// Delete all videos
+		
+		m_fboManager.clearFbos();	// Clear FBO's
+		m_efxBloomFbo.clearFbos();
+		m_efxAccumFbo.clearFbos();
+
+		m_modelManager.clear();		// Clear models
+		m_shaderManager.clear();	// Clear shaders
+		m_lightManager.clear();		// Clear lights
+		
+		Logger::info(LogLevel::low, "Unloading internal resources...");
+		if(m_pRes)
+			delete m_pRes;
 	}
 
 	std::string demokernel::getEngineVersion()

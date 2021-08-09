@@ -13,7 +13,7 @@ namespace Phoenix {
 
 	ModelManager::~ModelManager()
 	{
-		model.clear();
+		clear();
 	}
 
 	// Adds a Model into the queue, returns the ID of the model added
@@ -39,5 +39,9 @@ namespace Phoenix {
 			Logger::error("Could not load model: %s", path.c_str());
 
 		return p_model;
+	}
+	void ModelManager::clear()
+	{
+		model.clear();
 	}
 }

@@ -15,7 +15,7 @@ namespace Phoenix {
 
 	ShaderManager::~ShaderManager()
 	{
-		shader.clear();
+		clear();
 	}
 
 	// Adds a Texture into the queue, returns the ID of the texture added
@@ -71,5 +71,9 @@ namespace Phoenix {
 	void ShaderManager::unbindShaders()
 	{
 		glUseProgram(0);
+	}
+	void ShaderManager::clear()
+	{
+		shader.clear();
 	}
 }
