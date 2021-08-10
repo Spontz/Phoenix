@@ -3,27 +3,30 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
 #include "core/renderer/Shader.h"
+
+#include <memory>
 
 namespace Phoenix {
 
+	class ShaderManager final {
 
-	class ShaderManager {
 	public:
-		std::vector<Shader*>	shader;		// Shader list
-		bool					forceLoad;	// Force shader loading each time we add a shader (should be enabled when working on slave mode) 
-
 		ShaderManager();
-		virtual ~ShaderManager();
+		~ShaderManager();
 
-		Shader* addShader(std::string filepath, std::vector<std::string> feedbackVaryings = {});
+	public:
+		std::shared_ptr<Shader> addShader(
+			std::string_view filepath,
+			std::vector<std::string> const& feedbackVaryings = {}
+		);
 		void unbindShaders();
-
 		void clear();
 
-	private:
-
+	public:
+		std::vector<SP_Shader> shader; // Shader list
+		// Force shader loading each time we add a shader (should be enabled when working on slave mode)
+		bool forceLoad;
 	};
+
 }

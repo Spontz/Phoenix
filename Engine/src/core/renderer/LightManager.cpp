@@ -7,8 +7,8 @@
 namespace Phoenix {
 
 	// Init vars
-	LightManager::LightManager() {
-		light.clear();
+	LightManager::LightManager()
+	{
 	}
 
 	LightManager::~LightManager()
@@ -17,7 +17,8 @@ namespace Phoenix {
 	}
 
 	// Adds a Light into the queue
-	void LightManager::addLight(LightType lightType, glm::vec3 position) {
+	void LightManager::addLight(LightType lightType, glm::vec3 position)
+	{
 		std::string lightName = "light[" + std::to_string(this->light.size()) + "]";
 
 		Light* new_light = new Light(lightName, lightType, position);
@@ -33,6 +34,8 @@ namespace Phoenix {
 
 	void LightManager::clear()
 	{
+		for (auto pLight : light)
+			delete pLight;
 		light.clear();
 	}
 

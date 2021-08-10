@@ -14,7 +14,7 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		Shader*		m_pShader = nullptr;// Fader Shader to apply
+		SP_Shader	m_pShader;			// Fader Shader to apply
 		ShaderVars*	p_Vars = nullptr;	// Shader variables
 	};
 
@@ -91,7 +91,7 @@ namespace Phoenix {
 	void sEfxFader::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "Shader: " << m_pShader->m_filepath << std::endl;
+		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		debugStatic = ss.str();
 	}
 

@@ -39,20 +39,20 @@ namespace Phoenix {
 		safeDelete(m_pTVImage);
 
 		// Shaders
-		safeDelete(m_pShdrQuadTex);
-		safeDelete(m_pShdrQuadDepth);
-		safeDelete(m_pShdrQuadTexAlpha);
-		safeDelete(m_pShdrQuadTexModel);
-		safeDelete(m_pShdrQuadTexPVM);
-		safeDelete(m_pShdrQuadTexVFlipModel);
-		safeDelete(m_pShdrSkybox);
-		safeDelete(m_pShdrObjColor);
-		safeDelete(m_pShdrGrid);
+		m_pShdrQuadTex.reset();
+		m_pShdrQuadDepth.reset();
+		m_pShdrQuadTexAlpha.reset();
+		m_pShdrQuadTexModel.reset();
+		m_pShdrQuadTexPVM.reset();
+		m_pShdrQuadTexVFlipModel.reset();
+		m_pShdrSkybox.reset();
+		m_pShdrObjColor.reset();
+		m_pShdrGrid.reset();
 	}
 
 	Resource::Resource()
 		:
-		m_demo(demokernel::GetInstance()),
+		m_demo(*DEMO),
 		
 		m_gridSize(1.0f),
 		m_gridSlices(11)

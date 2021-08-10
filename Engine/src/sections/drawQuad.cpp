@@ -14,7 +14,7 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		Shader*		m_pShader = nullptr;	// Shader to apply
+		SP_Shader		m_pShader;	// Shader to apply
 		ShaderVars*	m_pVars = nullptr;	// Shader variables
 	};
 
@@ -92,7 +92,7 @@ namespace Phoenix {
 	void sDrawQuad::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "Shader: " << m_pShader->m_filepath << std::endl;
+		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		debugStatic = ss.str();
 	}
 

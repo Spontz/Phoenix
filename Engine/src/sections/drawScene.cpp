@@ -35,7 +35,7 @@ namespace Phoenix {
 		glm::mat4	m_mPrevView = glm::mat4(1.0f);
 
 		Model* m_pModel = nullptr;
-		Shader* m_pShader = nullptr;
+		SP_Shader m_pShader;
 		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
 		ShaderVars* m_pVars = nullptr;	// For storing any other shader variables
 	};
@@ -192,7 +192,7 @@ namespace Phoenix {
 		// Set the other shader variable values
 		m_pVars->setValues();
 
-		m_pModel->Draw(m_pShader->ID, m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
+		m_pModel->Draw(m_pShader->getId(), m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
 
 		glUseProgram(0);
 
@@ -208,7 +208,7 @@ namespace Phoenix {
 	void sDrawScene::loadDebugStatic() {
 		std::stringstream ss;
 		Material* mat;
-		ss << "Shader: " << m_pShader->m_filepath << std::endl;
+		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		ss << "File: " << m_pModel->filename << std::endl;
 		ss << "Meshes: " << m_pModel->m_statNumMeshes << std::endl;
 		ss << "Faces: " << m_pModel->m_statNumFaces << ", vertices: " << m_pModel->m_statNumVertices << std::endl;

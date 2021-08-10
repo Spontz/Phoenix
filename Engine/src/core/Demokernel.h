@@ -29,7 +29,7 @@ namespace Phoenix { class demokernel; }
 namespace Phoenix {
 
 
-#define DEMO (&demokernel::GetInstance())
+#define DEMO (&Phoenix::demokernel::getInstance())
 
 	// ******************************************************************
 
@@ -117,7 +117,8 @@ namespace Phoenix {
 		// ******************************************************************
 		// MEMBERS
 
-		static demokernel& GetInstance();
+		static demokernel& getInstance();
+		static void release();
 
 		// Resources Management
 		void allocateResources();

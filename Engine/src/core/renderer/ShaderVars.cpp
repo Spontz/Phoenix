@@ -7,10 +7,10 @@
 
 namespace Phoenix {
 
-	ShaderVars::ShaderVars(Section* sec, Shader* shad)
+	ShaderVars::ShaderVars(Section* pSection, SP_Shader const& spShader)
 	{
-		this->my_section = sec;
-		this->my_shader = shad;
+		my_section = pSection;
+		my_shader = spShader;
 	}
 
 	bool ShaderVars::ReadString(const char* string_var)
@@ -34,7 +34,7 @@ namespace Phoenix {
 			LogLevel::med,
 			"Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], value [%s]",
 			my_section->type_str.c_str(),
-			my_shader->ID,
+			my_shader->getId(),
 			var_type.c_str(),
 			var_name.c_str(),
 			var_value.c_str()

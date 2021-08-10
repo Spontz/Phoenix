@@ -11,7 +11,7 @@
 namespace Phoenix {
 
 	// HACK: get rid of macros
-#define GLDRV (&glDriver::GetInstance())
+#define GLDRV (&Phoenix::glDriver::getInstance())
 #define GLDRV_MAX_COLOR_ATTACHMENTS 4
 
 // ******************************************************************
@@ -37,7 +37,9 @@ namespace Phoenix {
 	class glDriver {
 
 	public:
-		static glDriver& GetInstance();
+		static glDriver& getInstance();
+		static void release();
+
 		tGLConfig		config;
 		FboConfig		fboConfig[FBO_BUFFERS];
 		tExprTkViewport	m_exprtkCurrentViewport; // Viewport variables for ExprTk

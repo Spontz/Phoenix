@@ -4,9 +4,12 @@
 
 namespace Phoenix {
 
-	struct sEfxAccum : public Section {
+	class sEfxAccum final : public Section
+	{
 	public:
 		sEfxAccum();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
@@ -15,13 +18,13 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		unsigned int	m_uiFboNum = 0;					// Fbo to use (must have 2 color attachments!)
-		float			m_fSourceInfluence = 0.5f;		// Source influence (0 to 1)
-		float			m_fAccumInfluence = 0.5f;		// Accumulation influence (0 to 1)
-		bool			m_bAccumBuffer = false;			// Accum buffer to use (0 or 1)
-		Shader*			m_pShader = nullptr;			// Accumulation Shader to apply
-		MathDriver*		m_pExprAccum = nullptr;			// Equations for the Accum effect
-		ShaderVars*		m_pVars = nullptr;				// Shader variables
+		uint32_t	m_uiFboNum = 0;				// Fbo to use (must have 2 color attachments!)
+		float		m_fSourceInfluence = .5f;	// Source influence (0 to 1)
+		float		m_fAccumInfluence = .5f;	// Accumulation influence (0 to 1)
+		bool		m_bAccumBuffer = false;		// Accum buffer to use (0 or 1)
+		SP_Shader	m_spShader;					// Accumulation Shader to apply
+		MathDriver* m_pExprAccum = nullptr;		// Equations for the Accum effect
+		ShaderVars* m_pVars = nullptr;			// Shader variables
 	};
 
 	// ******************************************************************
@@ -70,16 +73,16 @@ namespace Phoenix {
 			return false;
 
 		// Load Blur shader
-		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
-		if (!m_pShader)
+		m_spShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
+		if (!m_spShader)
 			return false;
 
 		// Configure shader
-		m_pShader->use();
-		m_pShader->setValue("sourceImage", 0);	// The source image will be in the texture unit 0
-		m_pShader->setValue("accumImage", 1);	// The accumulated image will be in the texture unit 1
+		m_spShader->use();
+		m_spShader->setValue("sourceImage", 0);	// The source image will be in the texture unit 0
+		m_spShader->setValue("accumImage", 1);	// The accumulated image will be in the texture unit 1
 
-		m_pVars = new ShaderVars(this, m_pShader);
+		m_pVars = new ShaderVars(this, m_spShader);
 		// Read the shader variables
 		for (int i = 0; i < uniform.size(); i++) {
 			m_pVars->ReadString(uniform[i].c_str());
@@ -119,9 +122,9 @@ namespace Phoenix {
 				m_demo.m_efxAccumFbo.bind(m_bAccumBuffer, false, false);
 
 				float fps = 1.0f / 60.0f;
-				m_pShader->use();
-				m_pShader->setValue("sourceInfluence", m_fSourceInfluence * (deltaTime / fps));
-				m_pShader->setValue("accumInfluence", 1 - (m_fAccumInfluence * (deltaTime / fps)));
+				m_spShader->use();
+				m_spShader->setValue("sourceInfluence", m_fSourceInfluence * (deltaTime / fps));
+				m_spShader->setValue("accumInfluence", 1 - (m_fAccumInfluence * (deltaTime / fps)));
 				m_pVars->setValues();
 
 				// Set the screen fbo in texture unit 0
@@ -166,7 +169,7 @@ namespace Phoenix {
 	void sEfxAccum::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "Shader: " << m_pShader->m_filepath << std::endl;
+		ss << "Shader: " << m_spShader->getURI() << std::endl;
 		ss << "Fbo: " << m_uiFboNum << std::endl;
 		debugStatic = ss.str();
 	}

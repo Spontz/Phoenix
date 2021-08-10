@@ -15,12 +15,12 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		unsigned int	m_uiFboNum = 0;				// Fbo to use (must have 2 color attachments!)
-		float			m_fBlurAmount = 1;			// Blur layers to apply
-		Shader*			m_pShaderBlur = nullptr;	// Blur Shader to apply
-		Shader*			m_pShaderBloom = nullptr;	// Bloom Shader to apply
-		MathDriver*		m_pExprBloom = nullptr;		// Equations for the Bloom effect
-		ShaderVars*		m_pVars = nullptr;			// Shader variables
+		unsigned int	m_uiFboNum = 0;			// Fbo to use (must have 2 color attachments!)
+		float			m_fBlurAmount = 1;		// Blur layers to apply
+		SP_Shader		m_pShaderBlur;			// Blur Shader to apply
+		SP_Shader		m_pShaderBloom;			// Bloom Shader to apply
+		MathDriver*		m_pExprBloom = nullptr;	// Equations for the Bloom effect
+		ShaderVars*		m_pVars = nullptr;		// Shader variables
 	};
 
 	// ******************************************************************
@@ -171,8 +171,8 @@ namespace Phoenix {
 	void sEfxBloom::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "Shader Bloom: " << m_pShaderBloom->m_filepath << std::endl;
-		ss << "Shader Blur: " << m_pShaderBlur->m_filepath << std::endl;
+		ss << "Shader Bloom: " << m_pShaderBloom->getURI() << std::endl;
+		ss << "Shader Blur: " << m_pShaderBlur->getURI() << std::endl;
 		ss << "Fbo: " << m_uiFboNum << std::endl;
 		debugStatic = ss.str();
 	}
