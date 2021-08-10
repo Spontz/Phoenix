@@ -40,10 +40,14 @@ namespace Phoenix{
 		uint32_t getId() const { return m_Id; }
 
 	private:
-		bool compile(
-			const ShaderSources& shaderSources,
-			std::vector<std::string> const& feedbackVaryings = {}
-		);
+		bool compile(const ShaderSources& shaderSources, std::vector<std::string> const& feedbackVaryings = {});
+		// File management procedures
+		std::string readASCIIFile(std::string_view URI);
+		std::istream& safeGetline(std::istream& is, std::string& t);
+		GLenum getShaderTypeFromString(std::string_view type);
+		std::string_view getShaderStringFromType(const GLenum& type);
+		void addLinedirective(std::string& source);
+		ShaderSources preProcessShaderSource(std::string_view shaderSource);
 
 	private:
 		uint32_t m_Id = 0;

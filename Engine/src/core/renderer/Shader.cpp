@@ -7,7 +7,7 @@
 
 namespace Phoenix {
 
-	std::istream& safeGetline(std::istream& is, std::string& t)
+	std::istream& Shader::safeGetline(std::istream& is, std::string& t)
 	{
 		t.clear();
 
@@ -40,7 +40,7 @@ namespace Phoenix {
 		}
 	}
 
-	GLenum getShaderTypeFromString(std::string_view type)
+	GLenum Shader::getShaderTypeFromString(std::string_view type)
 	{
 		static const std::unordered_map<std::string_view, GLenum> s{
 			{"vertex",   GL_VERTEX_SHADER   },
@@ -52,7 +52,7 @@ namespace Phoenix {
 		return it == s.end() ? 0 : it->second;
 	}
 
-	std::string_view getShaderStringFromType(const GLenum& type)
+	std::string_view Shader::getShaderStringFromType(const GLenum& type)
 	{
 		static const std::unordered_map<GLenum, std::string_view> s{
 			{ GL_VERTEX_SHADER,   "Vertex"   },
@@ -64,7 +64,7 @@ namespace Phoenix {
 		return it == s.end() ? "UNKNOWN" : it->second.data();
 	}
 
-	void addLinedirective(std::string& source)
+	void Shader::addLinedirective(std::string& source)
 	{
 		std::istringstream f(source);
 		std::stringstream end_stream;
@@ -87,7 +87,7 @@ namespace Phoenix {
 		source = end_stream.str();
 	}
 
-	ShaderSources preProcessShaderSource(std::string_view shaderSource)
+	ShaderSources Shader::preProcessShaderSource(std::string_view shaderSource)
 	{
 		ShaderSources shaderSources;
 
@@ -124,7 +124,7 @@ namespace Phoenix {
 		return shaderSources;
 	}
 
-	std::string readASCIIFile(std::string_view URI)
+	std::string Shader::readASCIIFile(std::string_view URI)
 	{
 		std::string result;
 		std::ifstream in(URI.data(), std::ios::in | std::ios::binary);
