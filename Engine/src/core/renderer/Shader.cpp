@@ -72,7 +72,8 @@ namespace Phoenix {
 		int lineNum = 1;
 		while (!safeGetline(f, line).eof() && !f.fail()) {
 			end_stream << line << std::endl;
-			std::size_t found = line.find("#version"); // Right after the #version directive we will add the #line directive
+			// Right after the #version directive we will add the #line directive
+			std::size_t found = line.find("#version");
 			if (found != std::string::npos)
 			{
 				std::stringstream newline;
@@ -243,14 +244,22 @@ namespace Phoenix {
 	{
 		const auto val = glGetUniformLocation(m_Id, name.data());
 		if (val == -1)
-			Logger::info(LogLevel::med, "Warning: Shader uniform variable '%s' not found in shader '%s'", name, m_URI.c_str());
+			Logger::info(
+				LogLevel::med,
+				"Warning: Shader uniform variable '%s' not found in shader '%s'",
+				name,
+				m_URI.c_str()
+			);
 		return val;
 	}
 
 	// Compile shader
 	// Returns true if succesfully compiled
 	// Returns false if failed during loading
-	bool Shader::compile(const ShaderSources& shaderSources, std::vector<std::string> const& feedbackVaryings)
+	bool Shader::compile(
+		const ShaderSources& shaderSources,
+		std::vector<std::string> const& feedbackVaryings
+	)
 	{
 		bool compiled = false;
 		if (shaderSources.size() < 2) {
