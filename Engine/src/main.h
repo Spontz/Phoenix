@@ -22,7 +22,3 @@ static_assert(FBO_BUFFERS >= 25);
 #include "core/Demokernel.h"
 #include "core/utils/Logger.h"
 #include "core/resource/Resource.h"
-
-#ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
-#endif
