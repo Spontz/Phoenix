@@ -44,7 +44,7 @@ namespace Phoenix {
 
 		Model* m_pModelRef = nullptr;	// Reference model to be use to store positions
 		ModelInstance* m_pModel = nullptr;	// Model to draw instanced
-		Shader* m_pShader = nullptr;
+		SP_Shader m_pShader;
 		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
 		ShaderVars* m_pVars = nullptr;	// For storing any other shader variables
 	};
@@ -239,7 +239,7 @@ namespace Phoenix {
 			}
 		}
 		*/
-		m_pModel->drawInstanced(m_pShader->ID, static_cast<uint32_t>(m_pVars->sampler2D.size()));
+		m_pModel->drawInstanced(m_pShader->getId(), static_cast<uint32_t>(m_pVars->sampler2D.size()));
 
 		// For MotionBlur: store the previous matrix
 		m_mPrevProjection = projection;
@@ -259,7 +259,7 @@ namespace Phoenix {
 	void sDrawSceneMatrixInstanced::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "Shader: " << m_pShader->m_filepath << std::endl;
+		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		ss << "Matrix file: " << m_pModelRef->filename << std::endl;
 		ss << "Objects in matrix to be drawn: " << m_fNumObjects << std::endl;
 		ss << "Model file: " << m_pModel->pModel->filename << std::endl;

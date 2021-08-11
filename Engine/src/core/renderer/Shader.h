@@ -4,50 +4,54 @@
 #pragma once
 #include "main.h"
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
+namespace Phoenix{
 
-namespace Phoenix {
+	class Shader;
+	using SP_Shader = std::shared_ptr<Shader>;
+	using WP_Shader = std::weak_ptr<Shader>;
 
-	class Shader
-	{
+	using ShaderSources = std::unordered_map<GLenum, std::string>;
+
+	class Shader final {
+
 	public:
-		unsigned int ID;
-		std::string m_filepath;
-		// constructor generates the shader on the fly
-		Shader();
-		virtual ~Shader();
+		~Shader();
 
-		bool load(const std::string& filepath, std::vector<std::string> feedbackVaryings = { });
+	public:
+		bool load(std::string_view URI, std::vector<std::string> const& feedbackVaryings = {});
+		void use(); // activate the shader
 
-		// activate the shader
-		void use();
 		// utility uniform functions
-		void setValue(const char* name, bool value) const;
-		void setValue(const char* name, int value) const;
-		void setValue(const char* name, float value) const;
-		void setValue(const char* name, const glm::vec2& value) const;
-		void setValue(const char* name, float x, float y) const;
-		void setValue(const char* name, const glm::vec3& value) const;
-		void setValue(const char* name, float x, float y, float z) const;
-		void setValue(const char* name, const glm::vec4& value) const;
-		void setValue(const char* name, float x, float y, float z, float w);
-		void setValue(const char* name, const glm::mat2& mat) const;
-		void setValue(const char* name, const glm::mat3& mat) const;
-		void setValue(const char* name, const glm::mat4& mat) const;
+		void setValue(std::string_view id, GLint value) const;
+		void setValue(std::string_view id, GLfloat value) const;
+		void setValue(std::string_view id, const glm::vec2& value) const;
+		void setValue(std::string_view id, GLfloat x, GLfloat y) const;
+		void setValue(std::string_view id, const glm::vec3& value) const;
+		void setValue(std::string_view id, GLfloat x, GLfloat y, GLfloat z) const;
+		void setValue(std::string_view id, const glm::vec4& value) const;
+		void setValue(std::string_view id, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+		void setValue(std::string_view id, const glm::mat2& mat) const;
+		void setValue(std::string_view id, const glm::mat3& mat) const;
+		void setValue(std::string_view id, const glm::mat4& mat) const;
 
-		GLint getUniformLocation(const char* varname) const;
+		GLint getUniformLocation(std::string_view id) const;
+
+		std::string_view getURI() const { return m_URI; }
+		uint32_t getId() const { return m_Id; }
 
 	private:
-
-		std::string ReadFile(const std::string& filepath);
+		bool compile(const ShaderSources& shaderSources, std::vector<std::string> const& feedbackVaryings = {});
+		// File management procedures
+		std::string readASCIIFile(std::string_view URI);
+		std::istream& safeGetline(std::istream& is, std::string& t);
+		GLenum getShaderTypeFromString(std::string_view type);
+		std::string_view getShaderStringFromType(const GLenum& type);
 		void addLinedirective(std::string& source);
-		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
-		bool Compile(const std::unordered_map<GLenum, std::string>& shaderSources, std::vector<std::string> feedbackVaryings = { });
+		ShaderSources preProcessShaderSource(std::string_view shaderSource);
 
-		GLenum GetShaderTypeFromString(const std::string& type);
-		const std::string GetShaderStringFromType(const GLenum& type);
+	private:
+		uint32_t m_Id = 0;
+		std::string m_URI;
 	};
+
 }

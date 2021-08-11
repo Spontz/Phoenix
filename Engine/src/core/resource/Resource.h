@@ -34,15 +34,15 @@ namespace Phoenix {
 		Texture* m_pTVImage;				// Default texture (tv)
 
 		// Shaders
-		Shader* m_pShdrQuadTex;				// Draws a textured quad
-		Shader* m_pShdrQuadDepth;			// Draws a depth texture quad
-		Shader* m_pShdrQuadTexAlpha;		// Draws a textured quad with alpha
-		Shader* m_pShdrQuadTexModel;		// Draws a textured quad with model matrix
-		Shader* m_pShdrQuadTexPVM;			// Draws a textured quad with projection, view and model matrixes
-		Shader* m_pShdrQuadTexVFlipModel;	// Draws a textured quad with model matrix, and with the texture flipped vertically
-		Shader* m_pShdrSkybox;				// Draws a skybox
-		Shader* m_pShdrObjColor;			// Draws an object with a color
-		Shader* m_pShdrGrid;				// Draws a Grid
+		SP_Shader m_pShdrQuadTex;				// Draws a textured quad
+		SP_Shader m_pShdrQuadDepth;			// Draws a depth texture quad
+		SP_Shader m_pShdrQuadTexAlpha;		// Draws a textured quad with alpha
+		SP_Shader m_pShdrQuadTexModel;		// Draws a textured quad with model matrix
+		SP_Shader m_pShdrQuadTexPVM;			// Draws a textured quad with projection, view and model matrixes
+		SP_Shader m_pShdrQuadTexVFlipModel;	// Draws a textured quad with model matrix, and with the texture flipped vertically
+		SP_Shader m_pShdrSkybox;				// Draws a skybox
+		SP_Shader m_pShdrObjColor;			// Draws an object with a color
+		SP_Shader m_pShdrGrid;				// Draws a Grid
 
 		// Vertex Array Objects
 		VertexArray* m_pSkybox;

@@ -27,7 +27,7 @@ namespace Phoenix {
 		float		m_fVideoAspectRatio = 1.0f;
 		float		m_fRenderAspectRatio = 1.0f;
 		Video*		m_pVideo = nullptr;
-		Shader*		m_pShader = nullptr;
+		SP_Shader	m_pShader;
 		MathDriver*	m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
 		ShaderVars* m_pVars = nullptr;	// Shader variables
 	};
@@ -199,7 +199,7 @@ namespace Phoenix {
 	void sDrawVideo::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "Shader: " << m_pShader->m_filepath << std::endl;
+		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		ss << "File: " << m_pVideo->getFileName() << std::endl;
 		ss << "Fullscreen: " << m_bFullscreen << ", Fit to content: " << m_bFitToContent << std::endl;
 		debugStatic = ss.str();

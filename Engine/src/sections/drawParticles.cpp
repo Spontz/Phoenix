@@ -19,7 +19,7 @@ namespace Phoenix {
 		// Particle engine variables
 		int				m_iNumParticles = 0;
 		ParticleMesh*	m_pParticleMesh = nullptr;
-		Shader*			m_pShader = nullptr;
+		SP_Shader		m_pShader;
 
 		// Particle Matrix positioning (for all the model)
 		glm::vec3		m_vTranslation = { 0, 0, 0 };

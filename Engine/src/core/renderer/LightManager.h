@@ -3,23 +3,23 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
 #include "core/renderer/Light.h"
 
-namespace Phoenix {
+namespace Phoenix{
 
-	class LightManager {
+	class LightManager final {
+
 	public:
-		std::vector<Light*> light;	// light list
-
 		LightManager();
-		virtual ~LightManager();
-		void addLight(LightType lightType, glm::vec3 position = glm::vec3(10.0f, 10.0f, 0.0f));
-		void initAllLightsColors();
+		~LightManager();
 
+	public:
+		void addLight(LightType lightType, glm::vec3 position = { 10, 10, 0 });
+		void initAllLightsColors();
 		void clear();
 
-	private:
+	public:
+		std::vector<Light*> light;	// light list
 	};
+
 }

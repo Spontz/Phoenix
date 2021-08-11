@@ -43,7 +43,7 @@ namespace Phoenix {
 
 	imGuiDriver::imGuiDriver()
 		:
-		m_demo(demokernel::GetInstance()),
+		m_demo(*DEMO),
 		p_glfw_window(nullptr),
 		m_io(nullptr),
 		show_log(false),

@@ -195,9 +195,17 @@ namespace Phoenix {
 
 	// glDriver *********************************************************
 
-	glDriver& glDriver::GetInstance() {
-		static glDriver obj;
-		return obj;
+	glDriver* kpGlDriver = nullptr;
+
+	glDriver& glDriver::getInstance() {
+		if (!kpGlDriver)
+			kpGlDriver = new glDriver();
+		return *kpGlDriver;
+	}
+
+	void glDriver::release() {
+		delete kpGlDriver;
+		kpGlDriver = nullptr;
 	}
 
 	void glDriver::ProcessInput()
@@ -223,7 +231,7 @@ namespace Phoenix {
 
 	glDriver::glDriver()
 		:
-		m_demo(demokernel::GetInstance()),
+		m_demo(*DEMO),
 		m_timeCurrentFrame(0.0f),
 		m_timeDelta(0.0f),
 		m_timeLastFrame(0.0f),
@@ -652,6 +660,7 @@ namespace Phoenix {
 	void glDriver::close() {
 		// Close ImGui
 		m_imGui->close();
+		delete m_imGui;
 
 		// Close GLFW
 		glfwSetWindowShouldClose(m_glfw_window, GL_TRUE);

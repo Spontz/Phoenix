@@ -18,7 +18,7 @@ namespace Phoenix {
 	private:
 		unsigned int	m_uiFboNum = 0;			// Fbo to use (must have 2 color attachments!)
 		float			m_fBlurAmount = 1.0;	// Blur layers to apply
-		Shader*			m_pShader = nullptr;	// Blur Shader to apply
+		SP_Shader		m_pShader;				// Blur Shader to apply
 		MathDriver*		m_pExprBlur = nullptr;	// Equations for the Blur effect
 		ShaderVars*		m_pVars = nullptr;		// Shader variables
 	};
@@ -150,7 +150,7 @@ namespace Phoenix {
 	void sEfxBlur::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "Shader: " << m_pShader->m_filepath << std::endl;
+		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		ss << "Fbo: " << m_uiFboNum << std::endl;
 		debugStatic = ss.str();
 	}

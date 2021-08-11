@@ -26,7 +26,7 @@ namespace Phoenix {
 		float		m_fTexAspectRatio = 1.0f;
 		float		m_fRenderAspectRatio = 1.0f;
 		Texture* m_pTexture = nullptr;
-		Shader* m_pShader = nullptr;
+		SP_Shader m_pShader = nullptr;
 		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
 		ShaderVars* m_pVars = nullptr;	// For storing any other shader variables
 	} drawImage_section;
@@ -211,7 +211,7 @@ namespace Phoenix {
 	void sDrawImage::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "Shader: " << m_pShader->m_filepath << std::endl;
+		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		ss << "File: " << m_pTexture->filename << std::endl;
 		ss << "Fullscreen: " << m_bFullscreen << std::endl;
 		ss << "Fit To Content: " << m_bFitToContent << std::endl;

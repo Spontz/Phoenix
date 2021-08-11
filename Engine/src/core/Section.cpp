@@ -8,7 +8,7 @@ namespace Phoenix {
 
 	Section::Section()
 		:
-		m_demo(demokernel::GetInstance()),
+		m_demo(*DEMO),
 		type(SectionType::NOT_FOUND),
 		identifier("ID not defined"),
 		DataSource(""),

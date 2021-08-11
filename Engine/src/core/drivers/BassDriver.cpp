@@ -14,7 +14,7 @@ namespace Phoenix {
 
 	BassDriver::BassDriver()
 		:
-		m_demo(demokernel::GetInstance()),
+		m_demo(*DEMO),
 		m_spectrum{ 0.0 }
 	{
 	}

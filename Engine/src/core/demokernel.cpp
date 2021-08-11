@@ -16,9 +16,17 @@
 // ******************************************************************
 namespace Phoenix {
 
-	demokernel& demokernel::GetInstance() {
-		static demokernel r;
-		return r;
+	demokernel* kpDemoKernel = nullptr;
+
+	demokernel& demokernel::getInstance() {
+		if (!kpDemoKernel)
+			kpDemoKernel = new demokernel();
+		return *kpDemoKernel;
+	}
+
+	void demokernel::release() {
+		delete kpDemoKernel;
+		kpDemoKernel = nullptr;
 	}
 
 	demokernel::demokernel()
@@ -325,6 +333,11 @@ namespace Phoenix {
 	}
 
 	void demokernel::closeDemo() {
+
+		Logger::info(LogLevel::low, "Closing Bass driver...");
+		BASSDRV->stop();
+		BASSDRV->end();
+
 		Logger::info(LogLevel::low, "Closing GL driver...");
 		GLDRV->close();				// Close GL driver
 
@@ -338,12 +351,13 @@ namespace Phoenix {
 		m_efxAccumFbo.clearFbos();
 
 		m_modelManager.clear();		// Clear models
-		m_shaderManager.clear();	// Clear shaders
 		m_lightManager.clear();		// Clear lights
 		
 		Logger::info(LogLevel::low, "Unloading internal resources...");
 		if(m_pRes)
 			delete m_pRes;
+
+		m_shaderManager.clear();	// Clear shaders
 	}
 
 	std::string demokernel::getEngineVersion()

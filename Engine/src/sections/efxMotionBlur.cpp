@@ -3,9 +3,11 @@
 
 namespace Phoenix {
 
-	struct sEfxMotionBlur : public Section {
+	class sEfxMotionBlur final : public Section {
 	public:
 		sEfxMotionBlur();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
@@ -14,12 +16,12 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		unsigned int	m_uiFboNum = 0;		// Fbo to use (must have 2 color attachments!)
-		unsigned int	m_uiFPSScale = 0;		// Scale FPS's
-		GLuint			m_uiBufferColor = 0;		// Attcahment 0 of our FBO
-		GLuint			m_uiBufferVelocity = 0;		// Attachment 1 of our FBO
-		Shader* m_pShader = nullptr;	// Motionblur Shader to apply
-		ShaderVars* m_pVars = nullptr;	// Shader variables
+		uint32_t	m_uiFboNum = 0;			// Fbo to use (must have 2 color attachments!)
+		uint32_t	m_uiFPSScale = 0;		// Scale FPS's
+		GLuint		m_uiBufferColor = 0;	// Attcahment 0 of our FBO
+		GLuint		m_uiBufferVelocity = 0;	// Attachment 1 of our FBO
+		SP_Shader	m_pShader;				// Motionblur Shader to apply
+		ShaderVars*	m_pVars = nullptr;		// Shader variables
 	};
 
 	// ******************************************************************
@@ -109,7 +111,7 @@ namespace Phoenix {
 	void sEfxMotionBlur::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "Shader: " << m_pShader->m_filepath << std::endl;
+		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		ss << "Fbo: " << m_uiFboNum << ", Fps Scale: " << m_uiFPSScale << std::endl;
 		debugStatic = ss.str();
 

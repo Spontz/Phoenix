@@ -62,8 +62,8 @@ enum struct ParticleType : int32_t {
 		std::array<GLuint, 2> m_particleBuffer;		// Vertex Buffer: input
 		std::array<GLuint,2> m_transformFeedback;	// Transform feedback buffers: output
 		Particle* m_emitterData;		// Emitter info (for updating emitters positions)
-		Shader* particleSystemShader;
-		Shader* billboardShader;
+		SP_Shader particleSystemShader;
+		SP_Shader billboardShader;
 
 		bool initRandomTexture(unsigned int Size); //TODO: Add it into the textureManager
 		void bindRandomTexture(GLuint TexUnit = 0);//TODO: this should be removed once is included in the textureManager

@@ -51,7 +51,7 @@ namespace Phoenix {
 	private:
 		std::vector<v3>			particles_pos_; // separated for perfomance
 		std::vector<Particle>	particles_;
-		Shader* pass_sph_billboard_ = nullptr;
+		SP_Shader pass_sph_billboard_ = nullptr;
 	};
 
 }

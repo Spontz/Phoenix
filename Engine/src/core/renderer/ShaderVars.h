@@ -49,12 +49,12 @@ namespace Phoenix {
         std::vector<varSampler2D*>	sampler2D;
 
         // constructor generates the shader on the fly
-        ShaderVars(Section* sec, Shader* shad);
+        ShaderVars(Section* pSection, SP_Shader const& spShader);
         bool ReadString(const char* string_var); // Reads a string that contains vars and add it
         void setValues();
 
     private:
-        Shader* my_shader;		// Shader where the vars are poiting
+        SP_Shader my_shader;		// Shader where the vars are poiting
         Section* my_section;	// Section where the vars are needed (required for formula variables, like time, etc.)
 
         size_t splitString(const std::string& txt, std::vector<std::string>& strs, char ch);
