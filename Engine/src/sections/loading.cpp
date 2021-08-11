@@ -83,8 +83,8 @@ namespace Phoenix {
 		}
 
 		float zero2one = 0;
-		if (m_demo.m_sectionManager.loadSection.size() > 0)
-			zero2one = (float)m_demo.m_iLoadedSections / (float)(m_demo.m_sectionManager.loadSection.size());
+		if (m_demo.m_sectionManager.m_loadSection.size() > 0)
+			zero2one = (float)m_demo.m_iLoadedSections / (float)(m_demo.m_sectionManager.m_loadSection.size());
 
 		GLDRV->initRender(true);
 		glClearColor(0, 0, 0, 0);

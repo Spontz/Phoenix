@@ -427,7 +427,7 @@ namespace Phoenix {
 		if (m_slaveMode) {
 			Logger::info(LogLevel::med, "Engine is in slave mode, therefore, enabling force loads for shaders and textures!");
 			m_textureManager.forceLoad = true;
-			m_shaderManager.forceLoad = true;
+			m_shaderManager.m_forceLoad = true;
 		}
 		return true;
 	}
@@ -465,7 +465,7 @@ namespace Phoenix {
 			return false;
 		}
 
-		auto my_sec = m_sectionManager.section[sec_id];
+		auto my_sec = m_sectionManager.m_section[sec_id];
 
 		// Load the data from the section
 		my_sec->loaded = my_sec->load();
@@ -559,9 +559,9 @@ namespace Phoenix {
 		}
 
 		// Search for the loading section, if not found, we will create one
-		for (i = 0; i < m_sectionManager.section.size(); i++) {
-			if (m_sectionManager.section[i]->type == SectionType::Loading)
-				ds_loading = m_sectionManager.section[i];
+		for (i = 0; i < m_sectionManager.m_section.size(); i++) {
+			if (m_sectionManager.m_section[i]->type == SectionType::Loading)
+				ds_loading = m_sectionManager.m_section[i];
 		}
 
 		if (ds_loading == NULL) {
@@ -572,7 +572,7 @@ namespace Phoenix {
 				return;
 			}
 			else
-				ds_loading = m_sectionManager.section[sec_id];
+				ds_loading = m_sectionManager.m_section[sec_id];
 		}
 
 		// preload, load and init loading section
@@ -585,30 +585,30 @@ namespace Phoenix {
 		Logger::info(LogLevel::med, "  Loading section loaded, inited and executed for first time");
 
 		// Clear the load and run section lists
-		m_sectionManager.loadSection.clear();
-		m_sectionManager.execSection.clear();
+		m_sectionManager.m_loadSection.clear();
+		m_sectionManager.m_execSection.clear();
 
 		// Populate Load Section: The sections that need to be loaded
-		for (i = 0; i < m_sectionManager.section.size(); i++) {
-			ds = m_sectionManager.section[i];
+		for (i = 0; i < m_sectionManager.m_section.size(); i++) {
+			ds = m_sectionManager.m_section[i];
 			// If we are in slave mode, we load all the sections but if not, we will load only the ones that are inside the demo time
 			if ((m_slaveMode == 1) || (((ds->startTime < m_demoEndTime) || fabs(m_demoEndTime) < FLT_EPSILON) && (ds->endTime > startTime))) {
 				// If the section is not the "loading", then we add id to the Ready Section lst
 				if (ds->type != SectionType::Loading) {
-					m_sectionManager.loadSection.push_back(i);
+					m_sectionManager.m_loadSection.push_back(i);
 					// load section splines (to avoid code load in the sections)
 					//loadSplines(ds); // TODO: Delete this once splines are working
 				}
 			}
 		}
 
-		Logger::info(LogLevel::low, "  Ready Section queue complete: %d sections to be loaded", m_sectionManager.loadSection.size());
+		Logger::info(LogLevel::low, "  Ready Section queue complete: %d sections to be loaded", m_sectionManager.m_loadSection.size());
 
 		// Start Loading the sections of the Ready List
 		m_iLoadedSections = 0;
-		for (i = 0; i < m_sectionManager.loadSection.size(); i++) {
-			sec_id = m_sectionManager.loadSection[i];
-			ds = m_sectionManager.section[sec_id];
+		for (i = 0; i < m_sectionManager.m_loadSection.size(); i++) {
+			sec_id = m_sectionManager.m_loadSection[i];
+			ds = m_sectionManager.m_section[sec_id];
 			if (ds->load()) {
 				ds->loadDebugStatic(); // Load static debug info
 				ds->loaded = TRUE;
@@ -642,9 +642,9 @@ namespace Phoenix {
 		int sec_id;
 
 		Logger::info(LogLevel::low, "  Analysing sections that must be re-inited...");
-		for (i = 0; i < m_sectionManager.execSection.size(); i++) {
-			sec_id = m_sectionManager.execSection[i].second;	// The second value is the ID of the section
-			ds = m_sectionManager.section[sec_id];
+		for (i = 0; i < m_sectionManager.m_execSection.size(); i++) {
+			sec_id = m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
+			ds = m_sectionManager.m_section[sec_id];
 			if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
 				ds->inited = FALSE;			// Mark the section as not inited
 				Logger::info(LogLevel::low, "  Section %d [layer: %d id: %s] marked to be inited", sec_id, ds->layer, ds->identifier.c_str());
@@ -665,7 +665,7 @@ namespace Phoenix {
 
 		// Check the sections that need to be finalized
 		Logger::info(LogLevel::low, "  Analysing sections that can be removed...", m_demoRunTime);
-		for (it = m_sectionManager.section.begin(); it < m_sectionManager.section.end(); it++) {
+		for (it = m_sectionManager.m_section.begin(); it < m_sectionManager.m_section.end(); it++) {
 			ds = *it;
 			if ((ds->endTime <= m_demoRunTime) && (ds->ended == FALSE)) {
 				ds->end();
@@ -676,22 +676,22 @@ namespace Phoenix {
 
 		// Check the sections that need to be executed
 		Logger::info(LogLevel::low, "  Analysing sections that must be executed...", m_demoRunTime);
-		m_sectionManager.execSection.clear();
-		for (i = 0; i < m_sectionManager.section.size(); i++) {
-			ds = m_sectionManager.section[i];
+		m_sectionManager.m_execSection.clear();
+		for (i = 0; i < m_sectionManager.m_section.size(); i++) {
+			ds = m_sectionManager.m_section[i];
 			if ((ds->startTime <= m_demoRunTime) && (ds->endTime >= m_demoRunTime) &&		// If time is OK
 				(ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {		// If its enabled, loaded and is not hte Loading section
-				m_sectionManager.execSection.push_back(std::make_pair(ds->layer, i));		// Load the section: first the layer and then the ID
+				m_sectionManager.m_execSection.push_back(std::make_pair(ds->layer, i));		// Load the section: first the layer and then the ID
 			}
 		}
-		sort(m_sectionManager.execSection.begin(), m_sectionManager.execSection.end());	// Sort sections by Layer
+		sort(m_sectionManager.m_execSection.begin(), m_sectionManager.m_execSection.end());	// Sort sections by Layer
 
-		Logger::info(LogLevel::low, "  Exec Section queue complete: %d sections to be executed", m_sectionManager.execSection.size());
+		Logger::info(LogLevel::low, "  Exec Section queue complete: %d sections to be executed", m_sectionManager.m_execSection.size());
 		// Run Init sections
 		Logger::info(LogLevel::low, "  Running Init Sections...");
-		for (i = 0; i < m_sectionManager.execSection.size(); i++) {
-			sec_id = m_sectionManager.execSection[i].second;	// The second value is the ID of the section
-			ds = m_sectionManager.section[sec_id];
+		for (i = 0; i < m_sectionManager.m_execSection.size(); i++) {
+			sec_id = m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
+			ds = m_sectionManager.m_section[sec_id];
 			if (ds->inited == FALSE) {
 				ds->runTime = m_demoRunTime - ds->startTime;
 				ds->init();			// Init the Section
@@ -717,9 +717,9 @@ namespace Phoenix {
 		Logger::info(LogLevel::low, "  Running Exec Sections...");
 		{
 			PX_PROFILE_SCOPE("ExecSections");
-			for (i = 0; i < m_sectionManager.execSection.size(); i++) {
-				sec_id = m_sectionManager.execSection[i].second;	// The second value is the ID of the section
-				ds = m_sectionManager.section[sec_id];
+			for (i = 0; i < m_sectionManager.m_execSection.size(); i++) {
+				sec_id = m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
+				ds = m_sectionManager.m_section[sec_id];
 				ds->runTime = m_demoRunTime - ds->startTime;
 				ds->exec();			// Exec the Section
 				Logger::info(LogLevel::low, "  Section %d [layer: %d id: %s type: %s] executed", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());

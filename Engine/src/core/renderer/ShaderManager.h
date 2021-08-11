@@ -5,28 +5,27 @@
 
 #include "core/renderer/Shader.h"
 
-#include <memory>
-
 namespace Phoenix {
 
-	class ShaderManager final {
+	class ShaderManager final
+	{
+		friend class demokernel;
 
 	public:
-		ShaderManager();
 		~ShaderManager();
 
 	public:
-		std::shared_ptr<Shader> addShader(
-			std::string_view filepath,
-			std::vector<std::string> const& feedbackVaryings = {}
+		SP_Shader addShader(
+			std::string_view path,
+			const std::unordered_set<std::string>& feedbackVaryings = {}
 		);
 		void unbindShaders();
 		void clear();
 
-	public:
-		std::vector<SP_Shader> shader; // Shader list
+	private:
+		std::vector<SP_Shader> m_shader; // Shader list
 		// Force shader loading each time we add a shader (should be enabled when working on slave mode)
-		bool forceLoad;
+		bool m_forceLoad = false;
 	};
 
 }

@@ -282,7 +282,7 @@ namespace Phoenix {
 				sec_id = DEMO->m_sectionManager.addSection(sec_type, "File: " + m_filepath, true);
 				if (sec_id != -1) {
 					Logger::info(LogLevel::low, "  Section %s added!", sec_type.c_str());
-					new_sec = DEMO->m_sectionManager.section[sec_id];
+					new_sec = DEMO->m_sectionManager.m_section[sec_id];
 				}
 				else {
 					Logger::error("Section %s not supported! File skipped", sec_type.c_str());

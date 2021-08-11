@@ -6,13 +6,6 @@
 
 namespace Phoenix {
 
-	// Init vars
-	ShaderManager::ShaderManager()
-	{
-		shader.clear();
-		forceLoad = false;
-	}
-
 	ShaderManager::~ShaderManager()
 	{
 		clear();
@@ -20,8 +13,8 @@ namespace Phoenix {
 
 	// Adds a Texture into the queue, returns the ID of the texture added
 	SP_Shader ShaderManager::addShader(
-		std::string_view filepath,
-		std::vector<std::string> const& feedbackVaryings
+		std::string_view path,
+		std::unordered_set<std::string> const& feedbackVaryings
 	)
 	{
 		bool loaded = false;
@@ -29,9 +22,9 @@ namespace Phoenix {
 		SP_Shader spShader;
 
 		// check if shader is already loaded, then we just return the ID of our shader
-		for (int i = 0; i < shader.size(); i++) {
-			spShader = shader[i];
-			if (spShader->getURI() == filepath) {
+		for (int i = 0; i < m_shader.size(); i++) {
+			spShader = m_shader[i];
+			if (spShader->getURI() == path) {
 				shad_id = i;
 				loaded = true; // Shader is already loaded
 			}
@@ -41,18 +34,18 @@ namespace Phoenix {
 
 		if (!loaded) { // If the shader does not exist, we need to load it for the first time
 			spNewShader = std::make_shared<Shader>();
-			loaded = spNewShader->load(filepath, feedbackVaryings);
+			loaded = spNewShader->load(path, feedbackVaryings);
 			if (loaded) {
-				shader.push_back(spNewShader);
-				shad_id = static_cast<int>(shader.size()) - 1;
+				m_shader.push_back(spNewShader);
+				shad_id = static_cast<int>(m_shader.size()) - 1;
 			}
 		}
 		else {
 			// If the shader is catched we should not do anything, unless we have been told to
 			// upload it again
-			if (forceLoad) {
-				spNewShader = shader[shad_id];
-				loaded = spNewShader->load(filepath, feedbackVaryings);
+			if (m_forceLoad) {
+				spNewShader = m_shader[shad_id];
+				loaded = spNewShader->load(path, feedbackVaryings);
 			}
 			else {
 				spNewShader = spShader;
@@ -66,13 +59,13 @@ namespace Phoenix {
 				"Shader loaded OK [id: %d, gl_id: %d] file: %s",
 				shad_id,
 				spNewShader->getId(),
-				filepath.data()
+				path.data()
 			);
-			return shader[shad_id];
+			return m_shader[shad_id];
 		}
 
 		else {
-			Logger::error("Could not load shader: %s", filepath.data());
+			Logger::error("Could not load shader: %s", path.data());
 			return nullptr;
 		}
 	}
@@ -84,6 +77,6 @@ namespace Phoenix {
 
 	void ShaderManager::clear()
 	{
-		shader.clear();
+		m_shader.clear();
 	}
 }
