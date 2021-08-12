@@ -18,21 +18,21 @@ namespace Phoenix {
 	enum class ShaderDataType : uint32_t
 	{
 		None = 0,
-		Float = 2,
-		Float2 = 3,
-		Float3 = 4,
-		Float4 = 5,
-		Mat3 = 6,
-		Mat4 = 7,
-		Int = 8,
-		Int2 =9,
-		Int3 = 10,
-		Int4 = 11,
-		UInt = 12,
-		UInt2 = 13,
-		UInt3 = 14,
-		UInt4 = 15,
-		Bool = 16
+		Float = 1,
+		Float2 = 2,
+		Float3 = 3,
+		Float4 = 4,
+		Mat3 = 5,
+		Mat4 = 6,
+		Int = 7,
+		Int2 =8,
+		Int3 = 9,
+		Int4 = 10,
+		UInt = 11,
+		UInt2 = 12,
+		UInt3 = 13,
+		UInt4 = 14,
+		Bool = 15
 	};
 
 	struct ShaderDataTypeTable final {

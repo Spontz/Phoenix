@@ -4,7 +4,7 @@
 
 namespace Phoenix {
 
-	class sDrawImage final : public Section {
+	struct sDrawImage : public Section {
 	public:
 		sDrawImage();
 		bool		load();
@@ -29,7 +29,7 @@ namespace Phoenix {
 		SP_Shader m_pShader;
 		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
 		ShaderVars* m_pVars = nullptr;	// For storing any other shader variables
-	} drawImage_section;
+	};
 
 	// ******************************************************************
 

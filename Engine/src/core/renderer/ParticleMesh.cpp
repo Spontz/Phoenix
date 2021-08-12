@@ -6,7 +6,7 @@
 
 namespace Phoenix {
 
-	ParticleMesh::ParticleMesh(int numParticles) :
+	ParticleMesh::ParticleMesh(uint32_t numParticles) :
 		m_numParticles(numParticles),
 		m_particles(nullptr),
 		m_VertexArray(nullptr)
@@ -31,7 +31,7 @@ namespace Phoenix {
 		m_VertexArray = new VertexArray();
 
 		// Create & Load the Vertex Buffer
-		auto pVB = std::make_shared<VertexBuffer>(&m_particles[0], m_numParticles * sizeof(Particle));
+		auto pVB = std::make_shared<VertexBuffer>(&m_particles[0], m_numParticles * uint32_t(sizeof(Particle)));
 		pVB->SetLayout({
 			{ ShaderDataType::Float3,	"aPos"},
 			{ ShaderDataType::Float4,	"aColor"}
@@ -46,7 +46,7 @@ namespace Phoenix {
 	void ParticleMesh::initialize_particles(std::vector<Particle> Part)
 	{
 		if (Part.empty()) {
-			for (int i = 0; i < m_numParticles; i++)
+			for (uint32_t i = 0; i < m_numParticles; i++)
 			{
 				m_particles[i].Pos = glm::vec3(0.0f);
 				m_particles[i].Col = glm::vec4(0.0f);
@@ -56,7 +56,7 @@ namespace Phoenix {
 			if (Part.size() != m_numParticles)
 				Logger::error("ParticleMesh: The number of positions does not match the number of particles!");
 			else {
-				for (int i = 0; i < m_numParticles; i++)
+				for (uint32_t i = 0; i < m_numParticles; i++)
 				{
 					m_particles[i] = Part[i];
 				}

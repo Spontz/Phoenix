@@ -5,7 +5,7 @@
 
 namespace Phoenix {
 
-	class sDrawParticlesImage final : public Section {
+	struct sDrawParticlesImage : public Section {
 	public:
 		sDrawParticlesImage();
 		bool		load();
