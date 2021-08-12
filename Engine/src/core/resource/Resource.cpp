@@ -312,7 +312,7 @@ namespace Phoenix {
 		m_pGrid = std::make_shared<VertexArray>();
 
 		// Create & Load the Vertex Buffer
-		auto spVB = std::make_shared<VertexBuffer>(&vertices[0], static_cast<uint32_t>(sizeof(glm::vec3) * vertices.size()));
+		auto spVB = std::make_shared<VertexBuffer>(&vertices[0], static_cast<uint32_t>(sizeof(glm::vec3) * static_cast<uint32_t>(vertices.size())));
 		spVB->SetLayout({
 			{ ShaderDataType::Float3,	"aPos"},
 			});
@@ -320,7 +320,7 @@ namespace Phoenix {
 		m_pGrid->AddVertexBuffer(spVB);
 
 		// Create & Load the Index Buffer :: Not really needed since the vertice are already sorted
-		auto spIB = std::make_shared<IndexBuffer>(indices.data(), indices.size());
+		auto spIB = std::make_shared<IndexBuffer>(indices.data(), static_cast<uint32_t>(indices.size()));
 		m_pGrid->SetIndexBuffer(spIB);
 
 		m_pGrid->Unbind();

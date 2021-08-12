@@ -31,7 +31,7 @@ namespace Phoenix {
 		m_VertexArray = new VertexArray();
 
 		// Create & Load the Vertex Buffer
-		auto pVB = std::make_shared<VertexBuffer>(&m_particles[0], m_numParticles * uint32_t(sizeof(Particle)));
+		auto pVB = std::make_shared<VertexBuffer>(&m_particles[0], m_numParticles * static_cast<uint32_t>(sizeof(Particle)));
 		pVB->SetLayout({
 			{ ShaderDataType::Float3,	"aPos"},
 			{ ShaderDataType::Float4,	"aColor"}
