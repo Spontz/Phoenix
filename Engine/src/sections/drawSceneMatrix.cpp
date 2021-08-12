@@ -4,13 +4,15 @@
 
 namespace Phoenix {
 
-	struct sDrawSceneMatrix : public Section {
+	class sDrawSceneMatrix final : public Section {
 	public:
 		sDrawSceneMatrix();
+		~sDrawSceneMatrix();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -27,7 +29,7 @@ namespace Phoenix {
 		glm::vec3	m_vMatrixObjTranslation = { 0, 0, 0 };		// Matrix object translation
 		glm::vec3	m_vMatrixObjRotation = { 0, 0, 0 };		// Matrix object rotation
 		glm::vec3	m_vMatrixObjScale = { 1, 1, 1 };		// Matrix object scale
-		glm::mat4* m_pMatrixObjModel = nullptr;			// Model matrix for each object
+		glm::mat4*	m_pMatrixObjModel = nullptr;			// Model matrix for each object
 
 		// Current object positioning
 		float		m_fCurrObjID = 0;			// Current object to draw
@@ -39,15 +41,15 @@ namespace Phoenix {
 
 
 		// Previous model, projection and view matrix, for being used in effects like motion blur
-		glm::mat4* m_pmPrevModel = nullptr;			// The model needs to be stored on a vector because we need to store the previous model matrix of each object
+		glm::mat4*	m_pmPrevModel = nullptr;			// The model needs to be stored on a vector because we need to store the previous model matrix of each object
 		glm::mat4	m_mPrevProjection = glm::mat4(1.0f);
 		glm::mat4	m_mPrevView = glm::mat4(1.0f);
 
-		SP_Model m_pModelRef;	// Matrix model to be use to store positions
-		SP_Model m_pModel;	// Model to draw
-		SP_Shader m_pShader;
-		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
-		ShaderVars* m_pVars = nullptr;	// For storing any other shader variables
+		SP_Model	m_pModelRef;	// Matrix model to be use to store positions
+		SP_Model	m_pModel;		// Model to draw
+		SP_Shader	m_pShader;
+		MathDriver* m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
+		ShaderVars* m_pVars = nullptr;			// For storing any other shader variables
 	};
 
 	// ******************************************************************
@@ -62,6 +64,19 @@ namespace Phoenix {
 		type = SectionType::DrawSceneMatrix;
 	}
 
+	sDrawSceneMatrix::~sDrawSceneMatrix()
+	{
+		// Delete matrices
+		if (m_pmPrevModel)
+			delete[] m_pmPrevModel;
+		if (m_pMatrixObjModel)
+			delete[] m_pMatrixObjModel;
+
+		if (m_pExprPosition)
+			delete m_pExprPosition;
+		if (m_pVars)
+			delete m_pVars;
+	}
 
 	bool sDrawSceneMatrix::load()
 	{
@@ -250,18 +265,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sDrawSceneMatrix::destroy()
-	{
-		// We should not destroy anything here because section can be reused or re-executed
-		// Free Mem
-		/*
-		if (m_pMatrixObjModel)
-			delete[] m_pMatrixObjModel;
-		if (m_pmPrevModel)
-			delete[] m_pmPrevModel;
-		*/
 	}
 
 	void sDrawSceneMatrix::loadDebugStatic()

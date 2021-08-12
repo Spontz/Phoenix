@@ -10,7 +10,7 @@ namespace Phoenix {
 	class SectionManager final {
 		friend class demokernel;
 		friend class imGuiDriver; // hack
-		friend struct sLoading; // hack
+		friend class sLoading; // hack
 		friend class SpoReader; // hack
 
 	public:

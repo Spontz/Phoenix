@@ -4,7 +4,7 @@
 
 namespace Phoenix {
 
-	struct sCameraFPS : public Section {
+	class sCameraFPS final : public Section {
 
 	// Defines the camera mode
 	enum class CameraMode : int {
@@ -16,10 +16,12 @@ namespace Phoenix {
 
 	public:
 		sCameraFPS();
+		~sCameraFPS();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -48,7 +50,7 @@ namespace Phoenix {
 		float		m_fCamFinalFrustumFar = CameraProjectionFPS::DEFAULT_CAM_FAR;
 
 
-		MathDriver* m_pExprCamera = nullptr;	// A equation containing the calculations of the camera
+		MathDriver* m_pExprCamera = nullptr;	// An equation containing the calculations of the camera
 	};
 
 	// ******************************************************************
@@ -58,10 +60,17 @@ namespace Phoenix {
 		return new sCameraFPS();
 	}
 
-
 	sCameraFPS::sCameraFPS()
 	{
 		type = SectionType::CameraFPS;
+	}
+
+	sCameraFPS::~sCameraFPS()
+	{
+		if (m_pExprCamera)
+			delete m_pExprCamera;
+		if (m_pCam)
+			delete m_pCam;
 	}
 
 	bool sCameraFPS::load()
@@ -218,10 +227,6 @@ namespace Phoenix {
 		m_pCam->setFrustum(m_fCamFinalFrustumNear, m_fCamFinalFrustumFar);
 
 		DEMO->m_pActiveCamera = m_pCam;
-	}
-
-	void sCameraFPS::destroy()
-	{
 	}
 
 	void sCameraFPS::loadDebugStatic()

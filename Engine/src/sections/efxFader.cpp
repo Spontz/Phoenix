@@ -3,19 +3,21 @@
 
 namespace Phoenix {
 
-	struct sEfxFader : public Section {
+	class sEfxFader final : public Section {
 	public:
 		sEfxFader();
+		~sEfxFader();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
 	private:
 		SP_Shader	m_pShader;			// Fader Shader to apply
-		ShaderVars*	p_Vars = nullptr;	// Shader variables
+		ShaderVars* m_pVars = nullptr;	// Shader variables
 	};
 
 	// ******************************************************************
@@ -30,6 +32,11 @@ namespace Phoenix {
 		type = SectionType::EfxFader;
 	}
 
+	sEfxFader::~sEfxFader()
+	{
+		if (m_pVars)
+			delete m_pVars;
+	}
 
 	bool sEfxFader::load()
 	{
@@ -49,14 +56,14 @@ namespace Phoenix {
 
 		// Configure Fader shader
 		m_pShader->use();
-		p_Vars = new ShaderVars(this, m_pShader);
+		m_pVars = new ShaderVars(this, m_pShader);
 		// Read the shader variables
 		for (int i = 0; i < uniform.size(); i++) {
-			p_Vars->ReadString(uniform[i].c_str());
+			m_pVars->ReadString(uniform[i].c_str());
 		}
 
 		// Set shader variables values
-		p_Vars->setValues();
+		m_pVars->setValues();
 
 		return true;
 	}
@@ -74,18 +81,13 @@ namespace Phoenix {
 		{
 			m_pShader->use();
 			// Set shader variables values
-			p_Vars->setValues();
+			m_pVars->setValues();
 			// Render scene
 			m_demo.m_pRes->Draw_QuadFS();
 		}
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sEfxFader::destroy()
-	{
-
 	}
 
 	void sEfxFader::loadDebugStatic()

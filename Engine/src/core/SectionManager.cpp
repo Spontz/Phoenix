@@ -215,7 +215,6 @@ namespace Phoenix {
 			ds = getSection(ids[i]);
 			ds_number = getSectionPosition(ids[i]);
 			if (ds) {
-				ds->destroy();
 				this->m_section.erase(this->m_section.begin() + ds_number);
 				//Logger::sendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 			}
@@ -318,13 +317,10 @@ namespace Phoenix {
 
 	void SectionManager::clear()
 	{
-		Logger::info(LogLevel::med, "SectionManager::clear()");
-		Logger::info(LogLevel::low, "{");
 		for (auto const& pSection : m_section) {
-			Logger::info(LogLevel::low, "Deleting %s...", pSection->identifier.c_str());
+			Logger::info(LogLevel::low, "Deleting section: %s...", pSection->identifier.c_str());
 			delete pSection;
 		}
-		Logger::info(LogLevel::low, "}");
 
 		m_section.clear();
 		m_loadSection.clear();

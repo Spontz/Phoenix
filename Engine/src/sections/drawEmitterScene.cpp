@@ -6,13 +6,14 @@
 
 namespace Phoenix {
 
-	struct sDrawEmitterScene : public Section {
+	class sDrawEmitterScene final : public Section {
 	public:
 		sDrawEmitterScene();
+		~sDrawEmitterScene();
+
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -37,7 +38,7 @@ namespace Phoenix {
 		glm::vec3		m_vVelocity = { 0, 0, 0 };
 		glm::vec3		m_vForce = { 0, 0, 0 };
 		glm::vec3		m_vColor = { 0, 0, 0 };
-		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
+		MathDriver*		m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
 
 	};
 
@@ -51,6 +52,14 @@ namespace Phoenix {
 	sDrawEmitterScene::sDrawEmitterScene()
 	{
 		type = SectionType::DrawEmitterScene;
+	}
+
+	sDrawEmitterScene::~sDrawEmitterScene()
+	{
+		if (m_pExprPosition)
+			delete m_pExprPosition;
+		if (m_pPartSystem)
+			delete m_pPartSystem;
 	}
 
 	static float RandomFloat()
@@ -212,10 +221,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sDrawEmitterScene::destroy()
-	{
 	}
 
 	void sDrawEmitterScene::loadDebugStatic()

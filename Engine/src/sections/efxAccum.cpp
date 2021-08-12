@@ -8,12 +8,12 @@ namespace Phoenix {
 	{
 	public:
 		sEfxAccum();
+		~sEfxAccum();
 
 	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -39,6 +39,13 @@ namespace Phoenix {
 		type = SectionType::EfxAccum;
 	}
 
+	sEfxAccum::~sEfxAccum()
+	{
+		if (m_pExprAccum)
+			delete m_pExprAccum;
+		if (m_pVars)
+			delete m_pVars;
+	}
 
 	bool sEfxAccum::load()
 	{
@@ -159,11 +166,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sEfxAccum::destroy()
-	{
-
 	}
 
 	void sEfxAccum::loadDebugStatic()

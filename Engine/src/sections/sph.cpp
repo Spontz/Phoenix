@@ -112,10 +112,4 @@ namespace Phoenix {
 			}
 		}
 	}
-
-	void destroy() {
-
-	}
-
-
 }

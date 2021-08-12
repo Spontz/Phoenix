@@ -3,19 +3,21 @@
 
 namespace Phoenix {
 
-	struct sDrawQuad : public Section {
+	class sDrawQuad final : public Section {
 	public:
 		sDrawQuad();
+		~sDrawQuad();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
 	private:
 		SP_Shader		m_pShader;	// Shader to apply
-		ShaderVars*	m_pVars = nullptr;	// Shader variables
+		ShaderVars*		m_pVars = nullptr;	// Shader variables
 	};
 
 	// ******************************************************************
@@ -30,6 +32,11 @@ namespace Phoenix {
 		type = SectionType::DrawQuad;
 	}
 
+	sDrawQuad::~sDrawQuad()
+	{
+		if (m_pVars)
+			delete m_pVars;
+	}
 
 	bool sDrawQuad::load()
 	{
@@ -82,11 +89,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sDrawQuad::destroy()
-	{
-
 	}
 
 	void sDrawQuad::loadDebugStatic()

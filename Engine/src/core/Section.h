@@ -55,10 +55,9 @@ namespace Phoenix {
 		virtual std::string debug(); // get a debug string. TODO: const function
 
 	private:
-		virtual bool load(); // load data from disk
-		virtual void init(); // set up local variables before execution
-		virtual void exec(); // execute section (normally, render)
-		virtual void destroy(); // destroy allocated memory
+		virtual bool load();			// load section data
+		virtual void init();			// set up local variables before execution
+		virtual void exec();			// execute section (normally, render)
 		virtual void loadDebugStatic(); // load the debug static string
 
 	public:

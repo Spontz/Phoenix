@@ -4,7 +4,7 @@
 
 namespace Phoenix {
 
-	struct sCameraTarget : public Section {
+	class sCameraTarget final : public Section {
 
 	// Defines the camera mode
 	enum class CameraMode : int {
@@ -16,10 +16,12 @@ namespace Phoenix {
 
 	public:
 		sCameraTarget();
+		~sCameraTarget();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -48,7 +50,7 @@ namespace Phoenix {
 		float		m_fCamFinalFrustumNear = CameraProjectionTarget::DEFAULT_CAM_NEAR;
 		float		m_fCamFinalFrustumFar = CameraProjectionTarget::DEFAULT_CAM_FAR;
 
-		MathDriver* m_pExprCamera = nullptr;	// A equation containing the calculations of the camera
+		MathDriver* m_pExprCamera = nullptr;	// An equation containing the calculations of the camera
 	};
 
 	// ******************************************************************
@@ -58,10 +60,17 @@ namespace Phoenix {
 		return new sCameraTarget();
 	}
 
-
 	sCameraTarget::sCameraTarget()
 	{
 		type = SectionType::CameraTarget;
+	}
+
+	sCameraTarget::~sCameraTarget()
+	{
+		if (m_pExprCamera)
+			delete m_pExprCamera;
+		if (m_pCam)
+			delete m_pCam;
 	}
 
 	bool sCameraTarget::load()
@@ -218,10 +227,6 @@ namespace Phoenix {
 		m_pCam->setFrustum(m_fCamFinalFrustumNear, m_fCamFinalFrustumFar);
 
 		DEMO->m_pActiveCamera = m_pCam;
-	}
-
-	void sCameraTarget::destroy()
-	{
 	}
 
 	void sCameraTarget::loadDebugStatic()

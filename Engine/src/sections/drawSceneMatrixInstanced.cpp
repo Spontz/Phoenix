@@ -5,13 +5,15 @@
 
 namespace Phoenix {
 
-	struct sDrawSceneMatrixInstanced : public Section {
+	class sDrawSceneMatrixInstanced final : public Section {
 	public:
 		sDrawSceneMatrixInstanced();
+		~sDrawSceneMatrixInstanced();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -39,14 +41,14 @@ namespace Phoenix {
 
 
 		// Previous model, projection and view matrix, for being used in effects like motion blur
-		glm::mat4		m_mPrevProjection = glm::mat4(1.0f);
-		glm::mat4		m_mPrevView = glm::mat4(1.0f);
+		glm::mat4	m_mPrevProjection = glm::mat4(1.0f);
+		glm::mat4	m_mPrevView = glm::mat4(1.0f);
 
-		SP_Model m_pModelRef;	// Reference model to be use to store positions
-		ModelInstance* m_pModel = nullptr;	// Model to draw instanced
-		SP_Shader m_pShader;
-		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
-		ShaderVars* m_pVars = nullptr;	// For storing any other shader variables
+		SP_Model		m_pModelRef;		// Reference model to be use to store positions
+		ModelInstance*	m_pModel = nullptr;	// Model to draw instanced
+		SP_Shader		m_pShader;
+		MathDriver*		m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
+		ShaderVars*		m_pVars = nullptr;			// For storing any other shader variables
 	};
 
 	// TODO:
@@ -63,6 +65,16 @@ namespace Phoenix {
 	sDrawSceneMatrixInstanced::sDrawSceneMatrixInstanced()
 	{
 		type = SectionType::DrawSceneMatrixInstanced;
+	}
+
+	sDrawSceneMatrixInstanced::~sDrawSceneMatrixInstanced()
+	{
+		if (m_pExprPosition)
+			delete m_pExprPosition;
+		if (m_pVars)
+			delete m_pVars;
+		if (m_pModel)
+			delete m_pModel;	// TODO: Cambiar a Shared pointer??
 	}
 
 	bool sDrawSceneMatrixInstanced::load()
@@ -250,10 +262,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sDrawSceneMatrixInstanced::destroy()
-	{
 	}
 
 	void sDrawSceneMatrixInstanced::loadDebugStatic()

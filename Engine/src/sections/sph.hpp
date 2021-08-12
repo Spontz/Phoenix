@@ -39,7 +39,6 @@ namespace Phoenix {
 		void exec();
 		void Draw();
 		void Simulate();
-		void destroy();
 
 	private:
 		static constexpr real	kSimFreqHz = 60; // hz

@@ -5,13 +5,15 @@
 
 namespace Phoenix {
 
-	struct sDrawEmitters : public Section {
+	class sDrawEmitters final : public Section {
 	public:
 		sDrawEmitters();
+		~sDrawEmitters();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -36,7 +38,7 @@ namespace Phoenix {
 		glm::vec3		m_vVelocity = { 0, 0, 0 };
 		glm::vec3		m_vForce = { 0, 0, 0 };
 		glm::vec3		m_vColor = { 0, 0, 0 };
-		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
+		MathDriver*		m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
 	};
 
 	// TODO: This section needs to be reworked, we should remove the model, and position the emitters by code
@@ -50,6 +52,14 @@ namespace Phoenix {
 	sDrawEmitters::sDrawEmitters()
 	{
 		type = SectionType::DrawEmitters;
+	}
+
+	sDrawEmitters::~sDrawEmitters()
+	{
+		if (m_pExprPosition)
+			delete m_pExprPosition;
+		if (m_pPartSystem)
+			delete m_pPartSystem;
 	}
 
 	static float RandomFloat()
@@ -180,7 +190,6 @@ namespace Phoenix {
 	{
 	}
 
-
 	static float lastTime = 0;
 
 	void sDrawEmitters::exec()
@@ -219,10 +228,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sDrawEmitters::destroy()
-	{
 	}
 
 	void sDrawEmitters::loadDebugStatic()

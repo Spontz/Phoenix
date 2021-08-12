@@ -1,18 +1,20 @@
 #include "main.h"
 
 namespace Phoenix {
-	struct sFboUnbind : public Section {
+	class sFboUnbind final : public Section {
 	public:
 		sFboUnbind();
+		~sFboUnbind();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
 	private:
-	} fbounbind_section;
+	};
 
 	// ******************************************************************
 
@@ -24,6 +26,10 @@ namespace Phoenix {
 	sFboUnbind::sFboUnbind()
 	{
 		type = SectionType::FboUnbind;
+	}
+
+	sFboUnbind::~sFboUnbind()
+	{
 	}
 
 	bool sFboUnbind::load()
@@ -49,11 +55,6 @@ namespace Phoenix {
 	{
 		// Unbind the fbo
 		m_demo.m_fboManager.unbind(render_clearColor, render_clearDepth);
-	}
-
-	void sFboUnbind::destroy()
-	{
-
 	}
 
 	void sFboUnbind::loadDebugStatic()

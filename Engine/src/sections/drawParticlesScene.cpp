@@ -5,14 +5,15 @@
 
 namespace Phoenix {
 
-	struct sDrawParticlesScene : public Section {
+	class sDrawParticlesScene final : public Section {
 	public:
 		sDrawParticlesScene();
 		~sDrawParticlesScene();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -30,8 +31,8 @@ namespace Phoenix {
 		glm::vec3		m_vRotation = { 0, 0, 0 };
 		glm::vec3		m_vScale = { 1, 1, 1 };
 
-		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
-		ShaderVars* m_pVars = nullptr;	// For storing any other shader variables
+		MathDriver*		m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
+		ShaderVars*		m_pVars = nullptr;			// For storing any other shader variables
 	};
 
 	// ******************************************************************
@@ -48,7 +49,12 @@ namespace Phoenix {
 
 	sDrawParticlesScene::~sDrawParticlesScene()
 	{
-		m_pParticleMesh->shutdown();
+		if (m_pExprPosition)
+			delete m_pExprPosition;
+		if (m_pVars)
+			delete m_pVars;
+		if (m_pParticleMesh)
+			delete m_pParticleMesh;
 	}
 
 	bool sDrawParticlesScene::load()
@@ -184,10 +190,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sDrawParticlesScene::destroy()
-	{
 	}
 
 	void sDrawParticlesScene::loadDebugStatic()

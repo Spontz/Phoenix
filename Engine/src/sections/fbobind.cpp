@@ -2,13 +2,15 @@
 
 namespace Phoenix {
 
-	struct sFboBind : public Section {
+	class sFboBind final : public Section {
 	public:
 		sFboBind();
+		~sFboBind();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -26,6 +28,10 @@ namespace Phoenix {
 	sFboBind::sFboBind()
 	{
 		type = SectionType::FboBind;
+	}
+
+	sFboBind::~sFboBind()
+	{
 	}
 
 	bool sFboBind::load()
@@ -58,11 +64,6 @@ namespace Phoenix {
 	{
 		// Enable the buffer in which we are going to paint
 		m_demo.m_fboManager.bind(m_uiFboNum, render_clearColor, render_clearDepth);
-	}
-
-	void sFboBind::destroy()
-	{
-
 	}
 
 	void sFboBind::loadDebugStatic()

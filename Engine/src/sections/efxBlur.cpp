@@ -5,13 +5,15 @@
 
 namespace Phoenix {
 
-	struct sEfxBlur : public Section {
+	class sEfxBlur final : public Section {
 	public:
 		sEfxBlur();
+		~sEfxBlur();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -35,6 +37,13 @@ namespace Phoenix {
 		type = SectionType::EfxBlur;
 	}
 
+	sEfxBlur::~sEfxBlur()
+	{
+		if (m_pExprBlur)
+			delete m_pExprBlur;
+		if (m_pVars)
+			delete m_pVars;
+	}
 
 	bool sEfxBlur::load()
 	{
@@ -140,11 +149,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sEfxBlur::destroy()
-	{
-
 	}
 
 	void sEfxBlur::loadDebugStatic()

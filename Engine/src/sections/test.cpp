@@ -2,13 +2,15 @@
 #include "core/renderer/ShaderVars.h"
 
 namespace Phoenix {
-	struct sTest : public Section {
+	class sTest final : public Section {
 	public:
 		sTest();
+		~sTest();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		std::string debug();
 
 	private:
@@ -26,6 +28,9 @@ namespace Phoenix {
 		type = SectionType::Test;
 	}
 
+	sTest::~sTest() {
+	}
+
 	bool sTest::load() {
 		return true;
 	}
@@ -35,9 +40,6 @@ namespace Phoenix {
 
 	void sTest::exec() {
 
-	}
-
-	void sTest::destroy() {
 	}
 
 	std::string sTest::debug() {

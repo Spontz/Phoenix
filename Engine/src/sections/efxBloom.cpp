@@ -4,13 +4,15 @@
 
 namespace Phoenix {
 
-	struct sEfxBloom : public Section {
+	class sEfxBloom final : public Section {
 	public:
 		sEfxBloom();
+		~sEfxBloom();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -35,6 +37,13 @@ namespace Phoenix {
 		type = SectionType::EfxBloom;
 	}
 
+	sEfxBloom::~sEfxBloom()
+	{
+		if (m_pExprBloom)
+			delete m_pExprBloom;
+		if (m_pVars)
+			delete m_pVars;
+	}
 
 	bool sEfxBloom::load()
 	{
@@ -161,11 +170,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sEfxBloom::destroy()
-	{
-
 	}
 
 	void sEfxBloom::loadDebugStatic()

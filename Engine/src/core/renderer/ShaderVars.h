@@ -8,10 +8,6 @@
 
 namespace Phoenix {
 
-    static constexpr size_t MAXSIZE_VAR_NAME = 128; // Max size of a variable name
-    static constexpr size_t MAXSIZE_VAR_TYPE = 64;  // Max size of a variable type
-    static constexpr size_t MAXSIZE_VAR_EVAL = 512; // Max size of a variable equation
-
     struct varBase {
         std::string	name;
         GLint		loc = -1;

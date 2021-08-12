@@ -2,9 +2,11 @@
 
 namespace Phoenix {
 
-	struct sLoading : public Section {
+	class sLoading final : public Section {
 	public:
 		sLoading();
+		~sLoading();
+
 		bool		load();
 		void		init();
 		void		exec();
@@ -32,6 +34,10 @@ namespace Phoenix {
 	sLoading::sLoading()
 	{
 		type = SectionType::Loading;
+	}
+
+	sLoading::~sLoading()
+	{
 	}
 
 	bool sLoading::load()

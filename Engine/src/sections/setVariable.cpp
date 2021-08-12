@@ -3,13 +3,15 @@
 
 namespace Phoenix {
 
-	struct sSetVariable : public Section {
+	class sSetVariable final : public Section {
 	public:
 		sSetVariable();
+		~sSetVariable();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -29,6 +31,11 @@ namespace Phoenix {
 		type = SectionType::SetVariable;
 	}
 
+	sSetVariable::~sSetVariable()
+	{
+		if (m_pExpr)
+			delete m_pExpr;
+	}
 
 	bool sSetVariable::load()
 	{
@@ -53,10 +60,6 @@ namespace Phoenix {
 	{
 		// Evaluate the expression
 		m_pExpr->Expression.value();
-	}
-
-	void sSetVariable::destroy()
-	{
 	}
 
 	void sSetVariable::loadDebugStatic()

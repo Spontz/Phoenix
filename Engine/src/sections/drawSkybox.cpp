@@ -4,13 +4,15 @@
 
 namespace Phoenix {
 
-	struct sDrawSkybox : public Section {
+	class sDrawSkybox final : public Section {
 	public:
 		sDrawSkybox();
+		~sDrawSkybox();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -33,6 +35,12 @@ namespace Phoenix {
 	sDrawSkybox::sDrawSkybox()
 	{
 		type = SectionType::DrawSkybox;
+	}
+
+	sDrawSkybox::~sDrawSkybox()
+	{
+		if (m_pExprPosition)
+			delete m_pExprPosition;
 	}
 
 	bool sDrawSkybox::load()
@@ -119,11 +127,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sDrawSkybox::destroy()
-	{
-
 	}
 
 	void sDrawSkybox::loadDebugStatic()

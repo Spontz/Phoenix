@@ -6,12 +6,12 @@ namespace Phoenix {
 	class sEfxMotionBlur final : public Section {
 	public:
 		sEfxMotionBlur();
+		~sEfxMotionBlur();
 
 	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -34,6 +34,12 @@ namespace Phoenix {
 	sEfxMotionBlur::sEfxMotionBlur()
 	{
 		type = SectionType::EfxMotionBlur;
+	}
+
+	sEfxMotionBlur::~sEfxMotionBlur()
+	{
+		if (m_pVars)
+			delete m_pVars;
 	}
 
 	bool sEfxMotionBlur::load()
@@ -102,10 +108,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sEfxMotionBlur::destroy()
-	{
 	}
 
 	void sEfxMotionBlur::loadDebugStatic()

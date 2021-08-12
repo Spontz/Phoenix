@@ -4,19 +4,15 @@
 
 namespace Phoenix {
 
-	struct sDrawScene : public Section {
+	class sDrawScene final : public Section {
 	public:
 		sDrawScene();
-		~sDrawScene() {
-			delete m_pExprPosition;
-			delete m_pVars;
-		}
+		~sDrawScene();
 
 	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -40,8 +36,8 @@ namespace Phoenix {
 		glm::mat4	m_mPrevProjection = glm::mat4(1.0f);
 		glm::mat4	m_mPrevView = glm::mat4(1.0f);
 
-		SP_Model m_pModel;
-		SP_Shader m_pShader;
+		SP_Model	m_pModel;
+		SP_Shader	m_pShader;
 		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
 		ShaderVars* m_pVars = nullptr;	// For storing any other shader variables
 	};
@@ -55,6 +51,14 @@ namespace Phoenix {
 	sDrawScene::sDrawScene()
 	{
 		type = SectionType::DrawScene;
+	}
+
+	sDrawScene::~sDrawScene()
+	{
+		if (m_pExprPosition)
+			delete m_pExprPosition;
+		if (m_pVars)
+			delete m_pVars;
 	}
 
 	bool sDrawScene::load() {
@@ -205,10 +209,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sDrawScene::destroy() {
-
 	}
 
 	void sDrawScene::loadDebugStatic() {

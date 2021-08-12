@@ -96,7 +96,6 @@ namespace Phoenix {
 	bool		Section::load() { return true; };
 	void		Section::init() {};
 	void		Section::exec() {};
-	void		Section::destroy() {};
 	void		Section::loadDebugStatic() {};
 	std::string	Section::debug() { return {}; };
 }

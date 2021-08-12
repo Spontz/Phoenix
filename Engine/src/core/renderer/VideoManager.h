@@ -18,7 +18,7 @@ namespace Phoenix {
 
 	public:
 		// Returns a video (and loads it if required)
-		Video*	addVideo(CVideoSource const& videoDesc, bool ForceReload);
+		Video*	addVideo(CVideoSource const& videoDesc, bool ForceReload); // TODO: Change the video to shared pointer, as we do for Textures, models, etc...
 		void	clear();
 
 	private:

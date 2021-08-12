@@ -4,13 +4,15 @@
 
 namespace Phoenix {
 
-	struct sDrawImage : public Section {
+	class sDrawImage final : public Section {
 	public:
 		sDrawImage();
+		~sDrawImage();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -25,10 +27,10 @@ namespace Phoenix {
 
 		float		m_fTexAspectRatio = 1.0f;
 		float		m_fRenderAspectRatio = 1.0f;
-		SP_Texture m_pTexture;
-		SP_Shader m_pShader;
-		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
-		ShaderVars* m_pVars = nullptr;	// For storing any other shader variables
+		SP_Texture	m_pTexture;
+		SP_Shader	m_pShader;
+		MathDriver* m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
+		ShaderVars* m_pVars = nullptr;			// For storing any other shader variables
 	};
 
 	// ******************************************************************
@@ -43,6 +45,13 @@ namespace Phoenix {
 		type = SectionType::DrawImage;
 	}
 
+	sDrawImage::~sDrawImage()
+	{
+		if (m_pExprPosition)
+			delete m_pExprPosition;
+		if (m_pVars)
+			delete m_pVars;
+	}
 
 	bool sDrawImage::load()
 	{
@@ -201,11 +210,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sDrawImage::destroy()
-	{
-
 	}
 
 	void sDrawImage::loadDebugStatic()

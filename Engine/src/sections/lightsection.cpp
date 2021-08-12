@@ -3,13 +3,15 @@
 
 namespace Phoenix {
 
-	struct sLight : public Section {
+	class sLight final : public Section {
 	public:
 		sLight();
+		~sLight();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -37,6 +39,11 @@ namespace Phoenix {
 		type = SectionType::LightSec;
 	}
 
+	sLight::~sLight()
+	{
+		if (m_pExprLight)
+			delete m_pExprLight;
+	}
 
 	std::string& replaceString(std::string& subj, std::string_view const& old_str, std::string_view const& new_str)
 	{
@@ -119,10 +126,6 @@ namespace Phoenix {
 		if (m_bDrawLight) {
 			my_light->draw(m_fDrawLightSize);
 		}
-	}
-
-	void sLight::destroy()
-	{
 	}
 
 	void sLight::loadDebugStatic()

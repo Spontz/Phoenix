@@ -639,9 +639,6 @@ namespace Phoenix {
 		}
 
 		Logger::info(LogLevel::med, "Loading complete, %d sections have been loaded", m_iLoadedSections);
-
-		// End loading
-		ds_loading->destroy();
 	}
 
 	void demokernel::reInitSectionQueues() {

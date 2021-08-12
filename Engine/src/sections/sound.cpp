@@ -6,13 +6,15 @@
 namespace Phoenix {
 #define BUFFER_SAMPLES	512
 
-	struct sSound : public Section {
+	class sSound final : public Section {
 	public:
 		sSound();
+		~sSound();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -41,6 +43,17 @@ namespace Phoenix {
 	sSound::sSound()
 	{
 		type = SectionType::Sound;
+	}
+
+	sSound::~sSound()
+	{
+		if (!m_demo.m_sound)
+			return;
+
+		if (!BASS_ChannelStop(m_hMusicStream))
+			Logger::error("Sound [%s]: BASS_ChannelStop returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
+		if (!BASS_StreamFree(m_hMusicStream))
+			Logger::error("Sound [%s]: Music couldnt be freed: %i", identifier.c_str(), BASS_ErrorGetCode());
 	}
 
 	bool sSound::load() {
@@ -189,16 +202,6 @@ namespace Phoenix {
 			}
 			m_fEnergy[BUFFER_SAMPLES - 1] = instant;
 		}
-	}
-
-	void sSound::destroy() {
-		if (!m_demo.m_sound)
-			return;
-
-		if (!BASS_ChannelStop(m_hMusicStream))
-			Logger::error("Sound [%s]: BASS_ChannelStop returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
-		if (!BASS_StreamFree(m_hMusicStream))
-			Logger::error("Sound [%s]: Music couldnt be freed: %i", identifier.c_str(), BASS_ErrorGetCode());
 	}
 
 	void sSound::loadDebugStatic()

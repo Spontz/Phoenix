@@ -2,13 +2,15 @@
 
 namespace Phoenix {
 
-	struct sDrawFbo : public Section {
+	class sDrawFbo final : public Section {
 	public:
 		sDrawFbo();
+		~sDrawFbo();
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
-		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -30,6 +32,10 @@ namespace Phoenix {
 	sDrawFbo::sDrawFbo()
 	{
 		type = SectionType::DrawFbo;
+	}
+
+	sDrawFbo::~sDrawFbo()
+	{
 	}
 
 	bool sDrawFbo::load()
@@ -81,11 +87,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-	}
-
-	void sDrawFbo::destroy()
-	{
-
 	}
 
 	void sDrawFbo::loadDebugStatic()
