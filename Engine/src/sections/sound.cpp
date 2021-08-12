@@ -12,7 +12,7 @@ namespace Phoenix {
 		bool		load();
 		void		init();
 		void		exec();
-		void		end();
+		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -191,7 +191,7 @@ namespace Phoenix {
 		}
 	}
 
-	void sSound::end() {
+	void sSound::destroy() {
 		if (!m_demo.m_sound)
 			return;
 

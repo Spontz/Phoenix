@@ -215,7 +215,7 @@ namespace Phoenix {
 			ds = getSection(ids[i]);
 			ds_number = getSectionPosition(ids[i]);
 			if (ds) {
-				ds->end();
+				ds->destroy();
 				this->m_section.erase(this->m_section.begin() + ds_number);
 				//Logger::sendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 			}

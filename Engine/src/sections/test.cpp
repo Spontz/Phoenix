@@ -8,7 +8,7 @@ namespace Phoenix {
 		bool		load();
 		void		init();
 		void		exec();
-		void		end();
+		void		destroy();
 		std::string debug();
 
 	private:
@@ -37,7 +37,7 @@ namespace Phoenix {
 
 	}
 
-	void sTest::end() {
+	void sTest::destroy() {
 	}
 
 	std::string sTest::debug() {

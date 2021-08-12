@@ -19,7 +19,7 @@ namespace Phoenix {
 		bool		load();
 		void		init();
 		void		exec();
-		void		end();
+		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -220,7 +220,7 @@ namespace Phoenix {
 		DEMO->m_pActiveCamera = m_pCam;
 	}
 
-	void sCameraFPS::end()
+	void sCameraFPS::destroy()
 	{
 	}
 

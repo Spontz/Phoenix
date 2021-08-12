@@ -7,7 +7,7 @@ namespace Phoenix {
 		bool		load();
 		void		init();
 		void		exec();
-		void		end();
+		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -51,7 +51,7 @@ namespace Phoenix {
 		m_demo.m_fboManager.unbind(render_clearColor, render_clearDepth);
 	}
 
-	void sFboUnbind::end()
+	void sFboUnbind::destroy()
 	{
 
 	}

@@ -113,7 +113,7 @@ namespace Phoenix {
 		}
 	}
 
-	void end() {
+	void destroy() {
 
 	}
 

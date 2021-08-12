@@ -10,7 +10,7 @@ namespace Phoenix {
 		bool		load();
 		void		init();
 		void		exec();
-		void		end();
+		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -252,7 +252,7 @@ namespace Phoenix {
 		setRenderStatesEnd();
 	}
 
-	void sDrawSceneMatrix::end()
+	void sDrawSceneMatrix::destroy()
 	{
 		// We should not destroy anything here because section can be reused or re-executed
 		// Free Mem

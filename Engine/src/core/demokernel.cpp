@@ -641,9 +641,7 @@ namespace Phoenix {
 		Logger::info(LogLevel::med, "Loading complete, %d sections have been loaded", m_iLoadedSections);
 
 		// End loading
-		ds_loading->end();
-		ds_loading->ended = TRUE;
-
+		ds_loading->destroy();
 	}
 
 	void demokernel::reInitSectionQueues() {
@@ -669,20 +667,7 @@ namespace Phoenix {
 		std::vector<Section*>::iterator it;
 
 
-		Logger::info(LogLevel::med, "Start queue processing (end, init and exec) for second: %.4f", m_demoRunTime);
-		// We loop all the sections, searching for finished sections,
-		// if any is found, we will remove from the queue and will execute the .end() function
-
-		// Check the sections that need to be finalized
-		Logger::info(LogLevel::low, "  Analysing sections that can be removed...", m_demoRunTime);
-		for (it = m_sectionManager.m_section.begin(); it < m_sectionManager.m_section.end(); it++) {
-			ds = *it;
-			if ((ds->endTime <= m_demoRunTime) && (ds->ended == FALSE)) {
-				ds->end();
-				ds->ended = TRUE;
-				Logger::info(LogLevel::low, "  Section [layer: %d id: %s type: %s] ended", ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
-			}
-		}
+		Logger::info(LogLevel::med, "Start queue processing (init and exec) for second: %.4f", m_demoRunTime);
 
 		// Check the sections that need to be executed
 		Logger::info(LogLevel::low, "  Analysing sections that must be executed...", m_demoRunTime);
@@ -709,7 +694,6 @@ namespace Phoenix {
 				Logger::info(LogLevel::low, "  Section %d [layer: %d id: %s type: %s] inited", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 			}
 		}
-
 
 		// prepare engine for render
 		GLDRV->initRender(true);

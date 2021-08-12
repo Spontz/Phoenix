@@ -8,7 +8,7 @@ namespace Phoenix {
 		bool		load();
 		void		init();
 		void		exec();
-		void		end();
+		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -83,7 +83,7 @@ namespace Phoenix {
 		setRenderStatesEnd();
 	}
 
-	void sDrawFbo::end()
+	void sDrawFbo::destroy()
 	{
 
 	}

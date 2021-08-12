@@ -58,7 +58,7 @@ namespace Phoenix {
 		virtual bool load(); // load data from disk
 		virtual void init(); // set up local variables before execution
 		virtual void exec(); // execute section (normally, render)
-		virtual void end(); // destroy allocated memory
+		virtual void destroy(); // destroy allocated memory
 		virtual void loadDebugStatic(); // load the debug static string
 
 	public:
@@ -82,7 +82,6 @@ namespace Phoenix {
 		bool	                    enabled;		// 1: Section enabled; 0: Section disabled
 		int32_t                     inited;			// 1: Section inited; 0: Section needs to be inited
 		int32_t                     loaded;			// 1: Section loaded; 0: Section not loaded
-		int32_t                     ended;			// 1: Section ended; 0: Section not ended
 		float                       runTime;		// seconds elapsed since section start
 		int32_t                     hasBlend;		// has blending function parameters?
 		int32_t                     blendEquation;	// Blend Equation

@@ -9,7 +9,7 @@ namespace Phoenix {
 		bool		load();
 		void		init();
 		void		exec();
-		void		end();
+		void		destroy();
 		void		loadDebugStatic();
 		std::string debug();
 
@@ -121,7 +121,7 @@ namespace Phoenix {
 		}
 	}
 
-	void sLight::end()
+	void sLight::destroy()
 	{
 	}
 
