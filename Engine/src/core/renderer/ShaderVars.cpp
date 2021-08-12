@@ -16,7 +16,7 @@ namespace Phoenix {
 	bool ShaderVars::ReadString(const char* string_var)
 	{
 		// std::string	var_name, var_type, var_value;
-	
+
 		std::vector<std::string>	vars;
 
 		splitString(string_var, vars, ' ');	// Split the main string by spaces
@@ -39,14 +39,14 @@ namespace Phoenix {
 			var_name.c_str(),
 			var_value.c_str()
 		);
-		
+
 
 		if (var_type == "float")	// FLOAT detected
 		{
-			varFloat* var = new varFloat();
+			auto var = std::make_shared<varFloat>();
 			var->name = var_name;
 			var->loc = my_shader->getUniformLocation(var->name.c_str());
-			var->eva = new MathDriver(this->my_section);
+			var->eva = std::make_shared<MathDriver>(my_section);
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value);
 			var->eva->compileFormula();
@@ -54,10 +54,10 @@ namespace Phoenix {
 		}
 		else if (var_type == "vec2")	// VEC2 detected
 		{
-			varVec2* var = new varVec2();
+			auto var = std::make_shared<varVec2>();
 			var->name = var_name;
 			var->loc = my_shader->getUniformLocation(var->name.c_str());
-			var->eva = new MathDriver(this->my_section);
+			var->eva = std::make_shared<MathDriver>(my_section);
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value[0]);
 			var->eva->SymbolTable.add_variable("v2", var->value[1]);
@@ -66,10 +66,10 @@ namespace Phoenix {
 		}
 		else if (var_type == "vec3")	// VEC3 detected
 		{
-			varVec3* var = new varVec3();
+			auto var = std::make_shared<varVec3>();
 			var->name = var_name;
 			var->loc = my_shader->getUniformLocation(var->name.c_str());
-			var->eva = new MathDriver(this->my_section);
+			var->eva = std::make_shared<MathDriver>(my_section);
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value[0]);
 			var->eva->SymbolTable.add_variable("v2", var->value[1]);
@@ -79,10 +79,10 @@ namespace Phoenix {
 		}
 		else if (var_type == "vec4")	// VEC4 detected
 		{
-			varVec4* var = new varVec4();
+			auto var = std::make_shared<varVec4>();
 			var->name = var_name;
 			var->loc = my_shader->getUniformLocation(var->name.c_str());
-			var->eva = new MathDriver(this->my_section);
+			var->eva = std::make_shared<MathDriver>(my_section);
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value[0]);
 			var->eva->SymbolTable.add_variable("v2", var->value[1]);
@@ -93,10 +93,10 @@ namespace Phoenix {
 		}
 		else if (var_type == "mat3")	// MAT3 detected
 		{
-			varMat3* var = new varMat3();
-			var->name =var_name;
+			auto var = std::make_shared<varMat3>();
+			var->name = var_name;
 			var->loc = my_shader->getUniformLocation(var->name.c_str());
-			var->eva = new MathDriver(this->my_section);
+			var->eva = std::make_shared<MathDriver>(my_section);
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value[0][0]);
 			var->eva->SymbolTable.add_variable("v2", var->value[0][1]);
@@ -112,10 +112,10 @@ namespace Phoenix {
 		}
 		else if (var_type == "mat4")	// MAT4 detected
 		{
-			varMat4* var = new varMat4();
+			auto var = std::make_shared<varMat4>();
 			var->name = var_name;
 			var->loc = my_shader->getUniformLocation(var->name.c_str());
-			var->eva = new MathDriver(this->my_section);
+			var->eva = std::make_shared<MathDriver>(my_section);
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value[0][0]);
 			var->eva->SymbolTable.add_variable("v2", var->value[0][1]);
@@ -139,7 +139,7 @@ namespace Phoenix {
 		}
 		else if (var_type == "sampler2D")	// Texture (sampler2D) detected
 		{
-			if (var_value.substr(0,3) == "fbo") // If it's an fbo
+			if (var_value.substr(0, 3) == "fbo") // If it's an fbo
 			{
 				auto const fboNum = std::stoi(var_value.substr(3));
 
@@ -150,7 +150,7 @@ namespace Phoenix {
 				int fboAttachments = DEMO->m_fboManager.fbo[fboNum]->numAttachments;
 				for (int i = 0; i < fboAttachments; i++)
 				{
-					varSampler2D* var = new varSampler2D();
+					auto var = std::make_shared<varSampler2D>();
 
 					var->isFBO = true;
 					var->fboNum = fboNum;
@@ -159,7 +159,7 @@ namespace Phoenix {
 
 					if (fboAttachments > 1)
 						var->name += "[" + std::to_string(i) + "]";
-					
+
 					var->loc = my_shader->getUniformLocation(var->name.c_str());
 					var->texUnitID = static_cast<int>(sampler2D.size());
 					sampler2D.push_back(var);
@@ -167,7 +167,7 @@ namespace Phoenix {
 			}
 			else // If it's a normal texture....
 			{
-				varSampler2D* var = new varSampler2D();
+				auto var = std::make_shared<varSampler2D>();
 				var->name = var_name;
 				var->loc = my_shader->getUniformLocation(var->name.c_str());
 				var->texUnitID = static_cast<int>(sampler2D.size());
@@ -175,8 +175,6 @@ namespace Phoenix {
 				var->texture = DEMO->m_textureManager.addTexture(DEMO->m_dataFolder + var_value);
 				if (var->texture) // If texture is valid
 					sampler2D.push_back(var);
-				else
-					delete var;
 			}
 		}
 		return true;
@@ -186,13 +184,13 @@ namespace Phoenix {
 	void ShaderVars::setValues()
 	{
 		unsigned int i = 0;
-		varFloat* my_vfloat;
-		varVec2* my_vec2;
-		varVec3* my_vec3;
-		varVec4* my_vec4;
-		varMat3* my_mat3;
-		varMat4* my_mat4;
-		varSampler2D* my_sampler2D;
+		std::shared_ptr<varFloat> my_vfloat;
+		std::shared_ptr<varVec2> my_vec2;
+		std::shared_ptr<varVec3> my_vec3;
+		std::shared_ptr<varVec4> my_vec4;
+		std::shared_ptr<varMat3> my_mat3;
+		std::shared_ptr<varMat4> my_mat4;
+		std::shared_ptr<varSampler2D> my_sampler2D;
 
 		// TODO: Optimize and remove the ".size()" evaluation. Replace for something more optimal
 		for (i = 0; i < vfloat.size(); i++) {
