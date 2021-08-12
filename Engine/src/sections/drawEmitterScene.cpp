@@ -17,7 +17,7 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		Model* m_pModel = nullptr;
+		SP_Model		m_pModel;
 
 		// Particle engine variables
 		unsigned int	m_uiNumMaxParticles = 0;
@@ -125,7 +125,7 @@ namespace Phoenix {
 
 		// Read the number of emmitters
 		for (auto& mesh : m_pModel->meshes) {
-			m_uiNumEmitters += static_cast<uint32_t>(mesh.unique_vertices_pos.size());
+			m_uiNumEmitters += static_cast<uint32_t>(mesh->unique_vertices_pos.size());
 		}
 
 		if (m_uiNumEmitters <= 0) {
@@ -148,10 +148,10 @@ namespace Phoenix {
 		int numEmitter = 0;
 		m_fCurrentEmitter = 0;
 		for (int i = 0; i < m_pModel->meshes.size(); i++) {
-			for (int j = 0; j < m_pModel->meshes[i].unique_vertices_pos.size(); j++) {
+			for (int j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
 				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 				Emitter[numEmitter].Type = ParticleType::Emitter;
-				Emitter[numEmitter].Pos = m_pModel->meshes[i].unique_vertices_pos[j];
+				Emitter[numEmitter].Pos = m_pModel->meshes[i]->unique_vertices_pos[j];
 				Emitter[numEmitter].Vel = m_vVelocity + (m_fEmitterRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat()));
 				Emitter[numEmitter].Col = m_vColor;
 				Emitter[numEmitter].lifeTime = 0.0f;

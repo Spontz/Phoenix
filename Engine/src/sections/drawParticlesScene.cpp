@@ -18,7 +18,7 @@ namespace Phoenix {
 
 	private:
 		// 3D Scene
-		Model* m_pModel = nullptr;
+		SP_Model m_pModel;
 
 		// Particle engine variables
 		int				m_iNumParticles = 0;
@@ -78,7 +78,7 @@ namespace Phoenix {
 		// Calculate particles number
 		m_iNumParticles = 0;
 		for (auto& mesh : m_pModel->meshes) {
-			m_iNumParticles += static_cast<uint32_t>(mesh.unique_vertices_pos.size());
+			m_iNumParticles += static_cast<uint32_t>(mesh->unique_vertices_pos.size());
 		}
 
 		if (m_iNumParticles == 0) {
@@ -90,8 +90,8 @@ namespace Phoenix {
 		Part.resize(m_iNumParticles);
 		int cnt = 0;
 		for (int i = 0; i < m_pModel->meshes.size(); i++) {
-			for (int j = 0; j < m_pModel->meshes[i].unique_vertices_pos.size(); j++) {
-				Part[cnt].Pos = m_pModel->meshes[i].unique_vertices_pos[j];
+			for (int j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
+				Part[cnt].Pos = m_pModel->meshes[i]->unique_vertices_pos[j];
 				Part[cnt].Col = glm::vec4(0.0);	// Todo: Inited with black color... should be initied with vertex color
 				cnt++;
 			}

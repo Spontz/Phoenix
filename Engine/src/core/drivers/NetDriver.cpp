@@ -11,11 +11,20 @@ namespace Phoenix {
 	auto const kDelimiterChar = '\x1f';
 	auto const kDelimiterString = "\x1f";
 
+	NetDriver* kpNetDriver=nullptr;
+
 	// public static ///////////////////////////////////////////////////////////////////////////////////
 	NetDriver& NetDriver::GetInstance() {
-		static NetDriver obj;
-		return obj;
+		if (!kpNetDriver)
+			kpNetDriver = new NetDriver();
+		return *kpNetDriver;
 	}
+
+	void NetDriver::release() {
+		delete kpNetDriver;
+		kpNetDriver = nullptr;
+	}
+
 
 	// constructors/destructor /////////////////////////////////////////////////////////////////////////
 	NetDriver::NetDriver()

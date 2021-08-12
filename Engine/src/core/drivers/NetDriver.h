@@ -5,14 +5,16 @@
 
 #include "core/drivers/net/dyad.h"
 
-#include <vector>
 #include <string>
+#include <vector>
+
 
 namespace Phoenix {
 
 	class NetDriver final {
 	public:
 		static NetDriver& GetInstance();
+		static void release();
 
 	public:
 		NetDriver();

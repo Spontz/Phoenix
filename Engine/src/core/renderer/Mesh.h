@@ -17,20 +17,13 @@
 
 namespace Phoenix {
 
-#define NUM_BONES_PER_VERTEX	4 // Number of Bones per Vertex
+constexpr uint32_t NUM_BONES_PER_VERTEX = 4; // Number of Bones per Vertex
 
 	struct BoneInfo
 	{
-		int			id;
-		glm::mat4	BoneOffset;
-		glm::mat4	FinalTransformation;
-
-		BoneInfo()
-		{
-			id = -1;
-			BoneOffset = glm::mat4(0.0f);
-			FinalTransformation = glm::mat4(0.0f);
-		}
+		int32_t		id = -1;
+		glm::mat4	BoneOffset = glm::mat4(0.0f);
+		glm::mat4	FinalTransformation = glm::mat4(0.0f);
 	};
 
 	struct VertexBoneData
@@ -61,17 +54,27 @@ namespace Phoenix {
 		VertexBoneData	Bone;
 	};
 
-	class Mesh {
-	public:
-		std::vector<glm::vec3>		unique_vertices_pos;	// Unique vertices cartesian positions
-		std::vector<glm::vec3>		unique_vertices_polar;	// Unique vertices polar position (x=distance, y=alpha, z=beta)
-		glm::mat4					m_matModel;				// Model Matrix for positioning the mesh
-		glm::mat4					m_matPrevModel;			// Previous model Matrix for positioning the mesh (useful for effects like motion blur)
-		std::string					m_nodeName;
-		uint32_t					m_numVertices;
-		uint32_t					m_numFaces;
+	class Mesh;
+	using SP_Mesh = std::shared_ptr<Mesh>;
+	using WP_Mesh = std::weak_ptr<Mesh>;
 
-		Mesh(const aiScene* pScene, std::string nodeName, const aiMesh* pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial* pMaterial, std::string directory, std::string filename);
+	class Mesh final {
+		friend class ModelInstance;	// We allod ModelInstance class to access private memebers
+
+	public:
+
+		Mesh(
+			const aiScene* pScene,
+			std::string nodeName,
+			const aiMesh* pMesh,
+			std::vector<Vertex> vertices,
+			std::vector<unsigned int> indices,
+			const aiMaterial* pMaterial,
+			std::string directory,
+			std::string filename
+		);
+
+	public:
 		// render the mesh
 		void Draw(GLuint shaderID, uint32_t startTexUnit = 0);
 
@@ -82,18 +85,26 @@ namespace Phoenix {
 		Material* getMaterial();
 
 	private:
-		friend class ModelInstance;			// We allod ModelInstance class to access private memebers
-
-		const aiMesh*				m_pMesh;		// ASSIMP mesh object
-		std::vector<unsigned int>	m_indices;		// Indices
-		std::vector<Vertex>			m_vertices;		// Vertices
-		Material					m_material;		// Material
-		VertexArray*				m_VertexArray;	// Vertex Array Object
-
 		// initializes all the buffer objects/arrays
 		void setupMesh();
 
 		// Setup materials for drawing
 		void setMaterialShaderVars(GLuint shaderID, uint32_t startTexUnit = 0);
+
+	private:
+		const aiMesh*				m_pMesh;		// ASSIMP mesh object
+		std::vector<unsigned int>	m_indices;		// Indices
+		std::vector<Vertex>			m_vertices;		// Vertices
+		Material					m_material;		// Material
+		SP_VertexArray				m_VertexArray;	// Vertex Array Object
+
+	public:
+		std::vector<glm::vec3>		unique_vertices_pos;	// Unique vertices cartesian positions
+		std::vector<glm::vec3>		unique_vertices_polar;	// Unique vertices polar position (x=distance, y=alpha, z=beta)
+		glm::mat4					m_matModel;				// Model Matrix for positioning the mesh
+		glm::mat4					m_matPrevModel;			// Previous model Matrix for positioning the mesh (useful for effects like motion blur)
+		std::string					m_nodeName;
+		uint32_t					m_numVertices;
+		uint32_t					m_numFaces;
 	};
 }

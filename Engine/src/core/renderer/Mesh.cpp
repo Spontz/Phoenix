@@ -31,7 +31,16 @@ namespace Phoenix {
 		//assert(0);
 	}
 
-	Mesh::Mesh(const aiScene* pScene, std::string nodeName, const aiMesh* pMesh, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const aiMaterial* pMaterial, std::string directory, std::string filename)
+	Mesh::Mesh(
+		const aiScene* pScene,
+		std::string nodeName
+		, const aiMesh* pMesh,
+		std::vector<Vertex> vertices,
+		std::vector<unsigned int> indices,
+		const aiMaterial* pMaterial,
+		std::string directory,
+		std::string filename
+	)
 		:
 		m_matModel(glm::mat4(1.0f)),
 		m_matPrevModel(glm::mat4(1.0f)),
@@ -40,11 +49,10 @@ namespace Phoenix {
 		m_vertices(vertices),
 		m_indices(indices),
 		m_numVertices(static_cast<uint32_t>(vertices.size())),
-		m_numFaces(static_cast<uint32_t>(indices.size())),
-		m_VertexArray(nullptr)
+		m_numFaces(static_cast<uint32_t>(indices.size()))
 	{
 		// Setup the material of our mesh (each mesh has only one material)
-		this->m_material.Load(pMaterial, pScene, directory, filename);
+		m_material.Load(pMaterial, pScene, directory, filename);
 
 		// now that we have all the required data, set the vertex buffers and its attribute pointers.
 		setupMesh();
@@ -91,7 +99,7 @@ namespace Phoenix {
 	void Mesh::setupMesh()
 	{
 		// Allocate Vertex Array
-		m_VertexArray = new VertexArray();
+		m_VertexArray = std::make_shared<VertexArray>();
 
 		// Create & Load the Vertex Buffer
 		auto spVB = std::make_shared<VertexBuffer>(&m_vertices[0], static_cast<uint32_t>(m_vertices.size() * sizeof(Vertex)));

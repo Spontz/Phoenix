@@ -73,6 +73,7 @@ int main(int argc, char* argv[]) {
 
 	Phoenix::glDriver::release();
 	Phoenix::demokernel::release();
+	Phoenix::NetDriver::release();
 
 	return 0;
 }

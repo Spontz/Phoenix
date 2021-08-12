@@ -7,6 +7,12 @@ namespace Phoenix {
 	struct sDrawScene : public Section {
 	public:
 		sDrawScene();
+		~sDrawScene() {
+			delete m_pExprPosition;
+			delete m_pVars;
+		}
+
+	public:
 		bool		load();
 		void		init();
 		void		exec();
@@ -34,7 +40,7 @@ namespace Phoenix {
 		glm::mat4	m_mPrevProjection = glm::mat4(1.0f);
 		glm::mat4	m_mPrevView = glm::mat4(1.0f);
 
-		Model* m_pModel = nullptr;
+		SP_Model m_pModel;
 		SP_Shader m_pShader;
 		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
 		ShaderVars* m_pVars = nullptr;	// For storing any other shader variables
@@ -215,9 +221,9 @@ namespace Phoenix {
 		ss << "Animations: " << m_pModel->m_statNumAnimations << ", bones: " << m_pModel->m_statNumBones << std::endl;
 		ss << "Cameras: " << m_pModel->m_statNumCameras << std::endl;
 		for (auto& mesh : m_pModel->meshes) {
-			ss << "+Mesh name: " << mesh.m_nodeName << std::endl;
-			ss << " Faces: " << mesh.m_numFaces << ", vertices: " << mesh.m_numVertices << std::endl;
-			mat = mesh.getMaterial();
+			ss << "+Mesh name: " << mesh->m_nodeName << std::endl;
+			ss << " Faces: " << mesh->m_numFaces << ", vertices: " << mesh->m_numVertices << std::endl;
+			mat = mesh->getMaterial();
 			ss << " Material name: " << mat->name << std::endl;
 			ss << "  Material.Ka:" << glm::to_string(mat->colAmbient) << std::endl;
 			ss << "  Material.Kd:" << glm::to_string(mat->colDiffuse) << std::endl;

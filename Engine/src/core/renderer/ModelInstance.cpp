@@ -18,7 +18,7 @@
 
 namespace Phoenix {
 
-	ModelInstance::ModelInstance(Model* model, unsigned int amount)
+	ModelInstance::ModelInstance(SP_Model model, unsigned int amount)
 		:
 		pModel(model),
 		amount(amount),
@@ -53,7 +53,7 @@ namespace Phoenix {
 
 		// Add the new vertex buffer to mesh vertex array
 		for (unsigned int i = 0; i < pModel->meshes.size(); ++i)
-			pModel->meshes[i].m_VertexArray->AddVertexBuffer(pVB);
+			pModel->meshes[i]->m_VertexArray->AddVertexBuffer(pVB);
 	}
 
 	ModelInstance::~ModelInstance()
@@ -67,15 +67,15 @@ namespace Phoenix {
 
 	void ModelInstance::drawInstanced(GLuint shaderID, uint32_t startTexUnit)
 	{
-		for (auto& mesh : pModel->meshes)
+		for (const auto& mesh : pModel->meshes)
 		{
-			mesh.setMaterialShaderVars(shaderID, startTexUnit);
+			mesh->setMaterialShaderVars(shaderID, startTexUnit);
 
 			// draw mesh
-			mesh.m_VertexArray->Bind();
-			glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(mesh.m_indices.size()), GL_UNSIGNED_INT, 0, static_cast<GLsizei>(amount));
+			mesh->m_VertexArray->Bind();
+			glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(mesh->m_indices.size()), GL_UNSIGNED_INT, 0, static_cast<GLsizei>(amount));
 			
-			mesh.m_VertexArray->Unbind();
+			mesh->m_VertexArray->Unbind();
 		}
 	}
 
@@ -86,10 +86,10 @@ namespace Phoenix {
 
 	void ModelInstance::updateMatrices()
 	{
-		for (auto& mesh : pModel->meshes)
+		for (const auto& mesh : pModel->meshes)
 		{
 			// Update matrices buffers to GPU
-			const auto& VBs = mesh.m_VertexArray->GetVertexBuffers();
+			const auto& VBs = mesh->m_VertexArray->GetVertexBuffers();
 			VBs[1]->SetData(&pModelMatrix[0], amount * sizeof(glm::mat4)); // Be careful with "vb[1]"!! -> TODO: Get rid of this hardcode!!
 			VBs[1]->Unbind();
 		}
