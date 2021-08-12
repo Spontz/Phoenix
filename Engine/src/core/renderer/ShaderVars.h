@@ -31,10 +31,10 @@ namespace Phoenix {
 
     // Sampler2D (TEXTURE) evaluation
     struct varSampler2D final : public varBase {
-        Texture* texture;   // Texture
-        int      fboNum;    // Fbo number
-        int      fboAttachment; // Fbo attachment
-        int      texUnitID; // Texture unit ID
+        SP_Texture texture;   // Texture
+        int32_t      fboNum;    // Fbo number
+        int32_t      fboAttachment; // Fbo attachment
+        int32_t      texUnitID; // Texture unit ID
         bool     isFBO;     // is the Sampler2D an FBO?
     };
 

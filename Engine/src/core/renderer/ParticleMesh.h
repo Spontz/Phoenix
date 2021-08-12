@@ -19,14 +19,14 @@ namespace Phoenix {
 			glm::vec4	Col;	// Particle initial color
 		};
 
-		ParticleMesh(int numParticles);
+		ParticleMesh(uint32_t numParticles);
 		~ParticleMesh();
 
 		bool startup(std::vector<Particle> const& Pos = {});
 		void render(float currentTime);
 		void shutdown();
 
-		int				m_numParticles;
+		uint32_t	m_numParticles;
 
 	private:
 		Particle* m_particles;

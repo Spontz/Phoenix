@@ -10,20 +10,23 @@
 
 namespace Phoenix {
 
-	class TextureManager {
+	class TextureManager final {
 	public:
-		std::vector<Texture*>	texture;	// Texture list
+		TextureManager();
+		~TextureManager();
+
+	public:
+		SP_Texture addTexture(std::string_view const& path, bool flip = true, std::string_view const& type = "texture_diffuse");
+		SP_Texture addTextureFromMem(const unsigned char* data, int32_t len, bool flip, std::string_view const& type = "texture_diffuse");
+		Cubemap* addCubemap(std::vector<std::string> const& path, bool flip);
+		int32_t	getOpenGLTextureID(int32_t index);
+		void initTextureStates();
+		void clear();
+
+	public:
+		std::vector<SP_Texture>	texture;	// Texture list
 		std::vector<Cubemap*>	cubemap;	// Cubemap list
 		float					mem;		// Texture memory in MegaBytes
 		bool					forceLoad;	// Force texture loading each time we add a texture (should be enabled when working on slave mode)
-
-		TextureManager();
-		virtual ~TextureManager();
-		Texture* addTexture(std::string_view const& path, bool flip = true, std::string_view const& type = "texture_diffuse");
-		Texture* addTextureFromMem(const unsigned char* data, int len, bool flip, std::string_view const& type = "texture_diffuse");
-		Cubemap* addCubemap(std::vector<std::string> const& path, bool flip);
-		int	getOpenGLTextureID(int index);
-		void initTextureStates();
-		void clear();
 	};
 }

@@ -7,12 +7,35 @@
 
 namespace Phoenix {
 
-	enum class ShaderDataType
+	class VertexBuffer;
+	using SP_VertexBuffer = std::shared_ptr<VertexBuffer>;
+	using WP_VertexBuffer = std::weak_ptr<VertexBuffer>;
+
+	class IndexBuffer;
+	using SP_IndexBuffer = std::shared_ptr<IndexBuffer>;
+	using WP_IndexBuffer = std::weak_ptr<IndexBuffer>;
+
+	enum class ShaderDataType : uint32_t
 	{
-		None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, UInt, UInt2, UInt3, UInt4, Bool
+		None = 0,
+		Float = 1,
+		Float2 = 2,
+		Float3 = 3,
+		Float4 = 4,
+		Mat3 = 5,
+		Mat4 = 6,
+		Int = 7,
+		Int2 =8,
+		Int3 = 9,
+		Int4 = 10,
+		UInt = 11,
+		UInt2 = 12,
+		UInt3 = 13,
+		UInt4 = 14,
+		Bool = 15
 	};
 
-	struct ShaderDataTypeTable {
+	struct ShaderDataTypeTable final {
 		ShaderDataType	type;
 		GLenum			GLBaseType;
 		uint32_t		elementCount;
@@ -34,11 +57,12 @@ namespace Phoenix {
 		{ ShaderDataType::UInt,		GL_UNSIGNED_INT,	1,				4		},
 		{ ShaderDataType::UInt2,	GL_UNSIGNED_INT,	2,				4 * 2	},
 		{ ShaderDataType::UInt3,	GL_UNSIGNED_INT,	3,				4 * 3	},
-		{ ShaderDataType::UInt4,	GL_UNSIGNED_INT,	4,				4 * 4	},
+		{ ShaderDataType::UInt4,	GL_UNSIGNED_INT,	4,				4 * 4	}
 	};
 
-	struct BufferElement
+	class BufferElement final
 	{
+	public:
 		std::string Name;
 		ShaderDataType Type;
 		size_t Offset;
@@ -69,7 +93,7 @@ namespace Phoenix {
 		}
 	};
 
-	class BufferLayout
+	class BufferLayout final
 	{
 	public:
 		BufferLayout() {}
@@ -87,6 +111,7 @@ namespace Phoenix {
 		std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
 		std::vector<BufferElement>::const_iterator begin() const { return m_Elements.begin(); }
 		std::vector<BufferElement>::const_iterator end() const { return m_Elements.end(); }
+
 	private:
 		void CalculateOffsetsAndStride()
 		{
@@ -99,48 +124,52 @@ namespace Phoenix {
 				m_Stride += element.DataType.sizeInBytes;
 			}
 		}
+
 	private:
 		std::vector<BufferElement> m_Elements;
 		uint32_t m_Stride = 0;
 	};
 
 
-	class VertexBuffer
+	class VertexBuffer final
 	{
 	public:
 		VertexBuffer(uint32_t size);
 		VertexBuffer(const void* data, uint32_t size);
-		virtual ~VertexBuffer();
+		~VertexBuffer();
 
-		virtual void Bind() const;
-		virtual void Unbind() const;
+		void Bind() const;
+		void Unbind() const;
 
 
-		virtual void SetData(const void* data, uint32_t size);
+		void SetData(const void* data, uint32_t size);
 
-		virtual const uint32_t GetBufferID() const { return m_RendererID; };
+		uint32_t GetBufferID() const { return m_RendererID; };
 
-		virtual const BufferLayout& GetLayout() const { return m_Layout; }
-		virtual void SetLayout(const BufferLayout& layout) { m_Layout = layout; }
+		const BufferLayout& GetLayout() const { return m_Layout; }
+		void SetLayout(const BufferLayout& layout) { m_Layout = layout; }
+
 	private:
 		uint32_t m_RendererID;
 		BufferLayout m_Layout;
 	};
 
-	class IndexBuffer
+	class IndexBuffer final
 	{
 	public:
 		IndexBuffer(uint32_t* indices, uint32_t count);
-		virtual ~IndexBuffer();
+		~IndexBuffer();
 
-		virtual void Bind() const;
-		virtual void Unbind() const;
+		void Bind() const;
+		void Unbind() const;
 
-		virtual const uint32_t GetBufferID() const { return m_RendererID; };
+		uint32_t GetBufferID() const { return m_RendererID; };
 
-		virtual uint32_t GetCount() const { return m_Count; }
+		uint32_t GetCount() const { return m_Count; }
+
 	private:
 		uint32_t m_RendererID;
 		uint32_t m_Count;
 	};
+
 }

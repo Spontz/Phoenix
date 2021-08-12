@@ -11,9 +11,9 @@ namespace Phoenix {
 		void		end();
 
 	private:
-		Texture* m_pTexFront = nullptr;
-		Texture* m_pTexBack = nullptr;
-		Texture* m_pTexBar = nullptr;
+		SP_Texture m_pTexFront;
+		SP_Texture m_pTexBack;
+		SP_Texture m_pTexBar;
 
 		float	m_fTX = 0;		// Bar Translation
 		float	m_fTY = 0;
@@ -83,8 +83,8 @@ namespace Phoenix {
 		}
 
 		float zero2one = 0;
-		if (m_demo.m_sectionManager.loadSection.size() > 0)
-			zero2one = (float)m_demo.m_iLoadedSections / (float)(m_demo.m_sectionManager.loadSection.size());
+		if (m_demo.m_sectionManager.m_loadSection.size() > 0)
+			zero2one = (float)m_demo.m_iLoadedSections / (float)(m_demo.m_sectionManager.m_loadSection.size());
 
 		GLDRV->initRender(true);
 		glClearColor(0, 0, 0, 0);

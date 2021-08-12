@@ -40,7 +40,7 @@ namespace Phoenix {
 
 			// Get the time
 			const std::time_t t = std::time(nullptr);
-			struct tm* timeinfo = localtime(&t);
+			auto timeinfo = localtime(&t);
 
 			std::stringstream ss;
 			ss << "Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << pszText << std::endl;

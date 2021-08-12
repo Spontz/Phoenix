@@ -30,13 +30,13 @@ namespace Phoenix {
 	void Resource::unLoadAllResources()
 	{
 		// Vertex Array Objects
-		safeDelete(m_pQuadFullScreen);
-		safeDelete(m_pSkybox);
-		safeDelete(m_pQube);
-		safeDelete(m_pGrid);
+		m_pQuadFullScreen.reset();
+		m_pSkybox.reset();
+		m_pQube.reset();
+		m_pGrid.reset();
 
 		// Textures
-		safeDelete(m_pTVImage);
+		m_pTVImage.reset();
 
 		// Shaders
 		m_pShdrQuadTex.reset();
@@ -53,7 +53,7 @@ namespace Phoenix {
 	Resource::Resource()
 		:
 		m_demo(*DEMO),
-		
+
 		m_gridSize(1.0f),
 		m_gridSlices(11)
 	{
@@ -63,7 +63,7 @@ namespace Phoenix {
 		m_pTVImage = nullptr;
 		// Shaders
 		m_pShdrQuadTex = m_pShdrQuadDepth = m_pShdrQuadTexAlpha = m_pShdrQuadTexModel = m_pShdrQuadTexPVM = m_pShdrQuadTexVFlipModel = m_pShdrSkybox = m_pShdrObjColor = m_pShdrGrid = nullptr;
-		
+
 	}
 
 	Resource::~Resource()
@@ -86,16 +86,16 @@ namespace Phoenix {
 		};
 
 		// Creatr the Vertex Array
-		m_pQuadFullScreen = new VertexArray();
+		m_pQuadFullScreen = std::make_shared<VertexArray>();
 
 		// Create & Load the Vertex Buffer
-		VertexBuffer* vb = new VertexBuffer(&quadVertices, static_cast<uint32_t>(sizeof(quadVertices)));
-		vb->SetLayout({
+		auto spVB = std::make_shared<VertexBuffer>(&quadVertices, static_cast<uint32_t>(sizeof(quadVertices)));
+		spVB->SetLayout({
 			{ ShaderDataType::Float2,	"aPos"},
 			{ ShaderDataType::Float2,	"aTexCoords"},
 			});
 
-		m_pQuadFullScreen->AddVertexBuffer(vb);
+		m_pQuadFullScreen->AddVertexBuffer(spVB);
 
 		// Create & Load the Index Buffer :: Not really needed since the vertice are already sorted
 		//uint32_t quadIndices[] = { 0,1,2,3,4,5 };
@@ -153,15 +153,15 @@ namespace Phoenix {
 		};
 
 		// Creatr the Vertex Array
-		m_pSkybox = new VertexArray();
+		m_pSkybox = std::make_shared<VertexArray>();
 
 		// Create & Load the Vertex Buffer
-		VertexBuffer* vb = new VertexBuffer(&skyboxVertices, static_cast<uint32_t>(sizeof(skyboxVertices)));
-		vb->SetLayout({
+		auto spVB = std::make_shared<VertexBuffer>(&skyboxVertices, static_cast<uint32_t>(sizeof(skyboxVertices)));
+		spVB->SetLayout({
 			{ ShaderDataType::Float3,	"aPos"},
 			});
 
-		m_pSkybox->AddVertexBuffer(vb);
+		m_pSkybox->AddVertexBuffer(spVB);
 		m_pSkybox->Unbind();
 	}
 
@@ -213,17 +213,17 @@ namespace Phoenix {
 		};
 
 		// Creatr the Vertex Array
-		m_pQube = new VertexArray();
+		m_pQube = std::make_shared<VertexArray>();
 
 		// Create & Load the Vertex Buffer
-		VertexBuffer* vb = new VertexBuffer(&qubeVertices, static_cast<uint32_t>(sizeof(qubeVertices)));
-		vb->SetLayout({
+		auto spVB = std::make_shared<VertexBuffer>(&qubeVertices, static_cast<uint32_t>(sizeof(qubeVertices)));
+		spVB->SetLayout({
 			{ ShaderDataType::Float3,	"aPos"},
 			{ ShaderDataType::Float3,	"aNormal"},
 			{ ShaderDataType::Float2,	"aTexCoords"},
 			});
 
-		m_pQube->AddVertexBuffer(vb);
+		m_pQube->AddVertexBuffer(spVB);
 		m_pQube->Unbind();
 	}
 
@@ -276,7 +276,7 @@ namespace Phoenix {
 
 		for (int j = 0; j <= m_gridSlices; ++j) {
 			for (int i = 0; i <= m_gridSlices; ++i) {
-				float x = m_gridSize * (start + static_cast<float>(i)  * step);
+				float x = m_gridSize * (start + static_cast<float>(i) * step);
 				float y = 0;
 				float z = m_gridSize * (start + static_cast<float>(j) * step);
 				vertices.push_back(glm::vec3(x, y, z));
@@ -308,29 +308,26 @@ namespace Phoenix {
 			}
 		}
 
-		if (m_pGrid)
-			delete m_pGrid;
-
 		// Creatr the Vertex Array
-		m_pGrid = new VertexArray();
+		m_pGrid = std::make_shared<VertexArray>();
 
 		// Create & Load the Vertex Buffer
-		VertexBuffer* vb = new VertexBuffer(&vertices[0], static_cast<uint32_t>(sizeof(glm::vec3) * vertices.size()));
-		vb->SetLayout({
+		auto spVB = std::make_shared<VertexBuffer>(&vertices[0], static_cast<uint32_t>(sizeof(glm::vec3) * vertices.size()));
+		spVB->SetLayout({
 			{ ShaderDataType::Float3,	"aPos"},
 			});
 
-		m_pGrid->AddVertexBuffer(vb);
+		m_pGrid->AddVertexBuffer(spVB);
 
 		// Create & Load the Index Buffer :: Not really needed since the vertice are already sorted
-		IndexBuffer* ib = new IndexBuffer(&indices[0], static_cast<uint32_t>(indices.size()));
-		m_pGrid->SetIndexBuffer(ib);
+		auto spIB = std::make_shared<IndexBuffer>(indices.data(), indices.size());
+		m_pGrid->SetIndexBuffer(spIB);
 
 		m_pGrid->Unbind();
 	}
 
 	// Draw a Quad with texture in full screen with alpha
-	void Resource::Draw_QuadFS(Texture* tex, float alpha)
+	void Resource::Draw_QuadFS(SP_Texture tex, float alpha)
 	{
 		m_pShdrQuadTexAlpha->use();
 		m_pShdrQuadTexAlpha->setValue("alpha", alpha);
@@ -361,7 +358,7 @@ namespace Phoenix {
 	}
 
 	// Draw a Quad in full screen. A texture can be specified and a model matrix
-	void Resource::Draw_Obj_QuadTex(Texture* tex, glm::mat4 const* model)
+	void Resource::Draw_Obj_QuadTex(SP_Texture tex, glm::mat4 const* model)
 	{
 		m_pShdrQuadTexModel->use();
 		m_pShdrQuadTexModel->setValue("model", *model);
@@ -372,7 +369,7 @@ namespace Phoenix {
 	}
 
 	// Draw a Quad in full screen. A texture can be specified and the 3 matrix
-	void Resource::Draw_Obj_QuadTex(Texture* tex, glm::mat4 const* projection, glm::mat4 const* view, glm::mat4 const* model)
+	void Resource::Draw_Obj_QuadTex(SP_Texture tex, glm::mat4 const* projection, glm::mat4 const* view, glm::mat4 const* model)
 	{
 		m_pShdrQuadTexPVM->use();
 		m_pShdrQuadTexPVM->setValue("projection", *projection);

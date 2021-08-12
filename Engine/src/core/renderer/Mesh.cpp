@@ -94,8 +94,8 @@ namespace Phoenix {
 		m_VertexArray = new VertexArray();
 
 		// Create & Load the Vertex Buffer
-		VertexBuffer* vertexBuffer = new VertexBuffer(&m_vertices[0], static_cast<uint32_t>(m_vertices.size() * sizeof(Vertex)));
-		vertexBuffer->SetLayout({
+		auto spVB = std::make_shared<VertexBuffer>(&m_vertices[0], static_cast<uint32_t>(m_vertices.size() * sizeof(Vertex)));
+		spVB->SetLayout({
 			{ ShaderDataType::Float3,	"aPos"},
 			{ ShaderDataType::Float3,	"aNormal"},
 			{ ShaderDataType::Float2,	"aTexCoords"},
@@ -105,11 +105,11 @@ namespace Phoenix {
 			{ ShaderDataType::Float4,	"aBoneWeight"}
 			});
 
-		m_VertexArray->AddVertexBuffer(vertexBuffer);
+		m_VertexArray->AddVertexBuffer(spVB);
 
 		// Create & Load the Index Buffer
-		IndexBuffer* indexBuffer = new IndexBuffer(&m_indices[0], static_cast<uint32_t>(m_indices.size()));
-		m_VertexArray->SetIndexBuffer(indexBuffer);
+		auto pIB = std::make_shared<IndexBuffer>(&m_indices[0], static_cast<uint32_t>(m_indices.size()));
+		m_VertexArray->SetIndexBuffer(pIB);
 
 		m_VertexArray->Unbind();
 	}

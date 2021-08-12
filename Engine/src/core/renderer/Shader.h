@@ -4,6 +4,8 @@
 #pragma once
 #include "main.h"
 
+#include <unordered_set>
+
 namespace Phoenix{
 
 	class Shader;
@@ -18,39 +20,41 @@ namespace Phoenix{
 		~Shader();
 
 	public:
-		bool load(std::string_view URI, std::vector<std::string> const& feedbackVaryings = {});
+		bool load(std::string_view path, std::unordered_set<std::string> const& feedbackVaryings);
 		void use(); // activate the shader
 
-		// utility uniform functions
+		// set uniform scalar
 		void setValue(std::string_view id, GLint value) const;
 		void setValue(std::string_view id, GLfloat value) const;
-		void setValue(std::string_view id, const glm::vec2& value) const;
+
+		// set uniform vector from components
 		void setValue(std::string_view id, GLfloat x, GLfloat y) const;
-		void setValue(std::string_view id, const glm::vec3& value) const;
 		void setValue(std::string_view id, GLfloat x, GLfloat y, GLfloat z) const;
+		void setValue(std::string_view id, GLfloat x, GLfloat y, GLfloat z, GLfloat w) const;
+
+		// set uniform vector from glm vector
+		void setValue(std::string_view id, const glm::vec2& value) const;
+		void setValue(std::string_view id, const glm::vec3& value) const;
 		void setValue(std::string_view id, const glm::vec4& value) const;
-		void setValue(std::string_view id, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+
+		// set uniform matrix from glm matrix
 		void setValue(std::string_view id, const glm::mat2& mat) const;
 		void setValue(std::string_view id, const glm::mat3& mat) const;
 		void setValue(std::string_view id, const glm::mat4& mat) const;
 
 		GLint getUniformLocation(std::string_view id) const;
 
-		std::string_view getURI() const { return m_URI; }
-		uint32_t getId() const { return m_Id; }
+		std::string_view getURI() const;
+		uint32_t getId() const;
 
 	private:
-		bool compile(const ShaderSources& shaderSources, std::vector<std::string> const& feedbackVaryings = {});
-		// File management procedures
-		std::string readASCIIFile(std::string_view URI);
-		std::istream& safeGetline(std::istream& is, std::string& t);
-		GLenum getShaderTypeFromString(std::string_view type);
-		std::string_view getShaderStringFromType(const GLenum& type);
-		void addLinedirective(std::string& source);
-		ShaderSources preProcessShaderSource(std::string_view shaderSource);
+		bool compile(
+			const ShaderSources& shaderSources,
+			std::unordered_set<std::string> const& feedbackVaryings
+		);
 
 	private:
-		uint32_t m_Id = 0;
+		uint32_t m_id = 0;
 		std::string m_URI;
 	};
 

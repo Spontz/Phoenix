@@ -3,30 +3,34 @@
 
 #pragma once
 
-#include <memory>
 #include "core/renderer/Buffer.h"
 
 namespace Phoenix {
 
-	class VertexArray
+	class VertexArray;
+	using SP_VertexArray = std::shared_ptr<VertexArray>;
+	using WP_VertexArray = std::weak_ptr<VertexArray>;
+
+	class VertexArray final
 	{
 	public:
 		VertexArray();
-		virtual ~VertexArray();
+		~VertexArray();
 
-		virtual void Bind() const;
-		virtual void Unbind() const;
+	public:
+		void Bind() const;
+		void Unbind() const;
 
-		virtual void AddVertexBuffer(VertexBuffer* vertexBuffer);
-		virtual void SetIndexBuffer(IndexBuffer* indexBuffer);
+		void AddVertexBuffer(SP_VertexBuffer spVertexBuffer);
+		void SetIndexBuffer(SP_IndexBuffer spIndexBuffer);
 
-		virtual const std::vector<VertexBuffer*>& GetVertexBuffers() const { return m_VertexBuffers; }
-		virtual const IndexBuffer* GetIndexBuffer() const { return m_IndexBuffer; }
+		const std::vector<SP_VertexBuffer>& GetVertexBuffers() const;
+		SP_IndexBuffer GetIndexBuffer() const;
 
 	private:
-		uint32_t					m_RendererID;				// Our "VAO"
-		uint32_t					m_VertexBufferIndex = 0;
-		std::vector<VertexBuffer*>	m_VertexBuffers;
-		IndexBuffer* m_IndexBuffer;
+		uint32_t m_RendererID; // Our "VAO"
+		uint32_t m_VertexBufferIndex = 0;
+		std::vector<SP_VertexBuffer> m_VertexBuffers;
+		SP_IndexBuffer m_IndexBuffer;
 	};
 }

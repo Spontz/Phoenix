@@ -7,7 +7,9 @@
 
 namespace Phoenix {
 
-	std::istream& Shader::safeGetline(std::istream& is, std::string& t)
+	// Helper functions
+
+	std::istream& safeGetline(std::istream& is, std::string& t)
 	{
 		t.clear();
 
@@ -40,7 +42,7 @@ namespace Phoenix {
 		}
 	}
 
-	GLenum Shader::getShaderTypeFromString(std::string_view type)
+	GLenum getShaderTypeFromString(std::string_view type)
 	{
 		static const std::unordered_map<std::string_view, GLenum> s{
 			{"vertex",   GL_VERTEX_SHADER   },
@@ -52,7 +54,7 @@ namespace Phoenix {
 		return it == s.end() ? 0 : it->second;
 	}
 
-	std::string_view Shader::getShaderStringFromType(const GLenum& type)
+	std::string_view getShaderStringFromType(const GLenum& type)
 	{
 		static const std::unordered_map<GLenum, std::string_view> s{
 			{ GL_VERTEX_SHADER,   "Vertex"   },
@@ -64,9 +66,9 @@ namespace Phoenix {
 		return it == s.end() ? "UNKNOWN" : it->second.data();
 	}
 
-	void Shader::addLinedirective(std::string& source)
+	void addLineDirective(std::string& shaderSource)
 	{
-		std::istringstream f(source);
+		std::istringstream f(shaderSource);
 		std::stringstream end_stream;
 		std::string line;
 		int lineNum = 1;
@@ -84,10 +86,10 @@ namespace Phoenix {
 
 			lineNum++;
 		}
-		source = end_stream.str();
+		shaderSource = end_stream.str();
 	}
 
-	ShaderSources Shader::preProcessShaderSource(std::string_view shaderSource)
+	ShaderSources preprocessShaderSource(std::string_view shaderSource)
 	{
 		ShaderSources shaderSources;
 
@@ -124,7 +126,7 @@ namespace Phoenix {
 		return shaderSources;
 	}
 
-	std::string Shader::readASCIIFile(std::string_view URI)
+	std::string readASCIIFile(std::string_view URI)
 	{
 		std::string result;
 		std::ifstream in(URI.data(), std::ios::in | std::ios::binary);
@@ -148,101 +150,110 @@ namespace Phoenix {
 		return result;
 	}
 
+	// Shader
+
 	Shader::~Shader()
 	{
-		if (m_Id != 0)
-			glDeleteProgram(m_Id);
+		if (m_id != 0)
+			glDeleteProgram(m_id);
 	}
 
 	// Loads a shader
 	// Returns true is loaded OK
 	// Returns false is failed loading shader
-	bool Shader::load(std::string_view URI, std::vector<std::string> const& feedbackVaryings)
+	bool Shader::load(std::string_view URI, const std::unordered_set<std::string>& feedbackVaryings)
 	{
 		// If we already have loaded this shader, we unload it first
-		if (m_Id > 0) {
+		if (m_id > 0) {
 			glUseProgram(0);
-			glDeleteProgram(m_Id);
-			m_Id = 0;
+			glDeleteProgram(m_id);
+			m_id = 0;
 		}
 
 		m_URI = URI;
 
 		// 1. retrieve the vertex/fragment source code from filePath
 		std::string source{ readASCIIFile(URI) };
-		addLinedirective(source);
-		auto shaderSources = preProcessShaderSource(source);
-		if (compile(shaderSources, feedbackVaryings) == false)
-			return false;
-		else
-			return true;
+		addLineDirective(source);
+
+		return compile(preprocessShaderSource(source), feedbackVaryings);
 	}
 
 	// Activates the shader
 	void Shader::use()
 	{
-		glUseProgram(m_Id);
+		glUseProgram(m_id);
 	}
 
 	// Set utility uniform value functions
 	void Shader::setValue(std::string_view name, GLint value) const
 	{
-		glUniform1i(glGetUniformLocation(m_Id, name.data()), value);
+		glUniform1i(glGetUniformLocation(m_id, name.data()), value);
 	}
 
 	void Shader::setValue(std::string_view name, GLfloat value) const
 	{
-		glUniform1f(glGetUniformLocation(m_Id, name.data()), value);
+		glUniform1f(glGetUniformLocation(m_id, name.data()), value);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::vec2& value) const
 	{
-		glUniform2fv(glGetUniformLocation(m_Id, name.data()), 1, &value[0]);
+		glUniform2fv(glGetUniformLocation(m_id, name.data()), 1, &value[0]);
 	}
 
 	void Shader::setValue(std::string_view name, GLfloat x, GLfloat y) const
 	{
-		glUniform2f(glGetUniformLocation(m_Id, name.data()), x, y);
+		glUniform2f(glGetUniformLocation(m_id, name.data()), x, y);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::vec3& value) const
 	{
-		glUniform3fv(glGetUniformLocation(m_Id, name.data()), 1, &value[0]);
+		glUniform3fv(glGetUniformLocation(m_id, name.data()), 1, &value[0]);
 	}
 
 	void Shader::setValue(std::string_view name, GLfloat x, GLfloat y, GLfloat z) const
 	{
-		glUniform3f(glGetUniformLocation(m_Id, name.data()), x, y, z);
+		glUniform3f(glGetUniformLocation(m_id, name.data()), x, y, z);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::vec4& value) const
 	{
-		glUniform4fv(glGetUniformLocation(m_Id, name.data()), 1, &value[0]);
+		glUniform4fv(glGetUniformLocation(m_id, name.data()), 1, &value[0]);
 	}
 
-	void Shader::setValue(std::string_view name, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
+	void Shader::setValue(std::string_view name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) const
 	{
-		glUniform4f(glGetUniformLocation(m_Id, name.data()), x, y, z, w);
+		glUniform4f(glGetUniformLocation(m_id, name.data()), x, y, z, w);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::mat2& mat) const
 	{
-		glUniformMatrix2fv(glGetUniformLocation(m_Id, name.data()), 1, GL_FALSE, &mat[0][0]);
+		glUniformMatrix2fv(glGetUniformLocation(m_id, name.data()), 1, GL_FALSE, &mat[0][0]);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::mat3& mat) const
 	{
-		glUniformMatrix3fv(glGetUniformLocation(m_Id, name.data()), 1, GL_FALSE, &mat[0][0]);
+		glUniformMatrix3fv(glGetUniformLocation(m_id, name.data()), 1, GL_FALSE, &mat[0][0]);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::mat4& mat) const
 	{
-		glUniformMatrix4fv(glGetUniformLocation(m_Id, name.data()), 1, GL_FALSE, &mat[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(m_id, name.data()), 1, GL_FALSE, &mat[0][0]);
+	}
+
+	std::string_view Shader::getURI() const
+	{
+		return m_URI;
+	}
+
+	uint32_t Shader::getId() const
+	{
+		return m_id;
 	}
 
 	GLint Shader::getUniformLocation(std::string_view name) const
 	{
-		const auto val = glGetUniformLocation(m_Id, name.data());
+		const auto val = glGetUniformLocation(m_id, name.data());
 		if (val == -1)
 			Logger::info(
 				LogLevel::med,
@@ -258,7 +269,7 @@ namespace Phoenix {
 	// Returns false if failed during loading
 	bool Shader::compile(
 		const ShaderSources& shaderSources,
-		std::vector<std::string> const& feedbackVaryings
+		const std::unordered_set<std::string>& feedbackVaryings
 	)
 	{
 		bool compiled = false;
@@ -266,7 +277,7 @@ namespace Phoenix {
 			return false;
 		}
 
-		m_Id = glCreateProgram();
+		m_id = glCreateProgram();
 		std::vector<GLuint> glShaderIDs;
 		glShaderIDs.reserve(shaderSources.size());
 
@@ -301,7 +312,7 @@ namespace Phoenix {
 				return false;
 			}
 
-			glAttachShader(m_Id, shader);
+			glAttachShader(m_id, shader);
 			glShaderIDs.push_back(shader);
 		}
 
@@ -314,7 +325,7 @@ namespace Phoenix {
 				feedbackVaryings_cStr.emplace_back(i.c_str());
 
 			glTransformFeedbackVaryings(
-				m_Id,
+				m_id,
 				static_cast<GLsizei>(feedbackVaryings_cStr.size()),
 				feedbackVaryings_cStr.data(),
 				GL_INTERLEAVED_ATTRIBS
@@ -323,21 +334,21 @@ namespace Phoenix {
 
 
 		// Link our program
-		glLinkProgram(m_Id);
+		glLinkProgram(m_id);
 
 		// Note the different functions here: glGetProgram* instead of glGetShader*.
 		GLint isLinked;
-		glGetProgramiv(m_Id, GL_LINK_STATUS, &isLinked);
+		glGetProgramiv(m_id, GL_LINK_STATUS, &isLinked);
 		if (isLinked == GL_FALSE) {
 			GLint maxLength;
-			glGetProgramiv(m_Id, GL_INFO_LOG_LENGTH, &maxLength);
+			glGetProgramiv(m_id, GL_INFO_LOG_LENGTH, &maxLength);
 
 			// The maxLength includes the NULL character
 			GLchar* infoLog = new GLchar[maxLength];
-			glGetProgramInfoLog(m_Id, maxLength, &maxLength, infoLog);
+			glGetProgramInfoLog(m_id, maxLength, &maxLength, infoLog);
 
 			// We don't need the program anymore.
-			glDeleteProgram(m_Id);
+			glDeleteProgram(m_id);
 
 			for (auto shaderID : glShaderIDs)
 				glDeleteShader(shaderID);
@@ -349,7 +360,7 @@ namespace Phoenix {
 		}
 
 		for (auto id : glShaderIDs) {
-			glDetachShader(m_Id, id);
+			glDetachShader(m_id, id);
 			glDeleteShader(id);
 		}
 

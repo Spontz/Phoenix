@@ -17,7 +17,7 @@ namespace Phoenix {
 
 	private:
 		// Image
-		Texture* m_pTexture = nullptr;
+		SP_Texture m_pTexture;
 
 		// Particle engine variables
 		int				m_iNumParticles = 0;

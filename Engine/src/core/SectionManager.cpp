@@ -7,66 +7,62 @@
 
 namespace Phoenix {
 
-	typedef struct {
+	struct tSectionID {
 		std::string scriptName;
 		SectionType type;
-	} tSectionID;
-
-	// sections functions references
-	tSectionID sectionID[] = {
-		{"loading", SectionType::Loading },
-
-		// built-in sections
-		{"cameraFPS",			SectionType::CameraFPS},
-		{"cameraTarget",		SectionType::CameraTarget},
-		{"light",				SectionType::LightSec},
-		{"drawScene",			SectionType::DrawScene},
-		{"drawSceneMatrix",		SectionType::DrawSceneMatrix},
-		{"drawSceneMatrixInstanced",		SectionType::DrawSceneMatrixInstanced},
-		{"drawImage",			SectionType::DrawImage},
-		{"drawSkybox",			SectionType::DrawSkybox},
-		{"drawVideo",			SectionType::DrawVideo},
-		{"drawQuad",			SectionType::DrawQuad},
-		{"drawFbo",				SectionType::DrawFbo},
-		{"drawParticles",		SectionType::DrawParticles},
-		{"drawParticlesImage",	SectionType::DrawParticlesImage},
-		{"drawParticlesScene",	SectionType::DrawParticlesScene},
-		{"drawEmitters",		SectionType::DrawEmitters},
-		{"drawEmitterScene",	SectionType::DrawEmitterScene},
-		{"sound",				SectionType::Sound},
-		{"setVariable",			SectionType::SetVariable},
-		{"fboBind",				SectionType::FboBind},
-		{"fboUnbind",			SectionType::FboUnbind},
-		{"efxAccum",			SectionType::EfxAccum},
-		{"efxBloom",			SectionType::EfxBloom},
-		{"efxBlur",				SectionType::EfxBlur},
-		{"efxFader",			SectionType::EfxFader},
-		{"efxMotionBlur",		SectionType::EfxMotionBlur},
-		{"test",				SectionType::Test}
 	};
 
-#define SECTIONS_NUMBER ((sizeof(sectionID) / sizeof(tSectionID)))
+	// sections functions references
+	const tSectionID sectionID[] = {
+		{"loading",						SectionType::Loading},
 
+		// built-in sections
+		{"cameraFPS",					SectionType::CameraFPS},
+		{"cameraTarget",				SectionType::CameraTarget},
+		{"light",						SectionType::LightSec},
+		{"drawScene",					SectionType::DrawScene},
+		{"drawSceneMatrix",				SectionType::DrawSceneMatrix},
+		{"drawSceneMatrixInstanced",	SectionType::DrawSceneMatrixInstanced},
+		{"drawImage",					SectionType::DrawImage},
+		{"drawSkybox",					SectionType::DrawSkybox},
+		{"drawVideo",					SectionType::DrawVideo},
+		{"drawQuad",					SectionType::DrawQuad},
+		{"drawFbo",						SectionType::DrawFbo},
+		{"drawParticles",				SectionType::DrawParticles},
+		{"drawParticlesImage",			SectionType::DrawParticlesImage},
+		{"drawParticlesScene",			SectionType::DrawParticlesScene},
+		{"drawEmitters",				SectionType::DrawEmitters},
+		{"drawEmitterScene",			SectionType::DrawEmitterScene},
+		{"sound",						SectionType::Sound},
+		{"setVariable",					SectionType::SetVariable},
+		{"fboBind",						SectionType::FboBind},
+		{"fboUnbind",					SectionType::FboUnbind},
+		{"efxAccum",					SectionType::EfxAccum},
+		{"efxBloom",					SectionType::EfxBloom},
+		{"efxBlur",						SectionType::EfxBlur},
+		{"efxFader",					SectionType::EfxFader},
+		{"efxMotionBlur",				SectionType::EfxMotionBlur},
+		{"test",						SectionType::Test}
+	};
 
-	// Init vars
-	SectionManager::SectionManager() {
-		this->section.clear();
-		this->loadSection.clear();
-		this->execSection.clear();
-	}
+	constexpr auto SECTIONS_NUMBER = sizeof(sectionID) / sizeof(tSectionID);
 
 	SectionManager::~SectionManager()
 	{
+		Logger::info(LogLevel::med, "Destructing SectionManager...");
 		clear();
 	}
 
-
 	// Adds a Section into the queue
 	// Returns the section ID or -1 if the section could not be added
-	int SectionManager::addSection(const std::string& key, const std::string& DataSource, int enabled) {
-
+	int32_t SectionManager::addSection(
+		const std::string& key,
+		const std::string& DataSource,
+		bool enabled
+	)
+	{
 		Section* mySection = NULL;
-		int sec_id = -1;
+		int32_t sec_id = -1;
 
 		switch (getSectionType(key)) {
 		case SectionType::Loading:
@@ -153,22 +149,22 @@ namespace Phoenix {
 		case SectionType::NOT_FOUND:
 			break;
 		}
-		if (mySection != NULL) {
+		if (mySection != nullptr) {
 			mySection->loaded = FALSE;	// By default, the section is not loaded
 			mySection->enabled = enabled;
 			mySection->DataSource = DataSource;
 			mySection->type_str = key;
-			section.push_back(dynamic_cast<Section*>(mySection));
-			sec_id = (int)section.size() - 1;
+			m_section.push_back(mySection);
+			sec_id = (int32_t)m_section.size() - 1;
 		}
 		return sec_id;
 	}
 
 	Section* SectionManager::getSection(const std::string& id) {
-		int sec_size = (int)this->section.size();
+		int32_t sec_size = (int32_t)this->m_section.size();
 		Section* ds;
-		for (int i = 0; i < sec_size; i++) {
-			ds = this->section[i];
+		for (int32_t i = 0; i < sec_size; i++) {
+			ds = this->m_section[i];
 			if (ds->identifier == id) {
 				return ds;
 			}
@@ -176,11 +172,11 @@ namespace Phoenix {
 		return NULL;
 	}
 
-	int SectionManager::getSectionPosition(const std::string& id) {
-		int sec_size = (int)this->section.size();
+	int32_t SectionManager::getSectionPosition(const std::string& id) {
+		int32_t sec_size = (int32_t)this->m_section.size();
 		Section* ds;
-		for (int i = 0; i < sec_size; i++) {
-			ds = this->section[i];
+		for (int32_t i = 0; i < sec_size; i++) {
+			ds = this->m_section[i];
 			if (ds->identifier == id) {
 				return i;
 			}
@@ -193,9 +189,9 @@ namespace Phoenix {
 		std::vector<std::string> ids = splitIdentifiers(identifier);
 
 		Section* ds;
-		int id_size = (int)ids.size();
+		int32_t id_size = (int32_t)ids.size();
 
-		for (int i = 0; i < id_size; i++) {
+		for (int32_t i = 0; i < id_size; i++) {
 			ds = getSection(ids[i]);
 			if (ds) {
 				ds->enabled = !ds->enabled;
@@ -212,15 +208,15 @@ namespace Phoenix {
 		std::vector<std::string> ids = splitIdentifiers(identifier);
 
 		Section* ds;
-		int			ds_number;
-		int id_size = (int)ids.size();
+		int32_t			ds_number;
+		int32_t id_size = (int32_t)ids.size();
 
-		for (int i = 0; i < id_size; i++) {
+		for (int32_t i = 0; i < id_size; i++) {
 			ds = getSection(ids[i]);
 			ds_number = getSectionPosition(ids[i]);
 			if (ds) {
 				ds->end();
-				this->section.erase(this->section.begin() + ds_number);
+				this->m_section.erase(this->m_section.begin() + ds_number);
 				//Logger::sendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 			}
 			else {
@@ -236,7 +232,8 @@ namespace Phoenix {
 		DEMO->loadScriptFromNetwork(sScript);
 	}
 
-	std::vector<std::string> SectionManager::splitIdentifiers(const std::string& identifiers) {
+	std::vector<std::string> SectionManager::splitIdentifiers(const std::string& identifiers)
+	{
 		std::stringstream ss(identifiers);
 		std::vector<std::string> result;
 
@@ -249,21 +246,24 @@ namespace Phoenix {
 		return result;
 	}
 
-	void SectionManager::setSectionsStartTime(const std::string& amount, const std::string& identifiers)
+	void SectionManager::setSectionsStartTime(
+		const std::string& amount,
+		const std::string& identifiers
+	)
 	{
 		std::vector<std::string> ids = splitIdentifiers(identifiers);
 		float startTime = (float)atof(amount.c_str());
 
 		Section* ds;
-		int id_size = (int)ids.size();
+		int32_t id_size = (int32_t)ids.size();
 
-		for (int i = 0; i < id_size; i++) {
+		for (int32_t i = 0; i < id_size; i++) {
 			ds = getSection(ids[i]);
 			if (ds) {
 				ds->startTime = startTime;
 				ds->duration = ds->endTime - ds->startTime;
 				// Reload the splines. This way they are recalculated
-				for (int k = 0; k < ds->spline.size(); k++) {
+				for (int32_t k = 0; k < ds->spline.size(); k++) {
 					ds->spline[k]->duration = ds->duration;
 					ds->spline[k]->load();
 				}
@@ -281,15 +281,15 @@ namespace Phoenix {
 		float endTime = (float)atof(amount.c_str());
 
 		Section* ds;
-		int id_size = (int)ids.size();
+		int32_t id_size = (int32_t)ids.size();
 
-		for (int i = 0; i < id_size; i++) {
+		for (int32_t i = 0; i < id_size; i++) {
 			ds = getSection(ids[i]);
 			if (ds) {
 				ds->endTime = endTime;
 				ds->duration = ds->endTime - ds->startTime;
 				// Reload the splines. This way they are recalculated
-				for (int k = 0; k < ds->spline.size(); k++) {
+				for (int32_t k = 0; k < ds->spline.size(); k++) {
 					ds->spline[k]->duration = ds->duration;
 					ds->spline[k]->load();
 				}
@@ -304,7 +304,7 @@ namespace Phoenix {
 	void SectionManager::setSectionLayer(const std::string& layer, const std::string& identifier)
 	{
 		Section* ds;
-		int new_layer = atoi(layer.c_str());
+		int32_t new_layer = atoi(layer.c_str());
 
 		ds = getSection(identifier);
 		if (ds) {
@@ -318,20 +318,24 @@ namespace Phoenix {
 
 	void SectionManager::clear()
 	{
-		this->section.clear();
-		this->loadSection.clear();
-		this->execSection.clear();
+		Logger::info(LogLevel::med, "SectionManager::clear()");
+		Logger::info(LogLevel::low, "{");
+		for (auto const& pSection : m_section) {
+			Logger::info(LogLevel::low, "Deleting %s...", pSection->identifier.c_str());
+			delete pSection;
+		}
+		Logger::info(LogLevel::low, "}");
+
+		m_section.clear();
+		m_loadSection.clear();
+		m_execSection.clear();
 	}
 
 	SectionType SectionManager::getSectionType(const std::string& key)
 	{
-		int i;
-
-		for (i = 0; i < SECTIONS_NUMBER; i++) {
-			if (key == sectionID[i].scriptName) {
-				return sectionID[i].type;
-			}
-		}
+		for (const auto& i : sectionID)
+			if (key ==  i.scriptName)
+				return i.type;
 
 		return SectionType::NOT_FOUND;
 	}

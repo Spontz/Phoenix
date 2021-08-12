@@ -46,16 +46,14 @@ namespace Phoenix {
 
 
 		// Create the new Vertex Buffer to apply to the meshes
-		VertexBuffer* vertexBuffer = new VertexBuffer(amount * sizeof(glm::mat4));
-		vertexBuffer->SetLayout({
+		auto pVB = std::make_shared<VertexBuffer>(static_cast<uint32_t>(static_cast<size_t>(amount) * sizeof(glm::mat4)));
+		pVB->SetLayout({
 			{ ShaderDataType::Mat4,	"aInstancePos"}
 			});
 
 		// Add the new vertex buffer to mesh vertex array
-		for (unsigned int i = 0; i < pModel->meshes.size(); i++)
-		{
-			pModel->meshes[i].m_VertexArray->AddVertexBuffer(vertexBuffer);
-		}
+		for (unsigned int i = 0; i < pModel->meshes.size(); ++i)
+			pModel->meshes[i].m_VertexArray->AddVertexBuffer(pVB);
 	}
 
 	ModelInstance::~ModelInstance()
@@ -91,9 +89,9 @@ namespace Phoenix {
 		for (auto& mesh : pModel->meshes)
 		{
 			// Update matrices buffers to GPU
-			std::vector<VertexBuffer*> vb = mesh.m_VertexArray->GetVertexBuffers();
-			vb[1]->SetData(&pModelMatrix[0], amount * sizeof(glm::mat4)); // Be careful with "vb[1]"!! -> TODO: Get rid of this hardcode!!
-			vb[1]->Unbind();
+			const auto& VBs = mesh.m_VertexArray->GetVertexBuffers();
+			VBs[1]->SetData(&pModelMatrix[0], amount * sizeof(glm::mat4)); // Be careful with "vb[1]"!! -> TODO: Get rid of this hardcode!!
+			VBs[1]->Unbind();
 		}
 	}
 

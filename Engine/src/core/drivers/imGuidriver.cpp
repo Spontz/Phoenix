@@ -449,9 +449,9 @@ namespace Phoenix {
 		if (ImGui::Checkbox("Expand All", &m_expandAllSections))
 			m_expandAllSectionsChanged = true;
 
-		for (int i = 0; i < m_demo.m_sectionManager.execSection.size(); i++) {
-			sec_id = m_demo.m_sectionManager.execSection[i].second;	// The second value is the ID of the section
-			ds = m_demo.m_sectionManager.section[sec_id];
+		for (int i = 0; i < m_demo.m_sectionManager.m_execSection.size(); i++) {
+			sec_id = m_demo.m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
+			ds = m_demo.m_sectionManager.m_section[sec_id];
 			s = ds->type_str + " id/layer[" + ds->identifier + "/" + std::to_string(ds->layer) + "]";
 			if (m_expandAllSectionsChanged)
 				ImGui::SetNextTreeNodeOpen(m_expandAllSections);
