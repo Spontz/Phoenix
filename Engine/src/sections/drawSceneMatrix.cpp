@@ -43,8 +43,8 @@ namespace Phoenix {
 		glm::mat4	m_mPrevProjection = glm::mat4(1.0f);
 		glm::mat4	m_mPrevView = glm::mat4(1.0f);
 
-		Model* m_pModelRef = nullptr;	// Matrix model to be use to store positions
-		Model* m_pModel = nullptr;	// Model to draw
+		SP_Model m_pModelRef;	// Matrix model to be use to store positions
+		SP_Model m_pModel;	// Model to draw
 		SP_Shader m_pShader;
 		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
 		ShaderVars* m_pVars = nullptr;	// For storing any other shader variables
@@ -94,7 +94,7 @@ namespace Phoenix {
 		// Calculate the number of matrices that we need to store
 		uint32_t num_obj_instances = 0;
 		for (auto& meshRef : m_pModelRef->meshes) {
-			num_obj_instances += static_cast<uint32_t>(meshRef.unique_vertices_pos.size());
+			num_obj_instances += static_cast<uint32_t>(meshRef->unique_vertices_pos.size());
 		}
 
 		if (num_obj_instances == 0) {
@@ -221,10 +221,10 @@ namespace Phoenix {
 
 		for (int i = 0; i < m_pModelRef->meshes.size(); i++)
 		{
-			for (int j = 0; j < m_pModelRef->meshes[i].unique_vertices_pos.size(); j++)
+			for (int j = 0; j < m_pModelRef->meshes[i]->unique_vertices_pos.size(); j++)
 			{
-				m_vCurrObjPos = m_pModelRef->meshes[i].unique_vertices_pos[j];
-				m_vCurrObjPosPolar = m_pModelRef->meshes[i].unique_vertices_polar[j];
+				m_vCurrObjPos = m_pModelRef->meshes[i]->unique_vertices_pos[j];
+				m_vCurrObjPosPolar = m_pModelRef->meshes[i]->unique_vertices_polar[j];
 				m_pShader->setValue("n", m_fCurrObjID);				// Send the number of object to the shader
 				m_pShader->setValue("n_pos", m_vCurrObjPos);			// Send the object relative position to the shader
 				m_pShader->setValue("n_polar", m_vCurrObjPosPolar);	// Send the object relative position to the shader (in polar format: x=alpha, y=beta, z=distance)
@@ -304,10 +304,10 @@ namespace Phoenix {
 
 		for (int i = 0; i < m_pModelRef->meshes.size(); i++)
 		{
-			for (int j = 0; j < m_pModelRef->meshes[i].unique_vertices_pos.size(); j++)
+			for (int j = 0; j < m_pModelRef->meshes[i]->unique_vertices_pos.size(); j++)
 			{
-				m_vCurrObjPos = m_pModelRef->meshes[i].unique_vertices_pos[j];
-				m_vCurrObjPosPolar = m_pModelRef->meshes[i].unique_vertices_polar[j];
+				m_vCurrObjPos = m_pModelRef->meshes[i]->unique_vertices_pos[j];
+				m_vCurrObjPosPolar = m_pModelRef->meshes[i]->unique_vertices_polar[j];
 				// Evaluate the expression
 				m_pExprPosition->Expression.value();
 
@@ -316,7 +316,7 @@ namespace Phoenix {
 
 				my_obj_model = &(m_pMatrixObjModel[object]);
 				*my_obj_model = matrixModel;
-				*my_obj_model = glm::translate(*my_obj_model, m_pModelRef->meshes[i].unique_vertices_pos[j]);
+				*my_obj_model = glm::translate(*my_obj_model, m_pModelRef->meshes[i]->unique_vertices_pos[j]);
 
 				// Now render the object using the "model_ref" as a model matrix start position
 				*my_obj_model = glm::translate(*my_obj_model, m_vCurrObjTranslation);

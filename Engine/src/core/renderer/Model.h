@@ -10,19 +10,58 @@
 #include "core/renderer/Shader.h"
 #include "core/renderer/Camera.h"
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <map>
-#include <vector>
-
 namespace Phoenix {
 
-	class Model
+	class Model;
+	using SP_Model = std::shared_ptr<Model>;
+	using WP_Model = std::weak_ptr<Model>;
+
+	class Model final
 	{
 	public:
-		std::vector<Mesh>	meshes;
+		Model();
+		~Model();
+
+	public:
+		// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
+		bool Load(std::string_view path);
+		// draws the model, and thus all its meshes
+		void Draw(GLuint shaderID, float currentTime, uint32_t startTexUnit = 0);
+		void setAnimation(unsigned int a);
+		void setCamera(unsigned int c);
+
+		// Load unique vertices
+		void loadUniqueVertices();
+
+	private:
+		// Get Stats from the model
+		void getStats();
+
+		// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
+		void processNode(aiNode* node, const aiScene* scene);
+		SP_Mesh processMesh(std::string nodeName, aiMesh* mesh, const aiScene* scene);
+
+		// Process the scene cameras
+		void processCameras(const aiScene* scene);
+
+		// Set mesh transformations
+		void setMeshesModelTransform();
+
+		// Bones Calculations
+		void setBoneTransformations(GLuint shaderProgram, float currentTime);
+		void boneTransform(float timeInSeconds);
+		// Bones Transformations
+		void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+		void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+		void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+		unsigned int FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
+		unsigned int FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
+		unsigned int FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
+		const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
+		void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
+
+	public:
+		std::vector<SP_Mesh>	meshes;
 		std::string			directory;			// Path of the model file
 		std::string			filename;			// Name of the model file
 		std::string			filepath;			// Full path of the model file
@@ -49,22 +88,9 @@ namespace Phoenix {
 		uint32_t			m_statNumAnimations;
 		uint32_t			m_statNumBones;
 
-		Model();
-		virtual ~Model();
-
-		// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
-		bool Load(const std::string& path);
-		// draws the model, and thus all its meshes
-		void Draw(GLuint shaderID, float currentTime, uint32_t startTexUnit = 0);
-		void setAnimation(unsigned int a);
-		void setCamera(unsigned int c);
-
-		// Load unique vertices
-		void loadUniqueVertices();
-
 	private:
 		Assimp::Importer					m_Importer;
-		const aiScene						*m_pScene;
+		const aiScene* m_pScene;
 		glm::mat4							m_matGlobalInverseTransform;// Global transformation matrix for nodes (vertices relative to bones)
 		// Bones info
 		std::map<std::string, BoneInfo>		m_boneInfoMap;				// maps a bone name to its information
@@ -75,31 +101,5 @@ namespace Phoenix {
 		double								m_animDuration;				// Animation duration in seconds
 
 		bool								m_bLoadedUniqueVertices;	// Have we loaded the unique vertices for each mesh?
-
-		// Get Stats from the model
-		void getStats();
-
-		// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
-		void processNode(aiNode* node, const aiScene* scene);
-		Mesh processMesh(std::string nodeName, aiMesh* mesh, const aiScene* scene);
-
-		// Process the scene cameras
-		void processCameras(const aiScene* scene);
-
-		// Set mesh transformations
-		void setMeshesModelTransform();
-
-		// Bones Calculations
-		void setBoneTransformations(GLuint shaderProgram, float currentTime);
-		void boneTransform(float timeInSeconds);
-		// Bones Transformations
-		void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-		void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-		void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-		unsigned int FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
-		unsigned int FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
-		unsigned int FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
-		const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
-		void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
 	};
 }

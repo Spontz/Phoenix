@@ -84,18 +84,18 @@ namespace Phoenix {
 		// Then, send the model matrice of each mesh and draw them
 		for (auto& mesh : meshes) {
 			// Send model matrix
-			glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, &(mesh.m_matModel[0][0]));
-			m_matMVP = m_matProjection * m_matView * mesh.m_matModel;
+			glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, &(mesh->m_matModel[0][0]));
+			m_matMVP = m_matProjection * m_matView * mesh->m_matModel;
 			glUniformMatrix4fv(glGetUniformLocation(shaderID, "MVP"), 1, GL_FALSE, &(m_matMVP[0][0]));
 
 			// Send previous model matrix
-			glUniformMatrix4fv(glGetUniformLocation(shaderID, "prev_model"), 1, GL_FALSE, &(mesh.m_matPrevModel[0][0]));
-			m_matPrevMVP = m_matPrevProjection * m_matPrevView * mesh.m_matPrevModel;
+			glUniformMatrix4fv(glGetUniformLocation(shaderID, "prev_model"), 1, GL_FALSE, &(mesh->m_matPrevModel[0][0]));
+			m_matPrevMVP = m_matPrevProjection * m_matPrevView * mesh->m_matPrevModel;
 			glUniformMatrix4fv(glGetUniformLocation(shaderID, "prev_MVP"), 1, GL_FALSE, &(m_matPrevMVP[0][0]));
-			mesh.m_matPrevModel = mesh.m_matModel;
+			mesh->m_matPrevModel = mesh->m_matModel;
 
 			// Draw
-			mesh.Draw(shaderID, startTexUnit);
+			mesh->Draw(shaderID, startTexUnit);
 		}
 
 		m_matPrevProjection = m_matProjection;
@@ -129,14 +129,14 @@ namespace Phoenix {
 	{
 		if (!m_bLoadedUniqueVertices) {
 			for (auto& mesh : meshes) {
-				mesh.loadUniqueVerticesPos();
+				mesh->loadUniqueVerticesPos();
 			}
 			m_bLoadedUniqueVertices = true;
 		}
 	}
 
 	// Returns false if model has not been properly loaded
-	bool Model::Load(const std::string& path)
+	bool Model::Load(std::string_view path)
 	{
 		filepath = path;
 
@@ -218,8 +218,8 @@ namespace Phoenix {
 		m_statNumVertices = 0;
 		m_statNumFaces = 0;
 		for (uint32_t i = 0; i < m_statNumMeshes; i++) {
-			m_statNumVertices += meshes[i].m_numVertices;
-			m_statNumFaces += meshes[i].m_numFaces;
+			m_statNumVertices += meshes[i]->m_numVertices;
+			m_statNumFaces += meshes[i]->m_numFaces;
 		}
 			
 
@@ -251,7 +251,7 @@ namespace Phoenix {
 	}
 
 
-	Mesh Model::processMesh(std::string nodeName, aiMesh* mesh, const aiScene* scene)
+	SP_Mesh Model::processMesh(std::string nodeName, aiMesh* mesh, const aiScene* scene)
 	{
 		// data to fill
 		std::vector<Vertex> vertices;
@@ -369,13 +369,22 @@ namespace Phoenix {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
 		// return a mesh object created from the extracted mesh data
-		return Mesh(scene, nodeName, mesh, vertices, indices, material, directory, filename);
+		return std::make_shared<Mesh>(
+			scene,
+			nodeName,
+			mesh,
+			vertices,
+			indices,
+			material,
+			directory,
+			filename
+			);
 	}
 
 	void Model::setMeshesModelTransform()
 	{
 		for (auto& mesh : meshes)
-			mesh.m_matModel = m_matBaseModel;
+			mesh->m_matModel = m_matBaseModel;
 	}
 
 	/////////////// Bones calculations
@@ -452,8 +461,8 @@ namespace Phoenix {
 
 		// Now we need to apply the Matrix to the corresponding object
 		for (unsigned int i = 0; i < m_statNumMeshes; i++) {
-			if (NodeName == this->meshes[i].m_nodeName) {
-				this->meshes[i].m_matModel *= m_matGlobalInverseTransform * GlobalTransformation;
+			if (NodeName == this->meshes[i]->m_nodeName) {
+				this->meshes[i]->m_matModel *= m_matGlobalInverseTransform * GlobalTransformation;
 				/*Logger::info(LogLevel::low, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %boneIndex [time: %.3f]", NodeName.c_str(), boneIndex, AnimationTime);
 				glm::mat4 M = GlobalTransformation;
 				Logger::info(LogLevel::low, "M: [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f]",

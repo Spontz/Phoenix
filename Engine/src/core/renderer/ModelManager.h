@@ -3,21 +3,16 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
 #include "core/renderer/Model.h"
 
 namespace Phoenix {
 
-	class ModelManager {
+	class ModelManager final {
 	public:
-		std::vector<Model*> model;	// Model list
+		SP_Model	addModel(std::string_view path);
+		void		clear();
 
-		ModelManager();
-		virtual ~ModelManager();
-		Model*	addModel(std::string path);
-		void	clear();
 	private:
-
+		std::vector<SP_Model> model;	// Model list
 	};
 }

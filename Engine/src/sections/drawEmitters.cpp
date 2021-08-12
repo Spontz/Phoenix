@@ -16,7 +16,7 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		Model* m_pModel = nullptr;
+		SP_Model m_pModel;
 
 		// Particle engine variables
 		unsigned int	m_uiNumMaxParticles = 0;
@@ -124,7 +124,7 @@ namespace Phoenix {
 
 		// Read the number of emmitters
 		for (auto& mesh : m_pModel->meshes) {
-			m_uiNumEmitters += static_cast<uint32_t>(mesh.unique_vertices_pos.size());
+			m_uiNumEmitters += static_cast<uint32_t>(mesh->unique_vertices_pos.size());
 		}
 
 		if (m_uiNumEmitters <= 0) {

@@ -42,7 +42,7 @@ namespace Phoenix {
 		glm::mat4		m_mPrevProjection = glm::mat4(1.0f);
 		glm::mat4		m_mPrevView = glm::mat4(1.0f);
 
-		Model* m_pModelRef = nullptr;	// Reference model to be use to store positions
+		SP_Model m_pModelRef;	// Reference model to be use to store positions
 		ModelInstance* m_pModel = nullptr;	// Model to draw instanced
 		SP_Shader m_pShader;
 		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
@@ -86,7 +86,7 @@ namespace Phoenix {
 
 		// Load ref. model, model and shader
 		m_pModelRef = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[0]);
-		Model* model_to_draw = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[1]);
+		auto model_to_draw = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[1]);
 		if (!m_pModelRef || !model_to_draw)
 			return false;
 
@@ -100,7 +100,7 @@ namespace Phoenix {
 		// Calculate the amount of objects to draw
 		uint32_t num_obj_instances = 0;
 		for (auto& meshRef : m_pModelRef->meshes) {
-			num_obj_instances += static_cast<uint32_t>(meshRef.unique_vertices_pos.size());
+			num_obj_instances += static_cast<uint32_t>(meshRef->unique_vertices_pos.size());
 		}
 
 		if (num_obj_instances == 0) {
@@ -297,10 +297,10 @@ namespace Phoenix {
 
 		for (int i = 0; i < m_pModelRef->meshes.size(); i++)
 		{
-			for (int j = 0; j < m_pModelRef->meshes[i].unique_vertices_pos.size(); j++)
+			for (int j = 0; j < m_pModelRef->meshes[i]->unique_vertices_pos.size(); j++)
 			{
-				m_vCurrObjPos = m_pModelRef->meshes[i].unique_vertices_pos[j];
-				m_vCurrObjPosPolar = m_pModelRef->meshes[i].unique_vertices_polar[j];
+				m_vCurrObjPos = m_pModelRef->meshes[i]->unique_vertices_pos[j];
+				m_vCurrObjPosPolar = m_pModelRef->meshes[i]->unique_vertices_polar[j];
 				// Evaluate the expression
 				m_pExprPosition->Expression.value();
 
@@ -309,7 +309,7 @@ namespace Phoenix {
 
 				my_obj_model = &(m_pModel->pModelMatrix[object]);
 				*my_obj_model = matrixModel;
-				*my_obj_model = glm::translate(*my_obj_model, m_pModelRef->meshes[i].unique_vertices_pos[j]);
+				*my_obj_model = glm::translate(*my_obj_model, m_pModelRef->meshes[i]->unique_vertices_pos[j]);
 
 				// Now render the object using the "model_ref" as a model matrix start position
 				*my_obj_model = glm::translate(*my_obj_model, m_vCurrObjTranslation);

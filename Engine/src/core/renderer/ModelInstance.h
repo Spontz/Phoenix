@@ -23,22 +23,20 @@ namespace Phoenix {
 	class ModelInstance
 	{
 	public:
-		Model*			pModel;				// Model to draw
+		ModelInstance(SP_Model model, unsigned int amount);
+		~ModelInstance();
+
+	public:
+		SP_Model		pModel;				// Model to draw
 		unsigned int	amount;				// Amount of instances to draw
 		glm::mat4*		pModelMatrix;		// Model matrice of each instance
 		glm::mat4*		pPrevModelMatrix;	// Previous model matrice of each instance (useful for effects like motion blur)
 		unsigned int	matricesBuffer;
 
-		ModelInstance(Model* model, unsigned int amount);
-		virtual ~ModelInstance();
-
 		void updateMatrices();
 
 		void drawInstanced(GLuint shaderID, uint32_t startTexUnit = 0);
 		void copyMatrices(int instance);
-
-	private:
-
 	};
 
 }

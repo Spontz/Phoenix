@@ -6,40 +6,28 @@
 
 namespace Phoenix {
 
-	// Init vars
-	ModelManager::ModelManager() {
-		model.clear();
-	}
-
-	ModelManager::~ModelManager()
-	{
-		clear();
-	}
-
 	// Adds a Model into the queue, returns the ID of the model added
-	Model* ModelManager::addModel(std::string path) {
-		int i;
-		Model* p_model = nullptr;
+	SP_Model ModelManager::addModel(std::string_view path) {
+		SP_Model p_model;
 
 		// check if Model is already loaded, then we just return the ID of our Model
-		for (i = 0; i < model.size(); i++) {
-			if (model[i]->filepath.compare(path) == 0) {
+		for (auto i = 0; i < model.size(); i++)
+			if (model[i]->filepath.compare(path) == 0)
 				return model[i];
-			}
-		}
 
 		// if we must load the model...
-		Model* new_model = new Model();
+		SP_Model new_model = std::make_shared<Model>();
 		if (new_model->Load(path)) {
 			model.push_back(new_model);
 			p_model = new_model;
-			Logger::info(LogLevel::med, "Model %s [id: %d] loaded OK", path.c_str(), model.size() - 1);
+			Logger::info(LogLevel::med, "Model %s [id: %d] loaded OK", path.data(), model.size() - 1);
 		}
 		else
-			Logger::error("Could not load model: %s", path.c_str());
+			Logger::error("Could not load model: %s", path.data());
 
 		return p_model;
 	}
+
 	void ModelManager::clear()
 	{
 		model.clear();
