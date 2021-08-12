@@ -7,8 +7,6 @@
 namespace Phoenix {
 
 	VertexArray::VertexArray()
-		:
-		m_IndexBuffer(nullptr)
 	{
 		glCreateVertexArrays(1, &m_RendererID);
 	}
@@ -17,16 +15,6 @@ namespace Phoenix {
 	{
 		if (m_RendererID != 0)
 			glDeleteVertexArrays(1, &m_RendererID);
-		for (auto& vb : m_VertexBuffers) {
-			delete vb;
-			vb = nullptr;
-		}
-
-		if (m_IndexBuffer) {
-			delete m_IndexBuffer;
-			m_IndexBuffer = nullptr;
-		}
-
 	}
 
 	void VertexArray::Bind() const
@@ -39,7 +27,7 @@ namespace Phoenix {
 		glBindVertexArray(0);
 	}
 
-	void VertexArray::AddVertexBuffer(VertexBuffer* vertexBuffer)
+	void VertexArray::AddVertexBuffer(SP_VertexBuffer vertexBuffer)
 	{
 		glBindVertexArray(m_RendererID);
 		vertexBuffer->Bind();
@@ -186,11 +174,21 @@ namespace Phoenix {
 	}
 #endif
 
-	void VertexArray::SetIndexBuffer(IndexBuffer* indexBuffer)
+	const std::vector<SP_VertexBuffer>& VertexArray::GetVertexBuffers() const {
+		return m_VertexBuffers;
+	}
+
+	SP_IndexBuffer VertexArray::GetIndexBuffer() const
+	{
+		return m_IndexBuffer;
+	}
+
+	void VertexArray::SetIndexBuffer(SP_IndexBuffer indexBuffer)
 	{
 		glBindVertexArray(m_RendererID);
 		indexBuffer->Bind();
 		//glVertexArrayElementBuffer(m_RendererID, indexBuffer->GetBufferID());	// In case we want to use DSA, we can remove glBindVertexArray and indexBufferBind and use this
 		m_IndexBuffer = indexBuffer;
 	}
+
 }

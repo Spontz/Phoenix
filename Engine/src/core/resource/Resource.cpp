@@ -89,13 +89,13 @@ namespace Phoenix {
 		m_pQuadFullScreen = new VertexArray();
 
 		// Create & Load the Vertex Buffer
-		VertexBuffer* vb = new VertexBuffer(&quadVertices, static_cast<uint32_t>(sizeof(quadVertices)));
-		vb->SetLayout({
+		auto spVB = std::make_shared<VertexBuffer>(&quadVertices, static_cast<uint32_t>(sizeof(quadVertices)));
+		spVB->SetLayout({
 			{ ShaderDataType::Float2,	"aPos"},
 			{ ShaderDataType::Float2,	"aTexCoords"},
 			});
 
-		m_pQuadFullScreen->AddVertexBuffer(vb);
+		m_pQuadFullScreen->AddVertexBuffer(spVB);
 
 		// Create & Load the Index Buffer :: Not really needed since the vertice are already sorted
 		//uint32_t quadIndices[] = { 0,1,2,3,4,5 };
@@ -156,12 +156,12 @@ namespace Phoenix {
 		m_pSkybox = new VertexArray();
 
 		// Create & Load the Vertex Buffer
-		VertexBuffer* vb = new VertexBuffer(&skyboxVertices, static_cast<uint32_t>(sizeof(skyboxVertices)));
-		vb->SetLayout({
+		auto spVB = std::make_shared<VertexBuffer>(&skyboxVertices, static_cast<uint32_t>(sizeof(skyboxVertices)));
+		spVB->SetLayout({
 			{ ShaderDataType::Float3,	"aPos"},
 			});
 
-		m_pSkybox->AddVertexBuffer(vb);
+		m_pSkybox->AddVertexBuffer(spVB);
 		m_pSkybox->Unbind();
 	}
 
@@ -216,14 +216,14 @@ namespace Phoenix {
 		m_pQube = new VertexArray();
 
 		// Create & Load the Vertex Buffer
-		VertexBuffer* vb = new VertexBuffer(&qubeVertices, static_cast<uint32_t>(sizeof(qubeVertices)));
-		vb->SetLayout({
+		auto spVB = std::make_shared<VertexBuffer>(&qubeVertices, static_cast<uint32_t>(sizeof(qubeVertices)));
+		spVB->SetLayout({
 			{ ShaderDataType::Float3,	"aPos"},
 			{ ShaderDataType::Float3,	"aNormal"},
 			{ ShaderDataType::Float2,	"aTexCoords"},
 			});
 
-		m_pQube->AddVertexBuffer(vb);
+		m_pQube->AddVertexBuffer(spVB);
 		m_pQube->Unbind();
 	}
 
@@ -315,16 +315,16 @@ namespace Phoenix {
 		m_pGrid = new VertexArray();
 
 		// Create & Load the Vertex Buffer
-		VertexBuffer* vb = new VertexBuffer(&vertices[0], static_cast<uint32_t>(sizeof(glm::vec3) * vertices.size()));
-		vb->SetLayout({
+		auto spVB = std::make_shared<VertexBuffer>(&vertices[0], static_cast<uint32_t>(sizeof(glm::vec3) * vertices.size()));
+		spVB->SetLayout({
 			{ ShaderDataType::Float3,	"aPos"},
 			});
 
-		m_pGrid->AddVertexBuffer(vb);
+		m_pGrid->AddVertexBuffer(spVB);
 
 		// Create & Load the Index Buffer :: Not really needed since the vertice are already sorted
-		IndexBuffer* ib = new IndexBuffer(&indices[0], static_cast<uint32_t>(indices.size()));
-		m_pGrid->SetIndexBuffer(ib);
+		auto spIB = std::make_shared<IndexBuffer>(indices.data(), indices.size());
+		m_pGrid->SetIndexBuffer(spIB);
 
 		m_pGrid->Unbind();
 	}
