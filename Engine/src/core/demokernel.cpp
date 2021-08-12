@@ -333,6 +333,11 @@ namespace Phoenix {
 	}
 
 	void demokernel::closeDemo() {
+
+		Logger::info(LogLevel::low, "Closing Bass driver...");
+		BASSDRV->stop();
+		BASSDRV->end();
+
 		Logger::info(LogLevel::low, "Closing GL driver...");
 		GLDRV->close();				// Close GL driver
 
