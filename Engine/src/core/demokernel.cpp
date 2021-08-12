@@ -24,6 +24,11 @@ namespace Phoenix {
 		return *kpDemoKernel;
 	}
 
+	demokernel::~demokernel() {
+		if (m_pDefaultCamera)
+			delete m_pDefaultCamera;
+	}
+
 	void demokernel::release() {
 		delete kpDemoKernel;
 		kpDemoKernel = nullptr;
@@ -35,7 +40,7 @@ namespace Phoenix {
 		m_pActiveCamera(nullptr),
 		m_pDefaultCamera(nullptr),
 		m_status(-1),
-		m_demoName("Phoneix Spontz Demoengine"),
+		m_demoName("Phoenix Spontz Demoengine"),
 		m_dataFolder("./data/"),
 		m_debug_fontSize(1.0f),
 #ifdef _DEBUG

@@ -19,9 +19,9 @@ namespace Phoenix {
 		clear();
 	}
 
-	Texture* TextureManager::addTexture(std::string_view const& path, bool flip, std::string_view const& type) {
+	SP_Texture TextureManager::addTexture(std::string_view const& path, bool flip, std::string_view const& type) {
 		unsigned int i;
-		Texture* p_tex = nullptr;
+		SP_Texture p_tex;
 
 		// check if texture is already loaded, then we just retrieve the ID of our texture
 		for (i = 0; i < texture.size(); i++) {
@@ -31,7 +31,7 @@ namespace Phoenix {
 		}
 
 		if (p_tex == nullptr) { // If the texture has not been found, we need to load it for the first time
-			Texture* new_tex = new Texture();
+			SP_Texture new_tex = std::make_shared<Texture>();
 			if (new_tex->load(path, flip)) {
 				new_tex->type = type;
 				texture.push_back(new_tex);
@@ -41,7 +41,6 @@ namespace Phoenix {
 			}
 			else {
 				Logger::error("Could not load texture: %s", path.data());
-				delete new_tex;
 			}
 
 		}
@@ -61,10 +60,10 @@ namespace Phoenix {
 		return p_tex;
 	}
 
-	Texture* TextureManager::addTextureFromMem(const unsigned char* data, int len, bool flip, std::string_view const& type) {
-		Texture* p_tex = nullptr;
+	SP_Texture TextureManager::addTextureFromMem(const unsigned char* data, int len, bool flip, std::string_view const& type) {
+		SP_Texture p_tex;
 
-		Texture* new_tex = new Texture();
+		auto new_tex = std::make_shared<Texture>();
 		if (new_tex->loadFromMem(data, len, flip)) {
 			new_tex->type = type;
 			texture.push_back(new_tex);
@@ -74,7 +73,6 @@ namespace Phoenix {
 		}
 		else {
 			Logger::error("Could not load embedded texture");
-			delete new_tex;
 		}
 
 		return p_tex;

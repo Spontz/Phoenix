@@ -11,9 +11,9 @@ namespace Phoenix {
 		void		end();
 
 	private:
-		Texture* m_pTexFront = nullptr;
-		Texture* m_pTexBack = nullptr;
-		Texture* m_pTexBar = nullptr;
+		SP_Texture m_pTexFront;
+		SP_Texture m_pTexBack;
+		SP_Texture m_pTexBar;
 
 		float	m_fTX = 0;		// Bar Translation
 		float	m_fTY = 0;

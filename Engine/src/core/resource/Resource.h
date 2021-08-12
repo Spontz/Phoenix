@@ -22,16 +22,16 @@ namespace Phoenix {
 		void unLoadAllResources();
 
 		void Draw_QuadFS();											// Draws a quad in fullscreen
-		void Draw_QuadFS(Texture* tex, float alpha);				// Draws a quad in fullscreen with alpha
+		void Draw_QuadFS(SP_Texture tex, float alpha);				// Draws a quad in fullscreen with alpha
 		void Draw_QuadFBOFS(Fbo* fbo, GLuint attachment = 0);		// Draws a quad in fullscreen (the fbo number from the fbo manager should be specified)
 		void Draw_QuadEfxFBOFS(int efxFboNum, GLuint attachment = 0);	// Draws a quad in fullscreen (the fbo number from the efx fbo manager should be specified)
-		void Draw_Obj_QuadTex(Texture* tex, glm::mat4 const* model);
-		void Draw_Obj_QuadTex(Texture* tex, glm::mat4 const* projection, glm::mat4 const* view, glm::mat4 const* model);
+		void Draw_Obj_QuadTex(SP_Texture tex, glm::mat4 const* model);
+		void Draw_Obj_QuadTex(SP_Texture tex, glm::mat4 const* projection, glm::mat4 const* view, glm::mat4 const* model);
 		void Draw_Skybox(Cubemap* cubemap);							// Draws a skybox for a given cubemap texture
 		void Draw_Cube();											// Draws a cube
 		void Draw_Grid(glm::vec3 const color, glm::mat4 const* MVP);
 
-		Texture* m_pTVImage;				// Default texture (tv)
+		SP_Texture m_pTVImage;				// Default texture (tv)
 
 		// Shaders
 		SP_Shader m_pShdrQuadTex;				// Draws a textured quad
@@ -45,10 +45,10 @@ namespace Phoenix {
 		SP_Shader m_pShdrGrid;				// Draws a Grid
 
 		// Vertex Array Objects
-		VertexArray* m_pSkybox;
-		VertexArray* m_pQuadFullScreen;
-		VertexArray* m_pQube;
-		VertexArray* m_pGrid;
+		SP_VertexArray m_pSkybox;
+		SP_VertexArray m_pQuadFullScreen;
+		SP_VertexArray m_pQube;
+		SP_VertexArray m_pGrid;
 
 		// Grid properties
 		void		Load_Grid();

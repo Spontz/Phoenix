@@ -46,6 +46,8 @@ namespace Phoenix {
 	class demokernel final {
 	private:
 		demokernel();
+		~demokernel();
+
 	public:
 		std::string		m_dataFolder;	// Path to "data" folder
 		std::string		m_demoName;

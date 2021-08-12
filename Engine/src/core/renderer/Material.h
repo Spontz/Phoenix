@@ -1,33 +1,20 @@
 ﻿// Material.h
 // Spontz Demogroup
 
-
 #pragma once
+
 #include "main.h"
 #include "core/Demokernel.h"
 #include "core/renderer/Texture.h"
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <vector>
 
 namespace Phoenix {
 
-	struct textureStack
+	struct textureStack final
 	{
-		Texture* tex;			// Texture
+		SP_Texture tex;			// Texture
 		std::string	shaderName;		// Name that receives the texture in the shader
-		int			blendOperation;	// Blend operation with the base color
-		float		strength;		// Strength factor
-
-		textureStack()
-		{
-			tex = nullptr;
-			shaderName = "";
-			blendOperation = 0;
-			strength = 0;
-		}
+		uint32_t	blendOperation=0;	// Blend operation with the base color
+		float		strength=0.;		// Strength factor
 	};
 
 	enum class TextureStorageType
@@ -36,7 +23,7 @@ namespace Phoenix {
 	};
 
 	// Specs: http://assimp.sourceforge.net/lib_html/materials.html
-	class Material {
+	class Material final {
 	public:
 		std::string					name;
 		std::vector<textureStack>	textures;

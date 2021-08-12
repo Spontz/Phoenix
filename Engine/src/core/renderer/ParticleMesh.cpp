@@ -31,13 +31,13 @@ namespace Phoenix {
 		m_VertexArray = new VertexArray();
 
 		// Create & Load the Vertex Buffer
-		VertexBuffer* vertexBuffer = new VertexBuffer(&m_particles[0], m_numParticles * sizeof(Particle));
-		vertexBuffer->SetLayout({
+		auto pVB = std::make_shared<VertexBuffer>(&m_particles[0], m_numParticles * sizeof(Particle));
+		pVB->SetLayout({
 			{ ShaderDataType::Float3,	"aPos"},
 			{ ShaderDataType::Float4,	"aColor"}
 			});
 
-		m_VertexArray->AddVertexBuffer(vertexBuffer);
+		m_VertexArray->AddVertexBuffer(pVB);
 		m_VertexArray->Unbind();
 
 		return true;

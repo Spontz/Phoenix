@@ -4,7 +4,7 @@
 
 namespace Phoenix {
 
-	struct sDrawImage : public Section {
+	class sDrawImage final : public Section {
 	public:
 		sDrawImage();
 		bool		load();
@@ -25,8 +25,8 @@ namespace Phoenix {
 
 		float		m_fTexAspectRatio = 1.0f;
 		float		m_fRenderAspectRatio = 1.0f;
-		Texture* m_pTexture = nullptr;
-		SP_Shader m_pShader = nullptr;
+		SP_Texture m_pTexture;
+		SP_Shader m_pShader;
 		MathDriver* m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
 		ShaderVars* m_pVars = nullptr;	// For storing any other shader variables
 	} drawImage_section;

@@ -16,6 +16,10 @@ namespace Phoenix {
 #define MODULATE 8
 #define TEXTURE_1D 16
 
+	class Texture;
+	using SP_Texture = std::shared_ptr<Texture>;
+	using WP_Texture = std::weak_ptr<Texture>;
+
 	class Texture {
 	public:
 		std::string	filename;
