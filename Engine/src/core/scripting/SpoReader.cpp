@@ -5,6 +5,46 @@
 
 namespace Phoenix {
 
+	const std::map<std::string, SpoReader::SectionCommand> SpoReader::spoSectionCommand = {
+		{"id",				SectionCommand::IDENTIFIER},
+		{"start",			SectionCommand::START},
+		{"end",				SectionCommand::END},
+		{"layer",			SectionCommand::LAYER},
+		{"enabled",			SectionCommand::ENABLED},
+		{"blend",			SectionCommand::BLEND},
+		{"blendequation",	SectionCommand::BLEND_EQUATION},
+		{"param",			SectionCommand::PARAM},
+		{"string",			SectionCommand::STRING},
+		{"uniform",			SectionCommand::UNIFORM},
+		{"spline",			SectionCommand::SPLINE},
+		{"modify",			SectionCommand::MODIFIER}
+	};
+
+	const std::map<std::string, int> SpoReader::spoBlendFunc = {
+		{ "ZERO",						GL_ZERO							},
+		{ "ONE",						GL_ONE							},
+		{ "DST_COLOR",					GL_DST_COLOR					},
+		{ "ONE_MINUS_DST_COLOR",		GL_ONE_MINUS_DST_COLOR			},
+		{ "SRC_ALPHA",					GL_SRC_ALPHA					},
+		{ "ONE_MINUS_SRC_ALPHA",		GL_ONE_MINUS_SRC_ALPHA			},
+		{ "DST_ALPHA",					GL_DST_ALPHA					},
+		{ "ONE_MINUS_DST_ALPHA",		GL_ONE_MINUS_DST_ALPHA			},
+		{ "CONSTANT_COLOR",				GL_CONSTANT_COLOR				},
+		{ "ONE_MINUS_CONSTANT_COLOR",	GL_ONE_MINUS_CONSTANT_COLOR		},
+		{ "CONSTANT_ALPHA",				GL_CONSTANT_ALPHA				},
+		{ "ONE_MINUS_CONSTANT_ALPHA",	GL_ONE_MINUS_CONSTANT_ALPHA		},
+		{ "SRC_ALPHA_SATURATE",			GL_SRC_ALPHA_SATURATE			},
+		{ "SRC_COLOR",					GL_SRC_COLOR					},
+		{ "ONE_MINUS_SRC_COLOR",		GL_ONE_MINUS_SRC_COLOR			},
+	};
+
+	const std::map<std::string, int> SpoReader::spoBlendEquationFunc = {
+		{ "ADD",				GL_FUNC_ADD				},
+		{ "SUBTRACT",			GL_FUNC_SUBTRACT		},
+		{ "REVERSE_SUBTRACT",	GL_FUNC_REVERSE_SUBTRACT}
+	};
+
+
 	SpoReader::SpoReader()
 	:
 	m_filepath(""),
@@ -117,7 +157,7 @@ namespace Phoenix {
 	{
 	}
 
-	bool SpoReader::readAsciiFromFile(const std::string& filepath)
+	bool SpoReader::readAsciiFromFile(std::string_view filepath)
 	{
 		m_filepath = filepath;
 		std::ifstream file(m_filepath, std::ios::in | std::ios::binary);
@@ -130,7 +170,7 @@ namespace Phoenix {
 			return false;
 	}
 
-	bool SpoReader::readAsciiFromNetwork(std::string sScript)
+	bool SpoReader::readAsciiFromNetwork(std::string_view sScript)
 	{
 		m_filepath = "Network";
 		m_scriptData = sScript;
@@ -146,7 +186,7 @@ namespace Phoenix {
 		int sec_id = -1;
 		Section* new_sec = NULL;
 		Spline* new_spl = NULL;
-		SectionCommand_ command = SectionCommand_::INVALID;
+		SectionCommand command = SectionCommand::INVALID;
 
 
 		while (std::getline(f, line)) {
@@ -246,11 +286,11 @@ namespace Phoenix {
 		std::istringstream f(m_scriptData);
 		std::string line;
 		int lineNum = 0; // Line counter
-		std::string sec_type;
+
 		int sec_id = -1;
 		Section* new_sec = NULL;
 		Spline* new_spl = NULL;
-		SectionCommand_ command = SectionCommand_::INVALID;
+		SectionCommand command = SectionCommand::INVALID;
 
 
 		while (std::getline(f, line)) {
@@ -274,18 +314,18 @@ namespace Phoenix {
 				// First we read the Section type (key)
 				if (sscanf(line.c_str(), "[%s]", c_sec_type) != 1)
 					throw std::exception();
-				sec_type = c_sec_type;
-				sec_type.erase(sec_type.size() - 1);
+				c_sec_type[strlen(c_sec_type) - 1] = '\0';
+				const auto sec_type = getSectionType(c_sec_type);
 
 				// by default the section is enabled and marked as not loaded
 				sec_id = -1;
 				sec_id = DEMO->m_sectionManager.addSection(sec_type, "File: " + m_filepath, true);
 				if (sec_id != -1) {
-					Logger::info(LogLevel::low, "  Section %s added!", sec_type.c_str());
+					Logger::info(LogLevel::low, "  Section %s added!", str(sec_type));
 					new_sec = DEMO->m_sectionManager.m_section[sec_id];
 				}
 				else {
-					Logger::error("Section %s not supported! File skipped", sec_type.c_str());
+					Logger::error("Section %s not supported! File skipped", str(sec_type));
 					return sec_id;
 				}
 			}
@@ -293,55 +333,55 @@ namespace Phoenix {
 			else if (sec_id != -1) {
 				std::pair<std::string, std::string> s_line = splitIn2Lines(line);
 				// check if its a known command
-				if (spoSectionCommand_.find(s_line.first) == spoSectionCommand_.end()) {
+				if (spoSectionCommand.find(s_line.first) == spoSectionCommand.end()) {
 					// If its not found, maybe is a normal parameter
 					switch (s_line.first[0]) {
 					case 'f':
-						command = SectionCommand_::PARAM;
+						command = SectionCommand::PARAM;
 						break;
 					case 's':
-						command = SectionCommand_::STRING;
+						command = SectionCommand::STRING;
 						break;
 					case 'u':
-						command = SectionCommand_::UNIFORM;
+						command = SectionCommand::UNIFORM;
 						break;
 					case 'c':
-						command = SectionCommand_::SPLINE;
+						command = SectionCommand::SPLINE;
 						break;
 					case 'm':
-						command = SectionCommand_::MODIFIER;
+						command = SectionCommand::MODIFIER;
 						break;
 					default:
-						command = SectionCommand_::INVALID;
+						command = SectionCommand::INVALID;
 						break;
 					}
 				}
 				else {
-					command = spoSectionCommand_.find(s_line.first)->second;
+					command = spoSectionCommand.find(s_line.first)->second;
 				}
 				// If we found the command
 				switch (command)
 				{
-					case SectionCommand_::INVALID:
+					case SectionCommand::INVALID:
 						Logger::error("  Invalid line: %s", line.c_str());
 						break;
 
-					case SectionCommand_::IDENTIFIER:
+					case SectionCommand::IDENTIFIER:
 						new_sec->identifier = s_line.second;
 						Logger::info(LogLevel::low, "  Section id: %s", new_sec->identifier.c_str());
 						break;
 
-					case SectionCommand_::ENABLED:
+					case SectionCommand::ENABLED:
 						new_sec->enabled = std::stoi(s_line.second);
 						Logger::info(LogLevel::low, "  Section enabled state: %i", new_sec->enabled);
 						break;
 
-					case SectionCommand_::START:
+					case SectionCommand::START:
 						new_sec->startTime = std::stof(s_line.second);
 						Logger::info(LogLevel::low, "  Section Start time: %f", new_sec->startTime);
 						break;
 
-					case SectionCommand_::END:
+					case SectionCommand::END:
 						new_sec->endTime = std::stof(s_line.second);
 						Logger::info(LogLevel::low, "  Section End time: %f", new_sec->endTime);
 						new_sec->duration = new_sec->endTime - new_sec->startTime;
@@ -349,13 +389,13 @@ namespace Phoenix {
 							Logger::error("Section End time is less or equal than Start timeStart time!");
 						break;
 
-					case SectionCommand_::LAYER:
+					case SectionCommand::LAYER:
 						new_sec->layer = std::stoi(s_line.second);
 						Logger::info(LogLevel::low, "  Section layer: %i", new_sec->layer);
 						break;
 
 					
-					case SectionCommand_::BLEND:
+					case SectionCommand::BLEND:
 						{
 							auto blendModes = splitIn2Lines(s_line.second);
 
@@ -372,7 +412,7 @@ namespace Phoenix {
 						}
 						break;
 
-					case SectionCommand_::BLEND_EQUATION:
+					case SectionCommand::BLEND_EQUATION:
 						if (spoBlendEquationFunc.find(s_line.second) == spoBlendEquationFunc.end())
 							Logger::error("Invalid blend equation in line: %s", line.c_str());
 						else {
@@ -381,7 +421,7 @@ namespace Phoenix {
 						}
 						break;
 							
-					case SectionCommand_::PARAM:
+					case SectionCommand::PARAM:
 						{
 						try{
 							float fval = std::stof(s_line.second);
@@ -394,17 +434,17 @@ namespace Phoenix {
 						}
 						break;
 
-					case SectionCommand_::STRING:
+					case SectionCommand::STRING:
 						new_sec->strings.push_back(s_line.second);
 						Logger::info(LogLevel::low, "  Loaded string: \"%s\"", s_line.second.c_str());
 						break;
 
-					case SectionCommand_::UNIFORM:
+					case SectionCommand::UNIFORM:
 						new_sec->uniform.push_back(s_line.second);
 						Logger::info(LogLevel::low, "  Loaded uniform: \"%s\"", s_line.second.c_str());
 						break;
 
-					case SectionCommand_::SPLINE:
+					case SectionCommand::SPLINE:
 						new_spl = new Spline();
 						new_spl->filename = DEMO->m_dataFolder + s_line.second;
 						new_spl->duration = new_sec->duration; // Spline duration is the same as the sectio duration
