@@ -18,13 +18,13 @@ namespace Phoenix {
 
 	public:
 		// Adds a Section of a given type
-		int32_t addSection(SectionType type, std::string_view DataSource, bool enabled);
+		int32_t addSection(SectionType type, std::string_view dataSource, bool enabled);
 		void toggleSections(std::vector<std::string> const& ids);
 		void deleteSections(std::vector<std::string> const& ids);
 		void updateSection(std::string_view id, std::string_view script);
-		void setSectionsStartTime(const std::string& amount, std::vector<std::string> const& ids);
-		void setSectionsEndTime(const std::string& amount, std::vector<std::string> const& ids);
-		void setSectionLayer(std::string_view layer, std::string_view id);
+		void setSectionsStartTime(std::vector<std::string> const& ids, float value);
+		void setSectionsEndTime(std::vector<std::string> const& ids, float value);
+		void setSectionLayer(std::string_view identifier, int32_t value);
 		void clear(); // Clear all sections
 
 	private:

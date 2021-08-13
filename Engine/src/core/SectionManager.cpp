@@ -223,13 +223,8 @@ namespace Phoenix {
 
 
 
-	void SectionManager::setSectionsStartTime(
-		const std::string& amount,
-		std::vector<std::string> const& ids
-	)
+	void SectionManager::setSectionsStartTime(std::vector<std::string> const& ids, float startTime)
 	{
-		float startTime = (float)atof(amount.c_str());
-
 		Section* ds;
 		int32_t id_size = (int32_t)ids.size();
 
@@ -251,10 +246,8 @@ namespace Phoenix {
 		}
 	}
 
-	void SectionManager::setSectionsEndTime(const std::string& amount, std::vector<std::string> const& ids)
+	void SectionManager::setSectionsEndTime(std::vector<std::string> const& ids, float endTime)
 	{
-		float endTime = (float)atof(amount.c_str());
-
 		Section* ds;
 		int32_t id_size = (int32_t)ids.size();
 
@@ -276,10 +269,9 @@ namespace Phoenix {
 		}
 	}
 
-	void SectionManager::setSectionLayer(std::string_view layer, std::string_view identifier)
+	void SectionManager::setSectionLayer(std::string_view identifier, int32_t new_layer)
 	{
 		Section* ds;
-		int32_t new_layer = atoi(layer.data());
 
 		ds = getSection(identifier);
 		if (ds) {

@@ -162,11 +162,17 @@ namespace Phoenix {
 			} else if (sAction == "update") {
 				DEMO->m_sectionManager.updateSection(Message[3], Message[4]);
 			} else if (sAction == "setStartTime") {
-				DEMO->m_sectionManager.setSectionsStartTime(Message[3], splitIdentifiers(Message[4]));
+				DEMO->m_sectionManager.setSectionsStartTime(
+					splitIdentifiers(Message[4]),
+					float(atof(Message[3].c_str())) // hack: use doubles
+				);
 			} else if (sAction == "setEndTime") {
-				DEMO->m_sectionManager.setSectionsEndTime(Message[3], splitIdentifiers(Message[4]));
+				DEMO->m_sectionManager.setSectionsEndTime(
+					splitIdentifiers(Message[4]),
+					float(atof(Message[3].c_str())) // hack: use doubles
+				);
 			} else if (sAction == "setLayer") {
-				DEMO->m_sectionManager.setSectionLayer(Message[3], Message[4]);
+				DEMO->m_sectionManager.setSectionLayer(Message[3], atoi(Message[4].c_str()));
 			} else {
 				sResult = "NOK";
 				sInfo = "Unknown section command (" + sAction + "): " + sMessage;
