@@ -7,45 +7,70 @@
 
 namespace Phoenix {
 
-	struct tSectionID {
-		std::string scriptName;
-		SectionType type;
+	struct SectionInfo final {
+		std::string m_id;
+		SectionType m_type;
+		std::function<Section*()> m_fnCreateSection;
 	};
 
 	// sections functions references
-	const tSectionID sectionID[] = {
-		{"loading",						SectionType::Loading},
+	const SectionInfo kSectionInfo[] = {
+		{"loading",						SectionType::Loading, instance_loading},
 
 		// built-in sections
-		{"cameraFPS",					SectionType::CameraFPS},
-		{"cameraTarget",				SectionType::CameraTarget},
-		{"light",						SectionType::LightSec},
-		{"drawScene",					SectionType::DrawScene},
-		{"drawSceneMatrix",				SectionType::DrawSceneMatrix},
-		{"drawSceneMatrixInstanced",	SectionType::DrawSceneMatrixInstanced},
-		{"drawImage",					SectionType::DrawImage},
-		{"drawSkybox",					SectionType::DrawSkybox},
-		{"drawVideo",					SectionType::DrawVideo},
-		{"drawQuad",					SectionType::DrawQuad},
-		{"drawFbo",						SectionType::DrawFbo},
-		{"drawParticles",				SectionType::DrawParticles},
-		{"drawParticlesImage",			SectionType::DrawParticlesImage},
-		{"drawParticlesScene",			SectionType::DrawParticlesScene},
-		{"drawEmitters",				SectionType::DrawEmitters},
-		{"drawEmitterScene",			SectionType::DrawEmitterScene},
-		{"sound",						SectionType::Sound},
-		{"setVariable",					SectionType::SetVariable},
-		{"fboBind",						SectionType::FboBind},
-		{"fboUnbind",					SectionType::FboUnbind},
-		{"efxAccum",					SectionType::EfxAccum},
-		{"efxBloom",					SectionType::EfxBloom},
-		{"efxBlur",						SectionType::EfxBlur},
-		{"efxFader",					SectionType::EfxFader},
-		{"efxMotionBlur",				SectionType::EfxMotionBlur},
-		{"test",						SectionType::Test}
+		{"cameraFPS",					SectionType::CameraFPS, instance_cameraFPS},
+		{"cameraTarget",				SectionType::CameraTarget, instance_cameraTarget},
+		{"light",						SectionType::LightSec, instance_light},
+		{"drawScene",					SectionType::DrawScene, instance_drawScene},
+		{"drawSceneMatrix",				SectionType::DrawSceneMatrix, instance_drawSceneMatrix},
+		{"drawSceneMatrixInstanced",	SectionType::DrawSceneMatrixInstanced, instance_drawSceneMatrixInstanced},
+		{"drawImage",					SectionType::DrawImage, instance_drawImage},
+		{"drawSkybox",					SectionType::DrawSkybox, instance_drawSkybox},
+		{"drawVideo",					SectionType::DrawVideo, instance_drawVideo},
+		{"drawQuad",					SectionType::DrawQuad, instance_drawQuad},
+		{"drawFbo",						SectionType::DrawFbo, instance_drawFbo},
+		{"drawParticles",				SectionType::DrawParticles, instance_drawParticles},
+		{"drawParticlesImage",			SectionType::DrawParticlesImage, instance_drawParticlesImage},
+		{"drawParticlesScene",			SectionType::DrawParticlesScene, instance_drawParticlesScene},
+		{"drawEmitters",				SectionType::DrawEmitters, instance_drawEmitters},
+		{"drawEmitterScene",			SectionType::DrawEmitterScene, instance_drawEmitterScene},
+		{"sound",						SectionType::Sound, instance_sound},
+		{"setVariable",					SectionType::SetVariable, instance_setVariable},
+		{"fboBind",						SectionType::FboBind, instance_fboBind},
+		{"fboUnbind",					SectionType::FboUnbind, instance_fboUnbind},
+		{"efxAccum",					SectionType::EfxAccum, instance_efxAccum},
+		{"efxBloom",					SectionType::EfxBloom, instance_efxBloom},
+		{"efxBlur",						SectionType::EfxBlur, instance_efxBlur},
+		{"efxFader",					SectionType::EfxFader, instance_efxFader},
+		{"efxMotionBlur",				SectionType::EfxMotionBlur, instance_efxMotionBlur},
+		{"test",						SectionType::Test, instance_test}
 	};
 
-	constexpr auto SECTIONS_NUMBER = sizeof(sectionID) / sizeof(tSectionID);
+	const SectionInfo* getSectionInfo(SectionType type) {
+		static std::map<SectionType, const SectionInfo*> m;
+		if (m.empty())
+			for (auto const& i : kSectionInfo)
+				m[i.m_type] = &i;
+
+		const auto it = m.find(type);
+		if (it == m.end())
+			return nullptr;
+
+		return it->second;
+	}
+
+	const SectionInfo* getSectionInfo(std::string_view id) {
+		static std::map<std::string_view, const SectionInfo*> m;
+		if (m.empty())
+			for (auto const& i : kSectionInfo)
+				m[i.m_id] = &i;
+
+		const auto it = m.find(id);
+		if (it == m.end())
+			return nullptr;
+
+		return it->second;
+	}
 
 	SectionManager::~SectionManager()
 	{
@@ -57,100 +82,17 @@ namespace Phoenix {
 	// Returns the section ID or -1 if the section could not be added
 	int32_t SectionManager::addSection(SectionType type, std::string_view dataSource, bool enabled)
 	{
-		Section* pNewSection;
-
-		switch (type) {
-		case SectionType::Loading:
-			pNewSection = instance_loading();
-			break;
-		case SectionType::Sound:
-			pNewSection = instance_sound();
-			break;
-		case SectionType::SetVariable:
-			pNewSection = instance_setVariable();
-			break;
-		case SectionType::CameraFPS:
-			pNewSection = instance_cameraFPS();
-			break;
-		case SectionType::CameraTarget:
-			pNewSection = instance_cameraTarget();
-			break;
-		case SectionType::LightSec:
-			pNewSection = instance_light();
-			break;
-		case SectionType::FboBind:
-			pNewSection = instance_fboBind();
-			break;
-		case SectionType::FboUnbind:
-			pNewSection = instance_fboUnbind();
-			break;
-		case SectionType::DrawImage:
-			pNewSection = instance_drawImage();
-			break;
-		case SectionType::DrawSkybox:
-			pNewSection = instance_drawSkybox();
-			break;
-		case SectionType::DrawVideo:
-			pNewSection = instance_drawVideo();
-			break;
-		case SectionType::DrawFbo:
-			pNewSection = instance_drawFbo();
-			break;
-		case SectionType::DrawQuad:
-			pNewSection = instance_drawQuad();
-			break;
-		case SectionType::DrawScene:
-			pNewSection = instance_drawScene();
-			break;
-		case SectionType::DrawSceneMatrix:
-			pNewSection = instance_drawSceneMatrix();
-			break;
-		case SectionType::DrawSceneMatrixInstanced:
-			pNewSection = instance_drawSceneMatrixInstanced();
-			break;
-		case SectionType::DrawParticles:
-			pNewSection = instance_drawParticles();
-			break;
-		case SectionType::DrawParticlesImage:
-			pNewSection = instance_drawParticlesImage();
-			break;
-		case SectionType::DrawParticlesScene:
-			pNewSection = instance_drawParticlesScene();
-			break;
-		case SectionType::DrawEmitters:
-			pNewSection = instance_drawEmitters();
-			break;
-		case SectionType::DrawEmitterScene:
-			pNewSection = instance_drawEmitterScene();
-			break;
-		case SectionType::EfxAccum:
-			pNewSection = instance_efxAccum();
-			break;
-		case SectionType::EfxBloom:
-			pNewSection = instance_efxBloom();
-			break;
-		case SectionType::EfxBlur:
-			pNewSection = instance_efxBlur();
-			break;
-		case SectionType::EfxFader:
-			pNewSection = instance_efxFader();
-			break;
-		case SectionType::EfxMotionBlur:
-			pNewSection = instance_efxMotionBlur();
-			break;
-		case SectionType::Test:
-			pNewSection = instance_test();
-			break;
-
-		default:
+		auto pSectionInfo = getSectionInfo(type);
+		if (!pSectionInfo)
 			return -1;
-		}
 
-		pNewSection->loaded = FALSE;	// By default, the section is not loaded
+		const auto pNewSection = pSectionInfo->m_fnCreateSection();
+		pNewSection->loaded = FALSE; // By default, the section is not loaded
 		pNewSection->enabled = enabled;
 		pNewSection->DataSource = dataSource;
 		pNewSection->type = type;
 		m_section.push_back(pNewSection);
+
 		return static_cast<int32_t>(m_section.size()) - 1;
 	}
 
@@ -297,24 +239,16 @@ namespace Phoenix {
 
 	SectionType getSectionType(std::string_view key)
 	{
-		for (const auto& i : sectionID)
-			if (key == i.scriptName)
-				return i.type;
-
-		return SectionType::NOT_FOUND;
+		const auto pSectionInfo = getSectionInfo(key);
+		return pSectionInfo ? pSectionInfo->m_type : SectionType::NOT_FOUND;
 	}
 
 	std::ostream& operator<<(std::ostream& os, SectionType type)
 	{
-		for (const auto& i : sectionID)
-			if (type == i.type) {
-				os << i.scriptName;
-				return os;
-			}
-		os << "SectionType::NOT_FOUND";
+		const auto pSectionInfo = getSectionInfo(type);
+		os << pSectionInfo ? pSectionInfo->m_id : "SectionType::NOT_FOUND";
 		return os;
 	}
-
 
 	std::string str(SectionType value) {
 		std::stringstream ss;
