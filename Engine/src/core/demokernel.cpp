@@ -719,7 +719,7 @@ namespace Phoenix {
 					sec_id,
 					ds->layer,
 					ds->identifier.c_str(),
-					str(ds->type)
+					ds->type_str.c_str()
 				);
 			}
 		}

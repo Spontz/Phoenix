@@ -321,11 +321,11 @@ namespace Phoenix {
 				sec_id = -1;
 				sec_id = DEMO->m_sectionManager.addSection(sec_type, "File: " + m_filepath, true);
 				if (sec_id != -1) {
-					Logger::info(LogLevel::low, "  Section %s added!", str(sec_type));
 					new_sec = DEMO->m_sectionManager.m_section[sec_id];
+					Logger::info(LogLevel::low, "  Section %s added!", new_sec->type_str.c_str());
 				}
 				else {
-					Logger::error("Section %s not supported! File skipped", str(sec_type));
+					Logger::error("Section %s not supported! File skipped", str(sec_type).c_str());
 					return sec_id;
 				}
 			}

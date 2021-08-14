@@ -446,7 +446,7 @@ namespace Phoenix {
 			const auto sec_id = m_demo.m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
 			const auto ds = m_demo.m_sectionManager.m_section[sec_id];
 			std::stringstream ss;
-			ss << ds->type << " id/layer[" << ds->identifier << "/" + ds->layer << "]";
+			ss << ds->type_str << " id/layer[" << ds->identifier << "/" + ds->layer << "]";
 			if (m_expandAllSectionsChanged)
 				ImGui::SetNextTreeNodeOpen(m_expandAllSections);
 			if (ImGui::CollapsingHeader(ss.str().c_str())) {
