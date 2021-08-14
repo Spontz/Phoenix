@@ -325,7 +325,7 @@ namespace Phoenix {
 					Logger::info(LogLevel::low, "  Section %s added!", new_sec->type_str.c_str());
 				}
 				else {
-					Logger::error("Section %s not supported! File skipped", str(sec_type).c_str());
+					Logger::error("Section %s not supported! File skipped", c_sec_type);
 					return sec_id;
 				}
 			}
