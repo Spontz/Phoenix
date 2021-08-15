@@ -8,15 +8,14 @@
 #include <string>
 #include <vector>
 
-
 namespace Phoenix {
 
 	class NetDriver final {
 	public:
-		static NetDriver& GetInstance();
+		static NetDriver& getInstance();
 		static void release();
 
-	public:
+	private:
 		NetDriver();
 		~NetDriver();
 
@@ -27,10 +26,6 @@ namespace Phoenix {
 		const char* getVersion() const;
 		std::string processMessage(const std::string& sMessage) const;
 		void sendMessage(std::string const& sMessage) const;
-
-	public:
-		int32_t m_iPortReceive;
-		int32_t m_iPortSend;
 
 	private:
 		// Dyad Callbacks
@@ -43,9 +38,13 @@ namespace Phoenix {
 	private:
 		std::vector<std::string> splitMessage(const std::string& message) const;
 
+	public:
+		int32_t m_iPortReceive;
+		int32_t m_iPortSend;
+
 	private:
-		bool m_bInitialized_;
-		bool m_bConnectedToEditor_;
-		dyad_Stream* m_pServConnect_;
+		bool m_bInitialized;
+		bool m_bConnectedToEditor;
+		dyad_Stream* m_pServConnect;
 	};
 }

@@ -172,8 +172,8 @@ namespace Phoenix {
 	{
 		if (m_slaveMode) {
 			Logger::info(LogLevel::high, "Running in network slave mode");
-			NetDriver::GetInstance().init();
-			NetDriver::GetInstance().update();
+			NetDriver::getInstance().init();
+			NetDriver::getInstance().update();
 		}
 		else
 			Logger::info(LogLevel::high, "Running in standalone mode");
@@ -263,7 +263,7 @@ namespace Phoenix {
 
 		// Update network driver
 		if (m_slaveMode)
-			NetDriver::GetInstance().update();
+			NetDriver::getInstance().update();
 	}
 
 	void demokernel::playDemo()
@@ -381,7 +381,7 @@ namespace Phoenix {
 
 	std::string demokernel::getLibDyadVersion()
 	{
-		return NetDriver::GetInstance().getVersion();
+		return NetDriver::getInstance().getVersion();
 	}
 
 	bool demokernel::checkDataFolder()

@@ -6,6 +6,7 @@
 namespace Phoenix { class demokernel; }
 
 #include "drivers/gldriver.h"
+#include "drivers/NetDriver.h"
 
 #include "core/renderer/Spline.h"
 #include "core/Section.h"
