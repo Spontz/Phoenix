@@ -339,9 +339,7 @@ namespace Phoenix {
 
 	void demokernel::closeDemo() {
 
-		Logger::info(LogLevel::low, "Closing Bass driver...");
-		BASSDRV->stop();
-		BASSDRV->end();
+		
 
 		Logger::info(LogLevel::low, "Closing GL driver...");
 		GLDRV->close();				// Close GL driver
@@ -361,6 +359,10 @@ namespace Phoenix {
 		Logger::info(LogLevel::low, "Unloading internal resources...");
 		if(m_pRes)
 			delete m_pRes;
+
+		Logger::info(LogLevel::low, "Closing Bass driver...");
+		BASSDRV->stop();
+		BASSDRV->end();
 
 		m_shaderManager.clear();	// Clear shaders
 	}
@@ -688,7 +690,7 @@ namespace Phoenix {
 				ds->runTime = m_demoRunTime - ds->startTime;
 				ds->init();			// Init the Section
 				ds->inited = TRUE;
-				Logger::info(LogLevel::low, "  Section %d [layer: %d id: %s type: %s] inited", sec_id, ds->layer, ds->identifier.c_str(), str(ds->type));
+				Logger::info(LogLevel::low, "  Section %d [layer: %d id: %s type: %s] inited", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 			}
 		}
 

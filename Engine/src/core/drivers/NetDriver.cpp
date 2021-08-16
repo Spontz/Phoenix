@@ -172,7 +172,7 @@ namespace Phoenix {
 					float(atof(Message[3].c_str())) // hack: use doubles
 				);
 			} else if (sAction == "setLayer") {
-				DEMO->m_sectionManager.setSectionLayer(Message[3], atoi(Message[4].c_str()));
+				DEMO->m_sectionManager.setSectionLayer(Message[4], atoi(Message[3].c_str()));
 			} else {
 				sResult = "NOK";
 				sInfo = "Unknown section command (" + sAction + "): " + sMessage;
