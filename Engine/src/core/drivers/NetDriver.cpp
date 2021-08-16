@@ -81,6 +81,20 @@ namespace Phoenix {
 		return dyad_getVersion();
 	}
 
+	std::vector<std::string> splitIdentifiers(const std::string& identifiers)
+	{
+		std::stringstream ss(identifiers);
+		std::vector<std::string> result;
+
+		while (ss.good())
+		{
+			std::string substr;
+			getline(ss, substr, ',');
+			result.push_back(substr);
+		}
+		return result;
+	}
+
 	std::string NetDriver::processMessage(const std::string& sMessage) const {
 		// Outcoming information
 		std::string sResult = "OK";		// Result of the operation
@@ -142,17 +156,23 @@ namespace Phoenix {
 					sInfo = "Section load failed";
 				}
 			} else if (sAction == "toggle") {
-				DEMO->m_sectionManager.toggleSection(Message[3]);
+				DEMO->m_sectionManager.toggleSections(splitIdentifiers(Message[3]));
 			} else if (sAction == "delete") {
-				DEMO->m_sectionManager.deleteSection(Message[3]);
+				DEMO->m_sectionManager.deleteSections(splitIdentifiers(Message[3]));
 			} else if (sAction == "update") {
 				DEMO->m_sectionManager.updateSection(Message[3], Message[4]);
 			} else if (sAction == "setStartTime") {
-				DEMO->m_sectionManager.setSectionsStartTime(Message[3], Message[4]);
+				DEMO->m_sectionManager.setSectionsStartTime(
+					splitIdentifiers(Message[4]),
+					float(atof(Message[3].c_str())) // hack: use doubles
+				);
 			} else if (sAction == "setEndTime") {
-				DEMO->m_sectionManager.setSectionsEndTime(Message[3], Message[4]);
+				DEMO->m_sectionManager.setSectionsEndTime(
+					splitIdentifiers(Message[4]),
+					float(atof(Message[3].c_str())) // hack: use doubles
+				);
 			} else if (sAction == "setLayer") {
-				DEMO->m_sectionManager.setSectionLayer(Message[3], Message[4]);
+				DEMO->m_sectionManager.setSectionLayer(Message[4], atoi(Message[3].c_str()));
 			} else {
 				sResult = "NOK";
 				sInfo = "Unknown section command (" + sAction + "): " + sMessage;

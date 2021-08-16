@@ -141,7 +141,7 @@ namespace Phoenix {
 		// Scripts (SPO files) management
 		bool loadSpoConfig();
 		void loadSpoFiles();
-		bool loadScriptFromNetwork(std::string sScript);
+		bool loadScriptFromNetwork(std::string_view script);
 
 
 		// Demo control

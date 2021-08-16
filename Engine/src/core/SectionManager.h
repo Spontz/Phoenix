@@ -18,23 +18,21 @@ namespace Phoenix {
 
 	public:
 		// Adds a Section of a given type
-		int32_t addSection(const std::string& key, const std::string& DataSource, bool enabled);
-		void toggleSection(const std::string& identifier);
-		void deleteSection(const std::string& identifier);
-		void updateSection(const std::string& identifier, const std::string& sScript);
-		void setSectionsStartTime(const std::string& amount, const std::string& identifiers);
-		void setSectionsEndTime(const std::string& amount, const std::string& identifiers);
-		void setSectionLayer(const std::string& layer, const std::string& identifier);
+		int32_t addSection(SectionType type, std::string_view dataSource, bool enabled);
+		void toggleSections(std::vector<std::string> const& ids);
+		void deleteSections(std::vector<std::string> const& ids);
+		void updateSection(std::string_view id, std::string_view script);
+		void setSectionsStartTime(std::vector<std::string> const& ids, float value);
+		void setSectionsEndTime(std::vector<std::string> const& ids, float value);
+		void setSectionLayer(std::string_view identifier, int32_t value);
 		void clear(); // Clear all sections
 
 	private:
-		SectionType getSectionType(const std::string& key);
-		std::vector<std::string> splitIdentifiers(const std::string& identifiers);
-		Section* getSection(const std::string& id);
-		int32_t getSectionPosition(const std::string& id);
+		Section* getSection(std::string_view id) const;
+		int32_t getSectionPosition(std::string_view id) const;
 
 	private:
-		std::vector<Section*> m_section;	// Sections list, script order
+		std::vector<Section*> m_section; // Sections list, script order
 
 		// Ready section list: Sections to be loaded (ascendent order by start time)
 		std::vector<int32_t> m_loadSection;

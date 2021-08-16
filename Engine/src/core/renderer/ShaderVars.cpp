@@ -22,7 +22,12 @@ namespace Phoenix {
 		splitString(string_var, vars, ' ');	// Split the main string by spaces
 
 		if (vars.size() != 3) {
-			Logger::error("Error reading Shader Variable [section: %s], format is: 'uniform <var_type> <var_name> <var_value>', but the string was: 'uniform %s'", my_section->type_str.c_str(), string_var);
+			Logger::error(
+				"Error reading Shader Variable [section: %s], format is: 'uniform <var_type> "
+				"<var_name> <var_value>', but the string was: 'uniform %s'",
+				str(my_section->type),
+				string_var
+			);
 			return false;
 		}
 
@@ -32,8 +37,9 @@ namespace Phoenix {
 
 		Logger::info(
 			LogLevel::med,
-			"Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], value [%s]",
-			my_section->type_str.c_str(),
+			"Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], "
+			"value [%s]",
+			str(my_section->type),
 			my_shader->getId(),
 			var_type.c_str(),
 			var_name.c_str(),

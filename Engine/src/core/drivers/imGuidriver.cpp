@@ -19,6 +19,7 @@ namespace Phoenix {
 		"7 Show Grid\n" \
 		"9 Show this help :)\n" \
 		"0 Show engine and libraries versions\n" \
+		"BACKSPACE Show error Log\n" \
 		"ENTER Print time on log file\n\n" \
 		"Playback control:\n" \
 		"-----------------\n" \
@@ -153,9 +154,9 @@ namespace Phoenix {
 
 	void imGuiDriver::drawLog()
 	{
-		ImVec2 pos = ImVec2(0, m_vp.y*2.0f + 2.0f * (static_cast<float>(m_vp.height) / 3.0f));
-		ImVec2 size = ImVec2(static_cast<float>(m_vp.width + (m_vp.x*2)), static_cast<float>(m_vp.height/ 3.0f));
-		
+		ImVec2 pos = ImVec2(0, m_vp.y * 2.0f + 2.0f * (static_cast<float>(m_vp.height) / 3.0f));
+		ImVec2 size = ImVec2(static_cast<float>(m_vp.width + (m_vp.x * 2)), static_cast<float>(m_vp.height / 3.0f));
+
 
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
@@ -185,7 +186,7 @@ namespace Phoenix {
 	void imGuiDriver::changeFontSize(float baseSize, int width, int height)
 	{
 
-		m_fontScale = static_cast<float>(width+height) / (1024.0f + 768.0f) * baseSize;
+		m_fontScale = static_cast<float>(width + height) / (1024.0f + 768.0f) * baseSize;
 
 		if (m_fontScale < baseSize)
 			m_fontScale = baseSize;
@@ -282,7 +283,7 @@ namespace Phoenix {
 			drawCameraInfo(m_demo.m_pActiveCamera);
 			ImGui::TreePop();
 		}
-		
+
 		if (ImGui::TreeNode("Default camera info"))
 		{
 			drawCameraInfo(m_demo.m_pDefaultCamera);
@@ -414,7 +415,7 @@ namespace Phoenix {
 		ImVec2 pos = ImVec2(static_cast<float>(m_vp.x), static_cast<float>(m_vp.y));
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
-		
+
 		if (!ImGui::Begin("Help commands", &show_help))
 		{
 			ImGui::End();
@@ -424,23 +425,16 @@ namespace Phoenix {
 		ImGui::End();
 	}
 
-
 	// Draws the information of all the sections that are being drawn
 	void imGuiDriver::drawSesctionInfo()
 	{
-		Section* ds;
-		int sec_id;
-		std::string s;
-		ImGuiTextBuffer sectionInfoText;
-
-		float windowWidth = static_cast<float>(m_vp.width + (m_vp.x * 2)) / 3.0f;
-		float windowHeight = static_cast<float>(m_vp.height + (m_vp.y * 2));
+		const float windowWidth = static_cast<float>(m_vp.width + (m_vp.x * 2)) / 3.0f;
+		const float windowHeight = static_cast<float>(m_vp.height + (m_vp.y * 2));
 
 		ImGui::SetNextWindowPos(ImVec2(2.0f * windowWidth, 0.0f), ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Appearing);
 
-		if (!ImGui::Begin("Section Stack", &show_sesctionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
-		{
+		if (!ImGui::Begin("Section Stack", &show_sesctionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
 			// Early out if the window is collapsed, as an optimization.
 			ImGui::End();
 			return;
@@ -450,18 +444,19 @@ namespace Phoenix {
 			m_expandAllSectionsChanged = true;
 
 		for (int i = 0; i < m_demo.m_sectionManager.m_execSection.size(); i++) {
-			sec_id = m_demo.m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
-			ds = m_demo.m_sectionManager.m_section[sec_id];
-			s = ds->type_str + " id/layer[" + ds->identifier + "/" + std::to_string(ds->layer) + "]";
+			const auto sec_id = m_demo.m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
+			const auto ds = m_demo.m_sectionManager.m_section[sec_id];
+			std::stringstream ss;
+			ss << ds->type_str << " id/layer[" << ds->identifier << "/" +  std::to_string(ds->layer) << "]";
 			if (m_expandAllSectionsChanged)
 				ImGui::SetNextTreeNodeOpen(m_expandAllSections);
-			if (ImGui::CollapsingHeader(s.c_str()))
-			{
-				sectionInfoText.clear();
+			if (ImGui::CollapsingHeader(ss.str().c_str())) {
+				ImGuiTextBuffer sectionInfoText;
 				sectionInfoText.appendf(ds->debug().c_str());
 				ImGui::TextUnformatted(sectionInfoText.begin(), sectionInfoText.end());
 			}
 		}
+
 		m_expandAllSectionsChanged = false;
 		ImGui::End();
 	}
@@ -471,7 +466,7 @@ namespace Phoenix {
 		m_renderTimes[m_currentRenderTime] = m_demo.m_realFrameTime * 1000.f; // Render times in ms
 
 		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 0), ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width/2.0f), 140.0f), ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width / 2.0f), 140.0f), ImGuiCond_Appearing);
 
 		if (!ImGui::Begin("Render time histogram", &show_fpsHistogram))
 		{

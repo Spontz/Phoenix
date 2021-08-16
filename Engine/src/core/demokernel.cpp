@@ -339,9 +339,7 @@ namespace Phoenix {
 
 	void demokernel::closeDemo() {
 
-		Logger::info(LogLevel::low, "Closing Bass driver...");
-		BASSDRV->stop();
-		BASSDRV->end();
+		
 
 		Logger::info(LogLevel::low, "Closing GL driver...");
 		GLDRV->close();				// Close GL driver
@@ -361,6 +359,10 @@ namespace Phoenix {
 		Logger::info(LogLevel::low, "Unloading internal resources...");
 		if(m_pRes)
 			delete m_pRes;
+
+		Logger::info(LogLevel::low, "Closing Bass driver...");
+		BASSDRV->stop();
+		BASSDRV->end();
 
 		m_shaderManager.clear();	// Clear shaders
 	}
@@ -464,7 +466,7 @@ namespace Phoenix {
 		Logger::info(LogLevel::med, "Finished loading all files.");
 	}
 
-	bool demokernel::loadScriptFromNetwork(std::string sScript)
+	bool demokernel::loadScriptFromNetwork(std::string_view sScript)
 	{
 		SpoReader spo;
 		spo.readAsciiFromNetwork(sScript);
@@ -576,7 +578,7 @@ namespace Phoenix {
 
 		if (ds_loading == NULL) {
 			Logger::info(LogLevel::med, "Loading section not found: using default loader");
-			sec_id = m_sectionManager.addSection("Loading", "Automatically created", TRUE);
+			sec_id = m_sectionManager.addSection(SectionType::Loading, "Automatically created", TRUE);
 			if (sec_id < 0) {
 				Logger::error("Critical Error, Loading section not found and could not be created!");
 				return;
@@ -713,7 +715,14 @@ namespace Phoenix {
 				ds = m_sectionManager.m_section[sec_id];
 				ds->runTime = m_demoRunTime - ds->startTime;
 				ds->exec();			// Exec the Section
-				Logger::info(LogLevel::low, "  Section %d [layer: %d id: %s type: %s] executed", sec_id, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
+				Logger::info(
+					LogLevel::low,
+					"  Section %d [layer: %d id: %s type: %s] executed",
+					sec_id,
+					ds->layer,
+					ds->identifier.c_str(),
+					ds->type_str.c_str()
+				);
 			}
 		}
 		Logger::info(LogLevel::med, "End queue processing!");

@@ -10,6 +10,7 @@ namespace Phoenix {
 		:
 		m_demo(*DEMO),
 		type(SectionType::NOT_FOUND),
+		type_str("no type"),
 		identifier("ID not defined"),
 		DataSource(""),
 		startTime(0),
@@ -38,6 +39,9 @@ namespace Phoenix {
 		param.clear();
 		strings.clear();
 		uniform.clear();
+		// Clear stored splines
+		for (auto const& spl : spline)
+			delete spl;
 		spline.clear();
 	}
 
