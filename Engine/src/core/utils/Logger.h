@@ -12,15 +12,16 @@ namespace Phoenix {
 		low = 3
 	};
 
-	class LoggerIndent final
-	{
-	public:
-		LoggerIndent();
-		~LoggerIndent();
-	};
-
 	class Logger final
 	{
+	public:
+		class ScopedIndent final
+		{
+		public:
+			ScopedIndent();
+			~ScopedIndent();
+		};
+
 	public:
 		Logger() = delete;
 
@@ -32,6 +33,5 @@ namespace Phoenix {
 		static void openLogFile();
 		static void closeLogFile();
 	};
-
 
 }

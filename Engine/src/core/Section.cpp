@@ -30,7 +30,7 @@ namespace Phoenix {
 		render_clearColor(false),
 		render_clearDepth(false),
 		render_disableDepthTest(false),
-		render_disableDepthMask(false)		
+		render_disableDepthMask(false)
 	{
 	}
 

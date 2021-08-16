@@ -82,7 +82,7 @@ namespace Phoenix {
 	// Returns the section ID or -1 if the section could not be added
 	int32_t SectionManager::addSection(SectionType type, std::string_view dataSource, bool enabled)
 	{
-		auto pSectionInfo = getSectionInfo(type);
+		const auto pSectionInfo = getSectionInfo(type);
 		if (!pSectionInfo)
 			return -1;
 
@@ -97,64 +97,55 @@ namespace Phoenix {
 		return static_cast<int32_t>(m_section.size()) - 1;
 	}
 
-	Section* SectionManager::getSection(std::string_view id) const {
-		int32_t sec_size = static_cast<int32_t>(m_section.size());
-		Section* ds;
-		for (int32_t i = 0; i < sec_size; i++) {
-			ds = this->m_section[i];
-			if (ds->identifier == id) {
-				return ds;
-			}
-		}
-		return NULL;
+	Section* SectionManager::getSection(std::string_view id) const
+	{
+		// hack: slow
+		for (auto pSection : m_section)
+			if (pSection->identifier == id)
+				return pSection;
+
+		return nullptr;
 	}
 
-	int32_t SectionManager::getSectionPosition(std::string_view id) const {
-		int32_t sec_size = static_cast<int32_t>(m_section.size());
-		Section* ds;
-		for (int32_t i = 0; i < sec_size; i++) {
-			ds = this->m_section[i];
-			if (ds->identifier == id) {
-				return i;
-			}
-		}
-		return NULL;
+	int32_t SectionManager::getSectionIndex(std::string_view id) const
+	{
+		// hack: slow
+		for (auto i = 0; i < m_section.size(); i++)
+			if (m_section[i]->identifier == id)
+				return static_cast<int32_t>(i);
+
+		return -1;
 	}
 
 	void SectionManager::toggleSections(std::vector<std::string> const& ids)
 	{
-		Section* ds;
-		int32_t id_size = (int32_t)ids.size();
-
-		for (int32_t i = 0; i < id_size; i++) {
-			ds = getSection(ids[i]);
-			if (ds) {
-				ds->enabled = !ds->enabled;
+		for (auto const& id : ids) {
+			const auto pSection = getSection(id);
+			if (pSection) {
+				pSection->enabled = !pSection->enabled;
 				//Logger::sendEditor("Section toggled: %s", ids[i].c_str());
 			}
 			else {
-				Logger::error("Section NOT toggled: %s", ids[i].c_str());
+				Logger::error("Section NOT toggled: %s", id.c_str());
 			}
 		}
 	}
 
-	void SectionManager::deleteSections(std::vector<std::string> const& ids)
+	bool SectionManager::deleteSections(std::vector<std::string> const& ids)
 	{
-		Section* ds;
-		int32_t			ds_number;
-		int32_t id_size = (int32_t)ids.size();
+		bool failed = false;
 
-		for (int32_t i = 0; i < id_size; i++) {
-			ds = getSection(ids[i]);
-			ds_number = getSectionPosition(ids[i]);
-			if (ds) {
-				this->m_section.erase(this->m_section.begin() + ds_number);
+		for (auto const& sectionId : ids)
+			if (getSection(sectionId)) {
+				m_section.erase(m_section.begin() + getSectionIndex(sectionId));
 				//Logger::sendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 			}
 			else {
-				Logger::error("Section NOT deleted: %s", ids[i].c_str());
+				Logger::error("Section NOT deleted: %s", sectionId.c_str());
+				failed = true;
 			}
-		}
+
+		return failed;
 	}
 
 	// Delete the old section and create a new one with the new parameters
@@ -234,7 +225,7 @@ namespace Phoenix {
 		}
 
 		m_section.clear();
-		m_loadSection.clear();
+		m_loadSectionIndex.clear();
 		m_execSection.clear();
 	}
 

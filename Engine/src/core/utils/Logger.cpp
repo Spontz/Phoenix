@@ -14,12 +14,12 @@ namespace Phoenix {
 	std::ofstream kOutputStream;
 	uint32_t kIndent = 0;
 
-	LoggerIndent::LoggerIndent()
+	Logger::ScopedIndent::ScopedIndent()
 	{
 		++kIndent;
 	}
 
-	LoggerIndent::~LoggerIndent()
+	Logger::ScopedIndent::~ScopedIndent()
 	{
 		--kIndent;
 	}
@@ -55,7 +55,7 @@ namespace Phoenix {
 
 			std::stringstream ss;
 			for (uint32_t i = 0; i < kIndent; ++i)
-				ss << "    ";
+				ss << "  ";
 			ss << "Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << pszText << std::endl;
 			const auto strOutputString = ss.str();
 
@@ -91,7 +91,7 @@ namespace Phoenix {
 
 		std::stringstream ss;
 		for (uint32_t i = 0; i < kIndent; ++i)
-			ss << "    ";
+			ss << "  ";
 		ss << "INFO::Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << pszText << std::endl;
 		const auto strOutputString = ss.str();
 
@@ -124,7 +124,7 @@ namespace Phoenix {
 
 		std::stringstream ss;
 		for (uint32_t i = 0; i < kIndent; ++i)
-			ss << "    ";
+			ss << "  ";
 		ss << "Error [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << pszText << std::endl;
 		const auto strOutputString = ss.str();
 
