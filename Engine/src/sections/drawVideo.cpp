@@ -26,7 +26,7 @@ namespace Phoenix {
 
 		float		m_fVideoAspectRatio = 1.0f;
 		float		m_fRenderAspectRatio = 1.0f;
-		Video*		m_pVideo = nullptr;
+		SP_Video	m_pVideo;
 		SP_Shader	m_pShader;
 		MathDriver*	m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
 		ShaderVars* m_pVars = nullptr;	// Shader variables
