@@ -79,10 +79,10 @@ namespace Phoenix {
 	}
 
 	// Adds a Cubemap into the queue, returns the Number of the cubemap added
-	Cubemap* TextureManager::addCubemap(std::vector<std::string> const& path, bool flip)
+	SP_Cubemap TextureManager::addCubemap(std::vector<std::string> const& path, bool flip)
 	{
 		unsigned int i;
-		Cubemap* p_cubemap = nullptr;
+		SP_Cubemap p_cubemap;
 
 		// check if cubemap is already loaded, then we just return the ID of our texture
 		bool already_loaded = true;
@@ -94,7 +94,7 @@ namespace Phoenix {
 		}
 
 		if (p_cubemap == nullptr) { // If the cubemap has not been found, we need to load it from the first time
-			Cubemap* new_cubemap = new Cubemap();
+			SP_Cubemap new_cubemap = std::make_shared<Cubemap>();
 			if (new_cubemap->load(path, flip)) {
 				cubemap.push_back(new_cubemap);
 				p_cubemap = new_cubemap;

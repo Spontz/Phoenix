@@ -30,6 +30,10 @@ namespace Phoenix {
 	};
 
 	// Encapsulates video rendering to a ogl texture via FFMPEG.
+	class Video;
+	using SP_Video = std::shared_ptr<Video>;
+	using WP_Video = std::weak_ptr<Video>;
+
 	class Video final {
 	public:
 		Video(bool bDebug = false);

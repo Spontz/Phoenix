@@ -8,6 +8,10 @@
 
 namespace Phoenix {
 
+	class Cubemap;
+	using SP_Cubemap = std::shared_ptr<Cubemap>;
+	using WP_Cubemap = std::weak_ptr<Cubemap>;
+
 	class Cubemap {
 	public:
 		std::vector<std::string> filename;

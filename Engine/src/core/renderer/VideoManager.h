@@ -10,7 +10,7 @@ namespace Phoenix {
 	class VideoManager final {
 
 	private:
-		using CVideoMap = std::map<CVideoSource, Video*>;
+		using CVideoMap = std::map<CVideoSource, SP_Video>;
 
 	public:
 		VideoManager() {};
@@ -18,8 +18,8 @@ namespace Phoenix {
 
 	public:
 		// Returns a video (and loads it if required)
-		Video*	addVideo(CVideoSource const& videoDesc, bool ForceReload); // TODO: Change the video to shared pointer, as we do for Textures, models, etc...
-		void	clear();
+		SP_Video	addVideo(CVideoSource const& videoDesc, bool ForceReload);
+		void		clear();
 
 	private:
 		CVideoMap VideoMap_;

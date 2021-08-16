@@ -19,6 +19,7 @@ namespace Phoenix {
 		"7 Show Grid\n" \
 		"9 Show this help :)\n" \
 		"0 Show engine and libraries versions\n" \
+		"BACKSPACE Show error Log\n" \
 		"ENTER Print time on log file\n\n" \
 		"Playback control:\n" \
 		"-----------------\n" \
@@ -446,7 +447,7 @@ namespace Phoenix {
 			const auto sec_id = m_demo.m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
 			const auto ds = m_demo.m_sectionManager.m_section[sec_id];
 			std::stringstream ss;
-			ss << ds->type_str << " id/layer[" << ds->identifier << "/" + ds->layer << "]";
+			ss << ds->type_str << " id/layer[" << ds->identifier << "/" +  std::to_string(ds->layer) << "]";
 			if (m_expandAllSectionsChanged)
 				ImGui::SetNextTreeNodeOpen(m_expandAllSections);
 			if (ImGui::CollapsingHeader(ss.str().c_str())) {

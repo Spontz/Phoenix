@@ -11,7 +11,7 @@ namespace Phoenix {
 		clear();
 	}
 
-	Video* VideoManager::addVideo(CVideoSource const& VideoSource, bool bForceReload)
+	SP_Video VideoManager::addVideo(CVideoSource const& VideoSource, bool bForceReload)
 	{
 		// If the video is already loaded just return it
 		// If the video is not loaded load and return it
@@ -39,13 +39,12 @@ namespace Phoenix {
 		}
 
 		// Create video
-		auto const pVideo = new Video(false);
+		SP_Video pVideo = std::make_shared<Video>(false);
 
 		// Load video
 		if (!pVideo->load(VideoSource)) {
 			// Handle load error
 			Logger::error("Could not load video: \"%s\"", VideoSource.m_sPath.c_str());
-			delete pVideo;
 			return nullptr;
 		}
 
@@ -62,7 +61,6 @@ namespace Phoenix {
 	void VideoManager::clear()
 	{
 		Logger::info(LogLevel::med, "Unloading videos...");
-		for (auto const& i : VideoMap_)
-			delete i.second;
+		VideoMap_.clear();
 	}
 }
