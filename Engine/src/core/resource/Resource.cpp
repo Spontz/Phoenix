@@ -390,7 +390,7 @@ namespace Phoenix {
 	}
 
 
-	void Resource::Draw_Skybox(Cubemap* cubemap)
+	void Resource::Draw_Skybox(SP_Cubemap cubemap)
 	{
 		m_pSkybox->Bind();
 		cubemap->bind();

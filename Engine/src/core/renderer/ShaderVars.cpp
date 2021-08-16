@@ -25,7 +25,7 @@ namespace Phoenix {
 			Logger::error(
 				"Error reading Shader Variable [section: %s], format is: 'uniform <var_type> "
 				"<var_name> <var_value>', but the string was: 'uniform %s'",
-				str(my_section->type),
+				my_section->type_str.c_str(),
 				string_var
 			);
 			return false;
@@ -39,7 +39,7 @@ namespace Phoenix {
 			LogLevel::med,
 			"Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], "
 			"value [%s]",
-			str(my_section->type),
+			my_section->type_str.c_str(),
 			my_shader->getId(),
 			var_type.c_str(),
 			var_name.c_str(),

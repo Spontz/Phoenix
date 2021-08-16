@@ -17,6 +17,8 @@ namespace Phoenix {
 	{
 		if (cubemapID != 0) {
 			glDeleteTextures(1, &cubemapID);
+			width.clear();
+			height.clear();
 			cubemapID = 0;
 			mem = 0;
 		}

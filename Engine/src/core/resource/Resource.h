@@ -21,26 +21,26 @@ namespace Phoenix {
 		void loadAllResources();
 		void unLoadAllResources();
 
-		void Draw_QuadFS();											// Draws a quad in fullscreen
-		void Draw_QuadFS(SP_Texture tex, float alpha);				// Draws a quad in fullscreen with alpha
-		void Draw_QuadFBOFS(Fbo* fbo, GLuint attachment = 0);		// Draws a quad in fullscreen (the fbo number from the fbo manager should be specified)
+		void Draw_QuadFS();												// Draws a quad in fullscreen
+		void Draw_QuadFS(SP_Texture tex, float alpha);					// Draws a quad in fullscreen with alpha
+		void Draw_QuadFBOFS(Fbo* fbo, GLuint attachment = 0);			// Draws a quad in fullscreen (the fbo number from the fbo manager should be specified)
 		void Draw_QuadEfxFBOFS(int efxFboNum, GLuint attachment = 0);	// Draws a quad in fullscreen (the fbo number from the efx fbo manager should be specified)
 		void Draw_Obj_QuadTex(SP_Texture tex, glm::mat4 const* model);
 		void Draw_Obj_QuadTex(SP_Texture tex, glm::mat4 const* projection, glm::mat4 const* view, glm::mat4 const* model);
-		void Draw_Skybox(Cubemap* cubemap);							// Draws a skybox for a given cubemap texture
-		void Draw_Cube();											// Draws a cube
+		void Draw_Skybox(SP_Cubemap cubemap);							// Draws a skybox for a given cubemap texture
+		void Draw_Cube();												// Draws a cube
 		void Draw_Grid(glm::vec3 const color, glm::mat4 const* MVP);
 
 		SP_Texture m_pTVImage;				// Default texture (tv)
 
 		// Shaders
-		SP_Shader m_pShdrQuadTex;				// Draws a textured quad
+		SP_Shader m_pShdrQuadTex;			// Draws a textured quad
 		SP_Shader m_pShdrQuadDepth;			// Draws a depth texture quad
 		SP_Shader m_pShdrQuadTexAlpha;		// Draws a textured quad with alpha
 		SP_Shader m_pShdrQuadTexModel;		// Draws a textured quad with model matrix
-		SP_Shader m_pShdrQuadTexPVM;			// Draws a textured quad with projection, view and model matrixes
+		SP_Shader m_pShdrQuadTexPVM;		// Draws a textured quad with projection, view and model matrixes
 		SP_Shader m_pShdrQuadTexVFlipModel;	// Draws a textured quad with model matrix, and with the texture flipped vertically
-		SP_Shader m_pShdrSkybox;				// Draws a skybox
+		SP_Shader m_pShdrSkybox;			// Draws a skybox
 		SP_Shader m_pShdrObjColor;			// Draws an object with a color
 		SP_Shader m_pShdrGrid;				// Draws a Grid
 

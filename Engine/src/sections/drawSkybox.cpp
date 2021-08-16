@@ -17,7 +17,7 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		Cubemap*	m_pCubemap = nullptr;
+		SP_Cubemap	m_pCubemap;
 
 		glm::vec3	m_vRotation = { 0, 0, 0 };
 		glm::vec3	m_vScale = { 1, 1, 1 };
