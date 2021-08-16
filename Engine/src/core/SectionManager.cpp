@@ -225,7 +225,7 @@ namespace Phoenix {
 		}
 
 		m_section.clear();
-		m_loadSectionIndex.clear();
+		m_loadSection.clear();
 		m_execSection.clear();
 	}
 

@@ -37,7 +37,7 @@ namespace Phoenix {
 		std::vector<Section*> m_section;
 
 		// Ready section list: Sections to be loaded (ascendent order by start time)
-		std::vector<int32_t> m_loadSectionIndex;
+		std::vector<int32_t> m_loadSection;
 
 		// Exec section list: Sections to be executed this frame (first element is the layer, and second
 		// the ID of the section)
