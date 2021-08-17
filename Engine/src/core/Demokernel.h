@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace Phoenix { class demokernel; }
+namespace Phoenix { class DemoKernel; }
 
 #include "drivers/gldriver.h"
 #include "drivers/NetDriver.h"
@@ -30,7 +30,7 @@ namespace Phoenix { class demokernel; }
 namespace Phoenix {
 
 
-#define DEMO (&Phoenix::demokernel::getInstance())
+#define DEMO (&Phoenix::DemoKernel::getInstance())
 
 	// ******************************************************************
 
@@ -44,10 +44,10 @@ namespace Phoenix {
 	};
 
 	// ******************************************************************
-	class demokernel final {
+	class DemoKernel final {
 	private:
-		demokernel();
-		~demokernel();
+		DemoKernel();
+		~DemoKernel();
 
 	public:
 		std::string		m_dataFolder;	// Path to "data" folder
@@ -120,7 +120,7 @@ namespace Phoenix {
 		// ******************************************************************
 		// MEMBERS
 
-		static demokernel& getInstance();
+		static DemoKernel& getInstance();
 		static void release();
 
 		// Resources Management

@@ -16,7 +16,7 @@ namespace Phoenix {
 		Resource();
 		virtual ~Resource();
 
-		demokernel& m_demo;
+		DemoKernel& m_demo;
 
 		void loadAllResources();
 		void unLoadAllResources();

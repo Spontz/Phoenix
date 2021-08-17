@@ -49,7 +49,7 @@ namespace Phoenix {
 
 
 	class Section {
-		friend class demokernel;
+		friend class DemoKernel;
 		friend class SectionManager;
 
 	public:
@@ -105,6 +105,6 @@ namespace Phoenix {
 		bool                        render_disableDepthMask;// Disable depth mask writing (enabled by default)
 
 	protected:
-		demokernel& m_demo;
+		DemoKernel& m_demo;
 	};
 }

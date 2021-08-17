@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 	Phoenix::Logger::info(Phoenix::LogLevel::high, "Closing demo. We hope you enjoyed watching this demo! See you next time! Watch more at www.spontz.org.");
 	demo.closeDemo();
 	Phoenix::glDriver::release();
-	Phoenix::demokernel::release();
+	Phoenix::DemoKernel::release();
 	Phoenix::NetDriver::release();
 
 	Phoenix::Logger::closeLogFile();

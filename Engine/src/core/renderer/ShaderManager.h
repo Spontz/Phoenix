@@ -9,7 +9,7 @@ namespace Phoenix {
 
 	class ShaderManager final
 	{
-		friend class demokernel;
+		friend class DemoKernel;
 
 	public:
 		~ShaderManager();

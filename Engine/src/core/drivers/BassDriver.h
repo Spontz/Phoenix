@@ -16,7 +16,7 @@ namespace Phoenix {
 		BassDriver();
 
 	private:
-		demokernel& m_demo;
+		DemoKernel& m_demo;
 		float		m_spectrum[SPECTRUM_SAMPLES];
 
 	public:
