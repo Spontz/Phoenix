@@ -8,30 +8,30 @@ namespace Phoenix {
 
 	VertexArray::VertexArray()
 	{
-		glCreateVertexArrays(1, &m_RendererID);
+		glCreateVertexArrays(1, &m_rendererID);
 	}
 
 	VertexArray::~VertexArray()
 	{
-		if (m_RendererID != 0)
-			glDeleteVertexArrays(1, &m_RendererID);
+		if (m_rendererID != 0)
+			glDeleteVertexArrays(1, &m_rendererID);
 	}
 
-	void VertexArray::Bind() const
+	void VertexArray::bind() const
 	{
-		glBindVertexArray(m_RendererID);
+		glBindVertexArray(m_rendererID);
 	}
 
-	void VertexArray::Unbind() const
+	void VertexArray::unbind() const
 	{
 		glBindVertexArray(0);
 	}
 
-	void VertexArray::AddVertexBuffer(SP_VertexBuffer vertexBuffer)
+	void VertexArray::AddVertexBuffer(SP_VertexBuffer const& spVertexBuffer)
 	{
-		glBindVertexArray(m_RendererID);
-		vertexBuffer->Bind();
-		const auto& layout = vertexBuffer->GetLayout();
+		glBindVertexArray(m_rendererID);
+		spVertexBuffer->Bind();
+		const auto& layout = spVertexBuffer->GetLayout();
 
 		for (const auto& element : layout)
 		{
@@ -42,14 +42,14 @@ namespace Phoenix {
 			case ShaderDataType::Float3:
 			case ShaderDataType::Float4:
 			{
-				glEnableVertexAttribArray(m_VertexBufferIndex);
-				glVertexAttribPointer(m_VertexBufferIndex,
+				glEnableVertexAttribArray(m_vertexBufferIndex);
+				glVertexAttribPointer(m_vertexBufferIndex,
 					element.DataType.elementCount,
 					element.DataType.GLBaseType,
 					element.Normalized ? GL_TRUE : GL_FALSE,
 					layout.GetStride(),
 					(const void*)element.Offset);
-				m_VertexBufferIndex++;
+				m_vertexBufferIndex++;
 				break;
 			}
 			case ShaderDataType::Int:
@@ -62,13 +62,13 @@ namespace Phoenix {
 			case ShaderDataType::UInt4:
 			case ShaderDataType::Bool:
 			{
-				glEnableVertexAttribArray(m_VertexBufferIndex);
-				glVertexAttribIPointer(m_VertexBufferIndex,
+				glEnableVertexAttribArray(m_vertexBufferIndex);
+				glVertexAttribIPointer(m_vertexBufferIndex,
 					element.DataType.elementCount,
 					element.DataType.GLBaseType,
 					layout.GetStride(),
 					(const void*)element.Offset);
-				m_VertexBufferIndex++;
+				m_vertexBufferIndex++;
 				break;
 			}
 			case ShaderDataType::Mat3:
@@ -77,15 +77,15 @@ namespace Phoenix {
 				uint8_t count = element.DataType.elementCount;
 				for (uint8_t i = 0; i < count; i++)
 				{
-					glEnableVertexAttribArray(m_VertexBufferIndex);
-					glVertexAttribPointer(m_VertexBufferIndex,
+					glEnableVertexAttribArray(m_vertexBufferIndex);
+					glVertexAttribPointer(m_vertexBufferIndex,
 						count,
 						element.DataType.GLBaseType,
 						element.Normalized ? GL_TRUE : GL_FALSE,
 						layout.GetStride(),
 						(const void*)(element.Offset + sizeof(float) * count * i));
-					glVertexAttribDivisor(m_VertexBufferIndex, 1);
-					m_VertexBufferIndex++;
+					glVertexAttribDivisor(m_vertexBufferIndex, 1);
+					m_vertexBufferIndex++;
 				}
 				break;
 			}
@@ -94,7 +94,7 @@ namespace Phoenix {
 			}
 		}
 
-		m_VertexBuffers.push_back(vertexBuffer);
+		m_vertexBuffers.push_back(spVertexBuffer);
 		glBindVertexArray(0);
 	}
 
@@ -174,21 +174,21 @@ namespace Phoenix {
 	}
 #endif
 
-	const std::vector<SP_VertexBuffer>& VertexArray::GetVertexBuffers() const {
-		return m_VertexBuffers;
+	const std::vector<SP_VertexBuffer>& VertexArray::getVertexBuffers() const {
+		return m_vertexBuffers;
 	}
 
-	SP_IndexBuffer VertexArray::GetIndexBuffer() const
+	SP_IndexBuffer VertexArray::getIndexBuffer() const
 	{
-		return m_IndexBuffer;
+		return m_indexBuffer;
 	}
 
-	void VertexArray::SetIndexBuffer(SP_IndexBuffer indexBuffer)
+	void VertexArray::SetIndexBuffer(SP_IndexBuffer const& spIndexBuffer)
 	{
-		glBindVertexArray(m_RendererID);
-		indexBuffer->Bind();
+		glBindVertexArray(m_rendererID);
+		spIndexBuffer->Bind();
 		//glVertexArrayElementBuffer(m_RendererID, indexBuffer->GetBufferID());	// In case we want to use DSA, we can remove glBindVertexArray and indexBufferBind and use this
-		m_IndexBuffer = indexBuffer;
+		m_indexBuffer = spIndexBuffer;
 	}
 
 }

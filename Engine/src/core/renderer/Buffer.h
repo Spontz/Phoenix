@@ -31,14 +31,15 @@ namespace Phoenix {
 	};
 
 	struct ShaderDataTypeTable final {
-		ShaderDataType	type;
-		GLenum			GLBaseType;
-		uint32_t		elementCount;
-		uint32_t		sizeInBytes;
+		ShaderDataType	type = ShaderDataType::None;
+		GLenum			GLBaseType = GL_NONE;
+		uint32_t		elementCount = 0;
+		uint32_t		sizeInBytes = 0;
 	};
 
-	constexpr std::array<ShaderDataTypeTable, 14> ShaderDataTypes{ {
+	constexpr std::array<ShaderDataTypeTable, 16> ShaderDataTypes{ {
 			// ShaderDataType			GLBaseType			elementCount	sizeInBytes
+			{ ShaderDataType::None,		GL_NONE,			0,				0,			},
 			{ ShaderDataType::Float,	GL_FLOAT,			1,				4			},
 			{ ShaderDataType::Float2,	GL_FLOAT,			2,				4 * 2		},
 			{ ShaderDataType::Float3,	GL_FLOAT,			3,				4 * 3		},
@@ -52,7 +53,8 @@ namespace Phoenix {
 			{ ShaderDataType::UInt,		GL_UNSIGNED_INT,	1,				4			},
 			{ ShaderDataType::UInt2,	GL_UNSIGNED_INT,	2,				4 * 2		},
 			{ ShaderDataType::UInt3,	GL_UNSIGNED_INT,	3,				4 * 3		},
-			{ ShaderDataType::UInt4,	GL_UNSIGNED_INT,	4,				4 * 4		}
+			{ ShaderDataType::UInt4,	GL_UNSIGNED_INT,	4,				4 * 4		},
+			{ ShaderDataType::Bool,		GL_BOOL,			1,				4			},
 	} };
 
 	class BufferElement final
@@ -70,21 +72,22 @@ namespace Phoenix {
 		}
 
 	public:
-		const ShaderDataTypeTable getShaderDataType(ShaderDataType type)
+		static const ShaderDataTypeTable& getShaderDataType(ShaderDataType type)
 		{
-			for (const auto& dataType : ShaderDataTypes) {
-				if (type == dataType.type)
-					return dataType;
+			const auto tmp = static_cast<size_t>(type);
+			if (tmp >= ShaderDataTypes.size()) {
+				Logger::error("Unknown ShaderDataType");
+				static ShaderDataTypeTable r;
+				return r;
 			}
-			Logger::error("Unknown ShaderDataType");
-			return { ShaderDataType::None, 0, 0, 0 };
+			return ShaderDataTypes[tmp];
 		}
 
 	public:
 		std::string Name;
-		ShaderDataType Type;
-		size_t Offset;
-		bool Normalized;
+		ShaderDataType Type = ShaderDataType::None;
+		size_t Offset = 0;
+		bool Normalized = false;
 		ShaderDataTypeTable DataType;
 	};
 
@@ -146,10 +149,11 @@ namespace Phoenix {
 		BufferLayout m_Layout;
 	};
 
+	// TODO: CreateIndexBuffer16 and IndexBuffer32
 	class IndexBuffer final
 	{
 	public:
-		IndexBuffer(uint32_t* indices, uint32_t count);
+		IndexBuffer(const uint32_t* pIndices, uint32_t count);
 		~IndexBuffer();
 
 	public:

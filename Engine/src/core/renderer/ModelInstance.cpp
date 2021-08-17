@@ -72,10 +72,10 @@ namespace Phoenix {
 			mesh->setMaterialShaderVars(shaderID, startTexUnit);
 
 			// draw mesh
-			mesh->m_VertexArray->Bind();
+			mesh->m_VertexArray->bind();
 			glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(mesh->m_indices.size()), GL_UNSIGNED_INT, 0, static_cast<GLsizei>(amount));
 			
-			mesh->m_VertexArray->Unbind();
+			mesh->m_VertexArray->unbind();
 		}
 	}
 
@@ -89,7 +89,7 @@ namespace Phoenix {
 		for (const auto& mesh : pModel->meshes)
 		{
 			// Update matrices buffers to GPU
-			const auto& VBs = mesh->m_VertexArray->GetVertexBuffers();
+			const auto& VBs = mesh->m_VertexArray->getVertexBuffers();
 			VBs[1]->SetData(&pModelMatrix[0], amount * sizeof(glm::mat4)); // Be careful with "vb[1]"!! -> TODO: Get rid of this hardcode!!
 			VBs[1]->Unbind();
 		}

@@ -38,7 +38,7 @@ namespace Phoenix {
 			});
 
 		m_VertexArray->AddVertexBuffer(pVB);
-		m_VertexArray->Unbind();
+		m_VertexArray->unbind();
 
 		return true;
 	}
@@ -69,10 +69,10 @@ namespace Phoenix {
 	void ParticleMesh::render(float currentTime)
 	{
 		// Bind our vertex arrays
-		m_VertexArray->Bind();
+		m_VertexArray->bind();
 		// Draw! (shader needs to be called in advance!)
 		glDrawArrays(GL_POINTS, 0, m_numParticles);
-		m_VertexArray->Unbind();
+		m_VertexArray->unbind();
 	}
 
 	void ParticleMesh::shutdown()

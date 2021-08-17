@@ -119,7 +119,7 @@ namespace Phoenix {
 		auto pIB = std::make_shared<IndexBuffer>(&m_indices[0], static_cast<uint32_t>(m_indices.size()));
 		m_VertexArray->SetIndexBuffer(pIB);
 
-		m_VertexArray->Unbind();
+		m_VertexArray->unbind();
 	}
 
 
@@ -151,9 +151,9 @@ namespace Phoenix {
 		setMaterialShaderVars(shaderID, startTexUnit);
 
 		// draw mesh
-		m_VertexArray->Bind();
+		m_VertexArray->bind();
 		glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, NULL);
-		m_VertexArray->Unbind();
+		m_VertexArray->unbind();
 	}
 
 }
