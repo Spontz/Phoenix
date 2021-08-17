@@ -3,15 +3,26 @@
 
 #include "main.h"
 #include "core/utils/Logger.h"
+#include "core/drivers/NetDriver.h"
 
 #include <iomanip>
 
 namespace Phoenix {
 
-	const NetDriver& Logger::m_netDriver{ NetDriver::GetInstance() };
-	const std::string Logger::m_strOutputFile{ "demo_log.txt" };
-	LogLevel Logger::m_bLogLevel{ LogLevel::high };
-	std::ofstream Logger::m_ofstream;
+	constexpr std::string_view kOutputFile("demo_log.txt");
+	LogLevel kLogLevel = LogLevel::high;
+	std::ofstream kOutputStream;
+	uint32_t kIndent = 0;
+
+	Logger::ScopedIndent::ScopedIndent()
+	{
+		++kIndent;
+	}
+
+	Logger::ScopedIndent::~ScopedIndent()
+	{
+		--kIndent;
+	}
 
 	void Logger::setLogLevel(LogLevel level)
 	{
@@ -24,11 +35,11 @@ namespace Phoenix {
 		}
 
 		if (level <= LogLevel::low)
-			m_bLogLevel = level;
+			kLogLevel = level;
 	}
 
 	void Logger::info(LogLevel level, const char* pszMessage, ...) {
-		if (DEMO->m_debug && m_bLogLevel >= level) {
+		if (DEMO->m_debug && kLogLevel >= level) {
 
 			// Get the message
 			va_list argptr;
@@ -43,13 +54,15 @@ namespace Phoenix {
 			auto timeinfo = localtime(&t);
 
 			std::stringstream ss;
+			for (uint32_t i = 0; i < kIndent; ++i)
+				ss << "  ";
 			ss << "Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << pszText << std::endl;
 			const auto strOutputString = ss.str();
 
 			delete[] pszText;
 
 			// Output to file
-			m_ofstream << strOutputString;
+			kOutputStream << strOutputString;
 
 			// Output to Visual Studio
 #if defined(_DEBUG) && defined(WIN32)
@@ -77,13 +90,15 @@ namespace Phoenix {
 		struct tm* timeinfo = localtime(&t);
 
 		std::stringstream ss;
+		for (uint32_t i = 0; i < kIndent; ++i)
+			ss << "  ";
 		ss << "INFO::Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << pszText << std::endl;
 		const auto strOutputString = ss.str();
 
 		delete[] pszText;
 
 		// Output to editor
-		m_netDriver.sendMessage(strOutputString);
+		NetDriver::getInstance().sendMessage(strOutputString);
 
 		// Output to Visual Studio
 #if defined(_DEBUG) && defined(WIN32)
@@ -108,13 +123,15 @@ namespace Phoenix {
 		struct tm* timeinfo = localtime(&t);
 
 		std::stringstream ss;
+		for (uint32_t i = 0; i < kIndent; ++i)
+			ss << "  ";
 		ss << "Error [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << pszText << std::endl;
 		const auto strOutputString = ss.str();
 
 		delete[] pszText;
 
 		// Output to file
-		m_ofstream << strOutputString;
+		kOutputStream << strOutputString;
 
 		// Output to screen log
 		GLDRV->guiAddLog(strOutputString);
@@ -125,16 +142,16 @@ namespace Phoenix {
 #endif
 
 		// Output to demo editor
-		m_netDriver.sendMessage("ERROR::" + strOutputString);
+		NetDriver::getInstance().sendMessage("ERROR::" + strOutputString);
 	}
 
 	void Logger::openLogFile() {
-		if (!m_ofstream.is_open())
-			m_ofstream.open(m_strOutputFile.c_str(), std::ios::out | std::ios::trunc);
+		if (!kOutputStream.is_open())
+			kOutputStream.open(kOutputFile.data(), std::ios::out | std::ios::trunc);
 	}
 
 	void Logger::closeLogFile() {
-		if (m_ofstream.is_open())
-			m_ofstream.close();
+		if (kOutputStream.is_open())
+			kOutputStream.close();
 	}
 }

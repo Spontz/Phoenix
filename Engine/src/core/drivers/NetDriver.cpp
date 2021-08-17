@@ -14,7 +14,7 @@ namespace Phoenix {
 	NetDriver* kpNetDriver=nullptr;
 
 	// public static ///////////////////////////////////////////////////////////////////////////////////
-	NetDriver& NetDriver::GetInstance() {
+	NetDriver& NetDriver::getInstance() {
 		if (!kpNetDriver)
 			kpNetDriver = new NetDriver();
 		return *kpNetDriver;
@@ -31,9 +31,9 @@ namespace Phoenix {
 		:
 		m_iPortReceive(28000),
 		m_iPortSend(28001),
-		m_bInitialized_(false),
-		m_bConnectedToEditor_(false),
-		m_pServConnect_(nullptr) {
+		m_bInitialized(false),
+		m_bConnectedToEditor(false),
+		m_pServConnect(nullptr) {
 	}
 
 	NetDriver::~NetDriver() {
@@ -57,7 +57,7 @@ namespace Phoenix {
 
 		connectToEditor();
 
-		m_bInitialized_ = true;
+		m_bInitialized = true;
 	}
 
 	void NetDriver::connectToEditor() {
@@ -68,9 +68,9 @@ namespace Phoenix {
 			m_iPortSend
 		);
 
-		m_pServConnect_ = dyad_newStream();
-		dyad_addListener(m_pServConnect_, DYAD_EVENT_CONNECT, dyadOnConnect, nullptr);
-		dyad_connect(m_pServConnect_, "127.0.0.1", m_iPortSend);
+		m_pServConnect = dyad_newStream();
+		dyad_addListener(m_pServConnect, DYAD_EVENT_CONNECT, dyadOnConnect, nullptr);
+		dyad_connect(m_pServConnect, "127.0.0.1", m_iPortSend);
 	}
 
 	void NetDriver::update() const {
@@ -197,15 +197,15 @@ namespace Phoenix {
 	}
 
 	void NetDriver::sendMessage(std::string const& sMessage) const {
-		if (!m_bConnectedToEditor_)
+		if (!m_bConnectedToEditor)
 			return;
 
-		dyad_write(m_pServConnect_, sMessage.c_str(), static_cast<int>(sMessage.size()));
+		dyad_write(m_pServConnect, sMessage.c_str(), static_cast<int>(sMessage.size()));
 	}
 
 	// private static //////////////////////////////////////////////////////////////////////////////////
 	void NetDriver::dyadOnData(dyad_Event* const pDyadEvent) {
-		const std::string sResponse = NetDriver::GetInstance().processMessage(pDyadEvent->data);
+		const std::string sResponse = NetDriver::getInstance().processMessage(pDyadEvent->data);
 
 		// Send the response and close the connection
 		dyad_write(pDyadEvent->stream, sResponse.c_str(), static_cast<int>(sResponse.size()));
@@ -229,7 +229,7 @@ namespace Phoenix {
 	}
 
 	void NetDriver::dyadOnConnect(dyad_Event* const pDyadEvent) {
-		NetDriver::GetInstance().m_bConnectedToEditor_ = true;
+		NetDriver::getInstance().m_bConnectedToEditor = true;
 
 		Logger::info(
 			LogLevel::med,

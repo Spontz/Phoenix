@@ -3,9 +3,6 @@
 
 #pragma once
 
-#include "core/drivers/NetDriver.h"
-#include <fstream>
-
 namespace Phoenix {
 
 	enum class LogLevel {
@@ -15,7 +12,19 @@ namespace Phoenix {
 		low = 3
 	};
 
-	class Logger {
+	class Logger final
+	{
+	public:
+		class ScopedIndent final
+		{
+		public:
+			ScopedIndent();
+			~ScopedIndent();
+		};
+
+	public:
+		Logger() = delete;
+
 	public:
 		static void setLogLevel(LogLevel level);
 		static void info(LogLevel level, const char* pszMessage, ...);
@@ -23,11 +32,6 @@ namespace Phoenix {
 		static void error(const char* pszMessage, ...);
 		static void openLogFile();
 		static void closeLogFile();
-
-	private:
-		static std::ofstream m_ofstream;
-		static LogLevel m_bLogLevel;
-		static const std::string m_strOutputFile;
-		static const NetDriver& m_netDriver;
 	};
+
 }

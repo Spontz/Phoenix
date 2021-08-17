@@ -102,7 +102,7 @@ namespace Phoenix {
 		//IndexBuffer* ib = new IndexBuffer(&quadIndices[0], 6);
 		//m_pQuadFullScreen->SetIndexBuffer(ib);
 
-		m_pQuadFullScreen->Unbind();
+		m_pQuadFullScreen->unbind();
 	}
 
 	void Resource::Load_Obj_Skybox()
@@ -162,7 +162,7 @@ namespace Phoenix {
 			});
 
 		m_pSkybox->AddVertexBuffer(spVB);
-		m_pSkybox->Unbind();
+		m_pSkybox->unbind();
 	}
 
 	void Resource::Load_Obj_Qube()
@@ -224,7 +224,7 @@ namespace Phoenix {
 			});
 
 		m_pQube->AddVertexBuffer(spVB);
-		m_pQube->Unbind();
+		m_pQube->unbind();
 	}
 
 	void Resource::Load_Shaders()
@@ -323,7 +323,7 @@ namespace Phoenix {
 		auto spIB = std::make_shared<IndexBuffer>(indices.data(), static_cast<uint32_t>(indices.size()));
 		m_pGrid->SetIndexBuffer(spIB);
 
-		m_pGrid->Unbind();
+		m_pGrid->unbind();
 	}
 
 	// Draw a Quad with texture in full screen with alpha
@@ -384,25 +384,25 @@ namespace Phoenix {
 	// Draw a Quad with a FBO in full screen but no shader is called (needs a shader->use() call before)
 	void Resource::Draw_QuadFS()
 	{
-		m_pQuadFullScreen->Bind();
+		m_pQuadFullScreen->bind();
 		glDrawArrays(GL_TRIANGLES, 0, 6);// m_pQuadFullScreen->GetIndexBuffer()->GetCount());
-		m_pQuadFullScreen->Unbind();
+		m_pQuadFullScreen->unbind();
 	}
 
 
 	void Resource::Draw_Skybox(SP_Cubemap cubemap)
 	{
-		m_pSkybox->Bind();
+		m_pSkybox->bind();
 		cubemap->bind();
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		m_pSkybox->Unbind();
+		m_pSkybox->unbind();
 	}
 
 	void Resource::Draw_Cube()
 	{
-		m_pQube->Bind();
+		m_pQube->bind();
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		m_pQube->Unbind();
+		m_pQube->unbind();
 	}
 
 	void Resource::Draw_Grid(glm::vec3 const color, glm::mat4 const* MVP)
@@ -414,10 +414,10 @@ namespace Phoenix {
 		m_pShdrGrid->setValue("MVP", *MVP);
 		m_pShdrGrid->setValue("color", color);
 
-		m_pGrid->Bind();
+		m_pGrid->bind();
 
-		glDrawElements(GL_LINES, m_pGrid->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, NULL);
-		m_pGrid->Unbind();
+		glDrawElements(GL_LINES, m_pGrid->getIndexBuffer()->GetCount(), GL_UNSIGNED_INT, NULL);
+		m_pGrid->unbind();
 	}
 
 }

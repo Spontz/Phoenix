@@ -6,6 +6,7 @@
 namespace Phoenix { class demokernel; }
 
 #include "drivers/gldriver.h"
+#include "drivers/NetDriver.h"
 
 #include "core/renderer/Spline.h"
 #include "core/Section.h"
@@ -52,7 +53,7 @@ namespace Phoenix {
 		std::string		m_dataFolder;	// Path to "data" folder
 		std::string		m_demoName;
 
-	// private: (hack: create getters)
+		// private: (hack: create getters)
 		bool		m_debug;
 		float		m_debug_fontSize;
 		LogLevel	m_logLevel;
@@ -80,9 +81,9 @@ namespace Phoenix {
 		ModelManager	m_modelManager;
 		ShaderManager	m_shaderManager;
 		LightManager	m_lightManager;
-		Camera*			m_pActiveCamera;			// Current Active Camera
-		Camera*			m_pDefaultCamera;			// Default Camera when no camera is defined
-		Font*			m_pText;
+		Camera* m_pActiveCamera;			// Current Active Camera
+		Camera* m_pDefaultCamera;			// Default Camera when no camera is defined
+		Font* m_pText;
 
 		// Resources
 		Resource* m_pRes;

@@ -5,19 +5,18 @@
 
 namespace Phoenix {
 
-	class MathDriver {
+	class MathDriver final {
 
 	public:
+		MathDriver(Section* pSection);
 
+	public:
+		bool compileFormula();
+
+	public:
 		std::string					expression;
 		exprtk::symbol_table<float>	SymbolTable;
 		exprtk::expression<float>	Expression;
 		exprtk::parser<float>		Parser;
-
-		MathDriver(Section* sec);
-		bool compileFormula();
-
-	private:
-
 	};
 }
