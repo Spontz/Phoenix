@@ -483,7 +483,7 @@ namespace Phoenix {
 
 		// Load the data from the section
 		{
-			Logger::ScopedIndent();
+			Logger::ScopedIndent _;
 			my_sec->loaded = my_sec->load();
 			if (my_sec->loaded)
 				Logger::info(LogLevel::low, "Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, my_sec->identifier.c_str(), my_sec->DataSource.c_str());
@@ -600,7 +600,7 @@ namespace Phoenix {
 		ds_loading->exec();
 
 		{
-			Logger::ScopedIndent();
+			Logger::ScopedIndent _;
 			Logger::info(LogLevel::med, "Loading section loaded, inited and executed for first time");
 
 			// Clear the load and run section lists
@@ -656,7 +656,7 @@ namespace Phoenix {
 		int i;
 		int sec_id;
 
-		Logger::ScopedIndent();
+		Logger::ScopedIndent _;
 		Logger::info(LogLevel::low, "Analysing sections that must be re-inited...");
 		for (i = 0; i < m_sectionManager.m_execSection.size(); i++) {
 			sec_id = m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
@@ -679,7 +679,7 @@ namespace Phoenix {
 
 		// Check the sections that need to be executed
 		{
-			Logger::ScopedIndent();
+			Logger::ScopedIndent _;
 			Logger::info(LogLevel::low, "Analysing sections that must be executed...", m_demoRunTime);
 			m_sectionManager.m_execSection.clear();
 			for (i = 0; i < m_sectionManager.m_section.size(); i++) {
@@ -720,7 +720,7 @@ namespace Phoenix {
 			// Run Exec sections
 			Logger::info(LogLevel::low, "Running Exec Sections...");
 			{
-				Logger::ScopedIndent();
+				Logger::ScopedIndent _;
 				PX_PROFILE_SCOPE("ExecSections");
 				for (i = 0; i < m_sectionManager.m_execSection.size(); i++) {
 					sec_id = m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
