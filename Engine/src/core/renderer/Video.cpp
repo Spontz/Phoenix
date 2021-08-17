@@ -30,6 +30,7 @@ namespace Phoenix {
 		m_dNextFrameTime(0),
 		m_pWorkerThread(nullptr),
 		m_bNewFrame(false),
+		m_puiInternalBuffer(nullptr),
 		m_dTime(0.),
 		m_bStopWorkerThread(false),
 		m_bDebug(bDebug)
@@ -47,6 +48,7 @@ namespace Phoenix {
 			m_bStopWorkerThread = true;
 			m_pWorkerThread->join();
 			delete m_pWorkerThread;
+			m_pWorkerThread = nullptr;
 		}
 
 		if (m_uiTextureOGLName != 0) {
@@ -54,14 +56,18 @@ namespace Phoenix {
 			m_uiTextureOGLName = 0;
 		}
 
-		if (m_pFormatContext) {
+		if (m_pFormatContext)
 			avformat_close_input(&m_pFormatContext);
-			avformat_free_context(m_pFormatContext);
-		}
 
 		if (m_pAVPacket) {
 			av_packet_unref(m_pAVPacket);
 			av_packet_free(&m_pAVPacket);
+		}
+
+
+		if (m_puiInternalBuffer) {
+			av_free((void*)m_puiInternalBuffer);
+			m_puiInternalBuffer = nullptr;
 		}
 
 		if (m_pFrame) {
@@ -72,6 +78,12 @@ namespace Phoenix {
 		if (m_pGLFrame) {
 			av_frame_unref(m_pGLFrame);
 			av_frame_free(&m_pGLFrame);
+		}
+
+
+		if (m_pConvertContext) {
+			sws_freeContext(m_pConvertContext);
+			m_pConvertContext = nullptr;
 		}
 
 		if (m_pCodecContext)
@@ -267,14 +279,14 @@ namespace Phoenix {
 			1
 		);
 
-		const auto puiInternalBuffer = static_cast<const uint8_t*>(
+		m_puiInternalBuffer = static_cast<const uint8_t*>(
 			av_malloc(iSize * sizeof(uint8_t))
 			);
 
 		av_image_fill_arrays(
 			m_pGLFrame->data,
 			m_pGLFrame->linesize,
-			puiInternalBuffer,
+			m_puiInternalBuffer,
 			AV_PIX_FMT_RGB24,
 			m_pCodecContext->width,
 			m_pCodecContext->height,

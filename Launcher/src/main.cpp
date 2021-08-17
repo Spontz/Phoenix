@@ -13,6 +13,11 @@
 
 int main(int argc, char* argv[])
 {
+#ifdef WIN32
+	if (CoInitialize(nullptr) != S_OK)
+		return EXIT_FAILURE;
+#endif
+
 	auto& demo = *DEMO;
 	auto& gldrv = *GLDRV;
 
@@ -71,11 +76,15 @@ int main(int argc, char* argv[])
 
 	Phoenix::Logger::info(Phoenix::LogLevel::high, "Closing demo. We hope you enjoyed watching this demo! See you next time! Watch more at www.spontz.org.");
 	demo.closeDemo();
-	Phoenix::Logger::closeLogFile();
-
 	Phoenix::glDriver::release();
 	Phoenix::demokernel::release();
 	Phoenix::NetDriver::release();
+
+	Phoenix::Logger::closeLogFile();
+
+#ifdef WIN32
+	CoUninitialize();
+#endif
 
 	return EXIT_SUCCESS;
 }

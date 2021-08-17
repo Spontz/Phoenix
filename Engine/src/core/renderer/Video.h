@@ -71,6 +71,7 @@ namespace Phoenix {
 		AVCodecContext* m_pCodecContext;
 		AVFrame* m_pFrame;
 		AVFrame* m_pGLFrame;
+		const uint8_t* m_puiInternalBuffer;
 		SwsContext* m_pConvertContext;
 		AVPacket* m_pAVPacket;
 		double m_dIntervalFrame;  // Time in seconds between frames (1/frameRate)

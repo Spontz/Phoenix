@@ -13,7 +13,6 @@ namespace Phoenix {
 		using CVideoMap = std::map<CVideoSource, SP_Video>;
 
 	public:
-		VideoManager() {};
 		~VideoManager();
 
 	public:
