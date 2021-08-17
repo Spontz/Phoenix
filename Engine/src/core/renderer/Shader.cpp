@@ -19,10 +19,9 @@ namespace Phoenix {
 		// The sentry object performs various tasks,
 		// such as thread synchronization and updating the stream state.
 
-		std::istream::sentry se(is, true);
 		std::streambuf* sb = is.rdbuf();
 
-		for (;;) {
+		while(true) {
 			int c = sb->sbumpc();
 			switch (c) {
 			case '\n':
@@ -258,7 +257,7 @@ namespace Phoenix {
 			Logger::info(
 				LogLevel::med,
 				"Warning: Shader uniform variable '%s' not found in shader '%s'",
-				name,
+				name.data(),
 				m_URI.c_str()
 			);
 		return val;

@@ -137,7 +137,7 @@ namespace Phoenix {
 
 		// Data folder operations
 		bool checkDataFolder();
-		std::string getFolder(std::string path);
+		std::string getFolder(std::string_view path) const;
 
 		// Scripts (SPO files) management
 		bool loadSpoConfig();

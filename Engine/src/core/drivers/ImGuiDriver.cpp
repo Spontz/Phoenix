@@ -84,10 +84,6 @@ namespace Phoenix {
 
 	}
 
-	ImGuiDriver::~ImGuiDriver()
-	{
-	}
-
 	void ImGuiDriver::init(GLFWwindow* window) {
 		// imGUI init
 		IMGUI_CHECKVERSION();
@@ -194,16 +190,15 @@ namespace Phoenix {
 		ImGui::GetIO().FontGlobalScale = m_fontScale;
 	}
 
-	void ImGuiDriver::addLog(std::string message)
+	void ImGuiDriver::addLog(std::string_view message)
 	{
-		m_log.appendf(message.c_str());
+		m_log.appendf(message.data());
 	}
 
 	void ImGuiDriver::clearLog()
 	{
 		m_log.clear();
 	}
-
 
 	void ImGuiDriver::drawCameraInfo(Camera* pCamera)
 	{
@@ -221,8 +216,8 @@ namespace Phoenix {
 		}
 	}
 
-	void ImGuiDriver::drawInfo() {
-
+	void ImGuiDriver::drawInfo()
+	{
 		// Get Demo status
 		std::string demoStatus;
 		if (m_demo.m_status & DemoStatus::PAUSE) {
@@ -295,8 +290,7 @@ namespace Phoenix {
 
 	void ImGuiDriver::drawVersion()
 	{
-		if (!ImGui::Begin("Demo Info"))
-		{
+		if (!ImGui::Begin("Demo Info")) {
 			// Early out if the window is collapsed, as an optimization.
 			ImGui::End();
 			return;
@@ -314,33 +308,33 @@ namespace Phoenix {
 	}
 
 	// Draw the Fbo output
-	void ImGuiDriver::drawFbo() {
-		float offsetY = 10; // small offset
+	void ImGuiDriver::drawFbo()
+	{
+		constexpr float offsetY = 10.0f; // small offset
 
 		if (m_numFboSetToDraw == 0)
 			m_numFboSetToDraw = 1;
 
-		int fbo_num_min = ((m_numFboSetToDraw - 1) * m_numFboPerPage);
-		int fbo_num_max = (m_numFboPerPage - 1) + ((m_numFboSetToDraw - 1) * m_numFboPerPage);
+		const auto fboNumMin = ((m_numFboSetToDraw - 1) * m_numFboPerPage);
+		int32_t fboNumMax = (m_numFboPerPage - 1) + ((m_numFboSetToDraw - 1) * m_numFboPerPage);
 
-		if (fbo_num_max >= m_demo.m_fboManager.fbo.size())
-			fbo_num_max = static_cast<int>(m_demo.m_fboManager.fbo.size()) - 1;
+		if (fboNumMax >= static_cast<int>(m_demo.m_fboManager.fbo.size()))
+			fboNumMax = static_cast<int>(m_demo.m_fboManager.fbo.size()) - 1;
 
 		ImGui::SetNextWindowPos(ImVec2(0, (2.0f * static_cast<float>(m_vp.y) - offsetY + 2.0f * static_cast<float>(m_vp.height) / 3.0f)), ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height) / 3.0f + offsetY), ImGuiCond_Appearing);
-		float fbo_w_size = static_cast<float>(m_vp.width) / 5.0f; // 4 fbo's per row
-		float fbo_h_size = static_cast<float>(m_vp.height) / 5.0f; // height is 1/3 screensize
+		const float fbo_w_size = static_cast<float>(m_vp.width) / 5.0f; // 4 fbo's per row
+		const float fbo_h_size = static_cast<float>(m_vp.height) / 5.0f; // height is 1/3 screensize
 
-		if (!ImGui::Begin("Fbo info (press '4' to change attachment)", &show_fbo))
-		{
+		if (!ImGui::Begin("Fbo info (press '4' to change attachment)", &show_fbo)) {
 			// Early out if the window is collapsed, as an optimization.
 			ImGui::End();
 			return;
 		}
-		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fbo_num_min, fbo_num_max, m_numFboAttachmentToDraw);
-		for (int i = fbo_num_min; i <= fbo_num_max; i++) {
-			if (i < m_demo.m_fboManager.fbo.size())
-			{
+
+		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fboNumMin, fboNumMax, m_numFboAttachmentToDraw);
+		for (auto i = fboNumMin; i <= fboNumMax; ++i) {
+			if (i < m_demo.m_fboManager.fbo.size()) {
 				Fbo* my_fbo = m_demo.m_fboManager.fbo[i];
 				if (m_numFboAttachmentToDraw < my_fbo->numAttachments)
 					ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[m_numFboAttachmentToDraw], ImVec2(fbo_w_size, fbo_h_size), ImVec2(0, 1), ImVec2(1, 0));
@@ -357,8 +351,7 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 0), ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), 140.0f), ImGuiCond_Appearing);
 
-		if (!ImGui::Begin("Sound analysis", &show_sound))
-		{
+		if (!ImGui::Begin("Sound analysis", &show_sound)) {
 			ImGui::End();
 			return;
 		}
@@ -379,8 +372,7 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
 
-		if (!ImGui::Begin("Grid config", &show_grid))
-		{
+		if (!ImGui::Begin("Grid config", &show_grid)) {
 			ImGui::End();
 			return;
 		}
@@ -389,16 +381,15 @@ namespace Phoenix {
 		ImGui::Checkbox("Draw X Axis", &m_demo.m_debug_drawGridAxisX); ImGui::SameLine();
 		ImGui::Checkbox("Draw Y Axis", &m_demo.m_debug_drawGridAxisY); ImGui::SameLine();
 		ImGui::Checkbox("Draw Z Axis", &m_demo.m_debug_drawGridAxisZ);
-		if (ImGui::SliderFloat("Size", &m_demo.m_pRes->m_gridSize, 0, 50, "%.1f"))
-		{
+		if (ImGui::SliderFloat("Size", &m_demo.m_pRes->m_gridSize, 0, 50, "%.1f")) {
 			if (m_demo.m_pRes->m_gridSize < 0)
 				m_demo.m_pRes->m_gridSize = 0;
 			if (m_demo.m_pRes->m_gridSize > 50)
 				m_demo.m_pRes->m_gridSize = 50;
 			m_demo.m_pRes->Load_Grid();
 		}
-		if (ImGui::SliderInt("Slices", &m_demo.m_pRes->m_gridSlices, 1, 100))
-		{
+
+		if (ImGui::SliderInt("Slices", &m_demo.m_pRes->m_gridSlices, 1, 100)) {
 			if (m_demo.m_pRes->m_gridSlices < 1)
 				m_demo.m_pRes->m_gridSlices = 1;
 			if (m_demo.m_pRes->m_gridSlices > 100)
@@ -416,8 +407,7 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
 
-		if (!ImGui::Begin("Help commands", &show_help))
-		{
+		if (!ImGui::Begin("Help commands", &show_help)) {
 			ImGui::End();
 			return;
 		}
@@ -434,7 +424,11 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(ImVec2(2.0f * windowWidth, 0.0f), ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Appearing);
 
-		if (!ImGui::Begin("Section Stack", &show_sesctionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
+		if (!ImGui::Begin(
+			"Section Stack",
+			&show_sesctionInfo,
+			ImGuiWindowFlags_AlwaysHorizontalScrollbar
+		)) {
 			// Early out if the window is collapsed, as an optimization.
 			ImGui::End();
 			return;
@@ -447,7 +441,7 @@ namespace Phoenix {
 			const auto sec_id = m_demo.m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
 			const auto ds = m_demo.m_sectionManager.m_section[sec_id];
 			std::stringstream ss;
-			ss << ds->type_str << " id/layer[" << ds->identifier << "/" +  std::to_string(ds->layer) << "]";
+			ss << ds->type_str << " id/layer[" << ds->identifier << "/" + std::to_string(ds->layer) << "]";
 			if (m_expandAllSectionsChanged)
 				ImGui::SetNextTreeNodeOpen(m_expandAllSections);
 			if (ImGui::CollapsingHeader(ss.str().c_str())) {

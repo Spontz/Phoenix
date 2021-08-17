@@ -11,10 +11,10 @@ namespace Phoenix {
 	
 	struct FboConfig {
 		std::string	format;
-		float		width;
-		float		height;
-		int			ratio;
-		int			numColorAttachments;
+		float		width = 0.0f;
+		float		height = 0.0f;;
+		int			ratio = 0;
+		int			numColorAttachments = 0;
 	};
 
 	class FboManager {

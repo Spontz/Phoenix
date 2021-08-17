@@ -55,27 +55,31 @@ namespace Phoenix {
 		if (m_demo.m_debug)
 		{
 			// Populate spectrum bars based on FFT data received
-			int b0 = 0;
+			size_t b0 = 0;
 			float pow_num = glm::log2(static_cast<float>(samples));
 			for (int i = 0; i < SPECTRUM_SAMPLES; i++) {
 				float peak = 0;
 
-				int b1 = static_cast<int>(glm::pow(2.0f, static_cast<float>(i) * pow_num / static_cast<float>(SPECTRUM_SAMPLES - 1))); //determine size of the bin
+				// determine size of the bin
+				size_t b1 = static_cast<size_t>(
+					glm::pow(2.0f, static_cast<float>(i) * pow_num / static_cast<float>(SPECTRUM_SAMPLES - 1))
+					);
 
-				//upper bound on bin size
+				// upper bound on bin size
 				if (b1 >= samples)
 					b1 = samples - 1;
 
-				//make sure atleast one bin is used
+				// make sure atleast one bin is used
 				if (b1 <= b0)
 					b1 = b0 + 1;
 
-				//loop over every bin
+				// loop over every bin
 				for (; b0 < b1; b0++) {
 					if (peak < fftData[1 + b0])
 						peak = fftData[1 + b0];
 				}
-				//write each column to file
+
+				// write each column to file
 				m_spectrum[i] = glm::sqrt(peak);
 			}
 		}

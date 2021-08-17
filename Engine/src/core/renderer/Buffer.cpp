@@ -51,7 +51,7 @@ namespace Phoenix {
 		// GL_ELEMENT_ARRAY_BUFFER is not valid without an actively bound VAO
 		// Binding with GL_ARRAY_BUFFER allows the data to be loaded regardless of VAO state. 
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-		glBufferStorage(GL_ARRAY_BUFFER, count * sizeof(uint32_t), indices, 0);
+		glBufferStorage(GL_ARRAY_BUFFER, size_t(count) * sizeof(uint32_t), indices, 0);
 		//glNamedBufferStorage(m_RendererID, count * sizeof(uint32_t), indices, 0); // In case we want to use DSA, we can remove glBindBuffer and glBufferStorage and use this
 	}
 	IndexBuffer::~IndexBuffer()

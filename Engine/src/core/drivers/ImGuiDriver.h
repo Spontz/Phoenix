@@ -17,14 +17,13 @@ namespace Phoenix {
 
 	public:
 		ImGuiDriver();
-		~ImGuiDriver();
 
 	public:
 		void init(GLFWwindow* pGLFWWindow);
 		void drawGui();
 		void close();
 		void changeFontSize(float baseSize, int32_t width, int32_t height);
-		void addLog(std::string message);
+		void addLog(std::string_view message);
 		void clearLog();
 
 	public:

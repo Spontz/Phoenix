@@ -396,9 +396,9 @@ namespace Phoenix {
 		return true;
 	}
 
-	std::string DemoKernel::getFolder(std::string path)
+	std::string DemoKernel::getFolder(std::string_view path) const
 	{
-		return (m_dataFolder + path);
+		return m_dataFolder + path.data();
 	}
 
 	void DemoKernel::allocateResources()
@@ -470,28 +470,41 @@ namespace Phoenix {
 
 	bool DemoKernel::loadScriptFromNetwork(std::string_view sScript)
 	{
-		SpoReader spo;
-		spo.readAsciiFromNetwork(sScript);
+		SpoReader spoReader;
+		spoReader.readAsciiFromNetwork(sScript);
 
-		const int sec_id = spo.loadScriptData();
-		if (sec_id < 0) {
+		const auto sectionIndex = spoReader.loadScriptData();
+		if (sectionIndex < 0) {
 			Logger::error("Invalid sec_id.");
 			return false;
 		}
 
-		auto my_sec = m_sectionManager.m_section[sec_id];
+		const auto pSection = m_sectionManager.m_section[static_cast<size_t>(sectionIndex)];
 
 		// Load the data from the section
 		{
 			Logger::ScopedIndent _;
-			my_sec->loaded = my_sec->load();
-			if (my_sec->loaded)
-				Logger::info(LogLevel::low, "Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, my_sec->identifier.c_str(), my_sec->DataSource.c_str());
-			else
-				Logger::error("Section %d [id: %s, DataSource: %s] not loaded properly!", sec_id, my_sec->identifier.c_str(), my_sec->DataSource.c_str());
+			pSection->loaded = pSection->load();
+			if (pSection->loaded) {
+				Logger::info(
+					LogLevel::low,
+					"Section %d [id: %s, DataSource: %s] loaded OK!",
+					sectionIndex,
+					pSection->identifier.c_str(),
+					pSection->DataSource.c_str()
+				);
+			}
+			else {
+				Logger::error(
+					"Section %d [id: %s, DataSource: %s] not loaded properly!",
+					sectionIndex,
+					pSection->identifier.c_str(),
+					pSection->DataSource.c_str()
+				);
+			}
 		}
 
-		return my_sec->loaded;
+		return pSection->loaded;
 	}
 
 	void DemoKernel::initTimer()
@@ -563,17 +576,15 @@ namespace Phoenix {
 		Section* ds = NULL;
 		Section* ds_tmp = NULL;
 		Section* ds_loading = NULL;
-		float startTime = 0.0f;
+
 		int i;
 		int sec_id;
 
 		// Set the demo state to loading
-		m_status = DemoStatus::LOADING;// DEMO_LOADING;
+		m_status = DemoStatus::LOADING;
 		Logger::info(LogLevel::high, "Loading Start...");
 
-		if (m_debug) {
-			startTime = (float)glfwGetTime();
-		}
+		const auto startTime = m_debug ? static_cast<float>(glfwGetTime()) : 0.0f;
 
 		// Search for the loading section, if not found, we will create one
 		for (i = 0; i < m_sectionManager.m_section.size(); i++) {
@@ -652,15 +663,11 @@ namespace Phoenix {
 	}
 
 	void DemoKernel::reInitSectionQueues() {
-		Section* ds = NULL;
-		int i;
-		int sec_id;
-
 		Logger::ScopedIndent _;
 		Logger::info(LogLevel::low, "Analysing sections that must be re-inited...");
-		for (i = 0; i < m_sectionManager.m_execSection.size(); i++) {
-			sec_id = m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
-			ds = m_sectionManager.m_section[sec_id];
+		for (auto i = 0; i < m_sectionManager.m_execSection.size(); i++) {
+			const auto sec_id = m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
+			const auto ds = m_sectionManager.m_section[sec_id];
 			if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
 				ds->inited = FALSE;			// Mark the section as not inited
 				Logger::info(LogLevel::low, "Section %d [layer: %d id: %s] marked to be inited", sec_id, ds->layer, ds->identifier.c_str());
@@ -669,12 +676,6 @@ namespace Phoenix {
 	}
 
 	void DemoKernel::processSectionQueues() {
-		Section* ds;
-		int i;
-		int sec_id;
-		std::vector<Section*>::iterator it;
-
-
 		Logger::info(LogLevel::med, "Start queue processing (init and exec) for second: %.4f", m_demoRunTime);
 
 		// Check the sections that need to be executed
@@ -682,11 +683,11 @@ namespace Phoenix {
 			Logger::ScopedIndent _;
 			Logger::info(LogLevel::low, "Analysing sections that must be executed...", m_demoRunTime);
 			m_sectionManager.m_execSection.clear();
-			for (i = 0; i < m_sectionManager.m_section.size(); i++) {
-				ds = m_sectionManager.m_section[i];
-				if ((ds->startTime <= m_demoRunTime) && (ds->endTime >= m_demoRunTime) &&		// If time is OK
-					(ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {		// If its enabled, loaded and is not hte Loading section
-					m_sectionManager.m_execSection.push_back(std::make_pair(ds->layer, i));		// Load the section: first the layer and then the ID
+			for (auto i = 0; i < m_sectionManager.m_section.size(); ++i) {
+				const auto pSection = m_sectionManager.m_section[i];
+				if ((pSection->startTime <= m_demoRunTime) && (pSection->endTime >= m_demoRunTime) &&		// If time is OK
+					(pSection->enabled) && (pSection->loaded) && (pSection->type != SectionType::Loading)) {		// If its enabled, loaded and is not hte Loading section
+					m_sectionManager.m_execSection.push_back(std::make_pair(pSection->layer, i));		// Load the section: first the layer and then the ID
 				}
 			}
 			sort(m_sectionManager.m_execSection.begin(), m_sectionManager.m_execSection.end());	// Sort sections by Layer
@@ -694,9 +695,9 @@ namespace Phoenix {
 			Logger::info(LogLevel::low, "Exec Section queue complete: %d sections to be executed", m_sectionManager.m_execSection.size());
 			// Run Init sections
 			Logger::info(LogLevel::low, "Running Init Sections...");
-			for (i = 0; i < m_sectionManager.m_execSection.size(); i++) {
-				sec_id = m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
-				ds = m_sectionManager.m_section[sec_id];
+			for (auto i = 0; i < m_sectionManager.m_execSection.size(); ++i) {
+				const auto sec_id = m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
+				const auto ds = m_sectionManager.m_section[sec_id];
 				if (ds->inited == FALSE) {
 					ds->runTime = m_demoRunTime - ds->startTime;
 					ds->init();			// Init the Section
@@ -722,9 +723,9 @@ namespace Phoenix {
 			{
 				Logger::ScopedIndent _;
 				PX_PROFILE_SCOPE("ExecSections");
-				for (i = 0; i < m_sectionManager.m_execSection.size(); i++) {
-					sec_id = m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
-					ds = m_sectionManager.m_section[sec_id];
+				for (auto i = 0; i < m_sectionManager.m_execSection.size(); ++i) {
+					const auto sec_id = m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
+					const auto ds = m_sectionManager.m_section[sec_id];
 					ds->runTime = m_demoRunTime - ds->startTime;
 					ds->exec();			// Exec the Section
 					Logger::info(

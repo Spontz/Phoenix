@@ -94,7 +94,7 @@ namespace Phoenix {
 	class BufferLayout final
 	{
 	public:
-		BufferLayout() {}
+		BufferLayout() = default;
 
 		BufferLayout(std::initializer_list<BufferElement> elements)
 			: m_Elements(elements)
@@ -115,10 +115,9 @@ namespace Phoenix {
 		{
 			size_t offset = 0;
 			m_Stride = 0;
-			for (auto& element : m_Elements)
-			{
+			for (auto& element : m_Elements) {
 				element.Offset = offset;
-				offset += element.DataType.sizeInBytes;
+				offset += size_t(element.DataType.sizeInBytes);
 				m_Stride += element.DataType.sizeInBytes;
 			}
 		}

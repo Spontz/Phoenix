@@ -5,30 +5,25 @@
 #include "core/renderer/Texture.h"
 #include "core/renderer/Material.h"
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <vector>
-
 namespace Phoenix {
-
 
 	Material::Material()
 		:
-		name(""),
 		colDiffuse(glm::vec3(0)),
 		colSpecular(glm::vec3(0)),
 		colAmbient(glm::vec3(0)),
 		strenghtSpecular(1),
 		m_pMaterial(nullptr),
-		m_pScene(nullptr),
-		m_ModelDirectory(""),
-		m_ModelFilename("")
+		m_pScene(nullptr)
 	{
 	}
 
-	void Material::Load(const aiMaterial* pMaterial, const aiScene* pScene, std::string modelDirectory, std::string modelFilename)
+	void Material::Load(
+		const aiMaterial* pMaterial,
+		const aiScene* pScene,
+		std::string_view modelDirectory,
+		std::string_view modelFilename
+	)
 	{
 		m_pMaterial = pMaterial;
 		m_pScene = pScene;
@@ -42,101 +37,105 @@ namespace Phoenix {
 		// specular: texture_specularN
 		// normal: texture_normalN
 		// Diffuse maps
-		std::vector<textureStack> diffuseMaps = loadTextures(aiTextureType_DIFFUSE, "texture_diffuse");
+
+		Logger::ScopedIndent _;
+
+		// Diffuse maps
+		const auto diffuseMaps = loadTextures(aiTextureType_DIFFUSE, "texture_diffuse");
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-		Logger::info(LogLevel::low, "  The mesh has %d diffuseMaps", diffuseMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %Iu diffuseMaps", diffuseMaps.size());
 		// Specular maps
-		std::vector<textureStack> specularMaps = loadTextures(aiTextureType_SPECULAR, "texture_specular");
+		const auto specularMaps = loadTextures(aiTextureType_SPECULAR, "texture_specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-		Logger::info(LogLevel::low, "  The mesh has %d specularMaps", specularMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %Iu specularMaps", specularMaps.size());
 		// Ambient maps
-		std::vector<textureStack> ambientMaps = loadTextures(aiTextureType_AMBIENT, "texture_ambient");
+		const auto ambientMaps = loadTextures(aiTextureType_AMBIENT, "texture_ambient");
 		textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
-		Logger::info(LogLevel::low, "  The mesh has %d ambientMaps", ambientMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %Iu ambientMaps", ambientMaps.size());
 		// Height maps
-		std::vector<textureStack> heightMaps = loadTextures(aiTextureType_HEIGHT, "texture_height");
+		const auto heightMaps = loadTextures(aiTextureType_HEIGHT, "texture_height");
 		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-		Logger::info(LogLevel::low, "  The mesh has %d heightMaps", heightMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %Iu heightMaps", heightMaps.size());
 		// Normal maps
-		std::vector<textureStack> normalMaps = loadTextures(aiTextureType_NORMALS, "texture_normal");
+		const auto normalMaps = loadTextures(aiTextureType_NORMALS, "texture_normal");
 		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-		Logger::info(LogLevel::low, "  The mesh has %d normalMaps", normalMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %Iu normalMaps", normalMaps.size());
 		// Emissive maps
-		std::vector<textureStack> emissiveMaps = loadTextures(aiTextureType_EMISSIVE, "texture_emissive");
+		const auto emissiveMaps = loadTextures(aiTextureType_EMISSIVE, "texture_emissive");
 		textures.insert(textures.end(), emissiveMaps.begin(), emissiveMaps.end());
-		Logger::info(LogLevel::low, "  The mesh has %d emissiveMaps", emissiveMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %Iu emissiveMaps", emissiveMaps.size());
 		// Roughness maps
-		std::vector<textureStack> roughnessMaps = loadTextures(aiTextureType_DIFFUSE_ROUGHNESS, "texture_roughness");
+		const auto roughnessMaps = loadTextures(aiTextureType_DIFFUSE_ROUGHNESS, "texture_roughness");
 		textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
-		Logger::info(LogLevel::low, "  The mesh has %d roughnessMaps", roughnessMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %Iu roughnessMaps", roughnessMaps.size());
 		// Shininess maps
-		std::vector<textureStack> shininessMaps = loadTextures(aiTextureType_SHININESS, "texture_shininess");
+		const auto shininessMaps = loadTextures(aiTextureType_SHININESS, "texture_shininess");
 		textures.insert(textures.end(), shininessMaps.begin(), shininessMaps.end());
-		Logger::info(LogLevel::low, "  The mesh has %d shininessMaps", shininessMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %Iu shininessMaps", shininessMaps.size());
 		// Ambient Occlusion maps
-		std::vector<textureStack> ambientOclussionMaps = loadTextures(aiTextureType_AMBIENT_OCCLUSION, "texture_ambientoclussion");
+		const auto ambientOclussionMaps = loadTextures(aiTextureType_AMBIENT_OCCLUSION, "texture_ambientoclussion");
 		textures.insert(textures.end(), ambientOclussionMaps.begin(), ambientOclussionMaps.end());
-		Logger::info(LogLevel::low, "  The mesh has %d ambientoclussionMaps", ambientOclussionMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %Iu ambientoclussionMaps", ambientOclussionMaps.size());
 		// Metallness maps
-		std::vector<textureStack> metalnessMaps = loadTextures(aiTextureType_METALNESS, "texture_metalness");
+		const auto metalnessMaps = loadTextures(aiTextureType_METALNESS, "texture_metalness");
 		textures.insert(textures.end(), metalnessMaps.begin(), metalnessMaps.end());
-		Logger::info(LogLevel::low, "  The mesh has %d metalnessMaps", metalnessMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %Iu metalnessMaps", metalnessMaps.size());
 		// Unknown
-		std::vector<textureStack> unknownMaps = loadTextures(aiTextureType_UNKNOWN, "texture_unknown");
+		const auto unknownMaps = loadTextures(aiTextureType_UNKNOWN, "texture_unknown");
 		textures.insert(textures.end(), unknownMaps.begin(), unknownMaps.end());
-		Logger::info(LogLevel::low, "  The mesh has %d unknownMaps", unknownMaps.size());
-
+		Logger::info(LogLevel::low, "The mesh has %Iu unknownMaps", unknownMaps.size());
 		// None
-		std::vector<textureStack> noneMaps = loadTextures(aiTextureType_NONE, "texture_none");
+		const auto noneMaps = loadTextures(aiTextureType_NONE, "texture_none");
 		textures.insert(textures.end(), noneMaps.begin(), noneMaps.end());
-		Logger::info(LogLevel::low, "  The mesh has %d noneMaps", noneMaps.size());
-
+		Logger::info(LogLevel::low, "The mesh has %Iu noneMaps", noneMaps.size());
 
 		aiColor3D color;
+
 		// Diffuse color
 		pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color);
-		this->colDiffuse = glm::vec3(color.r, color.g, color.b);
+		colDiffuse = glm::vec3(color.r, color.g, color.b);
 
 		// Ambient color
 		pMaterial->Get(AI_MATKEY_COLOR_AMBIENT, color);
-		this->colAmbient = glm::vec3(color.r, color.g, color.b);
+		colAmbient = glm::vec3(color.r, color.g, color.b);
 
 		// Specular: Specular color = COLOR_SPECULAR * SHININESS_STRENGTH
-		pMaterial->Get(AI_MATKEY_SHININESS_STRENGTH, this->strenghtSpecular);
+		pMaterial->Get(AI_MATKEY_SHININESS_STRENGTH, strenghtSpecular);
 		pMaterial->Get(AI_MATKEY_COLOR_SPECULAR, color);
-		this->colSpecular = glm::vec3(color.r, color.g, color.b);
+		colSpecular = glm::vec3(color.r, color.g, color.b);
 	}
 
 	// checks all material textures of a given type and loads the textures if they're not loaded yet.
 	// the required info is returned as a Texture struct.
-	std::vector<textureStack> Material::loadTextures(aiTextureType type, std::string typeName)
+	std::vector<textureStack> Material::loadTextures(aiTextureType type, std::string_view typeName)
 	{
 		std::vector<textureStack> textures;
-		unsigned int textureCount = m_pMaterial->GetTextureCount(type);
+		const auto textureCount = m_pMaterial->GetTextureCount(type);
 
-		for (unsigned int i = 0; i < textureCount; i++)
-		{
+		for (unsigned int i = 0; i < textureCount; ++i) {
 			aiString filepath;
-			std::string fullpath;
 			ai_real blendFactor;
 			aiTextureOp operation;
 			m_pMaterial->GetTexture(type, i, &filepath, NULL, NULL, &blendFactor, &operation);
-			auto storageType = getTextureStorageType(type);
+			const auto storageType = getTextureStorageType(type);
 
 			// Load the texture depending on the storage type
 			switch (storageType)
 			{
 			case TextureStorageType::Disk:
 			{
-				if (0 == strcmp(filepath.C_Str(), "$texture_dummy.bmp"))				// Prevent a bug in assimp: In some cases, the texture by default is named "$texture_dummy.bmp"
-					filepath = m_ModelFilename.substr(0, m_ModelFilename.find_last_of('.')) + ".jpg";	// In that case, we change this to "<model_name.jpg>"
-				fullpath = m_ModelDirectory + "/" + filepath.C_Str();
+				// Prevent a bug in assimp: In some cases, the texture by default is named "$texture_dummy.bmp"
+				if (0 == strcmp(filepath.C_Str(), "$texture_dummy.bmp")) {
+					// In that case, we change this to "<model_name.jpg>"
+					filepath = m_ModelFilename.substr(0, m_ModelFilename.find_last_of('.')) + ".jpg";
+				}
+				const auto fullpath = m_ModelDirectory + "/" + filepath.C_Str();
 				textureStack tex;
 				tex.tex = DEMO->m_textureManager.addTexture(fullpath, false, typeName);
 				tex.blendOperation = operation;
 				tex.strength = blendFactor;
 				if (tex.tex) {
-					tex.shaderName = typeName + std::to_string(i + 1);
+					tex.shaderName = std::string(typeName) + std::to_string(i + 1);
 					textures.push_back(tex);
 				}
 				break;
@@ -153,7 +152,7 @@ namespace Phoenix {
 				tex.blendOperation = operation;
 				tex.strength = blendFactor;
 				if (tex.tex) {
-					tex.shaderName = typeName + std::to_string(i + 1);
+					tex.shaderName = std::string(typeName) + std::to_string(i + 1);
 					textures.push_back(tex);
 				}
 				break;
@@ -178,7 +177,7 @@ namespace Phoenix {
 					tex.blendOperation = operation;
 					tex.strength = blendFactor;
 					if (tex.tex) {
-						tex.shaderName = typeName + std::to_string(i + 1);
+						tex.shaderName = std::string(typeName) + std::to_string(i + 1);
 						textures.push_back(tex);
 					}
 				}
@@ -193,7 +192,7 @@ namespace Phoenix {
 		return textures;
 	}
 
-	TextureStorageType Material::getTextureStorageType(aiTextureType textureType)
+	TextureStorageType Material::getTextureStorageType(aiTextureType textureType) const
 	{
 		if (!m_pMaterial->GetTextureCount(textureType))
 			return TextureStorageType::None;
