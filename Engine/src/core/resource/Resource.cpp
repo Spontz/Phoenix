@@ -13,15 +13,13 @@ namespace Phoenix {
 		// Load Objects
 		loadObjQuadFullscreen();
 		loadObjSkybox();
-		loadObjQube();
+		loadObjCube();
 		// Load grid
 		loadGrid();
 		// Load Shaders
 		loadShaders();
 		// Load Textures
 		loadTexSpontz();
-		// Load Fonts --> This is no longer needed since we are using imGui for output text
-		//Load_Text_Fonts();			// Text fonts
 		// Load Lights
 		loadLights();
 		Logger::info(LogLevel::low, "End loading engine internal resources");
@@ -53,17 +51,9 @@ namespace Phoenix {
 	Resource::Resource()
 		:
 		m_demo(*DEMO),
-
 		m_gridSize(1.0f),
 		m_gridSlices(11)
 	{
-		// Vertex Array Objects
-		m_spQuadFullScreen = m_spSkybox = m_spCube = m_spGrid = nullptr;
-		// Textures
-		m_spTVImage = nullptr;
-		// Shaders
-		m_spShdrQuadTex = m_spShdrQuadDepth = m_spShdrQuadTexAlpha = m_spShdrQuadTexModel = m_spShdrQuadTexPVM = m_spShdrQuadTexVFlipModel = m_spShdrSkybox = m_spShdrObjColor = m_spShdrGrid = nullptr;
-
 	}
 
 	Resource::~Resource()
@@ -74,7 +64,7 @@ namespace Phoenix {
 
 	void Resource::loadObjQuadFullscreen()
 	{
-		float quadVertices[] = {
+		static constexpr float quadVertices[] = {
 			// positions   // texCoords
 			 -1,  1,  0, 1,
 			 -1, -1,  0, 0,
@@ -107,7 +97,7 @@ namespace Phoenix {
 
 	void Resource::loadObjSkybox()
 	{
-		float skyboxVertices[] = {
+		static constexpr float skyboxVertices[] = {
 			// positions          
 			-1.0f,  1.0f, -1.0f,
 			-1.0f, -1.0f, -1.0f,
@@ -165,9 +155,9 @@ namespace Phoenix {
 		m_spSkybox->unbind();
 	}
 
-	void Resource::loadObjQube()
+	void Resource::loadObjCube()
 	{
-		float qubeVertices[] = {
+		static constexpr float qubeVertices[] = {
 			// positions          // normals           // texture coords
 			-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
 			 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
@@ -245,12 +235,6 @@ namespace Phoenix {
 		m_spTVImage = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + "/resources/textures/tv.jpg");
 	}
 
-	void Resource::loadTextFonts()
-	{
-		// Since we are using imGui, fonts are no longer needed
-		//m_demo.text = new Font(48, m_demo.dataFolder + "/resources/fonts/arial.ttf", m_demo.dataFolder + "/resources/shaders/font/font.glsl");
-	}
-
 	void Resource::loadLights()
 	{
 		m_demo.m_lightManager.addLight(LightType::SpotLight);
@@ -311,7 +295,7 @@ namespace Phoenix {
 			static_cast<uint32_t>(sizeof(glm::vec3)) * static_cast<uint32_t>(vertices.size())
 			);
 
-		spVB->SetLayout({{ShaderDataType::Float3, "aPos"}});
+		spVB->SetLayout({ {ShaderDataType::Float3, "aPos"} });
 		m_spGrid->AddVertexBuffer(spVB);
 
 		// Create & Load the Index Buffer :: Not really needed since the vertice are already sorted
@@ -364,26 +348,31 @@ namespace Phoenix {
 	}
 
 	// Draw a Quad in full screen. A texture can be specified and the 3 matrix
-	void Resource::drawObjQuadTex(SP_Texture tex, glm::mat4 const* projection, glm::mat4 const* view, glm::mat4 const* model)
+	void Resource::drawObjQuadTex(
+		SP_Texture spTex,
+		glm::mat4 const* pProj,
+		glm::mat4 const* pView,
+		glm::mat4 const* pWorld
+	)
 	{
 		m_spShdrQuadTexPVM->use();
-		m_spShdrQuadTexPVM->setValue("projection", *projection);
-		m_spShdrQuadTexPVM->setValue("view", *view);
-		m_spShdrQuadTexPVM->setValue("model", *model);
+		m_spShdrQuadTexPVM->setValue("projection", *pProj);
+		m_spShdrQuadTexPVM->setValue("view", *pView);
+		m_spShdrQuadTexPVM->setValue("model", *pWorld);
 		m_spShdrQuadTexPVM->setValue("screenTexture", 0);
-		tex->bind();
+		spTex->bind();
 
 		drawQuadFS();
 	}
 
-	// Draw a Quad with a FBO in full screen but no shader is called (needs a shader->use() call before)
+	// Draw a Quad with a FBO in full screen but no shader is called (needs a shader->use() call
+	// before)
 	void Resource::drawQuadFS()
 	{
 		m_spQuadFullScreen->bind();
 		glDrawArrays(GL_TRIANGLES, 0, 6);// m_pQuadFullScreen->GetIndexBuffer()->GetCount());
 		m_spQuadFullScreen->unbind();
 	}
-
 
 	void Resource::drawSkybox(SP_Cubemap cubemap)
 	{

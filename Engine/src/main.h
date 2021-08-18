@@ -5,6 +5,8 @@
 
 #include "libs.h"
 
+// #define PROFILE_PHOENIX
+
 static constexpr uint32_t PHOENIX_MAJOR_VERSION = 1;
 static constexpr uint32_t PHOENIX_MINOR_VERSION = 13;
 static constexpr uint32_t PHOENIX_BUILD_VERSION = 5;

@@ -52,7 +52,7 @@ namespace Phoenix {
 		scriptCommand({
 				{"demo_name",				SectionVar::TYPE_STRING,		&DEMO->m_demoName		},
 				{"debug",					SectionVar::TYPE_BOOL,			&DEMO->m_debug			},
-				{"debugFontSize",			SectionVar::TYPE_FLOAT,			&DEMO->m_debug_fontSize	},
+				{"debugFontSize",			SectionVar::TYPE_FLOAT,			&DEMO->m_debugFontSize	},
 				{"loop",					SectionVar::TYPE_BOOL,			&DEMO->m_loop			},
 				{"sound",					SectionVar::TYPE_BOOL,			&DEMO->m_sound			},
 				{"demo_start",				SectionVar::TYPE_FLOAT,			&DEMO->m_demoStartTime	},

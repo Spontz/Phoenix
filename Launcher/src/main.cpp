@@ -5,8 +5,6 @@
 
 #include "Engine/src/main.h"
 
-// #define PROFILE_PHOENIX
-
 #ifdef PROFILE_PHOENIX
 #include "Engine/src/debug/Instrumentor.h"
 #endif

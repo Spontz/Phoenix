@@ -39,7 +39,7 @@ namespace Phoenix {
 			config.framebuffer_height = height;
 
 			// Change the debug font Size when we resize the screen
-			m_imGui->changeFontSize(m_demo.m_debug_fontSize, width, height);
+			m_imGui->changeFontSize(m_demo.m_debugFontSize, width, height);
 
 			// RT will be set to FB later
 			//GLDRV->current_rt_width_ = width;
@@ -343,7 +343,7 @@ namespace Phoenix {
 		if (m_glfw_window) {
 			m_imGui = new ImGuiDriver();
 			m_imGui->init(m_glfw_window);
-			m_imGui->changeFontSize(m_demo.m_debug_fontSize, config.framebuffer_width, config.framebuffer_height);
+			m_imGui->changeFontSize(m_demo.m_debugFontSize, config.framebuffer_width, config.framebuffer_height);
 		}
 
 

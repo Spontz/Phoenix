@@ -5,20 +5,23 @@
 #include "core/scripting/SpoReader.h"
 #include "core/drivers/glDriver.h"
 #include "core/drivers/BassDriver.h"
-#include "core/resource/Resource.h"
-#include "debug/Instrumentor.h"
-
-#include <iostream>
-#include <io.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #include "core/drivers/NetDriver.h"
+#include "core/resource/Resource.h"
 
-// ******************************************************************
+#ifdef PROFILE_PHOENIX
+#include "debug/Instrumentor.h"
+#endif
+
+#include <io.h>
+#include <iostream>
+
 namespace Phoenix {
 
+	// globals
+
 	DemoKernel* kpDemoKernel = nullptr;
+
+	// static methods
 
 	DemoKernel& DemoKernel::getInstance() {
 		if (!kpDemoKernel)
@@ -26,15 +29,31 @@ namespace Phoenix {
 		return *kpDemoKernel;
 	}
 
-	DemoKernel::~DemoKernel() {
-		if (m_pDefaultCamera)
-			delete m_pDefaultCamera;
-	}
-
 	void DemoKernel::release() {
 		delete kpDemoKernel;
 		kpDemoKernel = nullptr;
 	}
+
+	std::string DemoKernel::getEngineVersion()
+	{
+		std::stringstream ss;
+		ss << PHOENIX_MAJOR_VERSION << "." << PHOENIX_MINOR_VERSION << "." << PHOENIX_BUILD_VERSION;
+		return ss.str();
+	}
+
+	std::string DemoKernel::getLibAssimpVersion()
+	{
+		std::stringstream ss;
+		ss << aiGetVersionMajor() << "." << aiGetVersionMinor() << "." << aiGetVersionRevision();
+		return ss.str();
+	}
+
+	std::string DemoKernel::getLibDyadVersion()
+	{
+		return NetDriver::getInstance().getVersion();
+	}
+
+	// constructors/destructors
 
 	DemoKernel::DemoKernel()
 		:
@@ -44,7 +63,7 @@ namespace Phoenix {
 		m_status(-1),
 		m_demoName("Phoenix Spontz Demoengine"),
 		m_dataFolder("./data/"),
-		m_debug_fontSize(1.0f),
+		m_debugFontSize(1.0f),
 #ifdef _DEBUG
 		m_debug(true),
 		m_logLevel(LogLevel::low),
@@ -72,8 +91,8 @@ namespace Phoenix {
 		m_slaveMode(false),
 		m_mouseX(0),
 		m_mouseY(0),
-		m_mouseXvar(0),
-		m_mouseYvar(0),
+		m_mouseXVar(0),
+		m_mouseYVar(0),
 		m_iLoadedSections(0),
 		m_exitDemo(false),
 		m_pRes(nullptr),
@@ -87,8 +106,16 @@ namespace Phoenix {
 		memset(m_fBeat, 0, MAX_BEATS * sizeof(float));
 	}
 
-	void DemoKernel::getArguments(int argc, char* argv[]) {
+	DemoKernel::~DemoKernel()
+	{
+		delete m_pDefaultCamera;
+		delete m_pRes;
+	}
 
+	// methods
+
+	void DemoKernel::getArguments(int argc, char* argv[])
+	{
 		std::vector <std::string> sources;
 		for (int i = 1; i < argc; ++i) {
 			std::string arg = argv[i];
@@ -119,8 +146,8 @@ namespace Phoenix {
 		}
 	}
 
-	bool DemoKernel::initDemo() {
-
+	bool DemoKernel::initDemo()
+	{
 		// initialize graphics driver
 		if (!GLDRV->initGraphics())
 			return false;
@@ -169,7 +196,6 @@ namespace Phoenix {
 		return true;
 	}
 
-
 	void DemoKernel::initNetwork()
 	{
 		if (m_slaveMode) {
@@ -181,7 +207,8 @@ namespace Phoenix {
 			Logger::info(LogLevel::high, "Running in standalone mode");
 	}
 
-	void DemoKernel::mainLoop() {
+	void DemoKernel::mainLoop()
+	{
 		if (m_debug)
 			Logger::info(LogLevel::med, "************ Main demo loop started!");
 
@@ -189,7 +216,9 @@ namespace Phoenix {
 
 		/* Loop until the user closes the window */
 		while ((!GLDRV->WindowShouldClose()) && (!m_exitDemo)) {
+#ifdef PROFILE_PHOENIX
 			PX_PROFILE_SCOPE("RunLoop");
+#endif
 
 			// Poll for and process events
 			GLDRV->ProcessInput();
@@ -197,15 +226,17 @@ namespace Phoenix {
 			doExec();
 
 			{
+#ifdef PROFILE_PHOENIX
 				PX_PROFILE_SCOPE("glfwPollEvents");
+#endif
 				glfwPollEvents();
 			}
 
 		}
 	}
 
-	void DemoKernel::doExec() {
-
+	void DemoKernel::doExec()
+	{
 		// control exit demo (debug, loop) when end time arrives
 		if ((m_demoEndTime > 0) && (m_demoRunTime > m_demoEndTime)) {
 
@@ -248,7 +279,7 @@ namespace Phoenix {
 			}
 
 			// reset section queues
-			reInitSectionQueues();
+			reinitSectionQueues();
 		}
 		// play state
 		else {
@@ -275,7 +306,7 @@ namespace Phoenix {
 
 			if (m_sound) BASSDRV->play();
 			// reinit section queues
-			reInitSectionQueues();
+			reinitSectionQueues();
 		}
 	}
 
@@ -294,7 +325,7 @@ namespace Phoenix {
 		}
 
 		initControlVars();
-		reInitSectionQueues();
+		reinitSectionQueues();
 		initTimer();
 	}
 
@@ -339,10 +370,8 @@ namespace Phoenix {
 		m_demoEndTime = theTime;
 	}
 
-	void DemoKernel::closeDemo() {
-
-
-
+	void DemoKernel::closeDemo()
+	{
 		Logger::info(LogLevel::low, "Closing GL driver...");
 		GLDRV->close();				// Close GL driver
 
@@ -359,8 +388,8 @@ namespace Phoenix {
 		m_lightManager.clear();		// Clear lights
 
 		Logger::info(LogLevel::low, "Unloading internal resources...");
-		if (m_pRes)
-			delete m_pRes;
+		delete m_pRes;
+		m_pRes = nullptr;
 
 		Logger::info(LogLevel::low, "Closing Bass driver...");
 		BASSDRV->stop();
@@ -369,26 +398,7 @@ namespace Phoenix {
 		m_shaderManager.clear();	// Clear shaders
 	}
 
-	std::string DemoKernel::getEngineVersion()
-	{
-		std::stringstream ss;
-		ss << PHOENIX_MAJOR_VERSION << "." << PHOENIX_MINOR_VERSION << "." << PHOENIX_BUILD_VERSION;
-		return ss.str();
-	}
-
-	std::string DemoKernel::getLibAssimpVersion()
-	{
-		std::stringstream ss;
-		ss << aiGetVersionMajor() << "." << aiGetVersionMinor() << "." << aiGetVersionRevision();
-		return ss.str();
-	}
-
-	std::string DemoKernel::getLibDyadVersion()
-	{
-		return NetDriver::getInstance().getVersion();
-	}
-
-	bool DemoKernel::checkDataFolder()
+	bool DemoKernel::checkDataFolder() const
 	{
 		struct stat info;
 		if (stat(m_dataFolder.c_str(), &info) != 0)
@@ -396,7 +406,7 @@ namespace Phoenix {
 		return true;
 	}
 
-	std::string DemoKernel::getFolder(std::string_view path) const
+	std::string DemoKernel::getDataFolder(std::string_view path) const
 	{
 		return m_dataFolder + path.data();
 	}
@@ -558,7 +568,8 @@ namespace Phoenix {
 		calculateFPS(m_realFrameTime);
 	}
 
-	void DemoKernel::initControlVars() {
+	void DemoKernel::initControlVars()
+	{
 		// reset time
 		m_demoRunTime = m_demoStartTime;
 
@@ -572,12 +583,12 @@ namespace Phoenix {
 		m_exitDemo = false;
 	}
 
-	void DemoKernel::initSectionQueues() {
-		Section* ds = NULL;
-		Section* ds_tmp = NULL;
-		Section* ds_loading = NULL;
+	void DemoKernel::initSectionQueues()
+	{
+		Section* pSection = nullptr;
+		Section* pTmpSection = nullptr;
+		Section* pLoadingSection = nullptr;
 
-		int i;
 		int sec_id;
 
 		// Set the demo state to loading
@@ -587,28 +598,29 @@ namespace Phoenix {
 		const auto startTime = m_debug ? static_cast<float>(glfwGetTime()) : 0.0f;
 
 		// Search for the loading section, if not found, we will create one
-		for (i = 0; i < m_sectionManager.m_section.size(); i++) {
+		for (size_t i = 0; i < m_sectionManager.m_section.size(); i++) {
 			if (m_sectionManager.m_section[i]->type == SectionType::Loading)
-				ds_loading = m_sectionManager.m_section[i];
+				pLoadingSection = m_sectionManager.m_section[i];
 		}
 
-		if (ds_loading == NULL) {
+		if (pLoadingSection == nullptr) {
 			Logger::info(LogLevel::med, "Loading section not found: using default loader");
 			sec_id = m_sectionManager.addSection(SectionType::Loading, "Automatically created", TRUE);
 			if (sec_id < 0) {
 				Logger::error("Critical Error, Loading section not found and could not be created!");
 				return;
 			}
-			else
-				ds_loading = m_sectionManager.m_section[sec_id];
+			else {
+				pLoadingSection = m_sectionManager.m_section[sec_id];
+			}
 		}
 
 		// preload, load and init loading section
-		ds_loading->load();
-		ds_loading->init();
-		ds_loading->loaded = TRUE;
-		ds_loading->inited = TRUE;
-		ds_loading->exec();
+		pLoadingSection->load();
+		pLoadingSection->init();
+		pLoadingSection->loaded = TRUE;
+		pLoadingSection->inited = TRUE;
+		pLoadingSection->exec();
 
 		{
 			Logger::ScopedIndent _;
@@ -619,13 +631,13 @@ namespace Phoenix {
 			m_sectionManager.m_execSection.clear();
 
 			// Populate Load Section: The sections that need to be loaded
-			for (i = 0; i < m_sectionManager.m_section.size(); i++) {
-				ds = m_sectionManager.m_section[i];
+			for (size_t i = 0; i < m_sectionManager.m_section.size(); i++) {
+				pSection = m_sectionManager.m_section[i];
 				// If we are in slave mode, we load all the sections but if not, we will load only the ones that are inside the demo time
-				if ((m_slaveMode == 1) || (((ds->startTime < m_demoEndTime) || fabs(m_demoEndTime) < FLT_EPSILON) && (ds->endTime > startTime))) {
+				if ((m_slaveMode == 1) || (((pSection->startTime < m_demoEndTime) || fabs(m_demoEndTime) < FLT_EPSILON) && (pSection->endTime > startTime))) {
 					// If the section is not the "loading", then we add id to the Ready Section lst
-					if (ds->type != SectionType::Loading) {
-						m_sectionManager.m_loadSection.push_back(i);
+					if (pSection->type != SectionType::Loading) {
+						m_sectionManager.m_loadSection.push_back(static_cast<int32_t>(i));
 						// load section splines (to avoid code load in the sections)
 						//loadSplines(ds); // TODO: Delete this once splines are working
 					}
@@ -636,21 +648,21 @@ namespace Phoenix {
 
 			// Start Loading the sections of the Ready List
 			m_iLoadedSections = 0;
-			for (i = 0; i < m_sectionManager.m_loadSection.size(); i++) {
+			for (size_t i = 0; i < m_sectionManager.m_loadSection.size(); i++) {
 				sec_id = m_sectionManager.m_loadSection[i];
-				ds = m_sectionManager.m_section[sec_id];
-				if (ds->load()) {
-					ds->loadDebugStatic(); // Load static debug info
-					ds->loaded = TRUE;
+				pSection = m_sectionManager.m_section[sec_id];
+				if (pSection->load()) {
+					pSection->loadDebugStatic(); // Load static debug info
+					pSection->loaded = TRUE;
 				}
 				++m_iLoadedSections; // Incrmeent the loading sections even if it has not been sucesfully loaded, because it's just for the "loading" screen
 
 				// Update loading
-				ds_loading->exec();
-				if (ds->loaded)
-					Logger::info(LogLevel::low, "Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, ds->identifier.c_str(), ds->DataSource.c_str());
+				pLoadingSection->exec();
+				if (pSection->loaded)
+					Logger::info(LogLevel::low, "Section %d [id: %s, DataSource: %s] loaded OK!", sec_id, pSection->identifier.c_str(), pSection->DataSource.c_str());
 				else
-					Logger::error("Section %d [id: %s, DataSource: %s] not loaded properly!", sec_id, ds->identifier.c_str(), ds->DataSource.c_str());
+					Logger::error("Section %d [id: %s, DataSource: %s] not loaded properly!", sec_id, pSection->identifier.c_str(), pSection->DataSource.c_str());
 
 				if (m_exitDemo) {
 					closeDemo();
@@ -662,7 +674,8 @@ namespace Phoenix {
 		Logger::info(LogLevel::med, "Loading complete, %d sections have been loaded", m_iLoadedSections);
 	}
 
-	void DemoKernel::reInitSectionQueues() {
+	void DemoKernel::reinitSectionQueues()
+	{
 		Logger::ScopedIndent _;
 		Logger::info(LogLevel::low, "Analysing sections that must be re-inited...");
 		for (auto i = 0; i < m_sectionManager.m_execSection.size(); i++) {
@@ -675,7 +688,8 @@ namespace Phoenix {
 		}
 	}
 
-	void DemoKernel::processSectionQueues() {
+	void DemoKernel::processSectionQueues()
+	{
 		Logger::info(LogLevel::med, "Start queue processing (init and exec) for second: %.4f", m_demoRunTime);
 
 		// Check the sections that need to be executed
@@ -707,11 +721,13 @@ namespace Phoenix {
 			}
 
 			// prepare engine for render
-			GLDRV->initRender(true);
+			GLDRV->initRender(1);
 
 			// Show grid only if we are in Debug
 			if (m_debug && m_debug_drawGrid) {
+#ifdef PROFILE_PHOENIX
 				PX_PROFILE_SCOPE("DrawGrid");
+#endif
 				GLDRV->drawGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
 			}
 
@@ -722,7 +738,9 @@ namespace Phoenix {
 			Logger::info(LogLevel::low, "Running Exec Sections...");
 			{
 				Logger::ScopedIndent _;
+#ifdef PROFILE_PHOENIX
 				PX_PROFILE_SCOPE("ExecSections");
+#endif
 				for (auto i = 0; i < m_sectionManager.m_execSection.size(); ++i) {
 					const auto sec_id = m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
 					const auto ds = m_sectionManager.m_section[sec_id];
@@ -746,13 +764,17 @@ namespace Phoenix {
 
 			// Show debug info
 			if (m_debug) {
+#ifdef PROFILE_PHOENIX
 				PX_PROFILE_SCOPE("DrawGui");
+#endif
 				GLDRV->drawGui();
 			}
 
 			// swap buffer
 			{
+#ifdef PROFILE_PHOENIX
 				PX_PROFILE_SCOPE("GLDRV::swapBuffers");
+#endif
 				GLDRV->swapBuffers();
 			}
 		}

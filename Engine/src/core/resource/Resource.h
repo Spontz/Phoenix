@@ -41,10 +41,9 @@ namespace Phoenix {
 	private:
 		void loadObjQuadFullscreen();
 		void loadObjSkybox();
-		void loadObjQube();
+		void loadObjCube();
 		void loadShaders();
 		void loadTexSpontz();
-		void loadTextFonts();
 		void loadLights();
 
 	public:
