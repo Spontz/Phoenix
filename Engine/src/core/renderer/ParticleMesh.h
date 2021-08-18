@@ -26,11 +26,11 @@ namespace Phoenix {
 		void render(float currentTime);
 		void shutdown();
 
-		uint32_t	m_numParticles;
+		uint32_t		m_numParticles;
 
 	private:
-		Particle* m_particles;
-		VertexArray* m_VertexArray;
+		Particle*		m_particles;
+		SP_VertexArray	m_VertexArray;
 
 		void initialize_particles(std::vector<Particle> Pos = { });
 	};

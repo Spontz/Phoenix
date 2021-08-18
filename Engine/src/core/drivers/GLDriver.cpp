@@ -168,7 +168,12 @@ namespace Phoenix {
 					GLDRV->guiDrawHelpPanel();
 					break;
 				case KEY_CAM_CAPTURE:
-					demo.m_pActiveCamera->capturePos();
+					if (demo.m_pActiveCamera->capturePos()) {
+						Logger::sendEditor("Camera position saved!");
+					}
+					else {
+						Logger::error("Camera file was not saved");
+					}
 					break;
 				case KEY_CAM_RESET:
 					demo.m_pActiveCamera->reset();

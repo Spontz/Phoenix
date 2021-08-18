@@ -28,7 +28,7 @@ namespace Phoenix {
 		initialize_particles(Part);
 
 		// Allocate Vertex Array
-		m_VertexArray = new VertexArray();
+		m_VertexArray = std::make_shared<VertexArray>();
 
 		// Create & Load the Vertex Buffer
 		auto pVB = std::make_shared<VertexBuffer>(&m_particles[0], m_numParticles * static_cast<uint32_t>(sizeof(Particle)));
@@ -77,8 +77,8 @@ namespace Phoenix {
 
 	void ParticleMesh::shutdown()
 	{
-		delete[] m_particles;
-		delete[] m_VertexArray;
+		if (m_particles)
+			delete[] m_particles;
 
 		m_particles = nullptr;
 		m_VertexArray = nullptr;

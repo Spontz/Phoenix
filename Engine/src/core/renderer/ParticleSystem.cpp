@@ -19,6 +19,8 @@ namespace Phoenix {
 
 	ParticleSystem::ParticleSystem(std::string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime)
 	{
+		m_varsBillboard = nullptr;
+
 		force = glm::vec3(0, 0, 0);
 
 		m_currVB = 0;
@@ -26,14 +28,14 @@ namespace Phoenix {
 		m_isFirst = true;
 		m_time = 0;
 
-		shaderPath = shaderPath;
-		pathBillboard = shaderPath + "/billboard.glsl";
-		pathUpdate = shaderPath + "/update.glsl";
+		m_shaderPath = shaderPath;
+		m_pathBillboard = shaderPath + "/billboard.glsl";
+		m_pathUpdate = shaderPath + "/update.glsl";
 
-		numMaxParticles = numMaxParticles; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
-		numEmitters = numEmitters;
-		emissionTime = emissionTime;
-		particleLifeTime = particleLifeTime;
+		m_numMaxParticles = numMaxParticles; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
+		m_numEmitters = numEmitters;
+		m_emissionTime = emissionTime;
+		m_particleLifeTime = particleLifeTime;
 
 		m_transformFeedback = {};
 		m_particleBuffer = {};
@@ -49,18 +51,21 @@ namespace Phoenix {
 		if (m_particleBuffer[0] != 0) {
 			glDeleteBuffers(2, m_particleBuffer.data());
 		}
+
+		if (m_varsBillboard)
+			delete m_varsBillboard;
 	}
 
 
 	bool ParticleSystem::InitParticleSystem(Section* sec, const std::vector<Particle> emitter, std::vector<std::string> billboardShaderVars)
 	{
-		if (numEmitters == 0)
+		if (m_numEmitters == 0)
 			return false;
 
-		Particle* Particles = new Particle[numEmitters];
+		Particle* Particles = new Particle[m_numEmitters];
 
 		// Init the particle emitters
-		for (unsigned int i = 0; i < numEmitters; i++) {
+		for (unsigned int i = 0; i < m_numEmitters; i++) {
 			Particles[i].Type = ParticleType::Emitter;
 			Particles[i].Pos = emitter[i].Pos;
 			Particles[i].Vel = emitter[i].Vel;
@@ -81,8 +86,8 @@ namespace Phoenix {
 		for (unsigned int i = 0; i < 2; i++) {
 			glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
 			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(Particle) * numMaxParticles, NULL, GL_DYNAMIC_DRAW);	// Allocate mem, uploading an empty buffer for all the particles
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * numEmitters, Particles);			// Upload only the emitters to the Buffer
+			glBufferData(GL_ARRAY_BUFFER, sizeof(Particle) * m_numMaxParticles, NULL, GL_DYNAMIC_DRAW);	// Allocate mem, uploading an empty buffer for all the particles
+			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_numEmitters, Particles);			// Upload only the emitters to the Buffer
 			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 		}
 
@@ -137,10 +142,10 @@ namespace Phoenix {
 		}
 
 		// Send the variables to the Particle System shader
-		particleSystemShader->use();
-		particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT);
-		particleSystemShader->setValue("fEmissionTime", emissionTime); // Time between emissions
-		particleSystemShader->setValue("fParticleLifetime", particleLifeTime);
+		m_particleSystemShader->use();
+		m_particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT);
+		m_particleSystemShader->setValue("fEmissionTime", m_emissionTime); // Time between emissions
+		m_particleSystemShader->setValue("fParticleLifetime", m_particleLifeTime);
 
 		if (!initRandomTexture(1000)) {
 			return false;
@@ -154,14 +159,14 @@ namespace Phoenix {
 		}
 
 		//Use the billboard shader and send variables
-		billboardShader->use();
-		varsBillboard = new ShaderVars(sec, billboardShader);
+		m_billboardShader->use();
+		m_varsBillboard = new ShaderVars(sec, m_billboardShader);
 		// Read the shader variables
 		for (int i = 0; i < billboardShaderVars.size(); i++) {
-			varsBillboard->ReadString(billboardShaderVars[i].c_str());
+			m_varsBillboard->ReadString(billboardShaderVars[i].c_str());
 		}
 		// Set billboard shader variables values (texture, particle size, etc...)
-		varsBillboard->setValues();
+		m_varsBillboard->setValues();
 
 		//return GLCheckError();
 		return true; // TODO: check errors, etc etc...
@@ -186,8 +191,8 @@ namespace Phoenix {
 	{
 		m_time += deltaTime;
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
-		//numMaxParticles
-		unsigned int nParts = numMaxParticles;// numEmitters;
+		//m_numMaxParticles
+		unsigned int nParts = m_numMaxParticles;// m_numEmitters;
 		m_emitterData = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle) * nParts, GL_MAP_WRITE_BIT);
 
 		// Change data and move some random positions
@@ -207,19 +212,18 @@ namespace Phoenix {
 	{
 		//UpdateEmitters(deltaTime);
 
-		particleSystemShader->use();
-		particleSystemShader->setValue("gTime", m_time);
-		particleSystemShader->setValue("gDeltaTime", deltaTime);
-		particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-		particleSystemShader->setValue("fEmissionTime", emissionTime);
-		particleSystemShader->setValue("fParticleLifetime", particleLifeTime);
-		particleSystemShader->setValue("force", force);
+		m_particleSystemShader->use();
+		m_particleSystemShader->setValue("gTime", m_time);
+		m_particleSystemShader->setValue("gDeltaTime", deltaTime);
+		m_particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
+		m_particleSystemShader->setValue("fEmissionTime", m_emissionTime);
+		m_particleSystemShader->setValue("fParticleLifetime", m_particleLifeTime);
+		m_particleSystemShader->setValue("force", force);
 
 
 		bindRandomTexture(RANDOM_TEXTURE_UNIT);
 
 		glEnable(GL_RASTERIZER_DISCARD);	// Stop drawing on the screen
-
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[m_currTFB]);
 
@@ -229,7 +233,7 @@ namespace Phoenix {
 		glBeginTransformFeedback(GL_POINTS);
 
 		if (m_isFirst) {
-			glDrawArrays(GL_POINTS, 0, numEmitters);
+			glDrawArrays(GL_POINTS, 0, m_numEmitters);
 			m_isFirst = false;
 		}
 		else {
@@ -244,11 +248,11 @@ namespace Phoenix {
 	void ParticleSystem::RenderParticles(const glm::mat4& VP, const glm::mat4& model, const glm::vec3& CameraPos)
 	{
 		//Use the billboard shader and send variables
-		billboardShader->use();
-		billboardShader->setValue("gCameraPos", CameraPos);				// Set camera position
-		billboardShader->setValue("gVP", VP);								// Set ViewProjection Matrix
-		billboardShader->setValue("model", model);						// Set Model Matrix
-		varsBillboard->setValues();
+		m_billboardShader->use();
+		m_billboardShader->setValue("gCameraPos", CameraPos);				// Set camera position
+		m_billboardShader->setValue("gVP", VP);								// Set ViewProjection Matrix
+		m_billboardShader->setValue("model", model);						// Set Model Matrix
+		m_varsBillboard->setValues();
 
 		glDisable(GL_RASTERIZER_DISCARD);	// Start drawing on the screen
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currTFB]);
@@ -261,18 +265,18 @@ namespace Phoenix {
 
 	bool ParticleSystem::initShaderBillboard()
 	{
-		billboardShader = DEMO->m_shaderManager.addShader(pathBillboard);
-		if (billboardShader)
+		m_billboardShader = DEMO->m_shaderManager.addShader(m_pathBillboard);
+		if (m_billboardShader)
 			return true;
 		return false;
 	}
 
 	bool ParticleSystem::initShaderParticleSystem()
 	{
-		particleSystemShader = DEMO->m_shaderManager.addShader(pathUpdate,
+		m_particleSystemShader = DEMO->m_shaderManager.addShader(m_pathUpdate,
 			{ "Position1", "Velocity1", "Color1", "Age1", "Type1" });
 
-		if (particleSystemShader)
+		if (m_particleSystemShader)
 			return true;
 		return false;
 	}

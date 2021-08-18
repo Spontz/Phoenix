@@ -256,7 +256,7 @@ namespace Phoenix {
 			switch (scriptCommand[command].m_type) {
 
 			case SectionVar::TYPE_BOOL: {
-				auto& Data = *reinterpret_cast<int*>(scriptCommand[command].m_pData);
+				auto& Data = *reinterpret_cast<bool*>(scriptCommand[command].m_pData);
 				Data = atoi(s_line.second.c_str());
 				Logger::info(
 					LogLevel::low,
@@ -298,7 +298,7 @@ namespace Phoenix {
 					LogLevel::low,
 					"Command found: %s [%s]",
 					scriptCommand[command].m_name.c_str(),
-					Data
+					Data.c_str()
 				);
 				break;
 			}

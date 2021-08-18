@@ -45,29 +45,31 @@ enum struct ParticleType : int32_t {
 		bool initShaderBillboard();		// For drawing the quads using geometry shaders
 		bool initShaderParticleSystem();// For drawing the particles using geometry shaders
 
-		std::string		shaderPath;
-		std::string		pathBillboard;
-		ShaderVars* varsBillboard;	// Billboard Shader variables
-
-		std::string		pathUpdate;
-		unsigned int	numMaxParticles;	// Number of maximum particles
-		unsigned int	numEmitters;		// Number of emmiters
-		float			emissionTime;
-		float			particleLifeTime;
-
-		bool m_isFirst;
-		unsigned int m_currVB;			// Variable that indicates the current VB (The value is 0 or 1)
-		unsigned int m_currTFB;			// Variable that indicates the current TFB (The value is 0 or 1)
-		GLuint m_VAO;					// Vertex Array Object buffer
-		std::array<GLuint, 2> m_particleBuffer;		// Vertex Buffer: input
-		std::array<GLuint,2> m_transformFeedback;	// Transform feedback buffers: output
-		Particle* m_emitterData;		// Emitter info (for updating emitters positions)
-		SP_Shader particleSystemShader;
-		SP_Shader billboardShader;
-
 		bool initRandomTexture(unsigned int Size); //TODO: Add it into the textureManager
 		void bindRandomTexture(GLuint TexUnit = 0);//TODO: this should be removed once is included in the textureManager
-		unsigned int m_textureRandID; // TODO: This will be removed once is included in the textureManager
+
+	private:
+
+		unsigned int			m_textureRandID;	// TODO: This will be removed once is included in the textureManager
+		std::string				m_shaderPath;
+		std::string				m_pathBillboard;
+		ShaderVars*				m_varsBillboard;	// Billboard Shader variables
+
+		std::string				m_pathUpdate;
+		unsigned int			m_numMaxParticles;	// Number of maximum particles
+		unsigned int			m_numEmitters;		// Number of emmiters
+		float					m_emissionTime;
+		float					m_particleLifeTime;
+
+		bool					m_isFirst;
+		unsigned int			m_currVB;			// Variable that indicates the current VB (The value is 0 or 1)
+		unsigned int			m_currTFB;			// Variable that indicates the current TFB (The value is 0 or 1)
+		GLuint					m_VAO;				// Vertex Array Object buffer
+		std::array<GLuint, 2>	m_particleBuffer;	// Vertex Buffer: input
+		std::array<GLuint, 2>	m_transformFeedback;// Transform feedback buffers: output
+		Particle*				m_emitterData;		// Emitter info (for updating emitters positions)
+		SP_Shader				m_particleSystemShader;
+		SP_Shader				m_billboardShader;
 
 		float m_time;
 	};

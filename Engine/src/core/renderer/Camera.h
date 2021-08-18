@@ -80,7 +80,7 @@ namespace Phoenix {
 		virtual void	processMouseScroll(float yoffset) {};
 		virtual void	multiplyMovementSpeed(float speed) {};
 		virtual void	divideMovementSpeed(float speed) {};
-		virtual void	capturePos() {};
+		virtual bool	capturePos() { return false; };
 		virtual void	reset() {};
 		
 		virtual void	setViewMatrix(glm::mat4 const& matrix) {};

@@ -20,7 +20,7 @@ namespace Phoenix {
 		if (new_model->Load(path)) {
 			model.push_back(new_model);
 			p_model = new_model;
-			Logger::info(LogLevel::med, "Model %s [id: %Iu] loaded OK", path.data(), model.size() - 1);
+			Logger::info(LogLevel::med, "Model %s [id: %zu] loaded OK", path.data(), model.size() - 1);
 		}
 		else
 			Logger::error("Could not load model: %s", path.data());

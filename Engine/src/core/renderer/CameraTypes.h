@@ -26,7 +26,7 @@ namespace Phoenix {
 		void	processMouseScroll(float yoffset);
 		void	multiplyMovementSpeed(float speed);
 		void	divideMovementSpeed(float speed);
-		void	capturePos();
+		bool	capturePos();
 		void	reset();
 
 	private:
@@ -54,7 +54,7 @@ namespace Phoenix {
 		void	processMouseScroll(float yoffset);
 		void	multiplyMovementSpeed(float speed);
 		void	divideMovementSpeed(float speed);
-		void	capturePos();
+		bool	capturePos();
 		void	reset();
 	};
 

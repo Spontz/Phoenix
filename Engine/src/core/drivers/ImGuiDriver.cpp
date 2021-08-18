@@ -66,6 +66,7 @@ namespace Phoenix {
 		m_expandAllSections(true),
 		m_expandAllSectionsChanged(true)
 	{
+		show_log = m_demo.m_debug; // if we are on debug, the log is opened by default
 		m_VersionEngine = m_demo.getEngineVersion();
 		m_VersionOpenGL = GLDRV->getOpenGLVersion();
 		m_VendorOpenGL = GLDRV->getOpenGLVendor();

@@ -97,10 +97,11 @@ namespace Phoenix {
 		m_MovementSpeed /= speed;
 	}
 
-	void CameraProjectionFPS::capturePos()
+	bool CameraProjectionFPS::capturePos()
 	{
 		std::string fileName = "camera_fps.cam";
 		std::string s = "\t"; // Separator
+		bool saved = false;
 
 		// Check if file exists
 		std::ifstream infile(fileName);
@@ -123,7 +124,9 @@ namespace Phoenix {
 				std::to_string(m_FrustumNear) + s + std::to_string(m_FrustumFar) << std::endl;
 			camFile << ss.str();
 			camFile.close();
+			saved = true;
 		}
+		return saved;
 	}
 
 	void CameraProjectionFPS::reset()
@@ -276,10 +279,11 @@ namespace Phoenix {
 		m_MovementSpeed /= speed;
 	}
 
-	void CameraProjectionTarget::capturePos()
+	bool CameraProjectionTarget::capturePos()
 	{
 		std::string fileName = "camera_target.cam";
 		std::string s = "\t"; // Separator
+		bool saved = false;
 
 		// Check if file exists
 		std::ifstream infile(fileName);
@@ -302,7 +306,9 @@ namespace Phoenix {
 				std::to_string(m_FrustumNear) + s + std::to_string(m_FrustumFar) << std::endl;
 			camFile << ss.str();
 			camFile.close();
+			saved = true;
 		}
+		return saved;
 	}
 
 	void CameraProjectionTarget::reset()
