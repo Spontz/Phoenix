@@ -4,7 +4,20 @@ cmake_minimum_required(VERSION 3.8)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 project(Phoenix)
-set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD latest)
+
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("/std:c++latest" _cpp_latest_flag_supported)
+if (_cpp_latest_flag_supported)
+	add_compile_options("/std:c++latest")
+endif()
+
+include(CheckCCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("/std:c17" _c17_flag_supported)
+if (_c17_flag_supported)
+	add_compile_options("/std:c17")
+endif()
+
 message("\n-- Building main project...")
 
 if (MSVC)

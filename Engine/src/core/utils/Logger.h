@@ -27,9 +27,9 @@ namespace Phoenix {
 
 	public:
 		static void setLogLevel(LogLevel level);
-		static void info(LogLevel level, const char* pszMessage, ...);
-		static void sendEditor(const char* pszMessage, ...);
-		static void error(const char* pszMessage, ...);
+		static void info(LogLevel level, std::string_view Message, ...);
+		static void sendEditor(std::string_view Message, ...);
+		static void error(std::string_view Message, ...);
 		static void openLogFile();
 		static void closeLogFile();
 	};

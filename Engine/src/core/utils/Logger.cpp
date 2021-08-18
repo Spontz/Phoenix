@@ -38,15 +38,15 @@ namespace Phoenix {
 			kLogLevel = level;
 	}
 
-	void Logger::info(LogLevel level, const char* pszMessage, ...) {
+	void Logger::info(LogLevel level, std::string_view Message, ...) {
 		if (DEMO->m_debug && kLogLevel >= level) {
 
 			// Get the message
 			va_list argptr;
-			va_start(argptr, pszMessage);
-			const auto iLen = vsnprintf(NULL, 0, pszMessage, argptr) + 1;
+			va_start(argptr, Message);
+			const auto iLen = vsnprintf(NULL, 0, Message.data(), argptr) + 1;
 			auto pszText = new char[iLen];
-			vsnprintf(pszText, iLen, pszMessage, argptr);
+			vsnprintf(pszText, iLen, Message.data(), argptr);
 			va_end(argptr);
 
 			// Get the time
@@ -72,17 +72,17 @@ namespace Phoenix {
 		}
 	}
 
-	void Logger::sendEditor(const char* pszMessage, ...) {
+	void Logger::sendEditor(std::string_view Message, ...) {
 		// We send the message only if we are in debug mode and slave mode
 		if (!DEMO->m_debug || !DEMO->m_slaveMode)
 			return;
 
 		// Get the message
 		va_list argptr;
-		va_start(argptr, pszMessage);
-		const auto iLen = vsnprintf(NULL, 0, pszMessage, argptr) + 1;
+		va_start(argptr, Message);
+		const auto iLen = vsnprintf(NULL, 0, Message.data(), argptr) + 1;
 		auto pszText = new char[iLen];
-		vsnprintf(pszText, iLen, pszMessage, argptr);
+		vsnprintf(pszText, iLen, Message.data(), argptr);
 		va_end(argptr);
 
 		// Get the time
@@ -106,16 +106,16 @@ namespace Phoenix {
 #endif
 	}
 
-	void Logger::error(const char* pszMessage, ...) {
+	void Logger::error(std::string_view Message, ...) {
 		if (!DEMO->m_debug)
 			return;
 
 		// Get the message
 		va_list argptr;
-		va_start(argptr, pszMessage);
-		const auto iLen = vsnprintf(NULL, 0, pszMessage, argptr) + 1;
+		va_start(argptr, Message);
+		const auto iLen = vsnprintf(NULL, 0, Message.data(), argptr) + 1;
 		auto pszText = new char[iLen];
-		vsnprintf(pszText, iLen, pszMessage, argptr);
+		vsnprintf(pszText, iLen, Message.data(), argptr);
 		va_end(argptr);
 
 		// Get the time
