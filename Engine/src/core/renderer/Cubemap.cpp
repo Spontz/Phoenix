@@ -45,8 +45,8 @@ namespace Phoenix {
 		{
 			filename.push_back(faces_file_name[i]);
 			unsigned char* data = stbi_load(faces_file_name[i].c_str(), &Width, &Height, &components, 0);
-			this->width.push_back(Width);
-			this->height.push_back(Height);
+			width.push_back(Width);
+			height.push_back(Height);
 			if (data)
 			{
 				GLenum internalFormat = 0;
@@ -80,7 +80,7 @@ namespace Phoenix {
 		// Check if the cubemap images sizes are OK
 		for (unsigned int i = 0; i < faces_file_name.size(); i++)
 		{
-			if ((this->width[0] != this->width[i]) || (this->height[0] != this->height[i])) {
+			if ((width[0] != width[i]) || (height[0] != height[i])) {
 				Logger::error("The cubemap image %s has a different size from the first one. Please check that all cubemap images have same size", faces_file_name[i].c_str());
 				is_loaded = false;
 			}

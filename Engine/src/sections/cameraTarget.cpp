@@ -77,12 +77,12 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size() != 1)) {
-			Logger::error("Camera Target [%s]: 1 param needed (the camera mode has not been defined)", this->identifier.c_str());
+			Logger::error("Camera Target [%s]: 1 param needed (the camera mode has not been defined)", identifier.c_str());
 			return false;
 		}
 
 		// Load parameter: Camera mode
-		m_iCameraMode = static_cast<CameraMode>(this->param[0]);
+		m_iCameraMode = static_cast<CameraMode>(param[0]);
 
 		// Do validations
 		switch (m_iCameraMode)
@@ -115,7 +115,7 @@ namespace Phoenix {
 
 		// Load the camera splines (if any)
 		for (int i = 0; i < spline.size(); i++) {
-			if (this->spline[i]->load() == false) {
+			if (spline[i]->load() == false) {
 				Logger::error("Camera Target [%s]: Spline not loaded", identifier.c_str());
 				return false;
 			}
@@ -125,7 +125,7 @@ namespace Phoenix {
 		m_pExprCamera = new MathDriver(this);
 
 		for (size_t i = 0; i < strings.size(); i++)
-			m_pExprCamera->expression += this->strings[i];
+			m_pExprCamera->expression += strings[i];
 
 		// Camera (spline) variables
 		m_pExprCamera->SymbolTable.add_variable("cPosX", m_vCamPos.x);
@@ -187,7 +187,7 @@ namespace Phoenix {
 			break;
 		case CameraMode::ONLY_SPLINE:		// Only spline: Do not use formulas
 			// Calculate the motion step of the first spline and set it to "new_pos"
-			this->spline[0]->MotionCalcStep(new_pos, this->runTime);
+			spline[0]->MotionCalcStep(new_pos, runTime);
 
 			m_vCamFinalPos = glm::vec3(new_pos[0], new_pos[1], new_pos[2]);
 			m_vCamFinalTarget = glm::vec3(new_pos[3], new_pos[4], new_pos[5]);
@@ -204,7 +204,7 @@ namespace Phoenix {
 			break;
 		case CameraMode::SPLINE_AND_FORMULA:// Spline and formula: Combine both
 			// Calculate the motion step of the first spline and set it to "new_pos"
-			this->spline[0]->MotionCalcStep(new_pos, this->runTime);
+			spline[0]->MotionCalcStep(new_pos, runTime);
 
 			m_vCamPos = glm::vec3(new_pos[0], new_pos[1], new_pos[2]);
 			m_vCamTarget = glm::vec3(new_pos[3], new_pos[4], new_pos[5]);

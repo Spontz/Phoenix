@@ -80,7 +80,7 @@ namespace Phoenix {
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthAttachment);
 
 			//glCreateTextures(GL_TEXTURE_2D, 1, &m_depthAttachment);
-			//glBindTexture(GL_TEXTURE_2D, this->m_depthAttachment);
+			//glBindTexture(GL_TEXTURE_2D, m_depthAttachment);
 			//glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, width, height);
 			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_depthAttachment, 0);
 
@@ -104,7 +104,7 @@ namespace Phoenix {
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 				// attach depth texture as FBO's depth buffer
-				glBindFramebuffer(GL_FRAMEBUFFER, (this->m_frameBuffer));
+				glBindFramebuffer(GL_FRAMEBUFFER, (m_frameBuffer));
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_colorAttachment[i], 0);
 				glDrawBuffer(GL_NONE);
 				glReadBuffer(GL_NONE);
@@ -140,7 +140,7 @@ namespace Phoenix {
 
 	void Fbo::bind_tex(GLuint TexUnit, GLuint attachment) const
 	{
-		if (attachment < this->numAttachments)
+		if (attachment < numAttachments)
 			glBindTextureUnit(TexUnit, m_colorAttachment[attachment]);
 	}
 

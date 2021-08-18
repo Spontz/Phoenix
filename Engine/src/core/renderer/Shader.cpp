@@ -353,7 +353,7 @@ namespace Phoenix {
 				glDeleteShader(shaderID);
 
 
-			Logger::error("Shader Linking: file %s, log: %s", this->m_URI.c_str(), infoLog);
+			Logger::error("Shader Linking: file %s, log: %s", m_URI.c_str(), infoLog);
 			delete[] infoLog;
 			return false;
 		}

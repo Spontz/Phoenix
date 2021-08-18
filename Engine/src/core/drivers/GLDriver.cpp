@@ -389,7 +389,7 @@ namespace Phoenix {
 		glfwSwapInterval(config.vsync); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
 
 		// reset the default gl state
-		this->initStates();
+		initStates();
 
 		// Set the internal timer
 		m_timeLastFrame = m_timeCurrentFrame;
@@ -708,7 +708,7 @@ namespace Phoenix {
 
 
 	void glDriver::calcMousePos(float x, float y) {
-		Viewport vp = this->GetCurrentViewport();
+		Viewport vp = GetCurrentViewport();
 		if ((x >= vp.x) && (x <= static_cast<float>(vp.width + vp.x)) &&	// Validate we are inside the valid zone of X
 			(y >= vp.y) && (y <= static_cast<float>((vp.height + vp.y)))) {	// Validate we are inside the valid zone of Y
 
@@ -717,8 +717,8 @@ namespace Phoenix {
 			x_coord -= 0.5f;	// Change scale from -0.5 to 0.5
 			y_coord -= 0.5f;
 			y_coord *= -1.0f;
-			this->m_mouseX = x_coord;
-			this->m_mouseY = y_coord;
+			m_mouseX = x_coord;
+			m_mouseY = y_coord;
 		}
 	}
 	void glDriver::moveWindow(int x, int y)

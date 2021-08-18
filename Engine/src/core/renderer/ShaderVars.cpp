@@ -13,20 +13,20 @@ namespace Phoenix {
 		my_shader = spShader;
 	}
 
-	bool ShaderVars::ReadString(const char* string_var)
+	bool ShaderVars::ReadString(std::string_view StringVar)
 	{
 		// std::string	var_name, var_type, var_value;
 
 		std::vector<std::string>	vars;
 
-		splitString(string_var, vars, ' ');	// Split the main string by spaces
+		splitString(StringVar.data(), vars, ' ');	// Split the main string by spaces
 
 		if (vars.size() != 3) {
 			Logger::error(
 				"Error reading Shader Variable [section: %s], format is: 'uniform <var_type> "
 				"<var_name> <var_value>', but the string was: 'uniform %s'",
 				my_section->type_str.c_str(),
-				string_var
+				StringVar.data()
 			);
 			return false;
 		}
@@ -150,7 +150,12 @@ namespace Phoenix {
 				auto const fboNum = std::stoi(var_value.substr(3));
 
 				if (fboNum<0 || fboNum>(FBO_BUFFERS - 1)) {
-					Logger::error("Section %s: sampler2D fbo not correct, it should be 'fboX', where X=>0 and X<=%d, you choose: %s", this->my_section->identifier.c_str(), (FBO_BUFFERS - 1), var_value);
+					Logger::error(
+						"Section %s: sampler2D fbo not correct, it should be 'fboX', where X=>0 and X<=%d, you "
+						"choose: %s",
+						my_section->identifier.c_str(), (FBO_BUFFERS - 1),
+						var_value.c_str()
+					);
 					return false;
 				}
 				int fboAttachments = DEMO->m_fboManager.fbo[fboNum]->numAttachments;
@@ -237,11 +242,16 @@ namespace Phoenix {
 		for (i = 0; i < sampler2D.size(); i++) {
 			my_sampler2D = sampler2D[i];
 			my_shader->setValue(my_sampler2D->name.c_str(), my_sampler2D->texUnitID);
-			// TODO: This ugly and dirty. This is needed because when we rezise the screen, the FBO's are recalculated (therefore texGLid is changed), therefoere we need to look everytime if the texGLid id has changed
+			// TODO: This ugly and dirty. This is needed because when we rezise the screen, the FBO's are
+			// recalculated (therefore texGLid is changed), therefoere we need to look everytime if the
+			// texGLid id has changed
 			if (my_sampler2D->isFBO) {
 				//Fbo* my_fbo = DEMO->fboManager.fbo[my_sampler2D->fboNum];
 				//glBindTextureUnit(my_sampler2D->texUnitID, my_fbo->m_colorAttachment[0]);
-				glBindTextureUnit(my_sampler2D->texUnitID, DEMO->m_fboManager.getOpenGLTextureID(my_sampler2D->fboNum, my_sampler2D->fboAttachment));
+				glBindTextureUnit(my_sampler2D->texUnitID, DEMO->m_fboManager.getOpenGLTextureID(
+					my_sampler2D->fboNum,
+					my_sampler2D->fboAttachment)
+				);
 			}
 			else
 				glBindTextureUnit(my_sampler2D->texUnitID, my_sampler2D->texture->m_textureID);

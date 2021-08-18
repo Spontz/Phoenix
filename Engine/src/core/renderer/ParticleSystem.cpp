@@ -26,14 +26,14 @@ namespace Phoenix {
 		m_isFirst = true;
 		m_time = 0;
 
-		this->shaderPath = shaderPath;
-		this->pathBillboard = shaderPath + "/billboard.glsl";
-		this->pathUpdate = shaderPath + "/update.glsl";
+		shaderPath = shaderPath;
+		pathBillboard = shaderPath + "/billboard.glsl";
+		pathUpdate = shaderPath + "/update.glsl";
 
-		this->numMaxParticles = numMaxParticles; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
-		this->numEmitters = numEmitters;
-		this->emissionTime = emissionTime;
-		this->particleLifeTime = particleLifeTime;
+		numMaxParticles = numMaxParticles; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
+		numEmitters = numEmitters;
+		emissionTime = emissionTime;
+		particleLifeTime = particleLifeTime;
 
 		m_transformFeedback = {};
 		m_particleBuffer = {};
@@ -139,8 +139,8 @@ namespace Phoenix {
 		// Send the variables to the Particle System shader
 		particleSystemShader->use();
 		particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT);
-		particleSystemShader->setValue("fEmissionTime", this->emissionTime); // Time between emissions
-		particleSystemShader->setValue("fParticleLifetime", this->particleLifeTime);
+		particleSystemShader->setValue("fEmissionTime", emissionTime); // Time between emissions
+		particleSystemShader->setValue("fParticleLifetime", particleLifeTime);
 
 		if (!initRandomTexture(1000)) {
 			return false;
@@ -155,13 +155,13 @@ namespace Phoenix {
 
 		//Use the billboard shader and send variables
 		billboardShader->use();
-		this->varsBillboard = new ShaderVars(sec, billboardShader);
+		varsBillboard = new ShaderVars(sec, billboardShader);
 		// Read the shader variables
 		for (int i = 0; i < billboardShaderVars.size(); i++) {
-			this->varsBillboard->ReadString(billboardShaderVars[i].c_str());
+			varsBillboard->ReadString(billboardShaderVars[i].c_str());
 		}
 		// Set billboard shader variables values (texture, particle size, etc...)
-		this->varsBillboard->setValues();
+		varsBillboard->setValues();
 
 		//return GLCheckError();
 		return true; // TODO: check errors, etc etc...
@@ -208,12 +208,12 @@ namespace Phoenix {
 		//UpdateEmitters(deltaTime);
 
 		particleSystemShader->use();
-		particleSystemShader->setValue("gTime", this->m_time);
+		particleSystemShader->setValue("gTime", m_time);
 		particleSystemShader->setValue("gDeltaTime", deltaTime);
 		particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-		particleSystemShader->setValue("fEmissionTime", this->emissionTime);
-		particleSystemShader->setValue("fParticleLifetime", this->particleLifeTime);
-		particleSystemShader->setValue("force", this->force);
+		particleSystemShader->setValue("fEmissionTime", emissionTime);
+		particleSystemShader->setValue("fParticleLifetime", particleLifeTime);
+		particleSystemShader->setValue("force", force);
 
 
 		bindRandomTexture(RANDOM_TEXTURE_UNIT);
@@ -261,7 +261,7 @@ namespace Phoenix {
 
 	bool ParticleSystem::initShaderBillboard()
 	{
-		billboardShader = DEMO->m_shaderManager.addShader(this->pathBillboard);
+		billboardShader = DEMO->m_shaderManager.addShader(pathBillboard);
 		if (billboardShader)
 			return true;
 		return false;
@@ -269,7 +269,7 @@ namespace Phoenix {
 
 	bool ParticleSystem::initShaderParticleSystem()
 	{
-		particleSystemShader = DEMO->m_shaderManager.addShader(this->pathUpdate,
+		particleSystemShader = DEMO->m_shaderManager.addShader(pathUpdate,
 			{ "Position1", "Velocity1", "Color1", "Age1", "Type1" });
 
 		if (particleSystemShader)

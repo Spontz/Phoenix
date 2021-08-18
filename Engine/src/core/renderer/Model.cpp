@@ -64,11 +64,11 @@ namespace Phoenix {
 		setMeshesModelTransform();
 
 		// Set the Bones transformations and send the Bones info to the Shader (gBones uniform)
-		if (this->playAnimation)
+		if (playAnimation)
 			setBoneTransformations(shaderID, currentTime);
 
 		// If we use camera, override the matrix view for the camera view
-		if (this->useCamera) {
+		if (useCamera) {
 			if ((m_currentCamera >= 0) && (m_currentCamera < m_camera.size())) {
 				m_matView = m_camera[m_currentCamera]->getView();
 			}
@@ -461,8 +461,8 @@ namespace Phoenix {
 
 		// Now we need to apply the Matrix to the corresponding object
 		for (unsigned int i = 0; i < m_statNumMeshes; i++) {
-			if (NodeName == this->meshes[i]->m_nodeName) {
-				this->meshes[i]->m_matModel *= m_matGlobalInverseTransform * GlobalTransformation;
+			if (NodeName == meshes[i]->m_nodeName) {
+				meshes[i]->m_matModel *= m_matGlobalInverseTransform * GlobalTransformation;
 				/*Logger::info(LogLevel::low, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %boneIndex [time: %.3f]", NodeName.c_str(), boneIndex, AnimationTime);
 				glm::mat4 M = GlobalTransformation;
 				Logger::info(LogLevel::low, "M: [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f]",
@@ -475,8 +475,8 @@ namespace Phoenix {
 		}
 
 		for (unsigned int i = 0; i < m_pScene->mNumCameras; i++) {
-			if (NodeName == this->m_camera[i]->TypeStr) {
-				this->m_camera[i]->setViewMatrix (glm::inverse(GlobalTransformation));
+			if (NodeName == m_camera[i]->TypeStr) {
+				m_camera[i]->setViewMatrix (glm::inverse(GlobalTransformation));
 			}
 		}
 

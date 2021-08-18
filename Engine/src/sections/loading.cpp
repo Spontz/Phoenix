@@ -43,8 +43,8 @@ namespace Phoenix {
 	bool sLoading::load()
 	{
 		// script validation
-		if ((this->param.size() != 3) || (this->strings.size() != 3)) {
-			Logger::error("Loading [%s]: 3 strings and 3 params needed. Using default values.", this->identifier.c_str());
+		if ((param.size() != 3) || (strings.size() != 3)) {
+			Logger::error("Loading [%s]: 3 strings and 3 params needed. Using default values.", identifier.c_str());
 			m_bDefaultLoader = true;
 		}
 		else {
