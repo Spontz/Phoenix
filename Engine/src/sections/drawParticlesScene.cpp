@@ -94,9 +94,9 @@ namespace Phoenix {
 		// Load the particles position
 		std::vector<ParticleMesh::Particle> Part;
 		Part.resize(m_iNumParticles);
-		int cnt = 0;
-		for (int i = 0; i < m_pModel->meshes.size(); i++) {
-			for (int j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
+		size_t cnt = 0;
+		for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
+			for (size_t j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
 				Part[cnt].Pos = m_pModel->meshes[i]->unique_vertices_pos[j];
 				Part[cnt].Col = glm::vec4(0.0);	// Todo: Inited with black color... should be initied with vertex color
 				cnt++;

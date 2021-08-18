@@ -83,7 +83,7 @@ namespace Phoenix {
 		// Load the formmula containing the Image position and scale
 		m_pExprPosition = new MathDriver(this);
 		// Load positions, process constants and compile expression
-		for (int i = 2; i < strings.size(); i++)
+		for (size_t i = 2; i < strings.size(); i++)
 			m_pExprPosition->expression += strings[i];
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
 		m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
@@ -178,7 +178,7 @@ namespace Phoenix {
 			// Set other shader variables values
 			m_pVars->setValues();
 			m_pTexture->bind();
-			m_demo.m_pRes->Draw_QuadFS(); // Draw a quad with the video
+			m_demo.m_pRes->drawQuadFS(); // Draw a quad with the video
 
 			/*
 			// View / projection / model Matrixes

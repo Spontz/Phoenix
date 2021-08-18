@@ -23,23 +23,23 @@ namespace Phoenix {
 	}
 
 	void Light::draw(float size) {
-		DEMO->m_pRes->m_pShdrObjColor->use();
+		DEMO->m_pRes->m_spShdrObjColor->use();
 
-		DEMO->m_pRes->m_pShdrObjColor->setValue("color", this->colAmbient);
+		DEMO->m_pRes->m_spShdrObjColor->setValue("color", this->colAmbient);
 
 		glm::mat4 projection = DEMO->m_pActiveCamera->getProjection();
 		glm::mat4 view = DEMO->m_pActiveCamera->getView();
 
-		DEMO->m_pRes->m_pShdrObjColor->setValue("projection", projection);
-		DEMO->m_pRes->m_pShdrObjColor->setValue("view", view);
+		DEMO->m_pRes->m_spShdrObjColor->setValue("projection", projection);
+		DEMO->m_pRes->m_spShdrObjColor->setValue("view", view);
 
 		// Place the quad onto desired place
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, this->position);
 		model = glm::scale(model, glm::vec3(size, size, size));
-		DEMO->m_pRes->m_pShdrObjColor->setValue("model", model);
+		DEMO->m_pRes->m_spShdrObjColor->setValue("model", model);
 
-		DEMO->m_pRes->Draw_Cube();
+		DEMO->m_pRes->drawCube();
 	}
 
 	void Light::initColorValues()

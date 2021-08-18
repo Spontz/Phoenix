@@ -104,7 +104,7 @@ namespace Phoenix {
 
 		m_pExprPosition = new MathDriver(this);
 		// Load all the other strings
-		for (int i = 2; i < strings.size(); i++)
+		for (size_t i = 2; i < strings.size(); i++)
 			m_pExprPosition->expression += strings[i];
 
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
@@ -154,10 +154,10 @@ namespace Phoenix {
 		Emitter.resize(m_uiNumEmitters);
 
 		// Load the emitters, based in our model vertexes
-		int numEmitter = 0;
+		size_t numEmitter = 0;
 		m_fCurrentEmitter = 0;
-		for (int i = 0; i < m_pModel->meshes.size(); i++) {
-			for (int j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
+		for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
+			for (size_t j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
 				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 				Emitter[numEmitter].Type = ParticleType::Emitter;
 				Emitter[numEmitter].Pos = m_pModel->meshes[i]->unique_vertices_pos[j];

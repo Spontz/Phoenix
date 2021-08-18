@@ -145,7 +145,7 @@ namespace Phoenix {
 					m_demo.m_efxBloomFbo.bind_tex(!horizontal, 0, 0);	// Use the texture from our efxBloom
 
 				// Render scene
-				m_demo.m_pRes->Draw_QuadFS();
+				m_demo.m_pRes->drawQuadFS();
 				horizontal = !horizontal;
 				if (first_iteration)
 					first_iteration = false;
@@ -165,7 +165,7 @@ namespace Phoenix {
 
 			// Adjust back the current fbo
 			m_demo.m_fboManager.bindCurrent();
-			m_demo.m_pRes->Draw_QuadFS();
+			m_demo.m_pRes->drawQuadFS();
 		}
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();

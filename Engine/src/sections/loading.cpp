@@ -100,9 +100,9 @@ namespace Phoenix {
 		glBlendFunc(GL_ONE, GL_ONE);
 		glDisable(GL_DEPTH_TEST);
 		// Background
-		m_demo.m_pRes->Draw_QuadFS(m_pTexBack, 1 - zero2one);
+		m_demo.m_pRes->drawQuadFS(m_pTexBack, 1 - zero2one);
 		// Foreground
-		m_demo.m_pRes->Draw_QuadFS(m_pTexFront, zero2one);
+		m_demo.m_pRes->drawQuadFS(m_pTexFront, zero2one);
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
 
@@ -112,7 +112,7 @@ namespace Phoenix {
 
 		model = glm::translate(model, glm::vec3(m_fTX, m_fTY, 0));  // Move the bar
 		model = glm::scale(model, glm::vec3(zero2one, m_fSY, 0));		// Scale the bar
-		m_demo.m_pRes->Draw_Obj_QuadTex(m_pTexBar, &model);
+		m_demo.m_pRes->drawObjQuadTex(m_pTexBar, &model);
 
 		GLDRV->swapBuffers();
 	}

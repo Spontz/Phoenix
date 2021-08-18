@@ -1,13 +1,12 @@
 // BassDriver.cpp
 // Spontz Demogroup
 
-
-
 #include "main.h"
 #include "core/drivers/BassDriver.h"
+
 namespace Phoenix {
 
-	BassDriver& BassDriver::GetInstance() {
+	BassDriver& BassDriver::getInstance() {
 		static BassDriver instance;
 		return instance;
 	}
@@ -50,14 +49,16 @@ namespace Phoenix {
 		BASS_Free();
 	}
 
-	void BassDriver::addFFTdata(float* fftData, int samples) {
+	void BassDriver::addFFTdata(float* fftData, size_t samples) {
+		assert(samples > 0);
+
 		// FFT values are just for debug purposes, so we just add the values if we are in debug mode
 		if (m_demo.m_debug)
 		{
 			// Populate spectrum bars based on FFT data received
 			size_t b0 = 0;
 			float pow_num = glm::log2(static_cast<float>(samples));
-			for (int i = 0; i < SPECTRUM_SAMPLES; i++) {
+			for (size_t i = 0; i < SPECTRUM_SAMPLES; i++) {
 				float peak = 0;
 
 				// determine size of the bin

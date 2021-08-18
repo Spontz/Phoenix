@@ -84,7 +84,7 @@ namespace Phoenix {
 		{
 			m_pShader->use();
 			m_pVars->setValues();
-			m_demo.m_pRes->Draw_QuadFS();
+			m_demo.m_pRes->drawQuadFS();
 		}
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();

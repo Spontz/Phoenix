@@ -43,51 +43,51 @@ namespace Phoenix {
 		// Diffuse maps
 		const auto diffuseMaps = loadTextures(aiTextureType_DIFFUSE, "texture_diffuse");
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-		Logger::info(LogLevel::low, "The mesh has %Iu diffuseMaps", diffuseMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %zu diffuseMaps", diffuseMaps.size());
 		// Specular maps
 		const auto specularMaps = loadTextures(aiTextureType_SPECULAR, "texture_specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-		Logger::info(LogLevel::low, "The mesh has %Iu specularMaps", specularMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %zu specularMaps", specularMaps.size());
 		// Ambient maps
 		const auto ambientMaps = loadTextures(aiTextureType_AMBIENT, "texture_ambient");
 		textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
-		Logger::info(LogLevel::low, "The mesh has %Iu ambientMaps", ambientMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %zu ambientMaps", ambientMaps.size());
 		// Height maps
 		const auto heightMaps = loadTextures(aiTextureType_HEIGHT, "texture_height");
 		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-		Logger::info(LogLevel::low, "The mesh has %Iu heightMaps", heightMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %zu heightMaps", heightMaps.size());
 		// Normal maps
 		const auto normalMaps = loadTextures(aiTextureType_NORMALS, "texture_normal");
 		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-		Logger::info(LogLevel::low, "The mesh has %Iu normalMaps", normalMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %zu normalMaps", normalMaps.size());
 		// Emissive maps
 		const auto emissiveMaps = loadTextures(aiTextureType_EMISSIVE, "texture_emissive");
 		textures.insert(textures.end(), emissiveMaps.begin(), emissiveMaps.end());
-		Logger::info(LogLevel::low, "The mesh has %Iu emissiveMaps", emissiveMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %zu emissiveMaps", emissiveMaps.size());
 		// Roughness maps
 		const auto roughnessMaps = loadTextures(aiTextureType_DIFFUSE_ROUGHNESS, "texture_roughness");
 		textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
-		Logger::info(LogLevel::low, "The mesh has %Iu roughnessMaps", roughnessMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %zu roughnessMaps", roughnessMaps.size());
 		// Shininess maps
 		const auto shininessMaps = loadTextures(aiTextureType_SHININESS, "texture_shininess");
 		textures.insert(textures.end(), shininessMaps.begin(), shininessMaps.end());
-		Logger::info(LogLevel::low, "The mesh has %Iu shininessMaps", shininessMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %zu shininessMaps", shininessMaps.size());
 		// Ambient Occlusion maps
 		const auto ambientOclussionMaps = loadTextures(aiTextureType_AMBIENT_OCCLUSION, "texture_ambientoclussion");
 		textures.insert(textures.end(), ambientOclussionMaps.begin(), ambientOclussionMaps.end());
-		Logger::info(LogLevel::low, "The mesh has %Iu ambientoclussionMaps", ambientOclussionMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %zu ambientoclussionMaps", ambientOclussionMaps.size());
 		// Metallness maps
 		const auto metalnessMaps = loadTextures(aiTextureType_METALNESS, "texture_metalness");
 		textures.insert(textures.end(), metalnessMaps.begin(), metalnessMaps.end());
-		Logger::info(LogLevel::low, "The mesh has %Iu metalnessMaps", metalnessMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %zu metalnessMaps", metalnessMaps.size());
 		// Unknown
 		const auto unknownMaps = loadTextures(aiTextureType_UNKNOWN, "texture_unknown");
 		textures.insert(textures.end(), unknownMaps.begin(), unknownMaps.end());
-		Logger::info(LogLevel::low, "The mesh has %Iu unknownMaps", unknownMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %zu unknownMaps", unknownMaps.size());
 		// None
 		const auto noneMaps = loadTextures(aiTextureType_NONE, "texture_none");
 		textures.insert(textures.end(), noneMaps.begin(), noneMaps.end());
-		Logger::info(LogLevel::low, "The mesh has %Iu noneMaps", noneMaps.size());
+		Logger::info(LogLevel::low, "The mesh has %zu noneMaps", noneMaps.size());
 
 		aiColor3D color;
 

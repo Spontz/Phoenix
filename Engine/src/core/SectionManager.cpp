@@ -110,7 +110,7 @@ namespace Phoenix {
 	int32_t SectionManager::getSectionIndex(std::string_view id) const
 	{
 		// hack: slow
-		for (auto i = 0; i < m_section.size(); i++)
+		for (size_t i = 0; i < m_section.size(); i++)
 			if (m_section[i]->identifier == id)
 				return static_cast<int32_t>(i);
 
@@ -168,7 +168,7 @@ namespace Phoenix {
 				ds->startTime = startTime;
 				ds->duration = ds->endTime - ds->startTime;
 				// Reload the splines. This way they are recalculated
-				for (int32_t k = 0; k < ds->spline.size(); k++) {
+				for (size_t k = 0; k < ds->spline.size(); k++) {
 					ds->spline[k]->duration = ds->duration;
 					ds->spline[k]->load();
 				}
@@ -191,7 +191,7 @@ namespace Phoenix {
 				ds->endTime = endTime;
 				ds->duration = ds->endTime - ds->startTime;
 				// Reload the splines. This way they are recalculated
-				for (int32_t k = 0; k < ds->spline.size(); k++) {
+				for (size_t k = 0; k < ds->spline.size(); k++) {
 					ds->spline[k]->duration = ds->duration;
 					ds->spline[k]->load();
 				}

@@ -133,7 +133,7 @@ namespace Phoenix {
 					m_demo.m_efxBloomFbo.bind_tex(!horizontal);
 
 				// Render scene
-				m_demo.m_pRes->Draw_QuadFS();
+				m_demo.m_pRes->drawQuadFS();
 				horizontal = !horizontal;
 				if (first_iteration)
 					first_iteration = false;
@@ -144,7 +144,7 @@ namespace Phoenix {
 			// Adjust back the current fbo
 			m_demo.m_fboManager.bindCurrent();
 			// Second step: Draw the Blurred image
-			m_demo.m_pRes->Draw_QuadEfxFBOFS(!horizontal);
+			m_demo.m_pRes->drawQuadEfxFboFS(!horizontal);
 		}
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();

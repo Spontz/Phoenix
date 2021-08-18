@@ -429,7 +429,7 @@ namespace Phoenix {
 		if (drawAxisX)
 		{
 			MVP = VP * model;
-			m_demo.m_pRes->Draw_Grid(glm::vec3(1, 0, 0), &MVP);
+			m_demo.m_pRes->drawGrid(glm::vec3(1, 0, 0), &MVP);
 		}
 
 		// Y Axis
@@ -438,7 +438,7 @@ namespace Phoenix {
 			model = glm::mat4(1.0f);
 			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
 			MVP = VP * model;
-			m_demo.m_pRes->Draw_Grid(glm::vec3(0, 1, 0), &MVP);
+			m_demo.m_pRes->drawGrid(glm::vec3(0, 1, 0), &MVP);
 		}
 
 		// Z Axis
@@ -447,7 +447,7 @@ namespace Phoenix {
 			model = glm::mat4(1.0f);
 			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 0, 1));
 			MVP = VP * model;
-			m_demo.m_pRes->Draw_Grid(glm::vec3(0, 0, 1), &MVP);
+			m_demo.m_pRes->drawGrid(glm::vec3(0, 0, 1), &MVP);
 		}
 	}
 

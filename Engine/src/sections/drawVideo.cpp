@@ -191,7 +191,7 @@ namespace Phoenix {
 			// Set other shader variables values
 			m_pVars->setValues();
 			m_pVideo->bind(0); // todo: from SPO maybe?
-			m_demo.m_pRes->Draw_QuadFS(); // Draw a quad with the video
+			m_demo.m_pRes->drawQuadFS(); // Draw a quad with the video
 
 		}
 

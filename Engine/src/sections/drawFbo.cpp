@@ -82,7 +82,7 @@ namespace Phoenix {
 		EvalBlendingStart();
 		{
 			m_pFbo = m_demo.m_fboManager.fbo[m_uFboNum]; // We reload the Fbo, because it may be changed when resizing the screen
-			m_demo.m_pRes->Draw_QuadFBOFS(m_pFbo, m_uFboAttachment);
+			m_demo.m_pRes->drawQuadFboFS(m_pFbo, m_uFboAttachment);
 		}
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();

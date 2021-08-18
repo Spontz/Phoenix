@@ -333,7 +333,7 @@ namespace Phoenix {
 		}
 
 		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fboNumMin, fboNumMax, m_numFboAttachmentToDraw);
-		for (auto i = fboNumMin; i <= fboNumMax; ++i) {
+		for (size_t i = fboNumMin; i <= fboNumMax; ++i) {
 			if (i < m_demo.m_fboManager.fbo.size()) {
 				Fbo* my_fbo = m_demo.m_fboManager.fbo[i];
 				if (m_numFboAttachmentToDraw < my_fbo->numAttachments)
@@ -386,7 +386,7 @@ namespace Phoenix {
 				m_demo.m_pRes->m_gridSize = 0;
 			if (m_demo.m_pRes->m_gridSize > 50)
 				m_demo.m_pRes->m_gridSize = 50;
-			m_demo.m_pRes->Load_Grid();
+			m_demo.m_pRes->loadGrid();
 		}
 
 		if (ImGui::SliderInt("Slices", &m_demo.m_pRes->m_gridSlices, 1, 100)) {
@@ -394,7 +394,7 @@ namespace Phoenix {
 				m_demo.m_pRes->m_gridSlices = 1;
 			if (m_demo.m_pRes->m_gridSlices > 100)
 				m_demo.m_pRes->m_gridSlices = 100;
-			m_demo.m_pRes->Load_Grid();
+			m_demo.m_pRes->loadGrid();
 		}
 
 		ImGui::End();
@@ -437,7 +437,7 @@ namespace Phoenix {
 		if (ImGui::Checkbox("Expand All", &m_expandAllSections))
 			m_expandAllSectionsChanged = true;
 
-		for (int i = 0; i < m_demo.m_sectionManager.m_execSection.size(); i++) {
+		for (size_t i = 0; i < m_demo.m_sectionManager.m_execSection.size(); i++) {
 			const auto sec_id = m_demo.m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
 			const auto ds = m_demo.m_sectionManager.m_section[sec_id];
 			std::stringstream ss;

@@ -124,9 +124,8 @@ namespace Phoenix {
 		// Load the camera modifiers (based in formulas)
 		m_pExprCamera = new MathDriver(this);
 
-		for (int i = 0; i < strings.size(); i++) {
+		for (size_t i = 0; i < strings.size(); i++)
 			m_pExprCamera->expression += this->strings[i];
-		}
 
 		// Camera (spline) variables
 		m_pExprCamera->SymbolTable.add_variable("cPosX", m_vCamPos.x);

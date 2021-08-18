@@ -632,7 +632,7 @@ namespace Phoenix {
 				}
 			}
 
-			Logger::info(LogLevel::low, "Ready Section queue complete: %d sections to be loaded", m_sectionManager.m_loadSection.size());
+			Logger::info(LogLevel::low, "Ready Section queue complete: %zu sections to be loaded", m_sectionManager.m_loadSection.size());
 
 			// Start Loading the sections of the Ready List
 			m_iLoadedSections = 0;
@@ -692,7 +692,7 @@ namespace Phoenix {
 			}
 			sort(m_sectionManager.m_execSection.begin(), m_sectionManager.m_execSection.end());	// Sort sections by Layer
 
-			Logger::info(LogLevel::low, "Exec Section queue complete: %d sections to be executed", m_sectionManager.m_execSection.size());
+			Logger::info(LogLevel::low, "Exec Section queue complete: %zu sections to be executed", m_sectionManager.m_execSection.size());
 			// Run Init sections
 			Logger::info(LogLevel::low, "Running Init Sections...");
 			for (auto i = 0; i < m_sectionManager.m_execSection.size(); ++i) {
