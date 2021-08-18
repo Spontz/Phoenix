@@ -14,6 +14,23 @@ namespace Phoenix {
 	std::ofstream kOutputStream;
 	uint32_t kIndent = 0;
 
+
+	std::string formatMsg(const std::string_view src, const std::string_view Message)
+	{
+		const std::time_t t = std::time(nullptr);
+		auto timeinfo = localtime(&t);
+
+		// Indent
+		std::stringstream ss;
+		for (uint32_t i = 0; i < kIndent; ++i)
+			ss << "  ";
+
+		ss << src << " [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << Message << std::endl;
+		return ss.str();
+
+	}
+
+
 	Logger::ScopedIndent::ScopedIndent()
 	{
 		++kIndent;
@@ -43,85 +60,64 @@ namespace Phoenix {
 		if (!DEMO->m_debug || kLogLevel < level)
 			return;
 
-		// Get the time
-		const std::time_t t = std::time(nullptr);
-		auto timeinfo = localtime(&t);
-
-		std::stringstream ss;
-		for (uint32_t i = 0; i < kIndent; ++i)
-			ss << "  ";
-		ss << "Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << Message << std::endl;
-		const auto strOutputString = ss.str();
-
 		// Output to file
-		kOutputStream << strOutputString;
+		const auto s = formatMsg("Info", Message);
+		kOutputStream << s;
 
 		// Output to Visual Studio
 #if defined(_DEBUG) && defined(WIN32)
 		if (level <= LogLevel::high)
-			OutputDebugStringA(strOutputString.c_str());
+			OutputDebugStringA(s.c_str());
 #endif
 	}
 
-	void Logger::sendEditor(const std::string_view Message) {
+	void Logger::sendEditor(const std::string_view Message)
+	{
 		// We send the message only if we are in debug mode and slave mode
 		if (!DEMO->m_debug || !DEMO->m_slaveMode)
 			return;
 
-		// Get the time
-		const std::time_t t = std::time(nullptr);
-		struct tm* timeinfo = localtime(&t);
-
-		std::stringstream ss;
-		for (uint32_t i = 0; i < kIndent; ++i)
-			ss << "  ";
-		ss << "INFO::Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << Message << std::endl;
-		const auto strOutputString = ss.str();
+		const auto s = formatMsg("INFO::Info", Message);
 
 		// Output to editor
-		NetDriver::getInstance().sendMessage(strOutputString);
+		NetDriver::getInstance().sendMessage(s);
 
 		// Output to Visual Studio
 #if defined(_DEBUG) && defined(WIN32)
-		OutputDebugStringA(strOutputString.c_str());
+		OutputDebugStringA(s.c_str());
 #endif
 	}
 
-	void Logger::error(const std::string_view Message) {
+	void Logger::error(const std::string_view Message)
+	{
 		if (!DEMO->m_debug)
 			return;
 
-		// Get the time
-		const std::time_t t = std::time(nullptr);
-		struct tm* timeinfo = localtime(&t);
-
-		std::stringstream ss;
-		for (uint32_t i = 0; i < kIndent; ++i)
-			ss << "  ";
-		ss << "Error [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << Message << std::endl;
-		const auto strOutputString = ss.str();
+		const auto s = formatMsg("Error", Message);
 
 		// Output to file
-		kOutputStream << strOutputString;
+		kOutputStream << s;
 
 		// Output to screen log
-		GLDRV->guiAddLog(strOutputString);
+		GLDRV->guiAddLog(s);
 
 		// Output to Visual Studio
 #if defined(_DEBUG) && defined(WIN32)
-		OutputDebugStringA(strOutputString.c_str());
+		OutputDebugStringA(s.c_str());
 #endif
 
 		// Output to demo editor
-		NetDriver::getInstance().sendMessage("ERROR::" + strOutputString);
+		NetDriver::getInstance().sendMessage("ERROR::" + s);
 	}
 
-	void Logger::openLogFile() {
+	void Logger::openLogFile()
+	{
 		if (!kOutputStream.is_open())
 			kOutputStream.open(kOutputFile.data(), std::ios::out | std::ios::trunc);
 	}
 
-	void Logger::closeLogFile() {
+	void Logger::closeLogFile()
+	{
 		if (kOutputStream.is_open())
 			kOutputStream.close();
 	}
