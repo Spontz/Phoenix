@@ -61,7 +61,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if (strings.size() != 5) {
-			Logger::error("Draw Particles Image [%s]: 5 strings needed (1 for shader file, 1 for image, 3 for positioning)", identifier.c_str());
+			Logger::error("Draw Particles Image [{}]: 5 strings needed (1 for shader file, 1 for image, 3 for positioning)", identifier);
 			return false;
 		}
 
@@ -78,7 +78,7 @@ namespace Phoenix {
 		if (m_pTexture == nullptr)
 			return false;
 		if (!m_pTexture->keepData()) {
-			Logger::error("Draw Particles Image [%s]: Could not allocate data image", identifier.c_str());
+			Logger::error("Draw Particles Image [{}]: Could not allocate data image", identifier);
 			return false;
 		}
 
@@ -87,7 +87,7 @@ namespace Phoenix {
 		m_iNumParticles = m_pTexture->width * m_pTexture->height;
 
 		if (m_iNumParticles == 0) {
-			Logger::error("Draw Particles Image [%s]: Image size is zero, no particles to draw", identifier.c_str());
+			Logger::error("Draw Particles Image [{}]: Image size is zero, no particles to draw", identifier);
 			return false;
 		}
 		// Load the particles position and color

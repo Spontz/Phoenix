@@ -11,16 +11,29 @@ namespace Phoenix {
 
 	// GLFW CALLBACKS ***************************************************
 
-	void glDriver::glDebugMessage_Callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+	void glDriver::glDebugMessage_Callback(
+		GLenum source,
+		GLenum type,
+		GLuint id,
+		GLenum severity,
+		GLsizei length,
+		const GLchar* message,
+		const void* userParam
+	)
 	{
-		Logger::info(LogLevel::low, "Error GL callback: %s type = 0x%x, severity = 0x%x, message = %s",
-			(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-			type, severity, message);
+		Logger::info(
+			LogLevel::low,
+			"Error GL callback: {} type = 0x{:x}, severity = 0x{:x}, message = {}",
+			type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "",
+			type,
+			severity,
+			message
+		);
 	}
 
 	void glDriver::glfwErrorCallback(int, const char* err_str)
 	{
-		Logger::error("GLFW Error: %s", err_str);
+		Logger::error("GLFW Error: {}", err_str);
 	}
 
 	void glDriver::glfwWindowSizeCallback(GLFWwindow* p_glfw_window, int width, int height) {
@@ -97,7 +110,7 @@ namespace Phoenix {
 		if (GLDRV->m_demo.m_debug && !(ImGui::GetIO().WantCaptureMouse)) {
 			if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
 				GLDRV->calcMousePos(GLDRV->m_mouse_lastxpos, GLDRV->m_mouse_lastypos);
-				Logger::sendEditor("Mouse pos [%.4f, %.4f]", GLDRV->m_mouseX, GLDRV->m_mouseY);
+				Logger::sendEditor("Mouse pos [{:.4f}, {:.4f}]", GLDRV->m_mouseX, GLDRV->m_mouseY);
 			}
 		}
 	}
@@ -126,7 +139,7 @@ namespace Phoenix {
 					demo.rewindDemo();
 					break;
 				case KEY_TIME:
-					Logger::info(LogLevel::high, "Demo time: %.4f", demo.m_demoRunTime);
+					Logger::info(LogLevel::high, "Demo time: {:.4f}", demo.m_demoRunTime);
 					break;
 				case KEY_PLAY_PAUSE:
 					if (demo.m_status == DemoStatus::PLAY)
@@ -563,7 +576,10 @@ namespace Phoenix {
 		{
 			// Clear Fbo's, if there is any
 			if (m_demo.m_efxBloomFbo.fbo.size() > 0) {
-				Logger::info(LogLevel::low, "Ooops! we need to regenerate the Bloom efx FBO's! clearing efx FBO's first!");
+				Logger::info(
+					LogLevel::low,
+					"Ooops! we need to regenerate the Bloom efx FBO's! clearing efx FBO's first!"
+				);
 				m_demo.m_efxBloomFbo.clearFbos();
 			}
 
@@ -577,10 +593,19 @@ namespace Phoenix {
 						
 			int res = 0;
 			for (int i = 0; i < EFXBLOOM_FBO_BUFFERS; i++) {
-				if (m_demo.m_efxBloomFbo.addFbo(bloomFbo) >= 0)
-					Logger::info(LogLevel::low, "EfxBloom Fbo %i uploaded: width: %.0f, height: %.0f, format: %s", i, bloomFbo.width, bloomFbo.height, bloomFbo.format.c_str());
-				else
-					Logger::error("Error in efxBloom Fbo definition: m_efxBloomFbo number %i", i);
+				if (m_demo.m_efxBloomFbo.addFbo(bloomFbo) >= 0) {
+					Logger::info(
+						LogLevel::low,
+						"EfxBloom Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}",
+						i,
+						bloomFbo.width,
+						bloomFbo.height,
+						bloomFbo.format
+					);
+				}
+				else {
+					Logger::error("Error in efxBloom Fbo definition: m_efxBloomFbo number {}", i);
+				}
 			}
 
 		}
@@ -604,10 +629,19 @@ namespace Phoenix {
 
 			int res = 0;
 			for (int i = 0; i < EFXACCUM_FBO_BUFFERS; i++) {
-				if (m_demo.m_efxAccumFbo.addFbo(accumFbo) >= 0)
-					Logger::info(LogLevel::low, "EfxAccum Fbo %i uploaded: width: %.0f, height: %.0f, format: %s", i, accumFbo.width, accumFbo.height, accumFbo.format.c_str());
-				else
-					Logger::error("Error in efxAccum Fbo definition: m_efxAccumFbo number %i", i);
+				if (m_demo.m_efxAccumFbo.addFbo(accumFbo) >= 0) {
+					Logger::info(
+						LogLevel::low,
+						"EfxAccum Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}",
+						i,
+						accumFbo.width,
+						accumFbo.height,
+						accumFbo.format
+					);
+				}
+				else {
+					Logger::error("Error in efxAccum Fbo definition: m_efxAccumFbo number {}", i);
+				}
 			}
 
 		}
@@ -626,10 +660,23 @@ namespace Phoenix {
 				fboConfig[i].height = static_cast<float>(config.framebuffer_height) / static_cast<float>(fboConfig[i].ratio);
 			}
 			
-			if (m_demo.m_fboManager.addFbo(fboConfig[i]) >= 0)
-				Logger::info(LogLevel::low, "Fbo %i uploaded: width: %.0f, height: %.0f, format: %s", i, fboConfig[i].width, fboConfig[i].height, fboConfig[i].format.c_str());
-			else
-				Logger::error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, fboConfig[i].format.c_str());
+			if (m_demo.m_fboManager.addFbo(fboConfig[i]) >= 0) {
+				Logger::info(
+					LogLevel::low,
+					"Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}",
+					i,
+					fboConfig[i].width,
+					fboConfig[i].height,
+					fboConfig[i].format
+				);
+			}
+			else {
+				Logger::error(
+					"Error in FBO definition: FBO number {} has a non recongised format: '{}', please check 'graphics.spo' file.",
+					i,
+					fboConfig[i].format
+				);
+			}
 		}
 
 	}

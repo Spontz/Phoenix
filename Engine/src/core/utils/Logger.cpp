@@ -38,52 +38,35 @@ namespace Phoenix {
 			kLogLevel = level;
 	}
 
-	void Logger::info(LogLevel level, std::string_view Message, ...) {
-		if (DEMO->m_debug && kLogLevel >= level) {
+	void Logger::info(LogLevel level, const std::string_view Message)
+	{
+		if (!DEMO->m_debug || kLogLevel < level)
+			return;
 
-			// Get the message
-			va_list argptr;
-			va_start(argptr, Message);
-			const auto iLen = vsnprintf(NULL, 0, Message.data(), argptr) + 1;
-			auto pszText = new char[iLen];
-			vsnprintf(pszText, iLen, Message.data(), argptr);
-			va_end(argptr);
+		// Get the time
+		const std::time_t t = std::time(nullptr);
+		auto timeinfo = localtime(&t);
 
-			// Get the time
-			const std::time_t t = std::time(nullptr);
-			auto timeinfo = localtime(&t);
+		std::stringstream ss;
+		for (uint32_t i = 0; i < kIndent; ++i)
+			ss << "  ";
+		ss << "Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << Message << std::endl;
+		const auto strOutputString = ss.str();
 
-			std::stringstream ss;
-			for (uint32_t i = 0; i < kIndent; ++i)
-				ss << "  ";
-			ss << "Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << pszText << std::endl;
-			const auto strOutputString = ss.str();
+		// Output to file
+		kOutputStream << strOutputString;
 
-			delete[] pszText;
-
-			// Output to file
-			kOutputStream << strOutputString;
-
-			// Output to Visual Studio
+		// Output to Visual Studio
 #if defined(_DEBUG) && defined(WIN32)
-			if (level <= LogLevel::high)
-				OutputDebugStringA(strOutputString.c_str());
+		if (level <= LogLevel::high)
+			OutputDebugStringA(strOutputString.c_str());
 #endif
-		}
 	}
 
-	void Logger::sendEditor(std::string_view Message, ...) {
+	void Logger::sendEditor(const std::string_view Message) {
 		// We send the message only if we are in debug mode and slave mode
 		if (!DEMO->m_debug || !DEMO->m_slaveMode)
 			return;
-
-		// Get the message
-		va_list argptr;
-		va_start(argptr, Message);
-		const auto iLen = vsnprintf(NULL, 0, Message.data(), argptr) + 1;
-		auto pszText = new char[iLen];
-		vsnprintf(pszText, iLen, Message.data(), argptr);
-		va_end(argptr);
 
 		// Get the time
 		const std::time_t t = std::time(nullptr);
@@ -92,10 +75,8 @@ namespace Phoenix {
 		std::stringstream ss;
 		for (uint32_t i = 0; i < kIndent; ++i)
 			ss << "  ";
-		ss << "INFO::Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << pszText << std::endl;
+		ss << "INFO::Info [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << Message << std::endl;
 		const auto strOutputString = ss.str();
-
-		delete[] pszText;
 
 		// Output to editor
 		NetDriver::getInstance().sendMessage(strOutputString);
@@ -106,17 +87,9 @@ namespace Phoenix {
 #endif
 	}
 
-	void Logger::error(std::string_view Message, ...) {
+	void Logger::error(const std::string_view Message) {
 		if (!DEMO->m_debug)
 			return;
-
-		// Get the message
-		va_list argptr;
-		va_start(argptr, Message);
-		const auto iLen = vsnprintf(NULL, 0, Message.data(), argptr) + 1;
-		auto pszText = new char[iLen];
-		vsnprintf(pszText, iLen, Message.data(), argptr);
-		va_end(argptr);
 
 		// Get the time
 		const std::time_t t = std::time(nullptr);
@@ -125,10 +98,8 @@ namespace Phoenix {
 		std::stringstream ss;
 		for (uint32_t i = 0; i < kIndent; ++i)
 			ss << "  ";
-		ss << "Error [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << pszText << std::endl;
+		ss << "Error [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << Message << std::endl;
 		const auto strOutputString = ss.str();
-
-		delete[] pszText;
 
 		// Output to file
 		kOutputStream << strOutputString;

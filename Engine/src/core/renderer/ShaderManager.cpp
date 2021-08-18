@@ -56,16 +56,16 @@ namespace Phoenix {
 		if (loaded) {
 			Logger::info(
 				LogLevel::med,
-				"Shader loaded OK [id: %d, gl_id: %d] file: %s",
+				"Shader loaded OK [id: {}, gl_id: {}] file: {}",
 				shad_id,
 				spNewShader->getId(),
-				path.data()
+				path
 			);
 			return m_shader[shad_id];
 		}
 
 		else {
-			Logger::error("Could not load shader: %s", path.data());
+			Logger::error("Could not load shader: {}", path);
 			return nullptr;
 		}
 	}

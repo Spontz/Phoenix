@@ -42,7 +42,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if (param.size() != 4) {
-			Logger::error("DrawFbo [%s]: 4 params are needed: fbo to use and attachment, clear the screen buffer, clear depth buffer", identifier.c_str());
+			Logger::error("DrawFbo [{}]: 4 params are needed: fbo to use and attachment, clear the screen buffer, clear depth buffer", identifier);
 			return false;
 		}
 
@@ -56,14 +56,14 @@ namespace Phoenix {
 
 		// Check for the right parameter values
 		if (m_uFboNum >= FBO_BUFFERS) {
-			Logger::error("DrawFbo [%s]: Invalid texture fbo number: %i", identifier.c_str(), m_uFboNum);
+			Logger::error("DrawFbo [{}]: Invalid texture fbo number: {}", identifier, m_uFboNum);
 			return false;
 		}
 
 		m_pFbo = m_demo.m_fboManager.fbo[m_uFboNum];
 
 		if (m_uFboAttachment >= static_cast<uint32_t>(m_pFbo->numAttachments)) {
-			Logger::error("DrawFbo [%s]: Invalid texture fbo attachment: %i", identifier.c_str(), m_uFboAttachment);
+			Logger::error("DrawFbo [{}]: Invalid texture fbo attachment: {}", identifier, m_uFboAttachment);
 			return false;
 		}
 

@@ -77,7 +77,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size() != 1)) {
-			Logger::error("Camera FPS [%s]: 1 param needed (the camera mode has not been defined)", identifier.c_str());
+			Logger::error("Camera FPS [{}]: 1 param needed (the camera mode has not been defined)", identifier);
 			return false;
 		}
 
@@ -91,24 +91,24 @@ namespace Phoenix {
 			break;
 		case CameraMode::ONLY_SPLINE:
 			if (spline.size() == 0) {
-				Logger::error("Camera FPS [%s]: Spline mode: a spline file is needed (camera file)", identifier.c_str());
+				Logger::error("Camera FPS [{}]: Spline mode: a spline file is needed (camera file)", identifier);
 				return false;
 			}
 			break;
 		case CameraMode::ONLY_FORMULA:
 			if (strings.size() == 0) {
-				Logger::error("Camera FPS [%s]: Formula mode: strings are needed with the formulas", identifier.c_str());
+				Logger::error("Camera FPS [{}]: Formula mode: strings are needed with the formulas", identifier);
 				return false;
 			}
 			break;
 		case CameraMode::SPLINE_AND_FORMULA:
 			if ((spline.size() == 0) || (strings.size() == 0)) {
-				Logger::error("Camera FPS [%s]: Spline and Formula mode: spline and strings are needed", identifier.c_str());
+				Logger::error("Camera FPS [{}]: Spline and Formula mode: spline and strings are needed", identifier);
 				return false;
 			}
 			break;
 		default:
-			Logger::error("Camera FPS [%s]: Camera mode not supported", identifier.c_str());
+			Logger::error("Camera FPS [{}]: Camera mode not supported", identifier);
 			return false;
 			break;
 		}
@@ -116,7 +116,7 @@ namespace Phoenix {
 		// Load the camera splines (if any)
 		for (int i = 0; i < spline.size(); i++) {
 			if (spline[i]->load() == false) {
-				Logger::error("Camera FPS [%s]: Spline not loaded", identifier.c_str());
+				Logger::error("Camera FPS [{}]: Spline not loaded", identifier);
 				return false;
 			}
 		}

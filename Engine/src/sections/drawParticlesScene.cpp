@@ -61,7 +61,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if (strings.size() != 5) {
-			Logger::error("Draw Particles Scene [%s]: 5 strings needed (1 for shader file, 1 for 3D model, 3 for positioning)", identifier.c_str());
+			Logger::error("Draw Particles Scene [{}]: 5 strings needed (1 for shader file, 1 for 3D model, 3 for positioning)", identifier);
 			return false;
 		}
 
@@ -88,7 +88,7 @@ namespace Phoenix {
 		}
 
 		if (m_iNumParticles == 0) {
-			Logger::error("Draw Particles Scene [%s]: No vertex found in the model", identifier.c_str());
+			Logger::error("Draw Particles Scene [{}]: No vertex found in the model", identifier);
 			return false;
 		}
 		// Load the particles position

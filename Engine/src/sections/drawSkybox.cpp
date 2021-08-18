@@ -46,13 +46,13 @@ namespace Phoenix {
 	bool sDrawSkybox::load()
 	{
 		if ((param.size() != 2) || (strings.size() < 8)) {
-			Logger::error("DrawSkybox [%s]: 2 param and 8 strings needed: clear depth buffer, draw wireframe + 6 strings with skybox faces, 2 strings with rot and scale", identifier.c_str());
+			Logger::error("DrawSkybox [{}]: 2 param and 8 strings needed: clear depth buffer, draw wireframe + 6 strings with skybox faces, 2 strings with rot and scale", identifier);
 			return false;
 		}
 
 		// Check if skybox is present in resources
 		if (m_demo.m_pRes->m_spSkybox == nullptr || m_demo.m_pRes->m_spShdrSkybox == nullptr) {
-			Logger::error("DrawSkybox [%s]: Skybox model or shader has not been properly loaded in resources, please fix it!", identifier.c_str());
+			Logger::error("DrawSkybox [{}]: Skybox model or shader has not been properly loaded in resources, please fix it!", identifier);
 			return false;
 		}
 

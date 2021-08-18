@@ -177,7 +177,7 @@ namespace Phoenix {
 
 		f = fopen(filename.c_str(), "rt");
 		if (!f) {
-			Logger::error("Error loading spline file: %s", filename.c_str());
+			Logger::error("Error loading spline file: {}", filename);
 			return false;
 		}
 
@@ -197,14 +197,14 @@ namespace Phoenix {
 			chan = getFloatVector(line, new_key.cv, kszKeyFrameNumChannels);
 
 			if (chan == -1) {
-				Logger::error("Spline load error: too many floats in file: %s, line: '%s'", filename.c_str(), line);
+				Logger::error("Spline load error: too many floats in file: {}, line: '{}'", filename, line);
 				fclose(f);
 				return false;
 			}
 
 			if (channels == 0) {
 				if (chan == 0) {
-					Logger::error("Spline: incorrect format in %s", filename.c_str());
+					Logger::error("Spline: incorrect format in {}", filename);
 					fclose(f);
 					return false;
 				}
@@ -212,7 +212,7 @@ namespace Phoenix {
 			}
 			else {
 				if (channels != chan) {
-					Logger::error("Spline: incorrect channel in %s", filename.c_str());
+					Logger::error("Spline: incorrect channel in {}", filename);
 					fclose(f);
 					return false;
 				}

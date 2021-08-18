@@ -64,14 +64,14 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size() != 8)) {
-			Logger::error("Light [%s]: 8 params needed (light Number, link to camera position, shadowMapping, near&far planes, size, DebugDraw & DebugDraw size)", identifier.c_str());
+			Logger::error("Light [{}]: 8 params needed (light Number, link to camera position, shadowMapping, near&far planes, size, DebugDraw & DebugDraw size)", identifier);
 			return false;
 		}
 
 		// Load the parameters
 		m_iLightNum = (int)param[0];
 		if (m_iLightNum < 0 || m_iLightNum >= m_demo.m_lightManager.light.size()) {
-			Logger::error("Light: The light number is not supported by the engine. Max Lights: %d", (m_demo.m_lightManager.light.size() - 1));
+			Logger::error("Light: The light number is not supported by the engine. Max Lights: {}", (m_demo.m_lightManager.light.size() - 1));
 			return false;
 		}
 

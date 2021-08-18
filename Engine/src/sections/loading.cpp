@@ -44,7 +44,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size() != 3) || (strings.size() != 3)) {
-			Logger::error("Loading [%s]: 3 strings and 3 params needed. Using default values.", identifier.c_str());
+			Logger::error("Loading [{}]: 3 strings and 3 params needed. Using default values.", identifier);
 			m_bDefaultLoader = true;
 		}
 		else {
@@ -70,7 +70,7 @@ namespace Phoenix {
 		}
 
 		if (m_pTexBar == nullptr || m_pTexBack == nullptr || m_pTexFront == nullptr) {
-			Logger::error("Loading [%s]: Could not load some of the loading textures", identifier.c_str());
+			Logger::error("Loading [{}]: Could not load some of the loading textures", identifier);
 		}
 
 		return true;

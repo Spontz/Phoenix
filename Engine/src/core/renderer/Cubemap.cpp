@@ -71,7 +71,7 @@ namespace Phoenix {
 			}
 
 			else {
-				Logger::error("Failed loading cubemap from file: %s", faces_file_name[i].c_str());
+				Logger::error("Failed loading cubemap from file: {}", faces_file_name[i]);
 				is_loaded = false;
 			}
 			mem += (float)(Width * Height * 3) / 1048576.0f;		// Calculate the texture mem (in mb)
@@ -81,7 +81,7 @@ namespace Phoenix {
 		for (unsigned int i = 0; i < faces_file_name.size(); i++)
 		{
 			if ((width[0] != width[i]) || (height[0] != height[i])) {
-				Logger::error("The cubemap image %s has a different size from the first one. Please check that all cubemap images have same size", faces_file_name[i].c_str());
+				Logger::error("The cubemap image {} has a different size from the first one. Please check that all cubemap images have same size", faces_file_name[i]);
 				is_loaded = false;
 			}
 		}

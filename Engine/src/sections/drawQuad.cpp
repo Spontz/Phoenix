@@ -42,7 +42,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size()) != 2 || (strings.size() != 1)) {
-			Logger::error("DrawQuad [%s]: 2 params are needed (Clear the screen buffer & clear depth buffer), and the shader file", identifier.c_str());
+			Logger::error("DrawQuad [{}]: 2 params are needed (Clear the screen buffer & clear depth buffer), and the shader file", identifier);
 			return false;
 		}
 

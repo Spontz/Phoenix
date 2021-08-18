@@ -59,7 +59,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size() != 1) || (strings.size() < 4)) {
-			Logger::error("Draw Particles [%s]: 1 param (Particles number) and 4 strings needed (1 for shader files and 3 for positioning)", identifier.c_str());
+			Logger::error("Draw Particles [{}]: 1 param (Particles number) and 4 strings needed (1 for shader files and 3 for positioning)", identifier);
 			return false;
 		}
 

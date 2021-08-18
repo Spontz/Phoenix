@@ -86,10 +86,10 @@ namespace Phoenix {
 			fbo.push_back(new_fbo);
 			mem += (float)(new_fbo->width * new_fbo->height * components) / 1048576.0f;		// increase the texture mem
 			fbo_id = (int)fbo.size() - 1;
-			Logger::info(LogLevel::med, "Fbo Color %d loaded OK. Overall fbo Memory: %.3fMb", fbo_id, mem);
+			Logger::info(LogLevel::med, "Fbo Color {} loaded OK. Overall fbo Memory: {:.3f}Mb", fbo_id, mem);
 		}
 		else {
-			Logger::error("Could not load fbo with the current format: Width: %d, Height: %d, iformat: %d, format: %d, type: %d", cfg.width, cfg.height, iformat, format, type);
+			Logger::error("Could not load fbo with the current format: Width: {}, Height: {}, iformat: {}, format: {}, type: {}", cfg.width, cfg.height, iformat, format, type);
 			return -1;
 		}
 		return fbo_id;

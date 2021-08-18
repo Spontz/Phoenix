@@ -23,10 +23,10 @@ namespace Phoenix {
 
 		if (vars.size() != 3) {
 			Logger::error(
-				"Error reading Shader Variable [section: %s], format is: 'uniform <var_type> "
-				"<var_name> <var_value>', but the string was: 'uniform %s'",
-				my_section->type_str.c_str(),
-				StringVar.data()
+				"Error reading Shader Variable [section: {}], format is: 'uniform <var_type> "
+				"<var_name> <var_value>', but the string was: 'uniform {}'",
+				my_section->type_str,
+				StringVar
 			);
 			return false;
 		}
@@ -37,13 +37,13 @@ namespace Phoenix {
 
 		Logger::info(
 			LogLevel::med,
-			"Shader Variable read [section: %s, shader gl_id: %d]: type [%s], name [%s], "
-			"value [%s]",
-			my_section->type_str.c_str(),
+			"Shader Variable read [section: {}, shader gl_id: {}]: type [{}], name [{}], "
+			"value [{}]",
+			my_section->type_str,
 			my_shader->getId(),
-			var_type.c_str(),
-			var_name.c_str(),
-			var_value.c_str()
+			var_type,
+			var_name,
+			var_value
 		);
 
 
@@ -151,10 +151,11 @@ namespace Phoenix {
 
 				if (fboNum<0 || fboNum>(FBO_BUFFERS - 1)) {
 					Logger::error(
-						"Section %s: sampler2D fbo not correct, it should be 'fboX', where X=>0 and X<=%d, you "
-						"choose: %s",
-						my_section->identifier.c_str(), (FBO_BUFFERS - 1),
-						var_value.c_str()
+						"Section {}: sampler2D fbo not correct, it should be 'fboX', where X=>0 and X<={}, you "
+						"choose: {}",
+						my_section->identifier,
+						(FBO_BUFFERS - 1),
+						var_value
 					);
 					return false;
 				}

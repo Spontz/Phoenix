@@ -80,7 +80,7 @@ namespace Phoenix {
 	bool sDrawSceneMatrixInstanced::load()
 	{
 		if ((param.size() != 6) || (strings.size() < 7)) {
-			Logger::error("DrawSceneMatrix [%s]: 6 param (do depth buffer clearing, disbale depth test, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier.c_str());
+			Logger::error("DrawSceneMatrix [{}]: 6 param (do depth buffer clearing, disbale depth test, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier);
 			return false;
 		}
 

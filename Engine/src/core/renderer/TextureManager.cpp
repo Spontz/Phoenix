@@ -37,10 +37,10 @@ namespace Phoenix {
 				texture.push_back(new_tex);
 				mem += new_tex->mem;
 				p_tex = new_tex;
-				Logger::info(LogLevel::med, "Texture %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path.data(), texture.size() - 1, mem);
+				Logger::info(LogLevel::med, "Texture {} [id: {}] loaded OK. Overall texture Memory: {:.3f}Mb", path, texture.size() - 1, mem);
 			}
 			else {
-				Logger::error("Could not load texture: %s", path.data());
+				Logger::error("Could not load texture: {}", path);
 			}
 
 		}
@@ -50,10 +50,10 @@ namespace Phoenix {
 				if (p_tex->load(path, flip)) {
 					p_tex->type = type;
 					mem += p_tex->mem;
-					Logger::info(LogLevel::med, "Texture %s [id: %d] force reload OK. Overall texture Memory: %.3fMb", path.data(), i, mem);
+					Logger::info(LogLevel::med, "Texture {} [id: {}] force reload OK. Overall texture Memory: {:.3f}Mb", path, i, mem);
 				}
 				else
-					Logger::error("Could not load texture: %s", path.data());
+					Logger::error("Could not load texture: {}", path);
 			}
 		}
 
@@ -69,7 +69,7 @@ namespace Phoenix {
 			texture.push_back(new_tex);
 			mem += new_tex->mem;
 			p_tex = new_tex;
-			Logger::info(LogLevel::med, "Texture embedded [id: %d] loaded OK. Overall texture Memory: %.3fMb", texture.size() - 1, mem);
+			Logger::info(LogLevel::med, "Texture embedded [id: {}] loaded OK. Overall texture Memory: {:.3f}Mb", texture.size() - 1, mem);
 		}
 		else {
 			Logger::error("Could not load embedded texture");
@@ -99,11 +99,11 @@ namespace Phoenix {
 				cubemap.push_back(new_cubemap);
 				p_cubemap = new_cubemap;
 				mem += new_cubemap->mem;
-				Logger::info(LogLevel::med, "Cubemap %s [id: %d] loaded OK. Overall texture Memory: %.3fMb", path[0].c_str(), cubemap.size() - 1, mem);
+				Logger::info(LogLevel::med, "Cubemap {} [id: {}] loaded OK. Overall texture Memory: {:.3f}Mb", path[0], cubemap.size() - 1, mem);
 			}
 			else {
 				for (i = 0; i < path.size(); i++)
-					Logger::error("Could not load cubemap, check these files: %s", path[i].c_str());
+					Logger::error("Could not load cubemap, check these files: {}", path[i]);
 			}
 		}
 		else { // If the cubemap is catched we should not do anything, unless we have been told to upload it again
@@ -111,11 +111,11 @@ namespace Phoenix {
 				mem -= p_cubemap->mem; // Decrease the overall texture memory
 				if (p_cubemap->load(path, flip)) {
 					mem += p_cubemap->mem;
-					Logger::info(LogLevel::med, "Cubemap %s[id:%d] force reload OK. Overall texture Memory : %.3fMb", path[0].c_str(), i, mem);
+					Logger::info(LogLevel::med, "Cubemap {} [id:{}] force reload OK. Overall texture Memory : {:.3f}Mb", path[0], i, mem);
 				}
 				else {
 					for (i = 0; i < path.size(); i++)
-						Logger::error("Could not load cubemap, check these files: %s", path[i].c_str());
+						Logger::error("Could not load cubemap, check these files: {}", path[i]);
 				}
 			}
 		}

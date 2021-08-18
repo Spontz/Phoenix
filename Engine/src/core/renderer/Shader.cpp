@@ -107,7 +107,7 @@ namespace Phoenix {
 			const auto begin = pos + typeToken.length() + 1;
 			const auto type = shaderSource.substr(begin, eol - begin);
 			if (getShaderTypeFromString(type) == 0)
-				Logger::error("Invalid shader type specified: %s", type.data());
+				Logger::error("Invalid shader type specified: {}", type);
 
 			// Start of shader code after shader type declaration line
 			const auto nextLinePos = shaderSource.find_first_not_of("\r\n", eol);
@@ -139,11 +139,11 @@ namespace Phoenix {
 				in.close();
 			}
 			else {
-				Logger::error("Could not read file \"%s\".", URI.data());
+				Logger::error("Could not read file \"{}\".", URI);
 			}
 		}
 		else {
-			Logger::error("Could not open file \"%s\".", URI.data());
+			Logger::error("Could not open file \"{}\".", URI);
 		}
 
 		return result;
@@ -256,9 +256,9 @@ namespace Phoenix {
 		if (val == -1)
 			Logger::info(
 				LogLevel::med,
-				"Warning: Shader uniform variable '%s' not found in shader '%s'",
-				name.data(),
-				m_URI.c_str()
+				"Warning: Shader uniform variable '{}' not found in shader '{}'",
+				name,
+				m_URI
 			);
 		return val;
 	}
@@ -302,9 +302,9 @@ namespace Phoenix {
 				glDeleteShader(shader);
 
 				Logger::error(
-					"Shader Compile (%s - %s) log: %s",
-					getShaderStringFromType(type).data(),
-					m_URI.c_str(),
+					"Shader Compile ({} - {}) log: {}",
+					getShaderStringFromType(type),
+					m_URI,
 					infoLog
 				);
 				delete[] infoLog;
@@ -353,7 +353,7 @@ namespace Phoenix {
 				glDeleteShader(shaderID);
 
 
-			Logger::error("Shader Linking: file %s, log: %s", m_URI.c_str(), infoLog);
+			Logger::error("Shader Linking: file {}, log: {}", m_URI, infoLog);
 			delete[] infoLog;
 			return false;
 		}

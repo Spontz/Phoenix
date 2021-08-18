@@ -49,11 +49,11 @@ namespace Phoenix {
 
 		// Check Color attachments
 		if (numAttachments <= 0) { // TODO: This validation is nonsense
-			Logger::error("Fbo::upload: Requested %d attachments, but should be at least 1", numAttachments);
+			Logger::error("Fbo::upload: Requested {} attachments, but should be at least 1", numAttachments);
 			numAttachments = 1;
 		}
 		if (numAttachments > GLDRV_MAX_COLOR_ATTACHMENTS) {
-			Logger::error("Fbo::upload: MAX number of attachments reached. Requested %d attachments, but max attachments are: %d", numAttachments, GLDRV_MAX_COLOR_ATTACHMENTS);
+			Logger::error("Fbo::upload: MAX number of attachments reached. Requested {} attachments, but max attachments are: {}", numAttachments, GLDRV_MAX_COLOR_ATTACHMENTS);
 			numAttachments = GLDRV_MAX_COLOR_ATTACHMENTS;
 		}
 
@@ -116,10 +116,10 @@ namespace Phoenix {
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			switch (status) {
 			case GL_FRAMEBUFFER_UNSUPPORTED:
-				Logger::error("Fbo::upload: Error uploading %s: glCheckFramebufferStatus returned GL_FRAMEBUFFER_UNSUPPORTED. Choose other format, this is not supported in the current system.", engineFormat.c_str());
+				Logger::error("Fbo::upload: Error uploading {}: glCheckFramebufferStatus returned GL_FRAMEBUFFER_UNSUPPORTED. Choose other format, this is not supported in the current system.", engineFormat);
 				break;
 			default:
-				Logger::error("Fbo::upload: Error uploading %s: Invalid framebuffer status.", engineFormat.c_str());
+				Logger::error("Fbo::upload: Error uploading {}: Invalid framebuffer status.", engineFormat);
 				break;
 			}
 			return false;

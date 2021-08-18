@@ -104,7 +104,7 @@ namespace Phoenix {
 
 		m_pFormatContext = avformat_alloc_context();
 		if (!m_pFormatContext) {
-			Logger::error("%s: could not allocate memory for AVFormatContext.", __FILE__);
+			Logger::error("{}: could not allocate memory for AVFormatContext.", __FILE__);
 			return false;
 		}
 
@@ -113,20 +113,20 @@ namespace Phoenix {
 		if (m_bDebug)
 			Logger::info(
 				LogLevel::low,
-				"%s: Opening \"%s\" and loading format (container) header.",
+				"{}: Opening \"{}\" and loading format (container) header.",
 				__FILE__,
-				m_VideoSource.m_sPath.c_str()
+				m_VideoSource.m_sPath
 			);
 
 		if (avformat_open_input(&m_pFormatContext, m_VideoSource.m_sPath.c_str(), nullptr, nullptr) != 0) {
-			Logger::error("%s: Error opening \"%s\".", __FILE__, m_VideoSource.m_sPath.c_str());
+			Logger::error("{}: Error opening \"{}\".", __FILE__, m_VideoSource.m_sPath);
 			return false;
 		}
 
 		// Show info
 		Logger::info(
 			LogLevel::low,
-			"%s: %s, %dms, %dbits/s.",
+			"{}: {}, {}ms, {}bits/s.",
 			__FILE__,
 			m_pFormatContext->iformat->name,
 			m_pFormatContext->duration / (AV_TIME_BASE / 1000),
@@ -136,9 +136,9 @@ namespace Phoenix {
 		// Read Packets from AVFormatContext to get stream information
 		// avformat_find_streainfo populates pFormatContext_->streams (of size equals to pFormatContext->nb_streams)
 		if (m_bDebug)
-			Logger::info(LogLevel::low, "%s: Finding stream info from format", __FILE__);
+			Logger::info(LogLevel::low, "{}: Finding stream info from format", __FILE__);
 		if (avformat_find_stream_info(m_pFormatContext, nullptr) < 0) {
-			Logger::error("%s: Could not get the stream info.", __FILE__);
+			Logger::error("{}: Could not get the stream info.", __FILE__);
 			return false;
 		}
 
@@ -149,37 +149,37 @@ namespace Phoenix {
 			if (m_bDebug) {
 				Logger::info(
 					LogLevel::low,
-					"%s: AVStream->time_base before open coded %d/%d",
+					"{}: AVStream->time_base before open coded {}/{}",
 					__FILE__,
 					pAVStream->time_base.num,
 					pAVStream->time_base.den
 				);
 				Logger::info(
 					LogLevel::low,
-					"%s: AVStream->r_frame_rate before open coded %d/%d",
+					"{}: AVStream->r_frame_rate before open coded {}/{}",
 					__FILE__,
 					pAVStream->r_frame_rate.num,
 					pAVStream->r_frame_rate.den
 				);
 				Logger::info(
 					LogLevel::low,
-					"%s: AVStream->start_time %lld",
+					"{}: AVStream->start_time {:lld}",
 					__FILE__,
 					pAVStream->start_time
 				);
 				Logger::info(
 					LogLevel::low,
-					"%s: AVStream->duration %lld",
+					"{}: AVStream->duration {:lld}",
 					__FILE__,
 					pAVStream->duration
 				);
-				Logger::info(LogLevel::low, "%s: finding the proper decoder (CODEC)", __FILE__);
+				Logger::info(LogLevel::low, "{}: finding the proper decoder (CODEC)", __FILE__);
 			}
 
 			// Find AVCodec given an AVCodecID
 			const auto pAVCodec = avcodec_find_decoder(pAVCodecParameters->codec_id);
 			if (pAVCodec == nullptr) {
-				Logger::error("%s: Unsupported codec.", __FILE__);
+				Logger::error("{}: Unsupported codec.", __FILE__);
 				return false;
 			}
 
@@ -188,10 +188,10 @@ namespace Phoenix {
 				// Show video stream info
 				Logger::info(
 					LogLevel::low,
-					"%s: #%d Video stream[CodecID:%d], %s, %d channels, %dx%d, %dhz, %dbps.",
+					"{}: {} Video stream[CodecID:{}], {}, {} channels, {}x{}, {}hz, {}bps.",
 					__FILE__,
 					i,
-					pAVCodec->id,
+					avcodec_get_name(pAVCodec->id),
 					pAVCodec->name,
 					pAVCodecParameters->channels,
 					pAVCodecParameters->width,
@@ -205,7 +205,7 @@ namespace Phoenix {
 					if (videoSource.m_iVideoStreamIndex == -1 || videoSource.m_iVideoStreamIndex == i) {
 						Logger::info(
 							LogLevel::low,
-							"%s: Using video stream #%d.",
+							"{}: Using video stream #{}.",
 							__FILE__,
 							i
 						);
@@ -225,11 +225,11 @@ namespace Phoenix {
 				// Show extra stream info
 				Logger::info(
 					LogLevel::low,
-					"%s: #%d %s stream[CodecID:%d], %s, %d channels, %dhz, %d, %dbps.",
+					"{}: #{} {} stream[CodecID:{}], {}, {} channels, {}hz, {}, {}bps.",
 					__FILE__,
 					i,
 					pAVCodecParameters->codec_type == AVMEDIA_TYPE_AUDIO ? "Audio" : "Extra",
-					pAVCodec->id,
+					avcodec_get_name(pAVCodec->id),
 					pAVCodec->name,
 					pAVCodecParameters->channels,
 					pAVCodecParameters->sample_rate,
@@ -242,32 +242,32 @@ namespace Phoenix {
 
 		m_pCodecContext = avcodec_alloc_context3(m_pAVCodec);
 		if (!m_pCodecContext) {
-			Logger::error("%s: failed to allocated memory for AVCodecContext", __FILE__);
+			Logger::error("{}: failed to allocated memory for AVCodecContext", __FILE__);
 			return false;
 		}
 		m_pCodecContext->thread_count = m_VideoSource.m_uiDecodingThreadCount;
 
 		// Fill the codec context based on the values from the supplied codec parameters
 		if (avcodec_parameters_to_context(m_pCodecContext, m_pAVCodecParameters) < 0) {
-			Logger::error("%s: failed to copy codec params to codec context", __FILE__);
+			Logger::error("{}: failed to copy codec params to codec context", __FILE__);
 			return false;
 		}
 
 		// Initialize the AVCodecContext to use the given AVCodec.
 		if (avcodec_open2(m_pCodecContext, m_pAVCodec, nullptr) < 0) {
-			Logger::error("%s: failed to open codec through avcodec_open2", __FILE__);
+			Logger::error("{}: failed to open codec through avcodec_open2", __FILE__);
 			return false;
 		}
 
 		m_pFrame = av_frame_alloc();
 		if (!m_pFrame) {
-			Logger::error("%s: failed to allocated memory for m_pFrame", __FILE__);
+			Logger::error("{}: failed to allocated memory for m_pFrame", __FILE__);
 			return false;
 		}
 
 		m_pGLFrame = av_frame_alloc();
 		if (!m_pGLFrame) {
-			Logger::error("%s: failed to allocated memory for m_pGLFrame", __FILE__);
+			Logger::error("{}: failed to allocated memory for m_pGLFrame", __FILE__);
 			return false;
 		}
 
@@ -308,13 +308,13 @@ namespace Phoenix {
 		);
 
 		if (!m_pConvertContext) {
-			Logger::error("%s: Could not create the convert context for OpenGL", __FILE__);
+			Logger::error("{}: Could not create the convert context for OpenGL", __FILE__);
 			return false;
 		}
 
 		m_pAVPacket = av_packet_alloc();
 		if (!m_pAVPacket) {
-			Logger::error("%s: Video: failed to allocated memory for AVPacket", __FILE__);
+			Logger::error("{}: Video: failed to allocated memory for AVPacket", __FILE__);
 			return false;
 		}
 
@@ -362,9 +362,9 @@ namespace Phoenix {
 			) {
 			Logger::info(
 				LogLevel::high,
-				"%s: Seeking %s[stream %d] @ %.4fs [desynced by %.4fs]...",
+				"{}: Seeking {}[stream {}] @ {:.4f}s [desynced by {:.4f}s]...",
 				__FILE__,
-				m_VideoSource.m_sPath.c_str(),
+				m_VideoSource.m_sPath,
 				m_VideoSource.m_iVideoStreamIndex,
 				m_dTime,
 				m_dTime - m_dNextFrameTime
@@ -381,7 +381,7 @@ namespace Phoenix {
 		if (m_bDebug) {
 			Logger::info(
 				LogLevel::low,
-				"%s: Time: %.4fs, Next Frame time: %.4fs",
+				"{}: Time: {:.4f}s, Next Frame time: {.4f}s",
 				__FILE__,
 				m_dTime,
 				m_dNextFrameTime
@@ -396,7 +396,7 @@ namespace Phoenix {
 				// if it's the video stream
 				if (m_pAVPacket->stream_index == m_VideoSource.m_iVideoStreamIndex) {
 					if (decodePacket() < 0)
-						Logger::error("%s: Packet cannot be decoded", __FILE__);
+						Logger::error("{}: Packet cannot be decoded", __FILE__);
 				}
 			}
 			else {
@@ -448,7 +448,7 @@ namespace Phoenix {
 		) / 1000;
 
 		if (av_seek_frame(m_pFormatContext, m_VideoSource.m_iVideoStreamIndex, iFrameNumber, 0) < 0)
-			Logger::error("%s: Could not reach position: %.4fs, frame: %d", __FILE__, dSeconds, iFrameNumber);
+			Logger::error("{}: Could not reach position: {:.4f}s, frame: {}", __FILE__, dSeconds, iFrameNumber);
 
 		return iFrameNumber;
 	}
@@ -459,7 +459,7 @@ namespace Phoenix {
 		auto iResponse = avcodec_send_packet(m_pCodecContext, m_pAVPacket);
 
 		if (iResponse < 0) {
-			Logger::error("%s: decodePacket Error while sending a packet to the decoder", __FILE__); // : %s", av_err2str(response));
+			Logger::error("{}: decodePacket Error while sending a packet to the decoder", __FILE__); // : %s", av_err2str(response));
 			return iResponse;
 		}
 
@@ -470,7 +470,7 @@ namespace Phoenix {
 			if (iResponse == AVERROR(EAGAIN) || iResponse == AVERROR_EOF)
 				break;
 			else if (iResponse < 0) {
-				Logger::error("%s: Error while receiving a frame from the decoder", __FILE__); // : %s", av_err2str(response));
+				Logger::error("{}: Error while receiving a frame from the decoder", __FILE__); // : %s", av_err2str(response));
 				return iResponse;
 			}
 
@@ -478,7 +478,7 @@ namespace Phoenix {
 				if (m_bDebug) {
 					Logger::info(
 						LogLevel::low,
-						"%s: Frame %d (type=%c, size=%d bytes) pts %d key_frame %d [DTS %d]",
+						"{}: Frame {} (type={}, size={} bytes) pts {} key_frame {} [DTS {}]",
 						__FILE__,
 						m_pCodecContext->frame_number,
 						av_get_picture_type_char(m_pFrame->pict_type),

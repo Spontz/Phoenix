@@ -45,7 +45,7 @@ namespace Phoenix {
 	bool sEfxMotionBlur::load()
 	{
 		if ((param.size()) != 2 || (strings.size() != 1)) {
-			Logger::error("EfxMotionBlur [%s]: 2 params are needed (Fbo to use and FPS Scale), and 1 shader file (for Motionblur)", identifier.c_str());
+			Logger::error("EfxMotionBlur [{}]: 2 params are needed (Fbo to use and FPS Scale), and 1 shader file (for Motionblur)", identifier);
 			return false;
 		}
 

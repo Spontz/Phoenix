@@ -42,7 +42,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if (strings.size() < 1) {
-			Logger::error("EfxFader [%s]: 1 shader file required", identifier.c_str());
+			Logger::error("EfxFader [{}]: 1 shader file required", identifier);
 			return false;
 		}
 

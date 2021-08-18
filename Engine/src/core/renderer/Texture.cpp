@@ -55,7 +55,7 @@ namespace Phoenix {
 			uploadtoGPU(data);
 		}
 		else {
-			Logger::error("Failed loading texture from file: %s", filename.c_str());
+			Logger::error("Failed loading texture from file: {}", filename);
 			is_loaded = false;
 		}
 

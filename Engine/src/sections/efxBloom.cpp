@@ -49,7 +49,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size()) != 3 || (strings.size() != 3)) {
-			Logger::error("EfxBloom [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 3 strings (One with the formula of the Blur Amount + 2 with the Blur and Bloom shaders)", identifier.c_str());
+			Logger::error("EfxBloom [{}]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 3 strings (One with the formula of the Blur Amount + 2 with the Blur and Bloom shaders)", identifier);
 			return false;
 		}
 
@@ -61,11 +61,11 @@ namespace Phoenix {
 
 		// Check if the fbo can be used for the effect
 		if (m_uiFboNum < 0 || m_uiFboNum >= m_demo.m_fboManager.fbo.size()) {
-			Logger::error("EfxBloom [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), m_uiFboNum, m_demo.m_fboManager.fbo.size() - 1);
+			Logger::error("EfxBloom [{}]: The fbo specified [{}] is not supported, should be between 0 and {}", identifier, m_uiFboNum, m_demo.m_fboManager.fbo.size() - 1);
 			return false;
 		}
 		if (m_demo.m_fboManager.fbo[m_uiFboNum]->numAttachments < 2) {
-			Logger::error("EfxBloom [%s]: The fbo specified [%d] has less than 2 attachments, so it cannot be used for bloom effect: Attahment 0 is the color image and Attachment 1 is the brights image", identifier.c_str(), m_uiFboNum);
+			Logger::error("EfxBloom [{}]: The fbo specified [{}] has less than 2 attachments, so it cannot be used for bloom effect: Attahment 0 is the color image and Attachment 1 is the brights image", identifier, m_uiFboNum);
 			return false;
 		}
 

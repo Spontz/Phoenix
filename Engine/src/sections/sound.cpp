@@ -51,9 +51,9 @@ namespace Phoenix {
 			return;
 
 		if (!BASS_ChannelStop(m_hMusicStream))
-			Logger::error("Sound [%s]: BASS_ChannelStop returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
+			Logger::error("Sound [{}]: BASS_ChannelStop returned error: %i", identifier, BASS_ErrorGetCode());
 		if (!BASS_StreamFree(m_hMusicStream))
-			Logger::error("Sound [%s]: Music couldnt be freed: %i", identifier.c_str(), BASS_ErrorGetCode());
+			Logger::error("Sound [{}]: Music couldnt be freed: %i", identifier, BASS_ErrorGetCode());
 	}
 
 	bool sSound::load() {
@@ -62,7 +62,7 @@ namespace Phoenix {
 		}
 
 		if (param.size() != 4 || strings.size() != 1) {
-			Logger::error("Sound [%s]: 4 params (Volume [0.0 - 1.0], BeatID, beatRatio and FadeOut) and 1 string needed (music path)", identifier.c_str());
+			Logger::error("Sound [{}]: 4 params (Volume [0.0 - 1.0], BeatID, beatRatio and FadeOut) and 1 string needed (music path)", identifier);
 			return false;
 		}
 
@@ -74,7 +74,7 @@ namespace Phoenix {
 
 		m_beatID = static_cast<int>(param[1]);
 		if (m_beatID < 0 || m_beatID >= MAX_BEATS) {
-			Logger::error("Sound [%s]: Beat ID %d not supported, please choose a range between 0 and %d", m_beatID, MAX_BEATS);
+			Logger::error("Sound [{}]: Beat ID {} not supported, please choose a range between 0 and {}", identifier, m_beatID, MAX_BEATS);
 			return false;
 		}
 
@@ -90,7 +90,7 @@ namespace Phoenix {
 		m_file = m_demo.m_dataFolder + strings[0];
 		m_hMusicStream = BASS_StreamCreateFile(FALSE, m_file.c_str(), 0, 0, BASS_STREAM_PRESCAN);
 		if (m_hMusicStream == 0) {
-			Logger::error("Sound [%s]: Cannot read file: %s - Error Code: %i", identifier.c_str(), m_file.c_str(), BASS_ErrorGetCode());
+			Logger::error("Sound [{}]: Cannot read file: {} - Error Code: {}", identifier, m_file, BASS_ErrorGetCode());
 			return false;
 		}
 		return true;
@@ -114,14 +114,14 @@ namespace Phoenix {
 		if (FALSE == BASS_ChannelSetPosition(m_hMusicStream, bytes, BASS_POS_BYTE)) { // seek there
 			BASS_err = BASS_ErrorGetCode();
 			if (BASS_err > 0 && BASS_err != BASS_ERROR_POSITION)
-				Logger::error("Sound [%s]: BASS_ChannelSetPosition returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
+				Logger::error("Sound [{}]: BASS_ChannelSetPosition returned error: {}", identifier, BASS_ErrorGetCode());
 		}
 
 		if (FALSE == BASS_Start())
-			Logger::error("Sound [%s]: BASS_Start returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
+			Logger::error("Sound [{}]: BASS_Start returned error: {}", identifier, BASS_ErrorGetCode());
 
 		if (FALSE == BASS_ChannelPlay(m_hMusicStream, FALSE))
-			Logger::error("Sound [%s]: BASS_ChannelPlay returned error: %i", identifier.c_str(), BASS_ErrorGetCode());
+			Logger::error("Sound [{}]: BASS_ChannelPlay returned error: {}", identifier, BASS_ErrorGetCode());
 
 		BASS_ChannelSetAttribute(m_hMusicStream, BASS_ATTRIB_VOL, m_fVolume);
 	}
@@ -144,7 +144,7 @@ namespace Phoenix {
 		if (-1 == BASS_ChannelGetData(m_hMusicStream, fft, BASS_DATA_FFT1024)) {	// get the FFT data
 			int BASS_err = BASS_ErrorGetCode();
 			if ((BASS_err > 0) && (BASS_err != BASS_ERROR_ENDED))
-				Logger::error("Sound [%s]: BASS_ChannelGetData returned error: %i", identifier.c_str(), BASS_err);
+				Logger::error("Sound [{}]: BASS_ChannelGetData returned error: {}", identifier.c_str(), BASS_err);
 		}
 
 		BASSDRV->addFFTdata(fft, BUFFER_SAMPLES);

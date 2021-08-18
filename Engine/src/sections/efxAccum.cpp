@@ -51,7 +51,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size()) != 3 || (strings.size() < 1)) {
-			Logger::error("EfxAccum [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 1 string (accum shader)", identifier.c_str());
+			Logger::error("EfxAccum [{}]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 1 string (accum shader)", identifier);
 			return false;
 		}
 
@@ -64,7 +64,7 @@ namespace Phoenix {
 
 		// Check if the fbo can be used for the effect
 		if (m_uiFboNum < 0 || m_uiFboNum >= m_demo.m_fboManager.fbo.size()) {
-			Logger::error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), m_uiFboNum, m_demo.m_fboManager.fbo.size() - 1);
+			Logger::error("EfxBlur [{}]: The fbo specified [{}] is not supported, should be between 0 and {}", identifier, m_uiFboNum, m_demo.m_fboManager.fbo.size() - 1);
 			return false;
 		}
 

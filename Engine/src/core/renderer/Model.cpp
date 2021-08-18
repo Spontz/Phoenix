@@ -109,7 +109,7 @@ namespace Phoenix {
 			m_animDuration = m_pScene->mAnimations[m_currentAnimation]->mDuration; // Load anim duration
 		}
 		else
-			Logger::error("The animation number [%i] is not available in the file [%s]", a, filename.c_str());
+			Logger::error("The animation number [{}] is not available in the file [{}]", a, filename);
 	}
 
 	void Model::setCamera(unsigned int c)
@@ -121,7 +121,7 @@ namespace Phoenix {
 		else {
 			useCamera = false;
 			m_currentCamera = 0;
-			Logger::error("The camera number [%i] is not available in the file [%s]", c, filename.c_str());
+			Logger::error("The camera number [{}] is not available in the file [{}]", c, filename);
 		}
 	}
 
@@ -166,13 +166,13 @@ namespace Phoenix {
 		// check for errors
 		if (!m_pScene || m_pScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !m_pScene->mRootNode) // if is Not Zero
 		{
-			Logger::error("Error loading file [%s]: %s", filepath.c_str(), m_Importer.GetErrorString());
+			Logger::error("Error loading file [{}]: {}", filepath, m_Importer.GetErrorString());
 			return false;
 		}
 		// retrieve the directory path of the filepath and the filename (without the data folder, because each loader adds the data folder)
 		directory = filepath.substr(0, filepath.find_last_of('/'));
 		filename = filepath.substr(filepath.find_last_of('/') + 1, filepath.length());
-		Logger::info(LogLevel::low, "Loading Model: %s", filename.c_str());
+		Logger::info(LogLevel::low, "Loading Model: {}", filename);
 
 		// Get transformation matrix for nodes (vertices relative to bones)
 		m_matGlobalInverseTransform = mat4_cast(m_pScene->mRootNode->mTransformation);
@@ -240,7 +240,7 @@ namespace Phoenix {
 			// the node object only contains indices to index the actual objects in the scene. 
 			// the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			Logger::info(LogLevel::low, "Reading node name: %s", node->mName.data);
+			Logger::info(LogLevel::low, "Reading node name: {}", node->mName.data);
 			meshes.push_back(processMesh(node->mName.data, mesh, scene));
 		}
 		// after we've processed all of the meshes (if any) we then recursively process each of the children nodes
@@ -257,7 +257,7 @@ namespace Phoenix {
 		std::vector<Vertex> vertices;
 		std::vector<unsigned int> indices;
 
-		Logger::info(LogLevel::low, "Loading mesh: %s", mesh->mName.C_Str());
+		Logger::info(LogLevel::low, "Loading mesh: {}", mesh->mName.C_Str());
 
 		if (mesh->HasNormals() == false)
 			Logger::error("The loaded mesh has no Normal info.");

@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 
 	// Check the data folder
 	if (!demo.checkDataFolder()) {
-		Phoenix::Logger::error(("Critical error: Cannot find data folder in: " + demo.m_dataFolder + ", exit!").c_str());
+		Phoenix::Logger::error("Critical error: Cannot find data folder in: {}, exit!", demo.m_dataFolder);
 		return EXIT_FAILURE;
 	}
 
