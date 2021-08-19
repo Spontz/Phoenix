@@ -48,7 +48,7 @@ namespace Phoenix {
 			return;
 		}
 		FT_Set_Pixel_Sizes(face, 0, size);
-		Logger::info(LogLevel::low, "Font %s loaded OK", font_path);
+		Logger::info(LogLevel::low, "Font {} loaded OK", font_path);
 
 		FT_GlyphSlot glyphSlot = face->glyph;
 

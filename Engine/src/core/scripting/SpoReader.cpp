@@ -244,7 +244,7 @@ namespace Phoenix {
 			const auto command = scriptCommandFound(s_line.first);
 			if (command == -1) {
 				Logger::error(
-					"'%s' is not a valid SPO script variable. Check file: {}, line: {}",
+					"'{}' is not a valid SPO script variable. Check file: {}, line: {}",
 					s_line.first,
 					m_filepath,
 					lineNum
@@ -466,7 +466,7 @@ namespace Phoenix {
 						Logger::info(LogLevel::low, "Section parameter: {} = {}", s_line.first, fval);
 					}
 					catch (...) {
-						Logger::error("Parameter not loaded in line: {} --> The parameter: %s with value [{}] could not be parsed", line, s_line.first, s_line.second);
+						Logger::error("Parameter not loaded in line: {} --> The parameter: {} with value [{}] could not be parsed", line, s_line.first, s_line.second);
 					}
 				}
 				break;

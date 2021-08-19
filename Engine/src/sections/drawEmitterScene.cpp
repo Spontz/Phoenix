@@ -148,7 +148,7 @@ namespace Phoenix {
 			return false;
 
 		m_uiNumMaxParticles = m_uiNumEmitters + static_cast<unsigned int>(static_cast<float>(m_uiNumEmitters) * m_fParticleLifeTime * (1.0f / m_fEmissionTime));
-		Logger::info(LogLevel::low, "Draw Emitter Scene [{}]: Num max of particles will be: %d", identifier, m_uiNumMaxParticles);
+		Logger::info(LogLevel::low, "Draw Emitter Scene [{}]: Num max of particles will be: {}", identifier, m_uiNumMaxParticles);
 
 		std::vector<Particle> Emitter;
 		Emitter.resize(m_uiNumEmitters);
