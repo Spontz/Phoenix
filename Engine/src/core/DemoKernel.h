@@ -23,8 +23,7 @@ namespace Phoenix { class DemoKernel; }
 #include "core/renderer/Camera.h"
 #include "core/renderer/CameraTypes.h"
 #include "core/renderer/Light.h"
-#include "core/utils/Logger.h"
-
+#include "core/utils/LoggerDeclarations.h"
 #include "core/resource/Resource.h"
 
 namespace Phoenix {
@@ -168,4 +167,7 @@ namespace Phoenix {
 		float m_fVar[MULTIPURPOSE_VARS]; // Multi-purpose variables, shared across sections
 		float m_fBeat[MAX_BEATS]; // intensity of the current music track
 	};
+
 }
+
+#include "core/utils/Logger.h"

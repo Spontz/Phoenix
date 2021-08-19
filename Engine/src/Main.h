@@ -22,5 +22,4 @@ static constexpr uint32_t MAX_BEATS = 5;
 static_assert(FBO_BUFFERS >= 25);
 
 #include "core/Demokernel.h"
-#include "core/utils/Logger.h"
 #include "core/resource/Resource.h"

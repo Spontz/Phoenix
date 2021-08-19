@@ -3,7 +3,7 @@
 
 #include "main.h"
 #include "core/renderer/Shader.h"
-#include "core/utils/logger.h"
+//#include "core/utils/LoggerDeclarations.h"
 
 namespace Phoenix {
 

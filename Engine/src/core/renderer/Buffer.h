@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/utils/logger.h"
+#include "core/utils/LoggerDeclarations.h"
 #include "SpzDeclare.h"
 
 #include <array>
