@@ -12,11 +12,12 @@ if (_cpp_latest_flag_supported)
 	add_compile_options("/std:c++latest")
 endif()
 
-include(CheckCCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("/std:c17" _c17_flag_supported)
-if (_c17_flag_supported)
-	add_compile_options("/std:c17")
-endif()
+# TODO/FIXME: For some reason, C++latest is not compatible with C17, so disabling this
+#include(CheckCCompilerFlag)
+#CHECK_CXX_COMPILER_FLAG("/std:c17" _c17_flag_supported)
+#if (_c17_flag_supported)
+#	add_compile_options("/std:c17")
+#endif()
 
 message("\n-- Building main project...")
 
