@@ -62,7 +62,7 @@ namespace Phoenix {
 		}
 
 		// Light values
-		for (int i = 0; i < DEMO->m_lightManager.light.size(); i++) {
+		for (size_t i = 0; i < DEMO->m_lightManager.light.size(); ++i) {
 			std::string lightNum = "light" + std::to_string(i);
 			SymbolTable.add_variable(lightNum + "_posX", DEMO->m_lightManager.light[i]->position.x);
 			SymbolTable.add_variable(lightNum + "_posY", DEMO->m_lightManager.light[i]->position.y);
@@ -162,7 +162,7 @@ namespace Phoenix {
 	{
 		Expression.register_symbol_table(SymbolTable);
 		if (!Parser.compile(expression, Expression)) {
-			Logger::error("Error in formula, please check expression: %s", expression.c_str());
+			Logger::error("Error in formula, please check expression: {}", expression);
 			return false;
 		}
 		return true;

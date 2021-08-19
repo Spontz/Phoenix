@@ -77,12 +77,12 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size() != 1)) {
-			Logger::error("Camera FPS [%s]: 1 param needed (the camera mode has not been defined)", this->identifier.c_str());
+			Logger::error("Camera FPS [{}]: 1 param needed (the camera mode has not been defined)", identifier);
 			return false;
 		}
 
 		// Load parameter: Camera mode
-		m_iCameraMode = static_cast<CameraMode>(this->param[0]);
+		m_iCameraMode = static_cast<CameraMode>(param[0]);
 
 		// Do validations
 		switch (m_iCameraMode)
@@ -91,32 +91,32 @@ namespace Phoenix {
 			break;
 		case CameraMode::ONLY_SPLINE:
 			if (spline.size() == 0) {
-				Logger::error("Camera FPS [%s]: Spline mode: a spline file is needed (camera file)", identifier.c_str());
+				Logger::error("Camera FPS [{}]: Spline mode: a spline file is needed (camera file)", identifier);
 				return false;
 			}
 			break;
 		case CameraMode::ONLY_FORMULA:
 			if (strings.size() == 0) {
-				Logger::error("Camera FPS [%s]: Formula mode: strings are needed with the formulas", identifier.c_str());
+				Logger::error("Camera FPS [{}]: Formula mode: strings are needed with the formulas", identifier);
 				return false;
 			}
 			break;
 		case CameraMode::SPLINE_AND_FORMULA:
 			if ((spline.size() == 0) || (strings.size() == 0)) {
-				Logger::error("Camera FPS [%s]: Spline and Formula mode: spline and strings are needed", identifier.c_str());
+				Logger::error("Camera FPS [{}]: Spline and Formula mode: spline and strings are needed", identifier);
 				return false;
 			}
 			break;
 		default:
-			Logger::error("Camera FPS [%s]: Camera mode not supported", identifier.c_str());
+			Logger::error("Camera FPS [{}]: Camera mode not supported", identifier);
 			return false;
 			break;
 		}
 
 		// Load the camera splines (if any)
 		for (int i = 0; i < spline.size(); i++) {
-			if (this->spline[i]->load() == false) {
-				Logger::error("Camera FPS [%s]: Spline not loaded", identifier.c_str());
+			if (spline[i]->load() == false) {
+				Logger::error("Camera FPS [{}]: Spline not loaded", identifier);
 				return false;
 			}
 		}
@@ -125,7 +125,7 @@ namespace Phoenix {
 		m_pExprCamera = new MathDriver(this);
 
 		for (int i = 0; i < strings.size(); i++) {
-			m_pExprCamera->expression += this->strings[i];
+			m_pExprCamera->expression += strings[i];
 		}
 
 		// Camera (spline) variables
@@ -188,7 +188,7 @@ namespace Phoenix {
 			break;
 		case CameraMode::ONLY_SPLINE:		// Only spline: Do not use formulas
 			// Calculate the motion step of the first spline and set it to "new_pos"
-			this->spline[0]->MotionCalcStep(new_pos, this->runTime);
+			spline[0]->MotionCalcStep(new_pos, runTime);
 
 			m_vCamFinalPos = glm::vec3(new_pos[0], new_pos[1], new_pos[2]);
 			m_vCamFinalUp = glm::vec3(new_pos[3], new_pos[4], new_pos[5]);
@@ -205,7 +205,7 @@ namespace Phoenix {
 			break;
 		case CameraMode::SPLINE_AND_FORMULA:// Spline and formula: Combine both
 			// Calculate the motion step of the first spline and set it to "new_pos"
-			this->spline[0]->MotionCalcStep(new_pos, this->runTime);
+			spline[0]->MotionCalcStep(new_pos, runTime);
 
 			m_vCamPos = glm::vec3(new_pos[0], new_pos[1], new_pos[2]);
 			m_vCamUp = glm::vec3(new_pos[3], new_pos[4], new_pos[5]);

@@ -46,7 +46,7 @@ namespace Phoenix {
 
         // constructor generates the shader on the fly
         ShaderVars(Section* pSection, SP_Shader const& spShader);
-        bool ReadString(const char* string_var); // Reads a string that contains vars and add it
+        bool ReadString(std::string_view stringVar); // Reads a string that contains vars and add it
         void setValues();
 
     private:

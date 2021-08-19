@@ -43,8 +43,8 @@ namespace Phoenix {
 	bool sLoading::load()
 	{
 		// script validation
-		if ((this->param.size() != 3) || (this->strings.size() != 3)) {
-			Logger::error("Loading [%s]: 3 strings and 3 params needed. Using default values.", this->identifier.c_str());
+		if ((param.size() != 3) || (strings.size() != 3)) {
+			Logger::error("Loading [{}]: 3 strings and 3 params needed. Using default values.", identifier);
 			m_bDefaultLoader = true;
 		}
 		else {
@@ -70,7 +70,7 @@ namespace Phoenix {
 		}
 
 		if (m_pTexBar == nullptr || m_pTexBack == nullptr || m_pTexFront == nullptr) {
-			Logger::error("Loading [%s]: Could not load some of the loading textures", identifier.c_str());
+			Logger::error("Loading [{}]: Could not load some of the loading textures", identifier);
 		}
 
 		return true;
@@ -100,9 +100,9 @@ namespace Phoenix {
 		glBlendFunc(GL_ONE, GL_ONE);
 		glDisable(GL_DEPTH_TEST);
 		// Background
-		m_demo.m_pRes->Draw_QuadFS(m_pTexBack, 1 - zero2one);
+		m_demo.m_pRes->drawQuadFS(m_pTexBack, 1 - zero2one);
 		// Foreground
-		m_demo.m_pRes->Draw_QuadFS(m_pTexFront, zero2one);
+		m_demo.m_pRes->drawQuadFS(m_pTexFront, zero2one);
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
 
@@ -112,7 +112,7 @@ namespace Phoenix {
 
 		model = glm::translate(model, glm::vec3(m_fTX, m_fTY, 0));  // Move the bar
 		model = glm::scale(model, glm::vec3(zero2one, m_fSY, 0));		// Scale the bar
-		m_demo.m_pRes->Draw_Obj_QuadTex(m_pTexBar, &model);
+		m_demo.m_pRes->drawObjQuadTex(m_pTexBar, &model);
 
 		GLDRV->swapBuffers();
 	}

@@ -61,7 +61,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if (strings.size() != 5) {
-			Logger::error("Draw Particles Scene [%s]: 5 strings needed (1 for shader file, 1 for 3D model, 3 for positioning)", identifier.c_str());
+			Logger::error("Draw Particles Scene [{}]: 5 strings needed (1 for shader file, 1 for 3D model, 3 for positioning)", identifier);
 			return false;
 		}
 
@@ -88,15 +88,15 @@ namespace Phoenix {
 		}
 
 		if (m_iNumParticles == 0) {
-			Logger::error("Draw Particles Scene [%s]: No vertex found in the model", identifier.c_str());
+			Logger::error("Draw Particles Scene [{}]: No vertex found in the model", identifier);
 			return false;
 		}
 		// Load the particles position
 		std::vector<ParticleMesh::Particle> Part;
 		Part.resize(m_iNumParticles);
-		int cnt = 0;
-		for (int i = 0; i < m_pModel->meshes.size(); i++) {
-			for (int j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
+		size_t cnt = 0;
+		for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
+			for (size_t j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
 				Part[cnt].Pos = m_pModel->meshes[i]->unique_vertices_pos[j];
 				Part[cnt].Col = glm::vec4(0.0);	// Todo: Inited with black color... should be initied with vertex color
 				cnt++;

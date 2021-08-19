@@ -97,10 +97,11 @@ namespace Phoenix {
 		m_MovementSpeed /= speed;
 	}
 
-	void CameraProjectionFPS::capturePos()
+	bool CameraProjectionFPS::capturePos()
 	{
 		std::string fileName = "camera_fps.cam";
 		std::string s = "\t"; // Separator
+		bool saved = false;
 
 		// Check if file exists
 		std::ifstream infile(fileName);
@@ -123,7 +124,9 @@ namespace Phoenix {
 				std::to_string(m_FrustumNear) + s + std::to_string(m_FrustumFar) << std::endl;
 			camFile << ss.str();
 			camFile.close();
+			saved = true;
 		}
+		return saved;
 	}
 
 	void CameraProjectionFPS::reset()
@@ -149,7 +152,7 @@ namespace Phoenix {
 		m_FrustumFar = DEFAULT_CAM_FAR;
 	}
 
-	void CameraProjectionFPS::setRollMatrix(glm::mat3& m, glm::vec3 f)
+	void CameraProjectionFPS::setRollMatrix(glm::mat3& m, glm::vec3 const& f)
 	{
 		float rcos = glm::cos(glm::radians(m_Roll));
 		float rsin = glm::sin(glm::radians(m_Roll));
@@ -181,7 +184,7 @@ namespace Phoenix {
 		glm::mat3 rollMatrix;
 		setRollMatrix(rollMatrix, front);
 		// Also re-calculate the Right and Up vector
-		m_Right = glm::normalize(glm::cross(m_Front, rollMatrix * m_WorldUp));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+		m_Right = glm::normalize(glm::cross(m_Front, rollMatrix * DEFAULT_CAM_WORLD_UP));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 		m_Up = glm::normalize(glm::cross(m_Right, m_Front));
 	}
 
@@ -276,10 +279,11 @@ namespace Phoenix {
 		m_MovementSpeed /= speed;
 	}
 
-	void CameraProjectionTarget::capturePos()
+	bool CameraProjectionTarget::capturePos()
 	{
 		std::string fileName = "camera_target.cam";
 		std::string s = "\t"; // Separator
+		bool saved = false;
 
 		// Check if file exists
 		std::ifstream infile(fileName);
@@ -302,7 +306,9 @@ namespace Phoenix {
 				std::to_string(m_FrustumNear) + s + std::to_string(m_FrustumFar) << std::endl;
 			camFile << ss.str();
 			camFile.close();
+			saved = true;
 		}
+		return saved;
 	}
 
 	void CameraProjectionTarget::reset()
@@ -354,10 +360,17 @@ namespace Phoenix {
 		TypeStr = "Raw Matrix";
 		m_Matrix = matrix;
 	}
+
 	const glm::mat4 CameraRawMatrix::getProjection()
 	{
-		return glm::perspective(glm::radians(m_Fov), GLDRV->GetFramebufferViewport().GetAspectRatio(), m_FrustumNear, m_FrustumFar);
+		return glm::perspective(
+			glm::radians(m_Fov),
+			GLDRV->GetFramebufferViewport().GetAspectRatio(),
+			m_FrustumNear,
+			m_FrustumFar
+		);
 	}
+
 	const glm::mat4 CameraRawMatrix::getView()
 	{
 		return m_Matrix;

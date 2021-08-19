@@ -110,7 +110,7 @@ namespace Phoenix {
 	int32_t SectionManager::getSectionIndex(std::string_view id) const
 	{
 		// hack: slow
-		for (auto i = 0; i < m_section.size(); i++)
+		for (size_t i = 0; i < m_section.size(); i++)
 			if (m_section[i]->identifier == id)
 				return static_cast<int32_t>(i);
 
@@ -126,7 +126,7 @@ namespace Phoenix {
 				//Logger::sendEditor("Section toggled: %s", ids[i].c_str());
 			}
 			else {
-				Logger::error("Section NOT toggled: %s", id.c_str());
+				Logger::error("Section NOT toggled: {}", id);
 			}
 		}
 	}
@@ -141,7 +141,7 @@ namespace Phoenix {
 				//Logger::sendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 			}
 			else {
-				Logger::error("Section NOT deleted: %s", sectionId.c_str());
+				Logger::error("Section NOT deleted: {}", sectionId);
 				failed = true;
 			}
 
@@ -168,14 +168,14 @@ namespace Phoenix {
 				ds->startTime = startTime;
 				ds->duration = ds->endTime - ds->startTime;
 				// Reload the splines. This way they are recalculated
-				for (int32_t k = 0; k < ds->spline.size(); k++) {
+				for (size_t k = 0; k < ds->spline.size(); k++) {
 					ds->spline[k]->duration = ds->duration;
 					ds->spline[k]->load();
 				}
 				//Logger::sendEditor("Section [%s] changed StartTime: %.3f", ds->identifier.c_str(), ds->startTime);
 			}
 			else {
-				Logger::error("Section NOT modified (StartTime): %s", ids[i].c_str());
+				Logger::error("Section NOT modified (StartTime): {}", ids[i]);
 			}
 		}
 	}
@@ -191,14 +191,14 @@ namespace Phoenix {
 				ds->endTime = endTime;
 				ds->duration = ds->endTime - ds->startTime;
 				// Reload the splines. This way they are recalculated
-				for (int32_t k = 0; k < ds->spline.size(); k++) {
+				for (size_t k = 0; k < ds->spline.size(); k++) {
 					ds->spline[k]->duration = ds->duration;
 					ds->spline[k]->load();
 				}
 				//Logger::sendEditor("Section [%s] changed EndTime: %.3f", ds->identifier.c_str(), ds->endTime);
 			}
 			else {
-				Logger::error("Section NOT modified (EndTime): %s", ids[i].c_str());
+				Logger::error("Section NOT modified (EndTime): {}", ids[i]);
 			}
 		}
 	}
@@ -213,14 +213,14 @@ namespace Phoenix {
 			ds->layer = new_layer;
 		}
 		else {
-			Logger::error("Section NOT modified (setSectionLayer): %s", identifier.data());
+			Logger::error("Section NOT modified (setSectionLayer): {}", identifier);
 		}
 	}
 
 	void SectionManager::clear()
 	{
 		for (auto const& pSection : m_section) {
-			Logger::info(LogLevel::low, "Deleting section: %s...", pSection->identifier.c_str());
+			Logger::info(LogLevel::low, "Deleting section: {}...", pSection->identifier);
 			delete pSection;
 		}
 

@@ -5,6 +5,8 @@
 
 #include "main.h"
 
+#include <variant>
+
 namespace Phoenix {
 
 	class SpoReader final {
@@ -37,9 +39,9 @@ namespace Phoenix {
 
 		// Script command structure
 		struct ScriptCommand final {
-			const std::string cName;
-			const SectionVar vType;
-			const void* vAddr;
+			std::string m_name;
+			SectionVar m_type;
+			void* m_pData;
 		};
 
 	public:

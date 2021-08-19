@@ -51,7 +51,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size()) != 3 || (strings.size() < 1)) {
-			Logger::error("EfxAccum [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 1 string (accum shader)", identifier.c_str());
+			Logger::error("EfxAccum [{}]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 1 string (accum shader)", identifier);
 			return false;
 		}
 
@@ -64,7 +64,7 @@ namespace Phoenix {
 
 		// Check if the fbo can be used for the effect
 		if (m_uiFboNum < 0 || m_uiFboNum >= m_demo.m_fboManager.fbo.size()) {
-			Logger::error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), m_uiFboNum, m_demo.m_fboManager.fbo.size() - 1);
+			Logger::error("EfxBlur [{}]: The fbo specified [{}] is not supported, should be between 0 and {}", identifier, m_uiFboNum, m_demo.m_fboManager.fbo.size() - 1);
 			return false;
 		}
 
@@ -144,7 +144,7 @@ namespace Phoenix {
 				m_demo.m_efxAccumFbo.bind_tex(m_bAccumBuffer, 1);
 
 				// Render a quad using the Accum shader (combining the 2 Images)
-				m_demo.m_pRes->Draw_QuadFS();
+				m_demo.m_pRes->drawQuadFS();
 
 				m_demo.m_efxAccumFbo.unbind(false, false); // Unbind drawing into the "Accum Fbo"
 
@@ -154,13 +154,13 @@ namespace Phoenix {
 
 
 			// Second step: Draw the accum buffer
-			m_demo.m_pRes->m_pShdrQuadTex->use();
-			m_demo.m_pRes->m_pShdrQuadTex->setValue("screenTexture", 0);
+			m_demo.m_pRes->m_spShdrQuadTex->use();
+			m_demo.m_pRes->m_spShdrQuadTex->setValue("screenTexture", 0);
 			if (firstIteration)
 				m_demo.m_fboManager.bind_tex(m_uiFboNum, 0);
 			else
 				m_demo.m_efxAccumFbo.bind_tex(!m_bAccumBuffer, 0);
-			m_demo.m_pRes->Draw_QuadFS();
+			m_demo.m_pRes->drawQuadFS();
 
 		}
 		// End evaluating blending and set render states back

@@ -56,9 +56,9 @@ namespace Phoenix {
 	{
 		if ((param.size() != 4) || (strings.size() < 5)) {
 			Logger::error(
-				"DrawVideo [%s]: 4 param needed (Clear screen buffer, clear depth buffer, fullscreen &"
+				"DrawVideo [{}]: 4 param needed (Clear screen buffer, clear depth buffer, fullscreen &"
 				"fit to content) and 5 strings needed (Video & shader paths and 3 for positon)",
-				identifier.c_str());
+				identifier);
 			return false;
 		}
 
@@ -191,7 +191,7 @@ namespace Phoenix {
 			// Set other shader variables values
 			m_pVars->setValues();
 			m_pVideo->bind(0); // todo: from SPO maybe?
-			m_demo.m_pRes->Draw_QuadFS(); // Draw a quad with the video
+			m_demo.m_pRes->drawQuadFS(); // Draw a quad with the video
 
 		}
 

@@ -11,70 +11,60 @@ namespace Phoenix {
 	{
 		Logger::info(LogLevel::low, "Start loading engine internal resources");
 		// Load Objects
-		Load_Obj_QuadFullscreen();
-		Load_Obj_Skybox();
-		Load_Obj_Qube();
+		loadObjQuadFullscreen();
+		loadObjSkybox();
+		loadObjCube();
 		// Load grid
-		Load_Grid();
+		loadGrid();
 		// Load Shaders
-		Load_Shaders();
+		loadShaders();
 		// Load Textures
-		Load_Tex_Spontz();
-		// Load Fonts --> This is no longer needed since we are using imGui for output text
-		//Load_Text_Fonts();			// Text fonts
+		loadTexSpontz();
 		// Load Lights
-		Load_Lights();
+		loadLights();
 		Logger::info(LogLevel::low, "End loading engine internal resources");
 	}
 
-	void Resource::unLoadAllResources()
+	void Resource::unloadAllResources()
 	{
 		// Vertex Array Objects
-		m_pQuadFullScreen.reset();
-		m_pSkybox.reset();
-		m_pQube.reset();
-		m_pGrid.reset();
+		m_spQuadFullScreen.reset();
+		m_spSkybox.reset();
+		m_spCube.reset();
+		m_spGrid.reset();
 
 		// Textures
-		m_pTVImage.reset();
+		m_spTVImage.reset();
 
 		// Shaders
-		m_pShdrQuadTex.reset();
-		m_pShdrQuadDepth.reset();
-		m_pShdrQuadTexAlpha.reset();
-		m_pShdrQuadTexModel.reset();
-		m_pShdrQuadTexPVM.reset();
-		m_pShdrQuadTexVFlipModel.reset();
-		m_pShdrSkybox.reset();
-		m_pShdrObjColor.reset();
-		m_pShdrGrid.reset();
+		m_spShdrQuadTex.reset();
+		m_spShdrQuadDepth.reset();
+		m_spShdrQuadTexAlpha.reset();
+		m_spShdrQuadTexModel.reset();
+		m_spShdrQuadTexPVM.reset();
+		m_spShdrQuadTexVFlipModel.reset();
+		m_spShdrSkybox.reset();
+		m_spShdrObjColor.reset();
+		m_spShdrGrid.reset();
 	}
 
 	Resource::Resource()
 		:
 		m_demo(*DEMO),
-
 		m_gridSize(1.0f),
 		m_gridSlices(11)
 	{
-		// Vertex Array Objects
-		m_pQuadFullScreen = m_pSkybox = m_pQube = m_pGrid = nullptr;
-		// Textures
-		m_pTVImage = nullptr;
-		// Shaders
-		m_pShdrQuadTex = m_pShdrQuadDepth = m_pShdrQuadTexAlpha = m_pShdrQuadTexModel = m_pShdrQuadTexPVM = m_pShdrQuadTexVFlipModel = m_pShdrSkybox = m_pShdrObjColor = m_pShdrGrid = nullptr;
-
 	}
 
 	Resource::~Resource()
 	{
-		unLoadAllResources();
+		unloadAllResources();
 	}
 
 
-	void Resource::Load_Obj_QuadFullscreen()
+	void Resource::loadObjQuadFullscreen()
 	{
-		float quadVertices[] = {
+		static constexpr float quadVertices[] = {
 			// positions   // texCoords
 			 -1,  1,  0, 1,
 			 -1, -1,  0, 0,
@@ -86,7 +76,7 @@ namespace Phoenix {
 		};
 
 		// Creatr the Vertex Array
-		m_pQuadFullScreen = std::make_shared<VertexArray>();
+		m_spQuadFullScreen = std::make_shared<VertexArray>();
 
 		// Create & Load the Vertex Buffer
 		auto spVB = std::make_shared<VertexBuffer>(&quadVertices, static_cast<uint32_t>(sizeof(quadVertices)));
@@ -95,19 +85,19 @@ namespace Phoenix {
 			{ ShaderDataType::Float2,	"aTexCoords"},
 			});
 
-		m_pQuadFullScreen->AddVertexBuffer(spVB);
+		m_spQuadFullScreen->AddVertexBuffer(spVB);
 
 		// Create & Load the Index Buffer :: Not really needed since the vertice are already sorted
 		//uint32_t quadIndices[] = { 0,1,2,3,4,5 };
 		//IndexBuffer* ib = new IndexBuffer(&quadIndices[0], 6);
 		//m_pQuadFullScreen->SetIndexBuffer(ib);
 
-		m_pQuadFullScreen->unbind();
+		m_spQuadFullScreen->unbind();
 	}
 
-	void Resource::Load_Obj_Skybox()
+	void Resource::loadObjSkybox()
 	{
-		float skyboxVertices[] = {
+		static constexpr float skyboxVertices[] = {
 			// positions          
 			-1.0f,  1.0f, -1.0f,
 			-1.0f, -1.0f, -1.0f,
@@ -153,7 +143,7 @@ namespace Phoenix {
 		};
 
 		// Creatr the Vertex Array
-		m_pSkybox = std::make_shared<VertexArray>();
+		m_spSkybox = std::make_shared<VertexArray>();
 
 		// Create & Load the Vertex Buffer
 		auto spVB = std::make_shared<VertexBuffer>(&skyboxVertices, static_cast<uint32_t>(sizeof(skyboxVertices)));
@@ -161,13 +151,13 @@ namespace Phoenix {
 			{ ShaderDataType::Float3,	"aPos"},
 			});
 
-		m_pSkybox->AddVertexBuffer(spVB);
-		m_pSkybox->unbind();
+		m_spSkybox->AddVertexBuffer(spVB);
+		m_spSkybox->unbind();
 	}
 
-	void Resource::Load_Obj_Qube()
+	void Resource::loadObjCube()
 	{
-		float qubeVertices[] = {
+		static constexpr float qubeVertices[] = {
 			// positions          // normals           // texture coords
 			-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
 			 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
@@ -213,7 +203,7 @@ namespace Phoenix {
 		};
 
 		// Creatr the Vertex Array
-		m_pQube = std::make_shared<VertexArray>();
+		m_spCube = std::make_shared<VertexArray>();
 
 		// Create & Load the Vertex Buffer
 		auto spVB = std::make_shared<VertexBuffer>(&qubeVertices, static_cast<uint32_t>(sizeof(qubeVertices)));
@@ -223,35 +213,29 @@ namespace Phoenix {
 			{ ShaderDataType::Float2,	"aTexCoords"},
 			});
 
-		m_pQube->AddVertexBuffer(spVB);
-		m_pQube->unbind();
+		m_spCube->AddVertexBuffer(spVB);
+		m_spCube->unbind();
 	}
 
-	void Resource::Load_Shaders()
+	void Resource::loadShaders()
 	{
-		m_pShdrQuadTex = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTex.glsl");
-		m_pShdrQuadDepth = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadDepth.glsl");
-		m_pShdrQuadTexAlpha = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTexAlpha.glsl");
-		m_pShdrQuadTexModel = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTexModel.glsl");
-		m_pShdrQuadTexPVM = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTexPVM.glsl");
-		m_pShdrQuadTexVFlipModel = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.glsl");
-		m_pShdrSkybox = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/skybox/skybox.glsl");
-		m_pShdrObjColor = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/ObjColor.glsl");
-		m_pShdrGrid = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/Grid.glsl");
+		m_spShdrQuadTex = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTex.glsl");
+		m_spShdrQuadDepth = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadDepth.glsl");
+		m_spShdrQuadTexAlpha = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTexAlpha.glsl");
+		m_spShdrQuadTexModel = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTexModel.glsl");
+		m_spShdrQuadTexPVM = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTexPVM.glsl");
+		m_spShdrQuadTexVFlipModel = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/QuadTexVFlipModel.glsl");
+		m_spShdrSkybox = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/skybox/skybox.glsl");
+		m_spShdrObjColor = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/ObjColor.glsl");
+		m_spShdrGrid = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + "/resources/shaders/basic/Grid.glsl");
 	}
 
-	void Resource::Load_Tex_Spontz()
+	void Resource::loadTexSpontz()
 	{
-		m_pTVImage = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + "/resources/textures/tv.jpg");
+		m_spTVImage = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + "/resources/textures/tv.jpg");
 	}
 
-	void Resource::Load_Text_Fonts()
-	{
-		// Since we are using imGui, fonts are no longer needed
-		//m_demo.text = new Font(48, m_demo.dataFolder + "/resources/fonts/arial.ttf", m_demo.dataFolder + "/resources/shaders/font/font.glsl");
-	}
-
-	void Resource::Load_Lights()
+	void Resource::loadLights()
 	{
 		m_demo.m_lightManager.addLight(LightType::SpotLight);
 		m_demo.m_lightManager.addLight(LightType::SpotLight);
@@ -259,13 +243,7 @@ namespace Phoenix {
 		m_demo.m_lightManager.addLight(LightType::PointLight);
 	}
 
-	void Resource::safeDelete(void* ptr)
-	{
-		if (ptr)
-			delete ptr;
-	}
-
-	void Resource::Load_Grid()
+	void Resource::loadGrid()
 	{
 		std::vector<glm::vec3> vertices;
 		std::vector<uint32_t> indices;
@@ -309,115 +287,122 @@ namespace Phoenix {
 		}
 
 		// Creatr the Vertex Array
-		m_pGrid = std::make_shared<VertexArray>();
+		m_spGrid = std::make_shared<VertexArray>();
 
 		// Create & Load the Vertex Buffer
-		auto spVB = std::make_shared<VertexBuffer>(&vertices[0], static_cast<uint32_t>(sizeof(glm::vec3) * static_cast<uint32_t>(vertices.size())));
-		spVB->SetLayout({
-			{ ShaderDataType::Float3,	"aPos"},
-			});
+		auto spVB = std::make_shared<VertexBuffer>(
+			&vertices[0],
+			static_cast<uint32_t>(sizeof(glm::vec3)) * static_cast<uint32_t>(vertices.size())
+			);
 
-		m_pGrid->AddVertexBuffer(spVB);
+		spVB->SetLayout({ {ShaderDataType::Float3, "aPos"} });
+		m_spGrid->AddVertexBuffer(spVB);
 
 		// Create & Load the Index Buffer :: Not really needed since the vertice are already sorted
 		auto spIB = std::make_shared<IndexBuffer>(indices.data(), static_cast<uint32_t>(indices.size()));
-		m_pGrid->SetIndexBuffer(spIB);
+		m_spGrid->SetIndexBuffer(spIB);
 
-		m_pGrid->unbind();
+		m_spGrid->unbind();
 	}
 
 	// Draw a Quad with texture in full screen with alpha
-	void Resource::Draw_QuadFS(SP_Texture tex, float alpha)
+	void Resource::drawQuadFS(SP_Texture spTexture, float alpha)
 	{
-		m_pShdrQuadTexAlpha->use();
-		m_pShdrQuadTexAlpha->setValue("alpha", alpha);
-		m_pShdrQuadTexAlpha->setValue("screenTexture", 0);
-		tex->bind();
+		m_spShdrQuadTexAlpha->use();
+		m_spShdrQuadTexAlpha->setValue("alpha", alpha);
+		m_spShdrQuadTexAlpha->setValue("screenTexture", 0);
+		spTexture->bind();
 
-		Draw_QuadFS();
+		drawQuadFS();
 	}
 
 	// Draw a Quad with a FBO in full screen
-	void Resource::Draw_QuadFBOFS(Fbo* fbo, GLuint attachment)
+	void Resource::drawQuadFboFS(Fbo* fbo, GLuint attachment)
 	{
-		m_pShdrQuadTex->use();
-		m_pShdrQuadTex->setValue("screenTexture", 0);
+		m_spShdrQuadTex->use();
+		m_spShdrQuadTex->setValue("screenTexture", 0);
 		fbo->bind_tex(0, attachment);
 
-		Draw_QuadFS();
+		drawQuadFS();
 	}
 
 	// Draw a Quad with a FBO in full screen
-	void Resource::Draw_QuadEfxFBOFS(int efxFboNum, GLuint attachment)
+	void Resource::drawQuadEfxFboFS(int efxFboNum, GLuint attachment)
 	{
-		m_pShdrQuadTex->use();
-		m_pShdrQuadTex->setValue("screenTexture", 0);
+		m_spShdrQuadTex->use();
+		m_spShdrQuadTex->setValue("screenTexture", 0);
 		m_demo.m_efxBloomFbo.bind_tex(efxFboNum, 0, attachment);
 
-		Draw_QuadFS();
+		drawQuadFS();
 	}
 
 	// Draw a Quad in full screen. A texture can be specified and a model matrix
-	void Resource::Draw_Obj_QuadTex(SP_Texture tex, glm::mat4 const* model)
+	void Resource::drawObjQuadTex(SP_Texture tex, glm::mat4 const* model)
 	{
-		m_pShdrQuadTexModel->use();
-		m_pShdrQuadTexModel->setValue("model", *model);
-		m_pShdrQuadTexModel->setValue("screenTexture", 0);
+		m_spShdrQuadTexModel->use();
+		m_spShdrQuadTexModel->setValue("model", *model);
+		m_spShdrQuadTexModel->setValue("screenTexture", 0);
 		tex->bind();
 
-		Draw_QuadFS();
+		drawQuadFS();
 	}
 
 	// Draw a Quad in full screen. A texture can be specified and the 3 matrix
-	void Resource::Draw_Obj_QuadTex(SP_Texture tex, glm::mat4 const* projection, glm::mat4 const* view, glm::mat4 const* model)
+	void Resource::drawObjQuadTex(
+		SP_Texture spTex,
+		glm::mat4 const* pProj,
+		glm::mat4 const* pView,
+		glm::mat4 const* pWorld
+	)
 	{
-		m_pShdrQuadTexPVM->use();
-		m_pShdrQuadTexPVM->setValue("projection", *projection);
-		m_pShdrQuadTexPVM->setValue("view", *view);
-		m_pShdrQuadTexPVM->setValue("model", *model);
-		m_pShdrQuadTexPVM->setValue("screenTexture", 0);
-		tex->bind();
+		m_spShdrQuadTexPVM->use();
+		m_spShdrQuadTexPVM->setValue("projection", *pProj);
+		m_spShdrQuadTexPVM->setValue("view", *pView);
+		m_spShdrQuadTexPVM->setValue("model", *pWorld);
+		m_spShdrQuadTexPVM->setValue("screenTexture", 0);
+		spTex->bind();
 
-		Draw_QuadFS();
+		drawQuadFS();
 	}
 
-	// Draw a Quad with a FBO in full screen but no shader is called (needs a shader->use() call before)
-	void Resource::Draw_QuadFS()
+	// Draw a Quad with a FBO in full screen but no shader is called (needs a shader->use() call
+	// before)
+	void Resource::drawQuadFS()
 	{
-		m_pQuadFullScreen->bind();
+		m_spQuadFullScreen->bind();
 		glDrawArrays(GL_TRIANGLES, 0, 6);// m_pQuadFullScreen->GetIndexBuffer()->GetCount());
-		m_pQuadFullScreen->unbind();
+		m_spQuadFullScreen->unbind();
 	}
 
-
-	void Resource::Draw_Skybox(SP_Cubemap cubemap)
+	void Resource::drawSkybox(SP_Cubemap cubemap)
 	{
-		m_pSkybox->bind();
+		m_spSkybox->bind();
 		cubemap->bind();
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		m_pSkybox->unbind();
+		m_spSkybox->unbind();
 	}
 
-	void Resource::Draw_Cube()
+	void Resource::drawCube()
 	{
-		m_pQube->bind();
+		m_spCube->bind();
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		m_pQube->unbind();
+		m_spCube->unbind();
 	}
 
-	void Resource::Draw_Grid(glm::vec3 const color, glm::mat4 const* MVP)
+	void Resource::drawGrid(glm::vec3 const& color, glm::mat4 const* MVP)
 	{
-		if (!m_pShdrGrid)
+		if (!m_spShdrGrid)
 			return;
+
 		glEnable(GL_DEPTH_TEST);
-		m_pShdrGrid->use();
-		m_pShdrGrid->setValue("MVP", *MVP);
-		m_pShdrGrid->setValue("color", color);
+		m_spShdrGrid->use();
+		m_spShdrGrid->setValue("MVP", *MVP);
+		m_spShdrGrid->setValue("color", color);
 
-		m_pGrid->bind();
+		m_spGrid->bind();
 
-		glDrawElements(GL_LINES, m_pGrid->getIndexBuffer()->GetCount(), GL_UNSIGNED_INT, NULL);
-		m_pGrid->unbind();
+		glDrawElements(GL_LINES, m_spGrid->getIndexBuffer()->GetCount(), GL_UNSIGNED_INT, NULL);
+		m_spGrid->unbind();
 	}
 
 }

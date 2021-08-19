@@ -6,17 +6,19 @@
 namespace Phoenix {
 
 	// hack: get rid of macros
-#define BASSDRV (&BassDriver::GetInstance())
-#define SPECTRUM_SAMPLES 32
+#define BASSDRV (&BassDriver::getInstance())
+	constexpr size_t SPECTRUM_SAMPLES = 32;
 
-	class BassDriver {
+	class BassDriver final {
 
 	public:
-		static BassDriver& GetInstance();
 		BassDriver();
 
+	public:
+		static BassDriver& getInstance();
+
 	private:
-		demokernel& m_demo;
+		DemoKernel& m_demo;
 		float		m_spectrum[SPECTRUM_SAMPLES];
 
 	public:
@@ -27,7 +29,7 @@ namespace Phoenix {
 		void stop();
 		void end();
 
-		void				addFFTdata(float* fftData, int samples);
+		void				addFFTdata(float* fftData, size_t samples);
 		float*				getSpectrumData();
 		int					getSpectrumSamples();
 		float				getCPUload();

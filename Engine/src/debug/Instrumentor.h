@@ -4,6 +4,8 @@
 
 #include "main.h"
 
+#include <core/utils/LoggerDeclarations.h>
+
 #include <algorithm>
 #include <chrono>
 #include <fstream>
@@ -53,7 +55,7 @@ namespace Phoenix {
 				// profiling output.
 				//if (LOG) // Edge case: BeginSession() might be before Log::Init()
 				{
-					Logger::error("Instrumentor::BeginSession('%s') when session '%s' already open.", name.c_str(), m_CurrentSession->Name.c_str());
+					Logger::error("Instrumentor::BeginSession('{}') when session '{}' already open.", name, m_CurrentSession->Name);
 				}
 				InternalEndSession();
 			}
@@ -68,7 +70,7 @@ namespace Phoenix {
 			{
 				//if (LOG) // Edge case: BeginSession() might be before Log::Init()
 				{
-					Logger::error("Instrumentor could not open results file '%s'.", filepath.c_str());
+					Logger::error("Instrumentor could not open results file '{}'.", filepath);
 				}
 			}
 		}

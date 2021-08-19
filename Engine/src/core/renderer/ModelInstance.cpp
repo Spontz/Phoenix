@@ -18,79 +18,80 @@
 
 namespace Phoenix {
 
-	ModelInstance::ModelInstance(SP_Model model, unsigned int amount)
+	ModelInstance::ModelInstance(SP_Model spModel, uint32_t amount)
 		:
-		pModel(model),
-		amount(amount),
-		pModelMatrix(nullptr),
-		pPrevModelMatrix(nullptr),
-		matricesBuffer(0)
+		m_pModel(spModel),
+		m_amount(amount),
+		m_pModelMatrix(nullptr),
+		m_pPrevModelMatrix(nullptr),
+		m_matricesBuffer(0)
 	{
-		if (!model)
+		if (!spModel)
 			return;
 
 		// Init model matrices
-		if (pModelMatrix)
-			delete[] pModelMatrix;
+		if (m_pModelMatrix)
+			delete[] m_pModelMatrix;
 
-		if (pPrevModelMatrix)
-			delete[] pPrevModelMatrix;
+		if (m_pPrevModelMatrix)
+			delete[] m_pPrevModelMatrix;
 
-		pModelMatrix = new glm::mat4[amount];
-		pPrevModelMatrix = new glm::mat4[amount];
-		for (unsigned int i = 0; i < amount; i++)
-		{
-			pModelMatrix[i] = glm::mat4(1.0f);
-			pPrevModelMatrix[i] = glm::mat4(1.0f);
+		m_pModelMatrix = new glm::mat4[m_amount];
+		m_pPrevModelMatrix = new glm::mat4[m_amount];
+		for (unsigned int i = 0; i < m_amount; i++) {
+			m_pModelMatrix[i] = glm::mat4(1.0f);
+			m_pPrevModelMatrix[i] = glm::mat4(1.0f);
 		}
 
 
 		// Create the new Vertex Buffer to apply to the meshes
-		auto pVB = std::make_shared<VertexBuffer>(static_cast<uint32_t>(static_cast<size_t>(amount) * sizeof(glm::mat4)));
-		pVB->SetLayout({
-			{ ShaderDataType::Mat4,	"aInstancePos"}
-			});
+		auto pVB = std::make_shared<VertexBuffer>(m_amount * sizeof(glm::mat4));
+		pVB->SetLayout({{ShaderDataType::Mat4, "aInstancePos"}});
 
 		// Add the new vertex buffer to mesh vertex array
-		for (unsigned int i = 0; i < pModel->meshes.size(); ++i)
-			pModel->meshes[i]->m_VertexArray->AddVertexBuffer(pVB);
+		for (auto const& spMesh : m_pModel->meshes)
+			spMesh->m_VertexArray->AddVertexBuffer(pVB);
 	}
 
 	ModelInstance::~ModelInstance()
 	{
-		if (pModelMatrix)
-			delete[] pModelMatrix;
-		if (pPrevModelMatrix)
-			delete[] pPrevModelMatrix;
-
+		if (m_pModelMatrix)
+			delete[] m_pModelMatrix;
+		if (m_pPrevModelMatrix)
+			delete[] m_pPrevModelMatrix;
 	}
 
 	void ModelInstance::drawInstanced(GLuint shaderID, uint32_t startTexUnit)
 	{
-		for (const auto& mesh : pModel->meshes)
-		{
-			mesh->setMaterialShaderVars(shaderID, startTexUnit);
+		for (const auto& spMesh : m_pModel->meshes) {
+			spMesh->setMaterialShaderVars(shaderID, startTexUnit);
 
 			// draw mesh
-			mesh->m_VertexArray->bind();
-			glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(mesh->m_indices.size()), GL_UNSIGNED_INT, 0, static_cast<GLsizei>(amount));
-			
-			mesh->m_VertexArray->unbind();
+			spMesh->m_VertexArray->bind();
+			glDrawElementsInstanced(
+				GL_TRIANGLES,
+				static_cast<GLsizei>(spMesh->m_indices.size()),
+				GL_UNSIGNED_INT,
+				0,
+				static_cast<GLsizei>(m_amount)
+			);
+
+			spMesh->m_VertexArray->unbind();
 		}
 	}
 
 	void ModelInstance::copyMatrices(int instance)
 	{
-		pPrevModelMatrix[instance] = pModelMatrix[instance];
+		m_pPrevModelMatrix[instance] = m_pModelMatrix[instance];
 	}
 
 	void ModelInstance::updateMatrices()
 	{
-		for (const auto& mesh : pModel->meshes)
+		for (const auto& spMesh : m_pModel->meshes)
 		{
 			// Update matrices buffers to GPU
-			const auto& VBs = mesh->m_VertexArray->getVertexBuffers();
-			VBs[1]->SetData(&pModelMatrix[0], amount * sizeof(glm::mat4)); // Be careful with "vb[1]"!! -> TODO: Get rid of this hardcode!!
+			const auto& VBs = spMesh->m_VertexArray->getVertexBuffers();
+			VBs[1]->SetData(&m_pModelMatrix[0], m_amount * sizeof(glm::mat4)); // Be careful with "vb[1]"!! -> TODO: Get rid of this hardcode!!
 			VBs[1]->Unbind();
 		}
 	}

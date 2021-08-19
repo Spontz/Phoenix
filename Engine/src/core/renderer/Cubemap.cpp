@@ -45,8 +45,8 @@ namespace Phoenix {
 		{
 			filename.push_back(faces_file_name[i]);
 			unsigned char* data = stbi_load(faces_file_name[i].c_str(), &Width, &Height, &components, 0);
-			this->width.push_back(Width);
-			this->height.push_back(Height);
+			width.push_back(Width);
+			height.push_back(Height);
 			if (data)
 			{
 				GLenum internalFormat = 0;
@@ -71,7 +71,7 @@ namespace Phoenix {
 			}
 
 			else {
-				Logger::error("Failed loading cubemap from file: %s", faces_file_name[i].c_str());
+				Logger::error("Failed loading cubemap from file: {}", faces_file_name[i]);
 				is_loaded = false;
 			}
 			mem += (float)(Width * Height * 3) / 1048576.0f;		// Calculate the texture mem (in mb)
@@ -80,8 +80,8 @@ namespace Phoenix {
 		// Check if the cubemap images sizes are OK
 		for (unsigned int i = 0; i < faces_file_name.size(); i++)
 		{
-			if ((this->width[0] != this->width[i]) || (this->height[0] != this->height[i])) {
-				Logger::error("The cubemap image %s has a different size from the first one. Please check that all cubemap images have same size", faces_file_name[i].c_str());
+			if ((width[0] != width[i]) || (height[0] != height[i])) {
+				Logger::error("The cubemap image {} has a different size from the first one. Please check that all cubemap images have same size", faces_file_name[i]);
 				is_loaded = false;
 			}
 		}

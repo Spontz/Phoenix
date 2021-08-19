@@ -24,9 +24,9 @@ namespace Phoenix {
 	void FboManager::bind(int fbo_num, bool clearColor, bool clearDepth)
 	{
 		if (fbo_num < fbo.size()) {
-			this->currentFbo = fbo_num;
-			this->clearColor = clearColor;
-			this->clearDepth = clearDepth;
+			currentFbo = fbo_num;
+			clearColor = clearColor;
+			clearDepth = clearDepth;
 			Fbo* my_fbo = fbo[fbo_num];
 			// Adjust the viewport to the fbo size
 			GLDRV->SetCurrentViewport({ 0,0,static_cast<unsigned int>(my_fbo->width),static_cast<unsigned int>(my_fbo->height) });
@@ -39,8 +39,8 @@ namespace Phoenix {
 	// Bind the current fbo: useful for some efects that need to change the framebuffer (like Boom or blur)
 	void FboManager::bindCurrent()
 	{
-		if (this->currentFbo >= 0) {
-			Fbo* my_fbo = fbo[this->currentFbo];
+		if (currentFbo >= 0) {
+			Fbo* my_fbo = fbo[currentFbo];
 			// Adjust the viewport to the fbo size
 			GLDRV->SetCurrentViewport({ 0,0,static_cast<unsigned int>(my_fbo->width),static_cast<unsigned int>(my_fbo->height) });
 			my_fbo->bind();
@@ -61,8 +61,8 @@ namespace Phoenix {
 	void FboManager::unbind(bool clearColor, bool clearDepth)
 	{
 		currentFbo = -1;
-		this->clearColor = clearColor;
-		this->clearDepth = clearDepth;
+		clearColor = clearColor;
+		clearDepth = clearDepth;
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		// Restore the driver viewport
 		GLDRV->SetCurrentViewport(GLDRV->GetFramebufferViewport());
@@ -86,10 +86,10 @@ namespace Phoenix {
 			fbo.push_back(new_fbo);
 			mem += (float)(new_fbo->width * new_fbo->height * components) / 1048576.0f;		// increase the texture mem
 			fbo_id = (int)fbo.size() - 1;
-			Logger::info(LogLevel::med, "Fbo Color %d loaded OK. Overall fbo Memory: %.3fMb", fbo_id, mem);
+			Logger::info(LogLevel::med, "Fbo Color {} loaded OK. Overall fbo Memory: {:.3f}Mb", fbo_id, mem);
 		}
 		else {
-			Logger::error("Could not load fbo with the current format: Width: %d, Height: %d, iformat: %d, format: %d, type: %d", cfg.width, cfg.height, iformat, format, type);
+			Logger::error("Could not load fbo with the current format: Width: {}, Height: {}, iformat: {}, format: {}, type: {}", cfg.width, cfg.height, iformat, format, type);
 			return -1;
 		}
 		return fbo_id;

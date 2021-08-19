@@ -13,17 +13,20 @@ namespace Phoenix {
 
 	// ******************************************************************
 
-	class imGuiDriver {
-
-	private:
-		GLFWwindow* p_glfw_window;
-		ImGuiIO* m_io;
-		demokernel& m_demo;
+	class ImGuiDriver final {
 
 	public:
-		imGuiDriver();
-		virtual ~imGuiDriver();
+		ImGuiDriver();
 
+	public:
+		void init(GLFWwindow* pGLFWWindow);
+		void drawGui();
+		void close();
+		void changeFontSize(float baseSize, int32_t width, int32_t height);
+		void addLog(std::string_view message);
+		void clearLog();
+
+	public:
 		bool	show_log;
 		bool	show_info;
 		bool	show_fpsHistogram;
@@ -34,21 +37,17 @@ namespace Phoenix {
 		bool	show_grid;
 		bool	show_help;
 
-
 		int32_t			m_numFboSetToDraw;
 		uint32_t		m_numFboAttachmentToDraw;
 		int32_t			m_numFboPerPage;
 
 		int32_t			m_selectedSection;
 
-		void init(GLFWwindow* window);
-		void drawGui();
-		void close();
-		void changeFontSize(float baseSize, int width, int height);
-		void addLog(std::string message);
-		void clearLog();
-
 	private:
+		GLFWwindow* p_glfw_window;
+		ImGuiIO* m_io;
+		DemoKernel& m_demo;
+
 		std::string m_VersionEngine;
 		std::string m_VersionOpenGL;
 		std::string m_VendorOpenGL;
@@ -95,6 +94,5 @@ namespace Phoenix {
 		void drawGridConfig();
 		void drawHelp();
 		void drawCameraInfo(Camera* pCamera);
-
 	};
 }

@@ -3,7 +3,7 @@
 
 #include "main.h"
 #include "core/drivers/BassDriver.h"
-#include "core/drivers/imGuiDriver.h"
+#include "core/drivers/ImGuiDriver.h"
 
 namespace Phoenix {
 
@@ -42,7 +42,7 @@ namespace Phoenix {
 		"Reset camera position: R";
 
 
-	imGuiDriver::imGuiDriver()
+	ImGuiDriver::ImGuiDriver()
 		:
 		m_demo(*DEMO),
 		p_glfw_window(nullptr),
@@ -66,6 +66,7 @@ namespace Phoenix {
 		m_expandAllSections(true),
 		m_expandAllSectionsChanged(true)
 	{
+		show_log = m_demo.m_debug; // if we are on debug, the log is opened by default
 		m_VersionEngine = m_demo.getEngineVersion();
 		m_VersionOpenGL = GLDRV->getOpenGLVersion();
 		m_VendorOpenGL = GLDRV->getOpenGLVendor();
@@ -84,11 +85,7 @@ namespace Phoenix {
 
 	}
 
-	imGuiDriver::~imGuiDriver()
-	{
-	}
-
-	void imGuiDriver::init(GLFWwindow* window) {
+	void ImGuiDriver::init(GLFWwindow* window) {
 		// imGUI init
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -105,7 +102,7 @@ namespace Phoenix {
 		ImGui_ImplOpenGL3_Init("#version 410");
 	}
 
-	void imGuiDriver::drawGui()
+	void ImGuiDriver::drawGui()
 	{
 		m_vp = GLDRV->GetFramebufferViewport();
 
@@ -136,7 +133,7 @@ namespace Phoenix {
 
 
 
-	void imGuiDriver::startDraw()
+	void ImGuiDriver::startDraw()
 	{
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
@@ -144,7 +141,7 @@ namespace Phoenix {
 		ImGui::NewFrame();
 	}
 
-	void imGuiDriver::endDraw()
+	void ImGuiDriver::endDraw()
 	{
 		// Rendering
 		ImGui::Render();
@@ -152,7 +149,7 @@ namespace Phoenix {
 
 	}
 
-	void imGuiDriver::drawLog()
+	void ImGuiDriver::drawLog()
 	{
 		ImVec2 pos = ImVec2(0, m_vp.y * 2.0f + 2.0f * (static_cast<float>(m_vp.height) / 3.0f));
 		ImVec2 size = ImVec2(static_cast<float>(m_vp.width + (m_vp.x * 2)), static_cast<float>(m_vp.height / 3.0f));
@@ -176,14 +173,14 @@ namespace Phoenix {
 		ImGui::End();
 	}
 
-	void imGuiDriver::close() {
+	void ImGuiDriver::close() {
 		// Close ImGui
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
 
-	void imGuiDriver::changeFontSize(float baseSize, int width, int height)
+	void ImGuiDriver::changeFontSize(float baseSize, int width, int height)
 	{
 
 		m_fontScale = static_cast<float>(width + height) / (1024.0f + 768.0f) * baseSize;
@@ -194,18 +191,17 @@ namespace Phoenix {
 		ImGui::GetIO().FontGlobalScale = m_fontScale;
 	}
 
-	void imGuiDriver::addLog(std::string message)
+	void ImGuiDriver::addLog(std::string_view message)
 	{
-		m_log.appendf(message.c_str());
+		m_log.appendf(message.data());
 	}
 
-	void imGuiDriver::clearLog()
+	void ImGuiDriver::clearLog()
 	{
 		m_log.clear();
 	}
 
-
-	void imGuiDriver::drawCameraInfo(Camera* pCamera)
+	void ImGuiDriver::drawCameraInfo(Camera* pCamera)
 	{
 		if (pCamera != nullptr) {
 			ImGui::Text("  Name: %s, Type: %d", pCamera->TypeStr.c_str(), pCamera->Type);
@@ -221,8 +217,8 @@ namespace Phoenix {
 		}
 	}
 
-	void imGuiDriver::drawInfo() {
-
+	void ImGuiDriver::drawInfo()
+	{
 		// Get Demo status
 		std::string demoStatus;
 		if (m_demo.m_status & DemoStatus::PAUSE) {
@@ -293,10 +289,9 @@ namespace Phoenix {
 		ImGui::End();
 	}
 
-	void imGuiDriver::drawVersion()
+	void ImGuiDriver::drawVersion()
 	{
-		if (!ImGui::Begin("Demo Info"))
-		{
+		if (!ImGui::Begin("Demo Info")) {
 			// Early out if the window is collapsed, as an optimization.
 			ImGui::End();
 			return;
@@ -314,33 +309,33 @@ namespace Phoenix {
 	}
 
 	// Draw the Fbo output
-	void imGuiDriver::drawFbo() {
-		float offsetY = 10; // small offset
+	void ImGuiDriver::drawFbo()
+	{
+		constexpr float offsetY = 10.0f; // small offset
 
 		if (m_numFboSetToDraw == 0)
 			m_numFboSetToDraw = 1;
 
-		int fbo_num_min = ((m_numFboSetToDraw - 1) * m_numFboPerPage);
-		int fbo_num_max = (m_numFboPerPage - 1) + ((m_numFboSetToDraw - 1) * m_numFboPerPage);
+		const auto fboNumMin = ((m_numFboSetToDraw - 1) * m_numFboPerPage);
+		int32_t fboNumMax = (m_numFboPerPage - 1) + ((m_numFboSetToDraw - 1) * m_numFboPerPage);
 
-		if (fbo_num_max >= m_demo.m_fboManager.fbo.size())
-			fbo_num_max = static_cast<int>(m_demo.m_fboManager.fbo.size()) - 1;
+		if (fboNumMax >= static_cast<int>(m_demo.m_fboManager.fbo.size()))
+			fboNumMax = static_cast<int>(m_demo.m_fboManager.fbo.size()) - 1;
 
 		ImGui::SetNextWindowPos(ImVec2(0, (2.0f * static_cast<float>(m_vp.y) - offsetY + 2.0f * static_cast<float>(m_vp.height) / 3.0f)), ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height) / 3.0f + offsetY), ImGuiCond_Appearing);
-		float fbo_w_size = static_cast<float>(m_vp.width) / 5.0f; // 4 fbo's per row
-		float fbo_h_size = static_cast<float>(m_vp.height) / 5.0f; // height is 1/3 screensize
+		const float fbo_w_size = static_cast<float>(m_vp.width) / 5.0f; // 4 fbo's per row
+		const float fbo_h_size = static_cast<float>(m_vp.height) / 5.0f; // height is 1/3 screensize
 
-		if (!ImGui::Begin("Fbo info (press '4' to change attachment)", &show_fbo))
-		{
+		if (!ImGui::Begin("Fbo info (press '4' to change attachment)", &show_fbo)) {
 			// Early out if the window is collapsed, as an optimization.
 			ImGui::End();
 			return;
 		}
-		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fbo_num_min, fbo_num_max, m_numFboAttachmentToDraw);
-		for (int i = fbo_num_min; i <= fbo_num_max; i++) {
-			if (i < m_demo.m_fboManager.fbo.size())
-			{
+
+		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fboNumMin, fboNumMax, m_numFboAttachmentToDraw);
+		for (size_t i = fboNumMin; i <= fboNumMax; ++i) {
+			if (i < m_demo.m_fboManager.fbo.size()) {
 				Fbo* my_fbo = m_demo.m_fboManager.fbo[i];
 				if (m_numFboAttachmentToDraw < my_fbo->numAttachments)
 					ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[m_numFboAttachmentToDraw], ImVec2(fbo_w_size, fbo_h_size), ImVec2(0, 1), ImVec2(1, 0));
@@ -352,13 +347,12 @@ namespace Phoenix {
 		ImGui::End();
 	}
 
-	void imGuiDriver::drawSound()
+	void ImGuiDriver::drawSound()
 	{
 		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 0), ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), 140.0f), ImGuiCond_Appearing);
 
-		if (!ImGui::Begin("Sound analysis", &show_sound))
-		{
+		if (!ImGui::Begin("Sound analysis", &show_sound)) {
 			ImGui::End();
 			return;
 		}
@@ -372,15 +366,14 @@ namespace Phoenix {
 		ImGui::End();
 	}
 
-	void imGuiDriver::drawGridConfig()
+	void ImGuiDriver::drawGridConfig()
 	{
 		ImVec2 size = ImVec2(static_cast<float>(m_vp.width) / 1.75f, 160.0f);
 		ImVec2 pos = ImVec2(m_vp.width + m_vp.x - size.x, m_vp.height + m_vp.y - size.y);
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
 
-		if (!ImGui::Begin("Grid config", &show_grid))
-		{
+		if (!ImGui::Begin("Grid config", &show_grid)) {
 			ImGui::End();
 			return;
 		}
@@ -389,35 +382,33 @@ namespace Phoenix {
 		ImGui::Checkbox("Draw X Axis", &m_demo.m_debug_drawGridAxisX); ImGui::SameLine();
 		ImGui::Checkbox("Draw Y Axis", &m_demo.m_debug_drawGridAxisY); ImGui::SameLine();
 		ImGui::Checkbox("Draw Z Axis", &m_demo.m_debug_drawGridAxisZ);
-		if (ImGui::SliderFloat("Size", &m_demo.m_pRes->m_gridSize, 0, 50, "%.1f"))
-		{
+		if (ImGui::SliderFloat("Size", &m_demo.m_pRes->m_gridSize, 0, 50, "%.1f")) {
 			if (m_demo.m_pRes->m_gridSize < 0)
 				m_demo.m_pRes->m_gridSize = 0;
 			if (m_demo.m_pRes->m_gridSize > 50)
 				m_demo.m_pRes->m_gridSize = 50;
-			m_demo.m_pRes->Load_Grid();
+			m_demo.m_pRes->loadGrid();
 		}
-		if (ImGui::SliderInt("Slices", &m_demo.m_pRes->m_gridSlices, 1, 100))
-		{
+
+		if (ImGui::SliderInt("Slices", &m_demo.m_pRes->m_gridSlices, 1, 100)) {
 			if (m_demo.m_pRes->m_gridSlices < 1)
 				m_demo.m_pRes->m_gridSlices = 1;
 			if (m_demo.m_pRes->m_gridSlices > 100)
 				m_demo.m_pRes->m_gridSlices = 100;
-			m_demo.m_pRes->Load_Grid();
+			m_demo.m_pRes->loadGrid();
 		}
 
 		ImGui::End();
 	}
 
-	void imGuiDriver::drawHelp()
+	void ImGuiDriver::drawHelp()
 	{
 		ImVec2 size = ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height));
 		ImVec2 pos = ImVec2(static_cast<float>(m_vp.x), static_cast<float>(m_vp.y));
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
 
-		if (!ImGui::Begin("Help commands", &show_help))
-		{
+		if (!ImGui::Begin("Help commands", &show_help)) {
 			ImGui::End();
 			return;
 		}
@@ -426,7 +417,7 @@ namespace Phoenix {
 	}
 
 	// Draws the information of all the sections that are being drawn
-	void imGuiDriver::drawSesctionInfo()
+	void ImGuiDriver::drawSesctionInfo()
 	{
 		const float windowWidth = static_cast<float>(m_vp.width + (m_vp.x * 2)) / 3.0f;
 		const float windowHeight = static_cast<float>(m_vp.height + (m_vp.y * 2));
@@ -434,7 +425,11 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(ImVec2(2.0f * windowWidth, 0.0f), ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Appearing);
 
-		if (!ImGui::Begin("Section Stack", &show_sesctionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
+		if (!ImGui::Begin(
+			"Section Stack",
+			&show_sesctionInfo,
+			ImGuiWindowFlags_AlwaysHorizontalScrollbar
+		)) {
 			// Early out if the window is collapsed, as an optimization.
 			ImGui::End();
 			return;
@@ -443,11 +438,11 @@ namespace Phoenix {
 		if (ImGui::Checkbox("Expand All", &m_expandAllSections))
 			m_expandAllSectionsChanged = true;
 
-		for (int i = 0; i < m_demo.m_sectionManager.m_execSection.size(); i++) {
+		for (size_t i = 0; i < m_demo.m_sectionManager.m_execSection.size(); i++) {
 			const auto sec_id = m_demo.m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
 			const auto ds = m_demo.m_sectionManager.m_section[sec_id];
 			std::stringstream ss;
-			ss << ds->type_str << " id/layer[" << ds->identifier << "/" +  std::to_string(ds->layer) << "]";
+			ss << ds->type_str << " id/layer[" << ds->identifier << "/" + std::to_string(ds->layer) << "]";
 			if (m_expandAllSectionsChanged)
 				ImGui::SetNextTreeNodeOpen(m_expandAllSections);
 			if (ImGui::CollapsingHeader(ss.str().c_str())) {
@@ -461,7 +456,7 @@ namespace Phoenix {
 		ImGui::End();
 	}
 
-	void imGuiDriver::drawFPSHistogram()
+	void ImGuiDriver::drawFPSHistogram()
 	{
 		m_renderTimes[m_currentRenderTime] = m_demo.m_realFrameTime * 1000.f; // Render times in ms
 

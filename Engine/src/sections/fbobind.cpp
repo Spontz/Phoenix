@@ -38,7 +38,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if (param.size() != 3) {
-			Logger::error("FboBind [%s]: 3 params are needed: fbo to use, clear the screen buffer, clear depth buffer", identifier.c_str());
+			Logger::error("FboBind [{}]: 3 params are needed: fbo to use, clear the screen buffer, clear depth buffer", identifier);
 			return false;
 		}
 
@@ -48,7 +48,7 @@ namespace Phoenix {
 		render_clearDepth = static_cast<bool>(param[2]);
 
 		if (m_uiFboNum >= m_demo.m_fboManager.fbo.size()) {
-			Logger::error("FboBind [%s]: The fbo number %i cannot be accessed, check graphics.spo file", identifier.c_str(), m_uiFboNum);
+			Logger::error("FboBind [{}]: The fbo number {} cannot be accessed, check graphics.spo file", identifier, m_uiFboNum);
 			return false;
 		}
 

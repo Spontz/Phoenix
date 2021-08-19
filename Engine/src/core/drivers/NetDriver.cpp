@@ -64,7 +64,7 @@ namespace Phoenix {
 		// Listener for sending messages to the editor
 		Logger::info(
 			LogLevel::med,
-			"Network: outgoing messages will be done through port: %d",
+			"Network: outgoing messages will be done through port: {}",
 			m_iPortSend
 		);
 
@@ -109,10 +109,10 @@ namespace Phoenix {
 
 		Logger::info(
 			LogLevel::low,
-			"Message received: [identifier: %s] [type: %s] [action: %s]",
-			sIdentifier.c_str(),
-			sType.c_str(),
-			sAction.c_str()
+			"Message received: [identifier: {}] [type: {}] [action: {}]",
+			sIdentifier,
+			sType,
+			sAction
 		);
 
 		if (sType == "command") {
@@ -190,7 +190,7 @@ namespace Phoenix {
 			std::to_string(DEMO->m_demoRunTime) + kDelimiterChar +
 			sInfo;
 
-		Logger::info(LogLevel::low, "Sending response: %s", sResponse.c_str());
+		Logger::info(LogLevel::low, "Sending response: {}", sResponse);
 
 		// return response
 		return sResponse;
@@ -219,13 +219,13 @@ namespace Phoenix {
 	void NetDriver::dyadOnListen(dyad_Event* const pDyadEvent) {
 		Logger::info(
 			LogLevel::med,
-			"Network listener started in port: %d",
+			"Network listener started in port: {}",
 			dyad_getPort(pDyadEvent->stream)
 		);
 	}
 
 	void NetDriver::dyadOnError(dyad_Event* const pDyadEvent) {
-		Logger::error("Network server error: %s", pDyadEvent->msg);
+		Logger::error("Network server error: {}", pDyadEvent->msg);
 	}
 
 	void NetDriver::dyadOnConnect(dyad_Event* const pDyadEvent) {
@@ -233,7 +233,7 @@ namespace Phoenix {
 
 		Logger::info(
 			LogLevel::med,
-			"Network: Connected to editor through port: %d",
+			"Network: Connected to editor through port: {}",
 			dyad_getPort(pDyadEvent->stream)
 		);
 	}

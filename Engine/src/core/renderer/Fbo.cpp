@@ -49,11 +49,11 @@ namespace Phoenix {
 
 		// Check Color attachments
 		if (numAttachments <= 0) { // TODO: This validation is nonsense
-			Logger::error("Fbo::upload: Requested %d attachments, but should be at least 1", numAttachments);
+			Logger::error("Fbo::upload: Requested {} attachments, but should be at least 1", numAttachments);
 			numAttachments = 1;
 		}
 		if (numAttachments > GLDRV_MAX_COLOR_ATTACHMENTS) {
-			Logger::error("Fbo::upload: MAX number of attachments reached. Requested %d attachments, but max attachments are: %d", numAttachments, GLDRV_MAX_COLOR_ATTACHMENTS);
+			Logger::error("Fbo::upload: MAX number of attachments reached. Requested {} attachments, but max attachments are: {}", numAttachments, GLDRV_MAX_COLOR_ATTACHMENTS);
 			numAttachments = GLDRV_MAX_COLOR_ATTACHMENTS;
 		}
 
@@ -80,7 +80,7 @@ namespace Phoenix {
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthAttachment);
 
 			//glCreateTextures(GL_TEXTURE_2D, 1, &m_depthAttachment);
-			//glBindTexture(GL_TEXTURE_2D, this->m_depthAttachment);
+			//glBindTexture(GL_TEXTURE_2D, m_depthAttachment);
 			//glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, width, height);
 			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_depthAttachment, 0);
 
@@ -104,7 +104,7 @@ namespace Phoenix {
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 				// attach depth texture as FBO's depth buffer
-				glBindFramebuffer(GL_FRAMEBUFFER, (this->m_frameBuffer));
+				glBindFramebuffer(GL_FRAMEBUFFER, (m_frameBuffer));
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_colorAttachment[i], 0);
 				glDrawBuffer(GL_NONE);
 				glReadBuffer(GL_NONE);
@@ -116,10 +116,10 @@ namespace Phoenix {
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			switch (status) {
 			case GL_FRAMEBUFFER_UNSUPPORTED:
-				Logger::error("Fbo::upload: Error uploading %s: glCheckFramebufferStatus returned GL_FRAMEBUFFER_UNSUPPORTED. Choose other format, this is not supported in the current system.", engineFormat.c_str());
+				Logger::error("Fbo::upload: Error uploading {}: glCheckFramebufferStatus returned GL_FRAMEBUFFER_UNSUPPORTED. Choose other format, this is not supported in the current system.", engineFormat);
 				break;
 			default:
-				Logger::error("Fbo::upload: Error uploading %s: Invalid framebuffer status.", engineFormat.c_str());
+				Logger::error("Fbo::upload: Error uploading {}: Invalid framebuffer status.", engineFormat);
 				break;
 			}
 			return false;
@@ -140,7 +140,7 @@ namespace Phoenix {
 
 	void Fbo::bind_tex(GLuint TexUnit, GLuint attachment) const
 	{
-		if (attachment < this->numAttachments)
+		if (attachment < numAttachments)
 			glBindTextureUnit(TexUnit, m_colorAttachment[attachment]);
 	}
 

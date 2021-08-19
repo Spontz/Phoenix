@@ -44,11 +44,11 @@ namespace Phoenix {
 
 		FT_Face face;
 		if (FT_New_Face(ft, font_path.c_str(), 0, &face)) {
-			Logger::error("Freetype library could not load font: %s", font_path.c_str());
+			Logger::error("Freetype library could not load font: {}", font_path);
 			return;
 		}
 		FT_Set_Pixel_Sizes(face, 0, size);
-		Logger::info(LogLevel::low, "Font %s loaded OK", font_path.c_str());
+		Logger::info(LogLevel::low, "Font %s loaded OK", font_path);
 
 		FT_GlyphSlot glyphSlot = face->glyph;
 
@@ -59,7 +59,7 @@ namespace Phoenix {
 		for (GLubyte c = 32; c < 128; c++) {
 			// Load character glyph 
 			if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-				Logger::error("Freetype: Failed to load Glyph: %c", c);
+				Logger::error("Freetype: Failed to load Glyph: {}", c);
 				continue;
 			}
 
@@ -79,7 +79,7 @@ namespace Phoenix {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		Logger::info(LogLevel::low, "Font Atlas texture size is %dx%d pixels", width, height);
+		Logger::info(LogLevel::low, "Font Atlas texture size is {}x{} pixels", width, height);
 
 		// Now we put all the characters into the texture
 		int ox = 0;

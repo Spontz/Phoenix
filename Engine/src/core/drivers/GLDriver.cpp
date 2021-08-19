@@ -3,7 +3,7 @@
 
 #include "main.h"
 #include "core/drivers/Events.h"
-#include "core/drivers/imGuiDriver.h"
+#include "core/drivers/ImGuiDriver.h"
 #include "debug/Instrumentor.h"
 
 namespace Phoenix {
@@ -11,16 +11,29 @@ namespace Phoenix {
 
 	// GLFW CALLBACKS ***************************************************
 
-	void glDriver::glDebugMessage_Callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+	void glDriver::glDebugMessage_Callback(
+		GLenum source,
+		GLenum type,
+		GLuint id,
+		GLenum severity,
+		GLsizei length,
+		const GLchar* message,
+		const void* userParam
+	)
 	{
-		Logger::info(LogLevel::low, "Error GL callback: %s type = 0x%x, severity = 0x%x, message = %s",
-			(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-			type, severity, message);
+		Logger::info(
+			LogLevel::low,
+			"Error GL callback: {} type = 0x{:x}, severity = 0x{:x}, message = {}",
+			type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "",
+			type,
+			severity,
+			message
+		);
 	}
 
 	void glDriver::glfwErrorCallback(int, const char* err_str)
 	{
-		Logger::error("GLFW Error: %s", err_str);
+		Logger::error("GLFW Error: {}", err_str);
 	}
 
 	void glDriver::glfwWindowSizeCallback(GLFWwindow* p_glfw_window, int width, int height) {
@@ -39,7 +52,7 @@ namespace Phoenix {
 			config.framebuffer_height = height;
 
 			// Change the debug font Size when we resize the screen
-			m_imGui->changeFontSize(m_demo.m_debug_fontSize, width, height);
+			m_imGui->changeFontSize(m_demo.m_debugFontSize, width, height);
 
 			// RT will be set to FB later
 			//GLDRV->current_rt_width_ = width;
@@ -97,7 +110,7 @@ namespace Phoenix {
 		if (GLDRV->m_demo.m_debug && !(ImGui::GetIO().WantCaptureMouse)) {
 			if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
 				GLDRV->calcMousePos(GLDRV->m_mouse_lastxpos, GLDRV->m_mouse_lastypos);
-				Logger::sendEditor("Mouse pos [%.4f, %.4f]", GLDRV->m_mouseX, GLDRV->m_mouseY);
+				Logger::sendEditor("Mouse pos [{:.4f}, {:.4f}]", GLDRV->m_mouseX, GLDRV->m_mouseY);
 			}
 		}
 	}
@@ -112,7 +125,7 @@ namespace Phoenix {
 
 	void glDriver::glfwKeyCallback(GLFWwindow* p_glfw_window, int key, int scancode, int action, int mods) {
 
-		demokernel& demo = GLDRV->m_demo;
+		DemoKernel& demo = GLDRV->m_demo;
 
 		if (action == GLFW_PRESS) {
 			if (key == KEY_EXIT)
@@ -126,7 +139,7 @@ namespace Phoenix {
 					demo.rewindDemo();
 					break;
 				case KEY_TIME:
-					Logger::info(LogLevel::high, "Demo time: %.4f", demo.m_demoRunTime);
+					Logger::info(LogLevel::high, "Demo time: {:.4f}", demo.m_demoRunTime);
 					break;
 				case KEY_PLAY_PAUSE:
 					if (demo.m_status == DemoStatus::PLAY)
@@ -168,7 +181,12 @@ namespace Phoenix {
 					GLDRV->guiDrawHelpPanel();
 					break;
 				case KEY_CAM_CAPTURE:
-					demo.m_pActiveCamera->capturePos();
+					if (demo.m_pActiveCamera->capturePos()) {
+						Logger::sendEditor("Camera position saved!");
+					}
+					else {
+						Logger::error("Camera file was not saved");
+					}
 					break;
 				case KEY_CAM_RESET:
 					demo.m_pActiveCamera->reset();
@@ -341,9 +359,9 @@ namespace Phoenix {
 
 		// imGUI init
 		if (m_glfw_window) {
-			m_imGui = new imGuiDriver();
+			m_imGui = new ImGuiDriver();
 			m_imGui->init(m_glfw_window);
-			m_imGui->changeFontSize(m_demo.m_debug_fontSize, config.framebuffer_width, config.framebuffer_height);
+			m_imGui->changeFontSize(m_demo.m_debugFontSize, config.framebuffer_width, config.framebuffer_height);
 		}
 
 
@@ -389,7 +407,7 @@ namespace Phoenix {
 		glfwSwapInterval(config.vsync); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
 
 		// reset the default gl state
-		this->initStates();
+		initStates();
 
 		// Set the internal timer
 		m_timeLastFrame = m_timeCurrentFrame;
@@ -429,7 +447,7 @@ namespace Phoenix {
 		if (drawAxisX)
 		{
 			MVP = VP * model;
-			m_demo.m_pRes->Draw_Grid(glm::vec3(1, 0, 0), &MVP);
+			m_demo.m_pRes->drawGrid(glm::vec3(1, 0, 0), &MVP);
 		}
 
 		// Y Axis
@@ -438,7 +456,7 @@ namespace Phoenix {
 			model = glm::mat4(1.0f);
 			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
 			MVP = VP * model;
-			m_demo.m_pRes->Draw_Grid(glm::vec3(0, 1, 0), &MVP);
+			m_demo.m_pRes->drawGrid(glm::vec3(0, 1, 0), &MVP);
 		}
 
 		// Z Axis
@@ -447,7 +465,7 @@ namespace Phoenix {
 			model = glm::mat4(1.0f);
 			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 0, 1));
 			MVP = VP * model;
-			m_demo.m_pRes->Draw_Grid(glm::vec3(0, 0, 1), &MVP);
+			m_demo.m_pRes->drawGrid(glm::vec3(0, 0, 1), &MVP);
 		}
 	}
 
@@ -558,7 +576,10 @@ namespace Phoenix {
 		{
 			// Clear Fbo's, if there is any
 			if (m_demo.m_efxBloomFbo.fbo.size() > 0) {
-				Logger::info(LogLevel::low, "Ooops! we need to regenerate the Bloom efx FBO's! clearing efx FBO's first!");
+				Logger::info(
+					LogLevel::low,
+					"Ooops! we need to regenerate the Bloom efx FBO's! clearing efx FBO's first!"
+				);
 				m_demo.m_efxBloomFbo.clearFbos();
 			}
 
@@ -572,10 +593,19 @@ namespace Phoenix {
 						
 			int res = 0;
 			for (int i = 0; i < EFXBLOOM_FBO_BUFFERS; i++) {
-				if (m_demo.m_efxBloomFbo.addFbo(bloomFbo) >= 0)
-					Logger::info(LogLevel::low, "EfxBloom Fbo %i uploaded: width: %.0f, height: %.0f, format: %s", i, bloomFbo.width, bloomFbo.height, bloomFbo.format.c_str());
-				else
-					Logger::error("Error in efxBloom Fbo definition: m_efxBloomFbo number %i", i);
+				if (m_demo.m_efxBloomFbo.addFbo(bloomFbo) >= 0) {
+					Logger::info(
+						LogLevel::low,
+						"EfxBloom Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}",
+						i,
+						bloomFbo.width,
+						bloomFbo.height,
+						bloomFbo.format
+					);
+				}
+				else {
+					Logger::error("Error in efxBloom Fbo definition: m_efxBloomFbo number {}", i);
+				}
 			}
 
 		}
@@ -599,10 +629,19 @@ namespace Phoenix {
 
 			int res = 0;
 			for (int i = 0; i < EFXACCUM_FBO_BUFFERS; i++) {
-				if (m_demo.m_efxAccumFbo.addFbo(accumFbo) >= 0)
-					Logger::info(LogLevel::low, "EfxAccum Fbo %i uploaded: width: %.0f, height: %.0f, format: %s", i, accumFbo.width, accumFbo.height, accumFbo.format.c_str());
-				else
-					Logger::error("Error in efxAccum Fbo definition: m_efxAccumFbo number %i", i);
+				if (m_demo.m_efxAccumFbo.addFbo(accumFbo) >= 0) {
+					Logger::info(
+						LogLevel::low,
+						"EfxAccum Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}",
+						i,
+						accumFbo.width,
+						accumFbo.height,
+						accumFbo.format
+					);
+				}
+				else {
+					Logger::error("Error in efxAccum Fbo definition: m_efxAccumFbo number {}", i);
+				}
 			}
 
 		}
@@ -621,10 +660,23 @@ namespace Phoenix {
 				fboConfig[i].height = static_cast<float>(config.framebuffer_height) / static_cast<float>(fboConfig[i].ratio);
 			}
 			
-			if (m_demo.m_fboManager.addFbo(fboConfig[i]) >= 0)
-				Logger::info(LogLevel::low, "Fbo %i uploaded: width: %.0f, height: %.0f, format: %s", i, fboConfig[i].width, fboConfig[i].height, fboConfig[i].format.c_str());
-			else
-				Logger::error("Error in FBO definition: FBO number %i has a non recongised format: '%s', please check 'graphics.spo' file.", i, fboConfig[i].format.c_str());
+			if (m_demo.m_fboManager.addFbo(fboConfig[i]) >= 0) {
+				Logger::info(
+					LogLevel::low,
+					"Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}",
+					i,
+					fboConfig[i].width,
+					fboConfig[i].height,
+					fboConfig[i].format
+				);
+			}
+			else {
+				Logger::error(
+					"Error in FBO definition: FBO number {} has a non recongised format: '{}', please check 'graphics.spo' file.",
+					i,
+					fboConfig[i].format
+				);
+			}
 		}
 
 	}
@@ -708,7 +760,7 @@ namespace Phoenix {
 
 
 	void glDriver::calcMousePos(float x, float y) {
-		Viewport vp = this->GetCurrentViewport();
+		Viewport vp = GetCurrentViewport();
 		if ((x >= vp.x) && (x <= static_cast<float>(vp.width + vp.x)) &&	// Validate we are inside the valid zone of X
 			(y >= vp.y) && (y <= static_cast<float>((vp.height + vp.y)))) {	// Validate we are inside the valid zone of Y
 
@@ -717,8 +769,8 @@ namespace Phoenix {
 			x_coord -= 0.5f;	// Change scale from -0.5 to 0.5
 			y_coord -= 0.5f;
 			y_coord *= -1.0f;
-			this->m_mouseX = x_coord;
-			this->m_mouseY = y_coord;
+			m_mouseX = x_coord;
+			m_mouseY = y_coord;
 		}
 	}
 	void glDriver::moveWindow(int x, int y)

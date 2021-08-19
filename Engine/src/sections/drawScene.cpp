@@ -62,12 +62,13 @@ namespace Phoenix {
 	}
 
 	bool sDrawScene::load() {
-		if ((this->param.size() != 6) || (this->strings.size() < 7)) {
+		if ((param.size() != 6) || (strings.size() < 7)) {
 			Logger::error(
-				"DrawScene [%s]: 5 param (do depth buffer clearing, disable depth test, disable depth mask, enable wireframe, enable animation & "
+				"DrawScene [{}]: 5 param (do depth buffer clearing, disable depth test, disable depth mask, enable wireframe, enable animation & "
 				"animation number) and 7 strings needed (model, shader, CameraNumber, aTime & "
 				"three more for object positioning)",
-				identifier.c_str());
+				identifier
+			);
 			return false;
 		}
 

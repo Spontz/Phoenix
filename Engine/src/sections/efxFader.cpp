@@ -42,7 +42,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if (strings.size() < 1) {
-			Logger::error("EfxFader [%s]: 1 shader file required", identifier.c_str());
+			Logger::error("EfxFader [{}]: 1 shader file required", identifier);
 			return false;
 		}
 
@@ -83,7 +83,7 @@ namespace Phoenix {
 			// Set shader variables values
 			m_pVars->setValues();
 			// Render scene
-			m_demo.m_pRes->Draw_QuadFS();
+			m_demo.m_pRes->drawQuadFS();
 		}
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();

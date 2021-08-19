@@ -8,8 +8,8 @@
 namespace Phoenix {
 
 	class SectionManager final {
-		friend class demokernel;
-		friend class imGuiDriver; // hack
+		friend class DemoKernel;
+		friend class ImGuiDriver; // hack
 		friend class sLoading; // hack
 		friend class SpoReader; // hack
 

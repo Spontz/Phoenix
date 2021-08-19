@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/utils/logger.h"
+#include "core/utils/LoggerDeclarations.h"
 #include "SpzDeclare.h"
 
 #include <array>
@@ -94,7 +94,7 @@ namespace Phoenix {
 	class BufferLayout final
 	{
 	public:
-		BufferLayout() {}
+		BufferLayout() = default;
 
 		BufferLayout(std::initializer_list<BufferElement> elements)
 			: m_Elements(elements)
@@ -115,10 +115,9 @@ namespace Phoenix {
 		{
 			size_t offset = 0;
 			m_Stride = 0;
-			for (auto& element : m_Elements)
-			{
+			for (auto& element : m_Elements) {
 				element.Offset = offset;
-				offset += element.DataType.sizeInBytes;
+				offset += size_t(element.DataType.sizeInBytes);
 				m_Stride += element.DataType.sizeInBytes;
 			}
 		}
@@ -132,14 +131,14 @@ namespace Phoenix {
 	class VertexBuffer final
 	{
 	public:
-		VertexBuffer(uint32_t size);
-		VertexBuffer(const void* data, uint32_t size);
+		VertexBuffer(size_t size);
+		VertexBuffer(const void* data, size_t size);
 		~VertexBuffer();
 
 	public:
 		void Bind() const;
 		void Unbind() const;
-		void SetData(const void* data, uint32_t size);
+		void SetData(const void* data, size_t size);
 		uint32_t GetBufferID() const { return m_RendererID; };
 		const BufferLayout& GetLayout() const { return m_Layout; }
 		void SetLayout(const BufferLayout& layout) { m_Layout = layout; }

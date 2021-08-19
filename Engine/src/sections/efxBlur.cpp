@@ -49,7 +49,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size()) != 3 || (strings.size() != 2)) {
-			Logger::error("EfxBlur [%s]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 2 strings (One with the formula of the Blur Amount + blur shader file)", identifier.c_str());
+			Logger::error("EfxBlur [{}]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 2 strings (One with the formula of the Blur Amount + blur shader file)", identifier);
 			return false;
 		}
 
@@ -61,7 +61,7 @@ namespace Phoenix {
 
 		// Check if the fbo can be used for the effect
 		if (m_uiFboNum < 0 || m_uiFboNum >= m_demo.m_fboManager.fbo.size()) {
-			Logger::error("EfxBlur [%s]: The fbo specified [%d] is not supported, should be between 0 and %d", identifier.c_str(), m_uiFboNum, m_demo.m_fboManager.fbo.size() - 1);
+			Logger::error("EfxBlur [{}]: The fbo specified [{}] is not supported, should be between 0 and {}", identifier, m_uiFboNum, m_demo.m_fboManager.fbo.size() - 1);
 			return false;
 		}
 
@@ -133,7 +133,7 @@ namespace Phoenix {
 					m_demo.m_efxBloomFbo.bind_tex(!horizontal);
 
 				// Render scene
-				m_demo.m_pRes->Draw_QuadFS();
+				m_demo.m_pRes->drawQuadFS();
 				horizontal = !horizontal;
 				if (first_iteration)
 					first_iteration = false;
@@ -144,7 +144,7 @@ namespace Phoenix {
 			// Adjust back the current fbo
 			m_demo.m_fboManager.bindCurrent();
 			// Second step: Draw the Blurred image
-			m_demo.m_pRes->Draw_QuadEfxFBOFS(!horizontal);
+			m_demo.m_pRes->drawQuadEfxFboFS(!horizontal);
 		}
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();

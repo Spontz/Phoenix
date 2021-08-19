@@ -4,7 +4,7 @@
 #pragma once
 
 #include "main.h"
-#include "core/drivers/imGuiDriver.h"
+#include "core/drivers/ImGuiDriver.h"
 #include "core/renderer/Viewport.h"
 #include "core/renderer/FboManager.h"
 
@@ -46,10 +46,10 @@ namespace Phoenix {
 		float			m_mouseX, m_mouseY;
 
 	private:
-		demokernel&		m_demo;
+		DemoKernel&		m_demo;
 		GLFWwindow*		m_glfw_window;
 		Viewport		m_current_viewport;
-		imGuiDriver*	m_imGui;
+		ImGuiDriver*	m_imGui;
 		float			m_timeCurrentFrame;
 		float			m_timeLastFrame;
 		float			m_timeDelta;

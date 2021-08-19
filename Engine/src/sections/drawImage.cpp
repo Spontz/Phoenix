@@ -57,9 +57,10 @@ namespace Phoenix {
 	{
 		if ((param.size() != 4) || (strings.size() < 5)) {
 			Logger::error(
-				"DrawImage [%s]: 4 param needed (Clear screen buffer, clear depth buffer, fullscreen &"
+				"DrawImage [{}]: 4 param needed (Clear screen buffer, clear depth buffer, fullscreen &"
 				"fit to content) and 5 strings needed (Image & shader paths and 3 for position)",
-				identifier.c_str());
+				identifier
+			);
 			return false;
 		}
 
@@ -83,7 +84,7 @@ namespace Phoenix {
 		// Load the formmula containing the Image position and scale
 		m_pExprPosition = new MathDriver(this);
 		// Load positions, process constants and compile expression
-		for (int i = 2; i < strings.size(); i++)
+		for (size_t i = 2; i < strings.size(); i++)
 			m_pExprPosition->expression += strings[i];
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
 		m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
@@ -178,7 +179,7 @@ namespace Phoenix {
 			// Set other shader variables values
 			m_pVars->setValues();
 			m_pTexture->bind();
-			m_demo.m_pRes->Draw_QuadFS(); // Draw a quad with the video
+			m_demo.m_pRes->drawQuadFS(); // Draw a quad with the video
 
 			/*
 			// View / projection / model Matrixes

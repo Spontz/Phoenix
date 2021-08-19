@@ -8,38 +8,38 @@
 namespace Phoenix {
 
 	Light::Light(std::string name, LightType lightType, glm::vec3 position) {
-		this->name = name;
-		this->lightType = lightType;
-		this->position = position;
-		this->direction = glm::vec3(0, 0, 0);	// Looking at center by default
+		name = name;
+		lightType = lightType;
+		position = position;
+		direction = glm::vec3(0, 0, 0);	// Looking at center by default
 
 		initColorValues();
 	}
 
 	void Light::CalcSpaceMatrix(float left, float right, float bottom, float top, float near_plane, float far_plane) {
 		glm::mat4 lightProjection = glm::ortho(left, right, bottom, top, near_plane, far_plane); // Switch to ortogonal view
-		glm::mat4 lightView = glm::lookAt(this->position, this->direction, glm::vec3(0.0, 1.0, 0.0)); // View from the light perspective
-		this->spaceMatrix = lightProjection * lightView;
+		glm::mat4 lightView = glm::lookAt(position, direction, glm::vec3(0.0, 1.0, 0.0)); // View from the light perspective
+		spaceMatrix = lightProjection * lightView;
 	}
 
 	void Light::draw(float size) {
-		DEMO->m_pRes->m_pShdrObjColor->use();
+		DEMO->m_pRes->m_spShdrObjColor->use();
 
-		DEMO->m_pRes->m_pShdrObjColor->setValue("color", this->colAmbient);
+		DEMO->m_pRes->m_spShdrObjColor->setValue("color", colAmbient);
 
 		glm::mat4 projection = DEMO->m_pActiveCamera->getProjection();
 		glm::mat4 view = DEMO->m_pActiveCamera->getView();
 
-		DEMO->m_pRes->m_pShdrObjColor->setValue("projection", projection);
-		DEMO->m_pRes->m_pShdrObjColor->setValue("view", view);
+		DEMO->m_pRes->m_spShdrObjColor->setValue("projection", projection);
+		DEMO->m_pRes->m_spShdrObjColor->setValue("view", view);
 
 		// Place the quad onto desired place
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, this->position);
+		model = glm::translate(model, position);
 		model = glm::scale(model, glm::vec3(size, size, size));
-		DEMO->m_pRes->m_pShdrObjColor->setValue("model", model);
+		DEMO->m_pRes->m_spShdrObjColor->setValue("model", model);
 
-		DEMO->m_pRes->Draw_Cube();
+		DEMO->m_pRes->drawCube();
 	}
 
 	void Light::initColorValues()

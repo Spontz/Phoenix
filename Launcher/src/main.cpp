@@ -5,8 +5,6 @@
 
 #include "Engine/src/main.h"
 
-// #define PROFILE_PHOENIX
-
 #ifdef PROFILE_PHOENIX
 #include "Engine/src/debug/Instrumentor.h"
 #endif
@@ -38,7 +36,7 @@ int main(int argc, char* argv[])
 
 	// Check the data folder
 	if (!demo.checkDataFolder()) {
-		Phoenix::Logger::error(("Critical error: Cannot find data folder in: " + demo.m_dataFolder + ", exit!").c_str());
+		Phoenix::Logger::error("Critical error: Cannot find data folder in: {}, exit!", demo.m_dataFolder);
 		return EXIT_FAILURE;
 	}
 
@@ -77,7 +75,7 @@ int main(int argc, char* argv[])
 	Phoenix::Logger::info(Phoenix::LogLevel::high, "Closing demo. We hope you enjoyed watching this demo! See you next time! Watch more at www.spontz.org.");
 	demo.closeDemo();
 	Phoenix::glDriver::release();
-	Phoenix::demokernel::release();
+	Phoenix::DemoKernel::release();
 	Phoenix::NetDriver::release();
 
 	Phoenix::Logger::closeLogFile();
