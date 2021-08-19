@@ -18,10 +18,10 @@
 
 namespace Phoenix {
 
-	ModelInstance::ModelInstance(SP_Model spModel, uint32_t m_amount)
+	ModelInstance::ModelInstance(SP_Model spModel, uint32_t amount)
 		:
 		m_pModel(spModel),
-		m_amount(m_amount),
+		m_amount(amount),
 		m_pModelMatrix(nullptr),
 		m_pPrevModelMatrix(nullptr),
 		m_matricesBuffer(0)
