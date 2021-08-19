@@ -131,14 +131,14 @@ namespace Phoenix {
 	class VertexBuffer final
 	{
 	public:
-		VertexBuffer(uint32_t size);
-		VertexBuffer(const void* data, uint32_t size);
+		VertexBuffer(size_t size);
+		VertexBuffer(const void* data, size_t size);
 		~VertexBuffer();
 
 	public:
 		void Bind() const;
 		void Unbind() const;
-		void SetData(const void* data, uint32_t size);
+		void SetData(const void* data, size_t size);
 		uint32_t GetBufferID() const { return m_RendererID; };
 		const BufferLayout& GetLayout() const { return m_Layout; }
 		void SetLayout(const BufferLayout& layout) { m_Layout = layout; }

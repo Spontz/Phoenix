@@ -124,9 +124,9 @@ namespace Phoenix {
 
 		// Load model properties
 		m_pModel = new ModelInstance(model_to_draw, num_obj_instances);
-		m_pModel->pModel->playAnimation = m_bPlayAnimation;
-		if (m_pModel->pModel->playAnimation)
-			m_pModel->pModel->setAnimation(m_iAnimationNumber);
+		m_pModel->m_pModel->playAnimation = m_bPlayAnimation;
+		if (m_pModel->m_pModel->playAnimation)
+			m_pModel->m_pModel->setAnimation(m_iAnimationNumber);
 
 
 		m_pExprPosition = new MathDriver(this);
@@ -196,9 +196,9 @@ namespace Phoenix {
 		EvalBlendingStart();
 
 		// Set model properties
-		m_pModel->pModel->playAnimation = m_bPlayAnimation;
-		if (m_pModel->pModel->playAnimation)
-			m_pModel->pModel->setAnimation(m_iAnimationNumber);
+		m_pModel->m_pModel->playAnimation = m_bPlayAnimation;
+		if (m_pModel->m_pModel->playAnimation)
+			m_pModel->m_pModel->setAnimation(m_iAnimationNumber);
 
 		// Load shader
 		m_pShader->use();
@@ -270,9 +270,9 @@ namespace Phoenix {
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		ss << "Matrix file: " << m_pModelRef->filename << std::endl;
 		ss << "Objects in matrix to be drawn: " << m_fNumObjects << std::endl;
-		ss << "Model file: " << m_pModel->pModel->filename << std::endl;
-		ss << "Meshes in each model: " << m_pModel->pModel->m_statNumMeshes << std::endl;
-		ss << "Faces: " << m_pModel->pModel->m_statNumFaces << ", vertices: " << m_pModel->pModel->m_statNumVertices << std::endl;
+		ss << "Model file: " << m_pModel->m_pModel->filename << std::endl;
+		ss << "Meshes in each model: " << m_pModel->m_pModel->m_statNumMeshes << std::endl;
+		ss << "Faces: " << m_pModel->m_pModel->m_statNumFaces << ", vertices: " << m_pModel->m_pModel->m_statNumVertices << std::endl;
 		debugStatic = ss.str();
 	}
 
@@ -315,7 +315,7 @@ namespace Phoenix {
 				// Copy previous model object matrix, before model matrix changes
 				m_pModel->copyMatrices(object);
 
-				my_obj_model = &(m_pModel->pModelMatrix[object]);
+				my_obj_model = &(m_pModel->m_pModelMatrix[object]);
 				*my_obj_model = matrixModel;
 				*my_obj_model = glm::translate(*my_obj_model, m_pModelRef->meshes[i]->unique_vertices_pos[j]);
 
