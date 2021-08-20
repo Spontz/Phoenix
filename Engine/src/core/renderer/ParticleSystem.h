@@ -22,7 +22,7 @@ enum struct ParticleType : int32_t {
 		glm::vec3 Vel;	// Velocity:	loc 1 (vec3)
 		glm::vec3 Col;	// Color:		loc 2 (vec3)
 		float lifeTime;	// lifeTime:	loc 3 (float)
-		ParticleType Type;// type:		loc 4 (int32_t)
+		ParticleType Type;// type:		loc 4 (int32)
 	};
 
 	class ParticleSystem
@@ -32,7 +32,7 @@ enum struct ParticleType : int32_t {
 		~ParticleSystem();
 
 		bool InitParticleSystem(Section* sec, const std::vector<Particle> emitter, std::vector<std::string>	billboardShaderVars);
-		void Render(float deltaTime, const glm::mat4& VP, const glm::mat4& model, const glm::vec3& CameraPos);
+		void Render(float deltaTime, const glm::mat4& model, glm::mat4& view, glm::mat4& projection);
 		void UpdateEmitters(float deltaTime);
 
 		glm::vec3 force; // Force to be applied globally
@@ -40,7 +40,7 @@ enum struct ParticleType : int32_t {
 	private:
 
 		void UpdateParticles(float deltaTime);
-		void RenderParticles(const glm::mat4& VP, const glm::mat4& model, const glm::vec3& CameraPos);
+		void RenderParticles(const glm::mat4& model, glm::mat4& view, glm::mat4& projection);
 
 		bool initShaderBillboard();		// For drawing the quads using geometry shaders
 		bool initShaderParticleSystem();// For drawing the particles using geometry shaders

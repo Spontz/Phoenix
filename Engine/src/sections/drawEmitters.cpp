@@ -212,8 +212,6 @@ namespace Phoenix {
 		model = glm::rotate(model, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
 		model = glm::scale(model, m_vScale);
 
-		glm::mat4 vp = projection * view;	//TODO: This mutliplication should be done in the shader, by passing the 2 matrix
-
 		// Render particles
 		float deltaTime = runTime - lastTime;
 		deltaTime = deltaTime * m_fParticleSpeed;
@@ -223,7 +221,7 @@ namespace Phoenix {
 		}
 		m_pPartSystem->force = m_vForce;
 
-		m_pPartSystem->Render(deltaTime, vp, model, m_demo.m_pActiveCamera->getPosition());
+		m_pPartSystem->Render(deltaTime, model, view, projection);
 
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
