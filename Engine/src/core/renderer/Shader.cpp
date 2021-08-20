@@ -160,7 +160,7 @@ namespace Phoenix {
 	// Loads a shader
 	// Returns true is loaded OK
 	// Returns false is failed loading shader
-	bool Shader::load(std::string_view URI, const std::unordered_set<std::string>& feedbackVaryings)
+	bool Shader::load(std::string_view URI, const std::vector<std::string>& feedbackVaryings)
 	{
 		// If we already have loaded this shader, we unload it first
 		if (m_id > 0) {
@@ -268,7 +268,7 @@ namespace Phoenix {
 	// Returns false if failed during loading
 	bool Shader::compile(
 		const ShaderSources& shaderSources,
-		const std::unordered_set<std::string>& feedbackVaryings
+		const std::vector<std::string>& feedbackVaryings
 	)
 	{
 		bool compiled = false;

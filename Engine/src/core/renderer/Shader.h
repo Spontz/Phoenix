@@ -20,7 +20,7 @@ namespace Phoenix{
 		~Shader();
 
 	public:
-		bool load(std::string_view path, std::unordered_set<std::string> const& feedbackVaryings);
+		bool load(std::string_view path, std::vector<std::string> const& feedbackVaryings);
 		void use(); // activate the shader
 
 		// set uniform scalar
@@ -50,7 +50,7 @@ namespace Phoenix{
 	private:
 		bool compile(
 			const ShaderSources& shaderSources,
-			std::unordered_set<std::string> const& feedbackVaryings
+			std::vector<std::string> const& feedbackVaryings
 		);
 
 	private:

@@ -17,7 +17,7 @@ namespace Phoenix {
 	public:
 		SP_Shader addShader(
 			std::string_view path,
-			const std::unordered_set<std::string>& feedbackVaryings = {}
+			const std::vector<std::string>& feedbackVaryings = {}
 		);
 		void unbindShaders();
 		void clear();

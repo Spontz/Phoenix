@@ -14,7 +14,7 @@ namespace Phoenix {
 	// Adds a Texture into the queue, returns the ID of the texture added
 	SP_Shader ShaderManager::addShader(
 		std::string_view path,
-		std::unordered_set<std::string> const& feedbackVaryings
+		std::vector<std::string> const& feedbackVaryings
 	)
 	{
 		bool loaded = false;
