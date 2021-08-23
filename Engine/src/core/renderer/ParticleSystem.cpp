@@ -173,7 +173,7 @@ namespace Phoenix {
 	}
 
 
-	void ParticleSystem::Render(float deltaTime, const glm::mat4& model, glm::mat4& view, glm::mat4& projection)
+	void ParticleSystem::Render(float deltaTime, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
 	{
 		m_time += deltaTime;
 
@@ -245,7 +245,7 @@ namespace Phoenix {
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 	}
 
-	void ParticleSystem::RenderParticles(const glm::mat4& model, glm::mat4& view, glm::mat4& projection)
+	void ParticleSystem::RenderParticles(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
 	{
 		//Use the billboard shader and send variables
 		m_billboardShader->use();
