@@ -62,15 +62,15 @@ namespace Phoenix {
 		if (m_numEmitters == 0)
 			return false;
 
-		Particle* Particles = new Particle[m_numEmitters];
+		Particle* Emitter = new Particle[m_numEmitters];
 
 		// Init the particle emitters
 		for (unsigned int i = 0; i < m_numEmitters; i++) {
-			Particles[i].Type = ParticleType::Emitter;
-			Particles[i].Pos = emitter[i].Pos;
-			Particles[i].Vel = emitter[i].Vel;
-			Particles[i].Col = emitter[i].Col;
-			Particles[i].lifeTime = emitter[i].lifeTime;
+			Emitter[i].Type = ParticleType::Emitter;
+			Emitter[i].Pos = emitter[i].Pos;
+			Emitter[i].Vel = emitter[i].Vel;
+			Emitter[i].Col = emitter[i].Col;
+			Emitter[i].lifeTime = emitter[i].lifeTime;
 		}
 
 		// Gen the VAO
@@ -87,9 +87,12 @@ namespace Phoenix {
 			glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
 			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(Particle) * m_numMaxParticles, NULL, GL_DYNAMIC_DRAW);	// Allocate mem, uploading an empty buffer for all the particles
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_numEmitters, Particles);			// Upload only the emitters to the Buffer
+			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_numEmitters, Emitter);				// Upload only the emitters to the Buffer
 			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 		}
+
+		delete[] Emitter;
+		Emitter = nullptr;
 
 		// Setup Vertex Attribute formats
 		// Definitions for Update shader Binding
@@ -129,9 +132,6 @@ namespace Phoenix {
 		glEnableVertexAttribArray(LOC_TYPE);
 		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
 		glVertexAttribBinding(LOC_TYPE, BINDING_UPDATE);
-
-		delete[] Particles;
-		Particles = nullptr;
 
 		// Make sure the VAO is not changed from the outside
 		glBindVertexArray(0);
