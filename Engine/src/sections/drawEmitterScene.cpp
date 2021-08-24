@@ -236,6 +236,7 @@ namespace Phoenix {
 	std::string sDrawEmitterScene::debug() {
 		std::stringstream ss;
 		ss << debugStatic;
+		ss << "Generated Particles: " << m_pPartSystem->getNumParticles() << std::endl;
 		return ss.str();
 	}
 }

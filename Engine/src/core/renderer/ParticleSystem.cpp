@@ -28,6 +28,9 @@ namespace Phoenix {
 		m_isFirst = true;
 		m_time = 0;
 
+		m_queryPrimitives = 0;
+		m_numParticles = 0;
+
 		m_shaderPath = shaderPath;
 		m_pathBillboard = shaderPath + "/billboard.glsl";
 		m_pathUpdate = shaderPath + "/update.glsl";
@@ -72,6 +75,9 @@ namespace Phoenix {
 			Emitter[i].Col = emitter[i].Col;
 			Emitter[i].lifeTime = emitter[i].lifeTime;
 		}
+
+		// Gen the Query
+		glGenQueries(1, &m_queryPrimitives);
 
 		// Gen the VAO
 		glGenVertexArrays(1, &m_VAO);
@@ -230,6 +236,8 @@ namespace Phoenix {
 		// Use Binding for particles (all attributes)
 		glBindVertexBuffer(BINDING_UPDATE, m_particleBuffer[m_currVB], 0, sizeof(Particle));
 
+		glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, m_queryPrimitives);
+
 		glBeginTransformFeedback(GL_POINTS);
 
 		if (m_isFirst) {
@@ -241,6 +249,9 @@ namespace Phoenix {
 		}
 
 		glEndTransformFeedback();
+
+		glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
+		glGetQueryObjectuiv(m_queryPrimitives, GL_QUERY_RESULT, &m_numParticles);
 
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 	}

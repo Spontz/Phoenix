@@ -35,6 +35,8 @@ enum struct ParticleType : int32_t {
 		void Render(float deltaTime, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 		void UpdateEmitters(float deltaTime);
 
+		int32_t getNumParticles() { return m_numParticles; };
+
 		glm::vec3 force; // Force to be applied globally
 
 	private:
@@ -70,6 +72,9 @@ enum struct ParticleType : int32_t {
 		Particle*				m_emitterData;		// Emitter info (for updating emitters positions)
 		SP_Shader				m_particleSystemShader;
 		SP_Shader				m_billboardShader;
+
+		GLuint					m_queryPrimitives;	// Query to know how many primitives have been written
+		GLuint					m_numParticles;		// Number of particles generated
 
 		float m_time;
 	};
