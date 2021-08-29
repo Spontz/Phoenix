@@ -184,7 +184,7 @@ namespace Phoenix {
 		m_time += deltaTime;
 
 		glBindVertexArray(m_VAO);
-		UpdateParticles(deltaTime);
+		UpdateParticles(deltaTime, model);
 		RenderParticles(model, view, projection);
 		glBindVertexArray(0);
 
@@ -214,11 +214,12 @@ namespace Phoenix {
 	}
 
 
-	void ParticleSystem::UpdateParticles(float deltaTime)
+	void ParticleSystem::UpdateParticles(float deltaTime, const glm::mat4& model)
 	{
 		//UpdateEmitters(deltaTime);
 
 		m_particleSystemShader->use();
+		m_particleSystemShader->setValue("model", model);
 		m_particleSystemShader->setValue("gTime", m_time);
 		m_particleSystemShader->setValue("gDeltaTime", deltaTime);
 		m_particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?

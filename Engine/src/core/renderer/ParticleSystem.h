@@ -41,7 +41,7 @@ enum struct ParticleType : int32_t {
 
 	private:
 
-		void UpdateParticles(float deltaTime);
+		void UpdateParticles(float deltaTime, const glm::mat4& model);
 		void RenderParticles(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 
 		bool initShaderBillboard();		// For drawing the quads using geometry shaders
