@@ -103,7 +103,7 @@ namespace Phoenix {
 		m_pShaderBloom->setValue("scene", 0);		// The scene is in the Tex unit 0
 		m_pShaderBloom->setValue("bloomBlur", 1);	// The bloom blur is in the Tex unit 1
 
-		return true;
+		return !GLDRV_checkError();
 	}
 
 	void sEfxBloom::init()

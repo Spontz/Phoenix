@@ -32,7 +32,8 @@ namespace Phoenix {
 	}
 
 	bool sTest::load() {
-		return true;
+
+		return !GLDRV_checkError();
 	}
 
 	void sTest::init() {

@@ -68,7 +68,7 @@ namespace Phoenix {
 		// Set shader variables values
 		m_pVars->setValues();
 
-		return true;
+		return !GLDRV_checkError();
 	}
 
 	void sDrawQuad::init()

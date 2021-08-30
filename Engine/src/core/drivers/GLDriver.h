@@ -13,6 +13,7 @@ namespace Phoenix {
 	// HACK: get rid of macros
 #define GLDRV (&Phoenix::glDriver::getInstance())
 #define GLDRV_MAX_COLOR_ATTACHMENTS 4
+#define GLDRV_checkError() GLDRV->checkError_(__FILE__, __LINE__) 
 
 // ******************************************************************
 
@@ -73,12 +74,11 @@ namespace Phoenix {
 		void	initFbos();
 		void	initStates();
 
-		bool	checkGLError(char* pOut);
-		
 	public:
 		void	initFramework();
 		bool	initGraphics();
 		void	initRender(int clear);
+		bool	checkError_(const char* file, int line);
 		void	drawGrid(bool drawAxisX, bool drawAxisY, bool drawAxisZ);
 		void	drawGui();
 		void	guiDrawLog();

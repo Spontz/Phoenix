@@ -52,7 +52,7 @@ namespace Phoenix {
 			return false;
 		}
 
-		return true;
+		return !GLDRV_checkError();
 	}
 
 	void sFboBind::init()

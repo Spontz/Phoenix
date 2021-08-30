@@ -169,7 +169,7 @@ namespace Phoenix {
 		// Create the Camera class
 		m_pCam = new CameraProjectionFPS(CameraProjectionFPS::DEFAULT_CAM_POSITION);
 
-		return true;
+		return !GLDRV_checkError();
 	}
 
 	void sCameraFPS::init()

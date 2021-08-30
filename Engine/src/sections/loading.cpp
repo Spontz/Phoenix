@@ -73,7 +73,7 @@ namespace Phoenix {
 			Logger::error("Loading [{}]: Could not load some of the loading textures", identifier);
 		}
 
-		return true;
+		return !GLDRV_checkError();
 	}
 
 	void sLoading::init()

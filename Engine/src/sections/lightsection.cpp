@@ -98,7 +98,8 @@ namespace Phoenix {
 		m_pExprLight->Expression.register_symbol_table(m_pExprLight->SymbolTable);
 		if (!m_pExprLight->compileFormula())
 			return false;
-		return true;
+		
+		return !GLDRV_checkError();
 	}
 
 	void sLight::init()

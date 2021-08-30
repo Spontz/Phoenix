@@ -84,7 +84,7 @@ namespace Phoenix {
 		if (!m_pExprPosition->compileFormula())
 			return false;
 
-		return true;
+		return !GLDRV_checkError();
 	}
 
 	void sDrawSkybox::init()

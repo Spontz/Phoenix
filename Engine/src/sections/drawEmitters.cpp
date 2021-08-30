@@ -183,7 +183,8 @@ namespace Phoenix {
 			return false;
 
 		Emitter.clear();
-		return true;
+
+		return !GLDRV_checkError();
 	}
 
 	void sDrawEmitters::init()

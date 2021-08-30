@@ -168,7 +168,7 @@ namespace Phoenix {
 		// Create the Camera class
 		m_pCam = new CameraProjectionTarget(CameraProjectionTarget::DEFAULT_CAM_POSITION, CameraProjectionTarget::DEFAULT_CAM_TARGET);
 
-		return true;
+		return !GLDRV_checkError();
 	}
 
 	void sCameraTarget::init()

@@ -174,7 +174,7 @@ namespace Phoenix {
 		if (!m_pPartSystem->InitParticleSystem(this, Emitter, uniform))
 			return false;
 
-		return true;
+		return !GLDRV_checkError();
 	}
 
 	void sDrawEmitterScene::init()

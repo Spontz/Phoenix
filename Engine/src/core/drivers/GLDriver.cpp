@@ -685,24 +685,44 @@ namespace Phoenix {
 		return glfwWindowShouldClose(m_glfw_window);
 	}
 
-	bool glDriver::checkGLError(char* pOut) {
-		GLenum err = glGetError();
-		if (err == GL_NO_ERROR)
-			return false;
-		if (pOut) {
-			switch (err) {
-			case GL_INVALID_ENUM:					strcpy(pOut, (const char*)"INVALID_ENUM");					break;
-			case GL_INVALID_VALUE:					strcpy(pOut, (const char*)"INVALID_VALUE");					break;
-			case GL_INVALID_OPERATION:				strcpy(pOut, (const char*)"INVALID_OPERATION");				break;
-			case GL_STACK_OVERFLOW:					strcpy(pOut, (const char*)"STACK_OVERFLOW");				break;
-			case GL_STACK_UNDERFLOW:				strcpy(pOut, (const char*)"STACK_UNDERFLOW");				break;
-			case GL_OUT_OF_MEMORY:					strcpy(pOut, (const char*)"OUT_OF_MEMORY");					break;
-			case GL_INVALID_FRAMEBUFFER_OPERATION:	strcpy(pOut, (const char*)"INVALID_FRAMEBUFFER_OPERATION");	break;
-			default:								strcpy(pOut, (const char*)"UNHANDLED ERROR");				break;
-			}
+	bool glDriver::checkError_(const char* file, int line) {
+		if (m_demo.m_debug)
+		{
+			GLenum err = glGetError();
+			std::string glError;
 
+			if (err == GL_NO_ERROR)
+				return false;
+			switch (err) {
+			case GL_INVALID_ENUM:
+				glError = "INVALID_ENUM";
+				break;
+			case GL_INVALID_VALUE:
+				glError = "INVALID_VALUE";
+				break;
+			case GL_INVALID_OPERATION:
+				glError = "INVALID_OPERATION";
+				break;
+			case GL_STACK_OVERFLOW:
+				glError = "STACK_OVERFLOW";
+				break;
+			case GL_STACK_UNDERFLOW:
+				glError = "STACK_UNDERLFOW";
+				break;
+			case GL_OUT_OF_MEMORY:
+				glError = "OUT_OF_MEMORY";
+				break;
+			case GL_INVALID_FRAMEBUFFER_OPERATION:
+				glError = "INVALID_FRAMEBUFFER_OPERATION";
+				break;
+			default:
+				glError = "UNHANDLED ERROR";
+				break;
+			}
+			Logger::error("GL Error: {0}, at {1}:{2}", glError, file, line);
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 	void glDriver::swapBuffers() {
