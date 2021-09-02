@@ -231,6 +231,21 @@ namespace Phoenix {
 
 		glEnable(GL_RASTERIZER_DISCARD);	// Stop drawing on the screen
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
+
+		////////////
+		// Check buffer data
+		// get pointer
+	/*	Particle* p;// = new Particle[m_numMaxParticles];
+		p = (Particle*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
+		// make sure to tell OpenGL we're done with the pointer
+		glUnmapBuffer(GL_ARRAY_BUFFER);
+		for (int i = 0; i < m_numMaxParticles; i++) {
+			if (p[i].Type == ParticleType::Shell)
+				int kk = 0;
+		}
+		*/
+		///////////
+
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[m_currTFB]);
 
 		// Use Binding for particles (all attributes)

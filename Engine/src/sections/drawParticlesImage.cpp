@@ -22,6 +22,7 @@ namespace Phoenix {
 		SP_Texture m_pTexture;
 
 		// Particle engine variables
+		float			m_lastTime = 0;
 		int				m_iNumParticles = 0;
 		ParticleMesh*	m_pParticleMesh = nullptr;
 		SP_Shader		m_pShader = nullptr;
@@ -148,8 +149,6 @@ namespace Phoenix {
 	{
 	}
 
-
-	static float lastTime = 0;
 
 	void sDrawParticlesImage::exec()
 	{

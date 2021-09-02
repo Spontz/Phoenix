@@ -5,14 +5,12 @@ layout (location = 0) in vec3 Position;
 layout (location = 1) in vec3 Velocity;
 layout (location = 2) in vec3 Color;
 layout (location = 3) in float Age;
-layout (location = 4) in float Size;
-layout (location = 5) in int Type;
+layout (location = 4) in int Type;
 
 out vec3 Position0;
 out vec3 Velocity0;
 out vec3 Color0;
 out float Age0;
-out float Size0;
 out int Type0;
 
 void main()
@@ -21,7 +19,6 @@ void main()
 	Velocity0 = Velocity;
 	Color0 = Color;
 	Age0 = Age;
-	Size0 = Size;
 	Type0 = Type;
 }
 
@@ -37,7 +34,6 @@ in vec3 Position0[];
 in vec3 Velocity0[];
 in vec3 Color0[];
 in float Age0[];
-in float Size0[];
 in int Type0[];
 
 // Info sent to FS
@@ -45,18 +41,20 @@ out vec3 Position1;
 out vec3 Velocity1;
 out vec3 Color1;
 out float Age1;
-out float Size1;
 out int Type1;
 
 //uniform float gDeltaTimeMillis;
 uniform float gDeltaTime;
 uniform float gTime;
+uniform vec3 force;
 uniform sampler1D gRandomTexture;
-uniform float gLauncherLifetime;
-uniform float gShellLifetime;
+uniform float fEmissionTime;
+uniform float fParticleLifetime;
 
-#define PARTICLE_TYPE_LAUNCHER 0
-#define PARTICLE_TYPE_SHELL 1
+#define PARTICLE_TYPE_EMITTER 1
+#define PARTICLE_TYPE_SHELL 2
+
+uniform mat4 model;
 
 // Get a random number, used for calculate the new direction
 vec3 GetRandomDir(float TexCoord)
@@ -69,48 +67,48 @@ vec3 GetRandomDir(float TexCoord)
 void main()
 {
     float Age = Age0[0] + gDeltaTime; // Increment the age of the particle
-	
-	Color1 = Color0[0];
-	Size1 = Size0[0];
+	vec3 DeltaP = gDeltaTime * Velocity0[0]; // Position Delta: xDelta = v*t
+	int type = int(Type0[0]);
 
-	if (Type0[0] == PARTICLE_TYPE_LAUNCHER) {
-		if (Age >= gLauncherLifetime) {
+	if (type == PARTICLE_TYPE_EMITTER) {
+		// If it's time to create a new particle shell...
+		if (Age >= fEmissionTime) {
 			Type1 = PARTICLE_TYPE_SHELL;
-			Position1 = Position0[0];
-			vec3 Dir = GetRandomDir(gTime);
-			//Dir.y = max(Dir.y, 0.5); // We make sure that we emmit up
-			//Velocity1 = normalize(Dir);
-			Velocity1 = Velocity0[0];//+ normalize(Dir)/1.0; // Divide by random factor
+			Position1 = vec3(model*vec4(Position0[0] + DeltaP, 1.0));
+			float randomNum = (Position0[0].x + Position0[0].y + Position0[0].z); 
+			Velocity1 = Velocity0[0] + GetRandomDir(Age/fEmissionTime);
+			Color1 = Color0[0];
 			Age1 = 0.0;
 			EmitVertex();
-			EndPrimitive();
-			Age = 0.0;
-		}
-		Type1 = PARTICLE_TYPE_LAUNCHER;
+			EndPrimitive();	// Generate a new particle from the launcher position
+			Age = 0.0;		// Set the age of the emitter to 0, so it can generate new particles later
+		}	
+		// Draw the Emitter
+		Type1 = PARTICLE_TYPE_EMITTER;
 		Position1 = Position0[0];
 		Velocity1 = Velocity0[0];
+		Color1 = Color0[0];
 		Age1 = Age;
 		EmitVertex();
-		EndPrimitive();
+		EndPrimitive();		// Generate the emitter
     }
-	// If its an emmitted particle...
+	
+	// If its a normal particle...
 	else {
-		vec3 DeltaP = gDeltaTime * Velocity0[0]; // xDelta = v*t
-		vec3 DeltaV = vec3(0.0, -0.0981, 0.0) * gDeltaTime; // vDelta = accel*tDetla
-		DeltaV += vec3(0.1, 0.0, 0.0) * gDeltaTime; // vDelta = accel*tDetla
+		
+		// If the is still alive, we update the values...
+		if (Age < fParticleLifetime) {
+			vec3 DeltaV = force * gDeltaTime; // vDelta = accel*tDetla
 
-		//vec3 DeltaP = gDeltaTime * Velocity0[0]; // xDelta = v*t
-		//vec3 DeltaV = vec3(gDeltaTime*1000) * (0.0, -9.81, 0.0); // vDelta = accel*tDetla
-
-		if (Age < gShellLifetime) {
 			Type1 = PARTICLE_TYPE_SHELL;
 			Position1 = Position0[0] + DeltaP; // x = x0 + xDelta
-			float randomNum = (Position0[0].x + Position0[0].y + Position0[0].z); 
-			vec3 Dir = GetRandomDir(randomNum);
-			Velocity1 = Velocity0[0] + DeltaV/Dir; // v = v0 + vDelta
+			Velocity1 = Velocity0[0] + DeltaV; // v = v0 + vDelta
+			Color1 = Color0[0] - vec3(1.0, 1.0, 1.0)*gDeltaTime/fParticleLifetime;
+
 			Age1 = Age;
+
 			EmitVertex();
-			EndPrimitive(); // Generate the particle!
+			EndPrimitive(); // Update the particle status and position
 		}
 	}
 }

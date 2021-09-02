@@ -149,9 +149,6 @@ namespace Phoenix {
 	{
 	}
 
-
-	static float lastTime = 0;
-
 	void sDrawParticlesScene::exec()
 	{
 		// Start set render states and evaluating blending

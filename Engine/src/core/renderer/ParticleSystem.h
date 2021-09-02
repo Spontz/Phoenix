@@ -12,8 +12,9 @@ namespace Phoenix {
 
 
 enum struct ParticleType : int32_t {
-	Emitter = 0,
-	Shell = 1		// todo: never used
+	None = 0,
+	Emitter = 1,
+	Shell = 2		// todo: never used
 };
 
 	struct Particle

@@ -21,6 +21,7 @@ namespace Phoenix {
 		SP_Model		m_pModel;
 
 		// Particle engine variables
+		float			m_lastTime = 0;
 		unsigned int	m_uiNumMaxParticles = 0;
 		unsigned int	m_uiNumEmitters = 0;
 		float			m_fCurrentEmitter = 0;
@@ -181,9 +182,6 @@ namespace Phoenix {
 	{
 	}
 
-
-	static float lastTime = 0;
-
 	void sDrawEmitterScene::exec()
 	{
 		// Start set render states and evaluating blending
@@ -206,9 +204,9 @@ namespace Phoenix {
 		model = glm::scale(model, m_vScale);
 
 		// Render particles
-		float deltaTime = runTime - lastTime;
+		float deltaTime = runTime - m_lastTime;
 		deltaTime = deltaTime * m_fParticleSpeed;
-		lastTime = runTime;
+		m_lastTime = runTime;
 		if (deltaTime < 0) {
 			deltaTime = -deltaTime;	// In case we rewind the demo
 		}

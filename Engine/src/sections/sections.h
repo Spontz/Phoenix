@@ -24,7 +24,6 @@ namespace Phoenix {
 	Section* instance_drawParticles();
 	Section* instance_drawParticlesImage();
 	Section* instance_drawParticlesScene();
-	Section* instance_drawEmitters();
 	Section* instance_drawEmitterScene();
 	Section* instance_efxAccum();
 	Section* instance_efxBloom();

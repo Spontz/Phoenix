@@ -18,6 +18,8 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
+		float		m_lastTime = 0;
+		bool		m_firstIteration = true;
 		uint32_t	m_uiFboNum = 0;				// Fbo to use (must have 2 color attachments!)
 		float		m_fSourceInfluence = .5f;	// Source influence (0 to 1)
 		float		m_fAccumInfluence = .5f;	// Accumulation influence (0 to 1)
@@ -105,9 +107,6 @@ namespace Phoenix {
 
 	}
 
-	static float lastTime = 0;
-	static bool firstIteration = true;
-
 	void sEfxAccum::exec()
 	{
 		// Start set render states and evaluating blending
@@ -116,8 +115,8 @@ namespace Phoenix {
 
 
 		// Calculate deltaTime
-		float deltaTime = runTime - lastTime;
-		lastTime = runTime;
+		float deltaTime = runTime - m_lastTime;
+		m_lastTime = runTime;
 
 		// Evaluate the expression
 		m_pExprAccum->Expression.value();
@@ -138,8 +137,8 @@ namespace Phoenix {
 				m_demo.m_fboManager.bind_tex(m_uiFboNum, 0);
 
 				// Set the accumulation fbo in texture unit 1
-				if (firstIteration)
-					firstIteration = false;
+				if (m_firstIteration)
+					m_firstIteration = false;
 				m_bAccumBuffer = !m_bAccumBuffer;
 				m_demo.m_efxAccumFbo.bind_tex(m_bAccumBuffer, 1);
 
@@ -156,7 +155,7 @@ namespace Phoenix {
 			// Second step: Draw the accum buffer
 			m_demo.m_pRes->m_spShdrQuadTex->use();
 			m_demo.m_pRes->m_spShdrQuadTex->setValue("screenTexture", 0);
-			if (firstIteration)
+			if (m_firstIteration)
 				m_demo.m_fboManager.bind_tex(m_uiFboNum, 0);
 			else
 				m_demo.m_efxAccumFbo.bind_tex(!m_bAccumBuffer, 0);

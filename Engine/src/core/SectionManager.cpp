@@ -32,7 +32,6 @@ namespace Phoenix {
 		{"drawParticles",				SectionType::DrawParticles, instance_drawParticles},
 		{"drawParticlesImage",			SectionType::DrawParticlesImage, instance_drawParticlesImage},
 		{"drawParticlesScene",			SectionType::DrawParticlesScene, instance_drawParticlesScene},
-		{"drawEmitters",				SectionType::DrawEmitters, instance_drawEmitters},
 		{"drawEmitterScene",			SectionType::DrawEmitterScene, instance_drawEmitterScene},
 		{"sound",						SectionType::Sound, instance_sound},
 		{"setVariable",					SectionType::SetVariable, instance_setVariable},
