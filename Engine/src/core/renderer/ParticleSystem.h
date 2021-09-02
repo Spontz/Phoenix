@@ -38,7 +38,8 @@ enum struct ParticleType : int32_t {
 
 		int32_t getNumParticles() { return m_numParticles; };
 
-		glm::vec3 force; // Force to be applied globally
+		glm::vec3 force;	// Force to be applied globally
+		glm::vec3 color;	// Color to be applied on each particle when it's generated
 
 	private:
 
@@ -53,6 +54,7 @@ enum struct ParticleType : int32_t {
 
 	private:
 
+		float					m_time;
 		unsigned int			m_textureRandID;	// TODO: This will be removed once is included in the textureManager
 		std::string				m_shaderPath;
 		std::string				m_pathBillboard;
@@ -76,7 +78,5 @@ enum struct ParticleType : int32_t {
 
 		GLuint					m_queryPrimitives;	// Query to know how many primitives have been written
 		GLuint					m_numParticles;		// Number of particles generated
-
-		float m_time;
 	};
 }

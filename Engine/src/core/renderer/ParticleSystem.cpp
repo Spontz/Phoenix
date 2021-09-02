@@ -22,6 +22,7 @@ namespace Phoenix {
 		m_varsBillboard = nullptr;
 
 		force = glm::vec3(0, 0, 0);
+		color = glm::vec3(1, 1, 1);
 
 		m_currVB = 0;
 		m_currTFB = 1;
@@ -47,13 +48,14 @@ namespace Phoenix {
 
 	ParticleSystem::~ParticleSystem()
 	{
-		if (m_transformFeedback[0] != 0) {
+		if (m_transformFeedback[0] != 0)
 			glDeleteTransformFeedbacks(2, m_transformFeedback.data());
-		}
 
-		if (m_particleBuffer[0] != 0) {
+		if (m_particleBuffer[0] != 0)
 			glDeleteBuffers(2, m_particleBuffer.data());
-		}
+
+		if (m_queryPrimitives != 0)
+			glDeleteQueries(1, &m_queryPrimitives);
 
 		if (m_varsBillboard)
 			delete m_varsBillboard;
@@ -191,7 +193,6 @@ namespace Phoenix {
 		m_currTFB = (m_currTFB + 1) & 0x1;
 	}
 
-	static float m_time = 0.0f;
 	void ParticleSystem::UpdateEmitters(float deltaTime)
 	{
 		m_time += deltaTime;
@@ -224,27 +225,14 @@ namespace Phoenix {
 		m_particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
 		m_particleSystemShader->setValue("fEmissionTime", m_emissionTime);
 		m_particleSystemShader->setValue("fParticleLifetime", m_particleLifeTime);
-		m_particleSystemShader->setValue("force", force);
+		m_particleSystemShader->setValue("gForce", force);
+		m_particleSystemShader->setValue("gColor", color);
 
 
 		bindRandomTexture(RANDOM_TEXTURE_UNIT);
 
 		glEnable(GL_RASTERIZER_DISCARD);	// Stop drawing on the screen
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
-
-		////////////
-		// Check buffer data
-		// get pointer
-	/*	Particle* p;// = new Particle[m_numMaxParticles];
-		p = (Particle*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
-		// make sure to tell OpenGL we're done with the pointer
-		glUnmapBuffer(GL_ARRAY_BUFFER);
-		for (int i = 0; i < m_numMaxParticles; i++) {
-			if (p[i].Type == ParticleType::Shell)
-				int kk = 0;
-		}
-		*/
-		///////////
 
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[m_currTFB]);
 

@@ -210,7 +210,9 @@ namespace Phoenix {
 		if (deltaTime < 0) {
 			deltaTime = -deltaTime;	// In case we rewind the demo
 		}
+		// Update Force and Color values
 		m_pPartSystem->force = m_vForce;
+		m_pPartSystem->color = m_vColor;
 
 		m_pPartSystem->Render(deltaTime, model, view, projection);
 

@@ -8,18 +8,24 @@ layout (location = 4) in int Type;
 uniform mat4 model;
 uniform mat4 view;
 
-out vec3 Color0;
-flat out int Type0;
+out VS_OUT
+{
+	vec4	Position;
+	vec3	Color;
+	flat int		Type;
+} vs_out;
+
 #define PARTICLE_TYPE_EMITTER 1
 #define PARTICLE_TYPE_SHELL 2
 void main()
 {
-	Color0 = Color;
-	Type0 = Type;
+	vs_out.Color = Color;
+	vs_out.Type = Type;
+	
 	if (Type == PARTICLE_TYPE_EMITTER)
-		gl_Position = view * model * vec4(Position, 1.0);
-	else
-		gl_Position = view * vec4(Position, 1.0);
+		vs_out.Position = view * model * vec4(Position, 1.0);
+	if (Type == PARTICLE_TYPE_SHELL)
+		vs_out.Position = view * vec4(Position, 1.0);
 }
 
 
@@ -27,50 +33,56 @@ void main()
 #version 440 core
 
 layout(points) in;
-layout(triangle_strip) out;
-layout(max_vertices = 4) out;
+layout(triangle_strip, max_vertices = 4) out;
 
 uniform mat4 projection;
 uniform float fParticleSize;
 
 // Info from the VS
-in vec3 Color0[];
-flat in int Type0[];
+in VS_OUT
+{
+	vec4		Position;
+	vec3		Color;
+	flat int	Type;
+} gs_in[];
 
 // Info sent to FS
-out vec2 TexCoord;
-out vec3 Color1;
-flat out int Type1;
+out GS_OUT
+{
+	vec2		TexCoord;
+	vec3		Color;
+	flat int	Type;
+} gs_out;
 
 void main()
 {
-	Color1 = Color0[0];
-	Type1 = Type0[0];
+	gs_out.Color	= gs_in[0].Color;
+	gs_out.Type		= gs_in[0].Type;
 	
-	vec4 P = gl_in[0].gl_Position;
+	vec4 P = gs_in[0].Position;
 
 	// a: left-bottom 
 	vec2 va = P.xy + vec2(-0.5, -0.5) * fParticleSize;
 	gl_Position = projection * vec4(va, P.zw);
-	TexCoord = vec2(0.0, 0.0);
+	gs_out.TexCoord = vec2(0.0, 0.0);
 	EmitVertex();
 
 	// b: left-top
 	vec2 vb = P.xy + vec2(-0.5, 0.5) * fParticleSize;
 	gl_Position = projection * vec4(vb, P.zw);
-	TexCoord = vec2(0.0, 1.0);
+	gs_out.TexCoord = vec2(0.0, 1.0);
 	EmitVertex();
 
 	// d: right-bottom
 	vec2 vd = P.xy + vec2(0.5, -0.5) * fParticleSize;
 	gl_Position = projection * vec4(vd, P.zw);
-	TexCoord = vec2(1.0, 0.0);
+	gs_out.TexCoord = vec2(1.0, 0.0);
 	EmitVertex();
 
 	// c: right-top
 	vec2 vc = P.xy + vec2(0.5, 0.5) * fParticleSize;
 	gl_Position = projection * vec4(vc, P.zw);
-	TexCoord = vec2(1.0, 1.0);
+	gs_out.TexCoord = vec2(1.0, 1.0);
 	EmitVertex();
 
 	EndPrimitive();
@@ -81,14 +93,19 @@ void main()
 
 uniform sampler2D partTexture;
 
-in vec2 TexCoord;
-in vec3 Color1;
-flat in int Type1;
+in GS_OUT
+{
+	vec2		TexCoord;
+	vec3		Color;
+	flat int	Type;
+} fs_in;
 
 out vec4 FragColor;
 
-
 void main()
 {
-	FragColor = texture(partTexture, TexCoord) * vec4(Color1.rgb, 1.0f);
+	if (fs_in.Type != 0)
+		FragColor = texture(partTexture, fs_in.TexCoord) * vec4(fs_in.Color.rgb, 1.0f);
+	else
+		discard;
 }
