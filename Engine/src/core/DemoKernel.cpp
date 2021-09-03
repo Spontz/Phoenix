@@ -509,6 +509,7 @@ namespace Phoenix {
 			Logger::ScopedIndent _;
 			pSection->loaded = pSection->load();
 			if (pSection->loaded) {
+				pSection->loadDebugStatic();	// Load debug static info
 				Logger::info(LogLevel::low,
 					"Section {} [id: {}, DataSource: {}] loaded OK!",
 					sectionIndex,
