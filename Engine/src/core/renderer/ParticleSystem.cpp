@@ -32,6 +32,8 @@ namespace Phoenix {
 		m_queryPrimitives = 0;
 		m_numParticles = 0;
 
+		m_memUsed = 0;
+
 		m_shaderPath = shaderPath;
 		m_pathBillboard = shaderPath + "/billboard.glsl";
 		m_pathUpdate = shaderPath + "/update.glsl";
@@ -98,6 +100,8 @@ namespace Phoenix {
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_numEmitters, Emitter);				// Upload only the emitters to the Buffer
 			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 		}
+
+		m_memUsed = (float)(2 * sizeof(Particle) * m_numMaxParticles) / 1024.0f / 1024.0f;
 
 		delete[] Emitter;
 		Emitter = nullptr;

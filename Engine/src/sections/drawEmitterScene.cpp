@@ -227,6 +227,7 @@ namespace Phoenix {
 		ss << "Model used: " << m_pModel->filename << std::endl;
 		ss << "Emitters: " << m_uiNumEmitters << std::endl;
 		ss << "Max Particles: " << m_uiNumMaxParticles << std::endl;
+		ss << "Memory Used (Mb): " << m_pPartSystem->getMemUsedInMb() << std::endl;
 		ss << "Emission Time: " << m_fEmissionTime << std::endl;
 		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
 		ss << "Emitter Randomness: " << m_fEmitterRandomness << std::endl;
