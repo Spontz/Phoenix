@@ -49,7 +49,7 @@ namespace Phoenix {
 		for (uint32_t i = 0; i < kIndent; ++i)
 			ss << "  ";
 
-		ss << src << " [" << std::put_time(timeinfo, "%T") << " t: " << DEMO->m_demoRunTime << "] " << Message << std::endl;
+		ss << src << " [" << std::put_time(timeinfo, "%T") << " t: " << std::format("{:.3f}",DEMO->m_demoRunTime) << "] " << Message << std::endl;
 		return ss.str();
 	}
 
