@@ -24,6 +24,7 @@ enum struct ParticleType : int32_t {
 		glm::vec3 Col;	// Color:		loc 2 (vec3)
 		float lifeTime;	// lifeTime:	loc 3 (float)
 		ParticleType Type;// type:		loc 4 (int32)
+		float			ID;	// Unique ID
 	};
 
 	class ParticleSystem
