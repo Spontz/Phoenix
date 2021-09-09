@@ -102,7 +102,7 @@ namespace Phoenix {
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_numEmitters, Emitter);				// Upload only the emitters to the Buffer
 			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 		}
-
+	
 		m_memUsed = (float)(2 * sizeof(Particle) * m_numMaxParticles) / 1024.0f / 1024.0f;
 
 		delete[] Emitter;
@@ -286,7 +286,7 @@ namespace Phoenix {
 
 		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
 
-		/// Output values
+/*		/// Output values
 		Particle *p = (Particle*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
 		Logger::info(LogLevel::high, "Buffer used: {}", m_currTFB);
 		for (int i = 0; i < m_numMaxParticles; i++)
@@ -296,6 +296,24 @@ namespace Phoenix {
 		}
 		Logger::info(LogLevel::high, "");
 		glUnmapBuffer(GL_ARRAY_BUFFER);
+
+*/
+		/// Output Buffer values
+		Logger::info(LogLevel::high, "Buffers Current VB:{}, current TFB:{}", m_currVB, m_currTFB);
+		for (unsigned int i = 0; i < 2; i++) {
+			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
+			Particle* p = (Particle*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
+			Logger::info(LogLevel::high, "SETUP Buffer {}", i);
+			for (int i = 0; i < m_numMaxParticles; i++)
+			{
+				//if (p[i].Type == ParticleType::Emitter)
+				Logger::info(LogLevel::high, "Part {}: Type: {}, ID: {:.3f}, P:({:.2f},{:.2f},{:.2f}), L:{:.2f}", i, (int32_t)p[i].Type, p[i].ID, p[i].Pos.x, p[i].Pos.y, p[i].Pos.z, p[i].lifeTime);
+			}
+			Logger::info(LogLevel::high, "");
+			glUnmapBuffer(GL_ARRAY_BUFFER);
+
+		}
+
 	}
 
 	bool ParticleSystem::initShaderBillboard()
