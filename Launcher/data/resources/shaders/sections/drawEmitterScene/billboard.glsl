@@ -104,8 +104,8 @@ out vec4 FragColor;
 
 void main()
 {
-	if (fs_in.Type != 0)
+	//if (fs_in.Type != 0)
 		FragColor = texture(partTexture, fs_in.TexCoord) * vec4(fs_in.Color.rgb, 1.0f);
-	else
-		discard;
+	//else
+		//discard;
 }

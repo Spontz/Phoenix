@@ -60,6 +60,9 @@ namespace Phoenix {
 		if (m_queryPrimitives != 0)
 			glDeleteQueries(1, &m_queryPrimitives);
 
+		if (m_textureRandID != 0)
+			glDeleteTextures(1, &m_textureRandID);
+
 		if (m_varsBillboard)
 			delete m_varsBillboard;
 	}
@@ -79,7 +82,6 @@ namespace Phoenix {
 			Emitter[i].Vel = emitter[i].Vel;
 			Emitter[i].Col = emitter[i].Col;
 			Emitter[i].lifeTime = emitter[i].lifeTime;
-			Emitter[i].ID = emitter[i].ID;
 		}
 
 		// Gen the Query
@@ -131,10 +133,6 @@ namespace Phoenix {
 		glEnableVertexAttribArray(LOC_TYPE);
 		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
 		glVertexAttribBinding(LOC_TYPE, BINDING_UPDATE);
-
-		glEnableVertexAttribArray(LOC_ID);
-		glVertexAttribFormat(LOC_ID, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, ID));	// ID (4 bytes)
-		glVertexAttribBinding(LOC_ID, BINDING_UPDATE);
 
 		// Definitions for Billboard shader Binding
 		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[0], 0, sizeof(Particle));
@@ -301,7 +299,7 @@ namespace Phoenix {
 	bool ParticleSystem::initShaderParticleSystem()
 	{
 		m_particleSystemShader = DEMO->m_shaderManager.addShader(m_pathUpdate,
-			{ "Position1", "Velocity1", "Color1", "Age1", "Type1", "ID1"});
+			{ "Position1", "Velocity1", "Color1", "Age1", "Type1"});
 
 		if (m_particleSystemShader)
 			return true;
@@ -353,8 +351,7 @@ namespace Phoenix {
 			Logger::info(l, "SETUP Buffer {}", i);
 			for (unsigned int i = 0; i < m_numMaxParticles; i++)
 			{
-				//if (p[i].Type == ParticleType::Emitter)
-				Logger::info(l, "Part {}: Type: {}, ID: {:.3f}, L:{:.2f}, P:({:.2f},{:.2f},{:.2f}), C:({:.2f},{:.2f},{:.2f})", i, (int32_t)p[i].Type, p[i].ID, p[i].lifeTime, p[i].Pos.x, p[i].Pos.y, p[i].Pos.z, p[i].Col.x, p[i].Col.y, p[i].Col.z);
+				Logger::info(l, "Part {}: Type: {}, L:{:.2f}, P:({:.2f},{:.2f},{:.2f}), C:({:.2f},{:.2f},{:.2f})", i, (int32_t)p[i].Type, p[i].lifeTime, p[i].Pos.x, p[i].Pos.y, p[i].Pos.z, p[i].Col.x, p[i].Col.y, p[i].Col.z);
 			}
 			Logger::info(l, "");
 			glUnmapBuffer(GL_ARRAY_BUFFER);

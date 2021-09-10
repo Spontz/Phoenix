@@ -6,16 +6,14 @@ layout (location = 1) in vec3 Velocity;
 layout (location = 2) in vec3 Color;
 layout (location = 3) in float Age;
 layout (location = 4) in int Type;
-layout (location = 5) in float ID;
 
 out VS_OUT
 {
-	vec3	Position;
-	vec3	Velocity;
-	vec3	Color;
-	float	Age;
+	vec3			Position;
+	vec3			Velocity;
+	vec3			Color;
+	float			Age;
 	flat int		Type;
-	float	ID;
 } vs_out;
 
 void main()
@@ -25,7 +23,6 @@ void main()
 	vs_out.Color = Color;
 	vs_out.Age = Age;
 	vs_out.Type = Type;
-	vs_out.ID = ID;
 }
 
 #type geometry
@@ -33,17 +30,16 @@ void main()
 
 layout(points) in;
 layout(points) out;
-layout(max_vertices = 30) out;
+layout(max_vertices = 254) out;
 
 // Info from the VS
 in VS_OUT
 {
-	vec3	Position;
-	vec3	Velocity;
-	vec3	Color;
-	float	Age;
-	flat int		Type;
-	float	ID;
+	vec3		Position;
+	vec3		Velocity;
+	vec3		Color;
+	float		Age;
+	flat int	Type;
 } gs_in[];
 
 // Info sent to FS
@@ -52,9 +48,7 @@ out vec3 Velocity1;
 out vec3 Color1;
 out float Age1;
 flat out int Type1;
-out float ID1;
 
-//uniform float gDeltaTimeMillis;
 uniform float gDeltaTime;
 uniform float gTime;
 uniform vec3 gForce;
@@ -80,57 +74,45 @@ void main()
 {
     float Age = gs_in[0].Age + gDeltaTime; // Increment the age of the particle
 	vec3 DeltaP = gDeltaTime * gs_in[0].Velocity; // Position Delta: xDelta = v*t
-	int type = int(gs_in[0].Type);
 	
-	if (type == PARTICLE_TYPE_EMITTER) {
+	if (gs_in[0].Type == PARTICLE_TYPE_EMITTER) {
 		// If it's time to create a new particle shell...
 		if (Age >= fEmissionTime) {
-			
-			// Isaac suggestion
-			//vec4 new_pos = model*vec4(gs_in[0].Position + DeltaP, 1.0);
-			//Position1 = vec3(new_pos.x/new_pos.w, new_pos.y/new_pos.w, new_pos.z/new_pos.w );
-			
-			// Pere original
+			Type1 = PARTICLE_TYPE_SHELL;
 			Position1 = vec3(model*vec4(gs_in[0].Position + DeltaP, 1.0));
-			
-			//Position1 = gs_in[0].Position + DeltaP;
-			
-			Velocity1 = gs_in[0].Velocity;// + GetRandomDir(Age/fEmissionTime);
+			Velocity1 = gs_in[0].Velocity + GetRandomDir(Age/fEmissionTime);
 			Color1 = gColor;				//Apply the global color
 			//Color1 = gs_in[0].Color;		//Apply the same color as the emitter
 			Age1 = 0.0;
-			Type1 = PARTICLE_TYPE_SHELL;
-			float randomNum = (gTime + gs_in[0].Position.x + gs_in[0].Position.y + gs_in[0].Position.z);
-			ID1 = randomNum;
+			
 			EmitVertex();
 			EndPrimitive();	// Generate a new particle from the launcher position
 			Age = 0.0;		// Set the age of the emitter to 0, so it can generate new particles later
-		}	
+		}
 		// Draw the Emitter
+		Type1 = PARTICLE_TYPE_EMITTER;
 		Position1 = gs_in[0].Position;
 		Velocity1 = gs_in[0].Velocity;
-		Color1 = vec3(1,0,0);//gs_in[0].Color;
+		Color1 = gColor; // Apply the global Color
 		Age1 = Age;
-		Type1 = PARTICLE_TYPE_EMITTER;
-		ID1 = gTime;//gs_in[0].ID + 0.1; // Everytime we draw an Emitter, increase it's ID
+		
 		EmitVertex();
 		EndPrimitive();		// Generate the emitter
     }
 	
 	// If its a normal particle...
-	if (type == PARTICLE_TYPE_SHELL) {
+	if (gs_in[0].Type == PARTICLE_TYPE_SHELL) {
 		
 		// If the is still alive, we update the values...
 		if (Age < fParticleLifetime) {
 			vec3 DeltaV = gForce * gDeltaTime; // vDelta = accel*tDetla
 
+			Type1 = PARTICLE_TYPE_SHELL;
 			Position1 = gs_in[0].Position + DeltaP; // x = x0 + xDelta
 			Velocity1 = gs_in[0].Velocity + DeltaV; // v = v0 + vDelta
-			Color1 = gs_in[0].Color - vec3(1.0, 1.0, 1.0)*gDeltaTime/fParticleLifetime;
+			Color1 = gs_in[0].Color - 0.01*vec3(1.0, 1.0, 1.0)*(Age/fParticleLifetime);
 			Age1 = Age;
-			Type1 = PARTICLE_TYPE_SHELL;
-			ID1 = gs_in[0].ID;
-
+			
 			EmitVertex();
 			EndPrimitive(); // Update the particle status and position
 		}

@@ -24,7 +24,6 @@ enum struct ParticleType : int32_t {
 		glm::vec3 Col;		// Color:		loc 2 (vec3)
 		float lifeTime;		// lifeTime:	loc 3 (float)
 		ParticleType Type;	// type:		loc 4 (int32)
-		float			ID;	// Unique ID	loc 5 (float)
 	};
 
 	class ParticleSystem
@@ -41,7 +40,7 @@ enum struct ParticleType : int32_t {
 		float getMemUsedInMb() { return m_memUsed; };
 
 		glm::vec3 force;	// Force to be applied globally
-		glm::vec3 color;	// Color to be applied on each particle when it's generated
+		glm::vec3 color;	// Color to be applied on each particle when it's emitted
 
 	private:
 
