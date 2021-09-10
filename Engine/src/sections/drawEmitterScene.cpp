@@ -138,8 +138,6 @@ namespace Phoenix {
 			m_uiNumEmitters += static_cast<uint32_t>(mesh->unique_vertices_pos.size());
 		}
 
-		m_uiNumEmitters = 1;
-
 		if (m_uiNumEmitters <= 0) {
 			Logger::error("Draw Emitter Scene [{}]: No emitters found in the 3D model", identifier);
 			return false;
@@ -159,27 +157,18 @@ namespace Phoenix {
 		// Load the emitters, based in our model vertexes
 		size_t numEmitter = 0;
 		m_fCurrentEmitter = 0;
-		/*for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
+		for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
 			for (size_t j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
 				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 				Emitter[numEmitter].Type = ParticleType::Emitter;
 				Emitter[numEmitter].Pos = m_pModel->meshes[i]->unique_vertices_pos[j];
-				Emitter[numEmitter].Vel = m_vVelocity;// +(m_fEmitterRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat()));
+				Emitter[numEmitter].Vel = m_vVelocity + (m_fEmitterRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat()));
 				Emitter[numEmitter].Col = m_vColor;
 				Emitter[numEmitter].lifeTime = 0.0f;
 				numEmitter++;
 				m_fCurrentEmitter = static_cast<float>(numEmitter);
 			}
 		}
-		*/
-		m_pExprPosition->Expression.value();
-		Emitter[0].Type = ParticleType::Emitter;
-		Emitter[0].Pos = m_pModel->meshes[0]->unique_vertices_pos[0];
-		Emitter[0].Vel = m_vVelocity;// +(m_fEmitterRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat()));
-		Emitter[0].Col = m_vColor;
-		Emitter[0].lifeTime = 0.0f;
-		Emitter[0].ID = 0.0f;
-
 
 		// Create the particle system
 		m_pPartSystem = new ParticleSystem(pathShaders, m_uiNumMaxParticles, m_uiNumEmitters, m_fEmissionTime, m_fParticleLifeTime);

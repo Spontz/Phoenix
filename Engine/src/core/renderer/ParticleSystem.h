@@ -19,12 +19,12 @@ enum struct ParticleType : int32_t {
 
 	struct Particle
 	{
-		glm::vec3 Pos;	// Position:	loc 0 (vec3)
-		glm::vec3 Vel;	// Velocity:	loc 1 (vec3)
-		glm::vec3 Col;	// Color:		loc 2 (vec3)
-		float lifeTime;	// lifeTime:	loc 3 (float)
-		ParticleType Type;// type:		loc 4 (int32)
-		float			ID;	// Unique ID
+		glm::vec3 Pos;		// Position:	loc 0 (vec3)
+		glm::vec3 Vel;		// Velocity:	loc 1 (vec3)
+		glm::vec3 Col;		// Color:		loc 2 (vec3)
+		float lifeTime;		// lifeTime:	loc 3 (float)
+		ParticleType Type;	// type:		loc 4 (int32)
+		float			ID;	// Unique ID	loc 5 (float)
 	};
 
 	class ParticleSystem
@@ -53,6 +53,8 @@ enum struct ParticleType : int32_t {
 
 		bool initRandomTexture(unsigned int Size); //TODO: Add it into the textureManager
 		void bindRandomTexture(GLuint TexUnit = 0);//TODO: this should be removed once is included in the textureManager
+
+		void debugLogBufferData();
 
 	private:
 

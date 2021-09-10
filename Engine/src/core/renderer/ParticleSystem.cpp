@@ -149,7 +149,7 @@ namespace Phoenix {
 
 		glEnableVertexAttribArray(LOC_TYPE);
 		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
-		glVertexAttribBinding(LOC_TYPE, BINDING_UPDATE);
+		glVertexAttribBinding(LOC_TYPE, BINDING_BILLBOARD);
 
 		// Make sure the VAO is not changed from the outside
 		glBindVertexArray(0);
@@ -205,6 +205,7 @@ namespace Phoenix {
 
 	void ParticleSystem::UpdateEmitters(float deltaTime)
 	{
+		// NOTE: This method is never used, only useful for debugging and modifying the emitters by hardcode
 		m_time += deltaTime;
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
 		//m_numMaxParticles
@@ -218,7 +219,7 @@ namespace Phoenix {
 			m_emitterData[i].Pos = glm::vec3(glm::sin(sphere), 3.0 * glm::sin(m_time / 2.0), glm::cos(sphere));
 			m_emitterData[i].Vel = glm::vec3(0.0f, 10.0f, 0.0f);
 			m_emitterData[i].Col = glm::vec3(1, 1, 1);
-			m_emitterData[i].lifeTime = 1.0f; // TODO: investigate why only emmits if this is greater than 0...
+			m_emitterData[i].lifeTime = 0.0f;
 		}
 		glUnmapBuffer(GL_ARRAY_BUFFER);
 	}
@@ -226,7 +227,7 @@ namespace Phoenix {
 
 	void ParticleSystem::UpdateParticles(float deltaTime, const glm::mat4& model)
 	{
-		//UpdateEmitters(deltaTime);
+		//UpdateEmitters(deltaTime); // For debugging only: Overwrittes the emitter position
 
 		m_particleSystemShader->use();
 		m_particleSystemShader->setValue("model", model);
@@ -286,34 +287,7 @@ namespace Phoenix {
 
 		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
 
-/*		/// Output values
-		Particle *p = (Particle*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
-		Logger::info(LogLevel::high, "Buffer used: {}", m_currTFB);
-		for (int i = 0; i < m_numMaxParticles; i++)
-		{
-			//if (p[i].Type == ParticleType::Emitter)
-				Logger::info(LogLevel::high, "Part {}: Type: {}, ID: {:.3f}, P:({:.2f},{:.2f},{:.2f}), L:{:.2f}", i,  (int32_t)p[i].Type, p[i].ID, p[i].Pos.x, p[i].Pos.y, p[i].Pos.z, p[i].lifeTime);
-		}
-		Logger::info(LogLevel::high, "");
-		glUnmapBuffer(GL_ARRAY_BUFFER);
-
-*/
-		/// Output Buffer values
-		Logger::info(LogLevel::high, "Buffers Current VB:{}, current TFB:{}", m_currVB, m_currTFB);
-		for (unsigned int i = 0; i < 2; i++) {
-			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-			Particle* p = (Particle*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
-			Logger::info(LogLevel::high, "SETUP Buffer {}", i);
-			for (int i = 0; i < m_numMaxParticles; i++)
-			{
-				//if (p[i].Type == ParticleType::Emitter)
-				Logger::info(LogLevel::high, "Part {}: Type: {}, ID: {:.3f}, P:({:.2f},{:.2f},{:.2f}), L:{:.2f}", i, (int32_t)p[i].Type, p[i].ID, p[i].Pos.x, p[i].Pos.y, p[i].Pos.z, p[i].lifeTime);
-			}
-			Logger::info(LogLevel::high, "");
-			glUnmapBuffer(GL_ARRAY_BUFFER);
-
-		}
-
+		//debugLogBufferData(); // For debugging only: Outputs to the log the content of the buffers
 	}
 
 	bool ParticleSystem::initShaderBillboard()
@@ -365,5 +339,26 @@ namespace Phoenix {
 	void ParticleSystem::bindRandomTexture(GLuint TexUnit)
 	{
 		glBindTextureUnit(TexUnit, m_textureRandID);
+	}
+
+	void ParticleSystem::debugLogBufferData()
+	{
+		/// DEBUG ONLY
+		/// Output Buffer values
+		LogLevel l = LogLevel::low;
+		Logger::info(l, "Buffers Current VB:{}, current TFB:{}", m_currVB, m_currTFB);
+		for (unsigned int i = 0; i < 2; i++) {
+			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
+			Particle* p = (Particle*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
+			Logger::info(l, "SETUP Buffer {}", i);
+			for (unsigned int i = 0; i < m_numMaxParticles; i++)
+			{
+				//if (p[i].Type == ParticleType::Emitter)
+				Logger::info(l, "Part {}: Type: {}, ID: {:.3f}, L:{:.2f}, P:({:.2f},{:.2f},{:.2f}), C:({:.2f},{:.2f},{:.2f})", i, (int32_t)p[i].Type, p[i].ID, p[i].lifeTime, p[i].Pos.x, p[i].Pos.y, p[i].Pos.z, p[i].Col.x, p[i].Col.y, p[i].Col.z);
+			}
+			Logger::info(l, "");
+			glUnmapBuffer(GL_ARRAY_BUFFER);
+
+		}
 	}
 }
