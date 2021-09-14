@@ -1,24 +1,27 @@
-﻿// ParticleSystem.cpp
+﻿// ParticleSystemEx.cpp
 // Spontz Demogroup
 
 #include "main.h"
-#include "core/renderer/ParticleSystem.h"
+#include "core/renderer/ParticleSystemEx.h"
 
 namespace Phoenix {
 
 #define RANDOM_TEXTURE_UNIT 0
 
-#define LOC_POSITION 0
-#define LOC_VELOCITY 1
-#define LOC_COLOR 2
-#define LOC_LIFETIME 3
-#define LOC_TYPE 4
-#define LOC_ID 5
+// TODO: QUITAR ESTO Y USAR LOS VB QUE TENEMOS EN EL ENGINE!!
+#define LOC_TYPE		 0
+#define LOC_ID			 1
+#define LOC_INITPOSITION 2
+#define LOC_POSITION 3
+#define LOC_ROTATION 4
+#define LOC_COLOR 5
+#define LOC_AGE 6
+#define LOC_LIFE 7
 
 #define BINDING_UPDATE	0
 #define BINDING_BILLBOARD	1
 
-	ParticleSystem::ParticleSystem(std::string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime)
+	ParticleSystemEx::ParticleSystemEx(std::string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float particleLifeTime)
 	{
 		m_varsBillboard = nullptr;
 
@@ -41,7 +44,6 @@ namespace Phoenix {
 
 		m_numMaxParticles = numMaxParticles; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
 		m_numEmitters = numEmitters;
-		m_emissionTime = emissionTime;
 		m_particleLifeTime = particleLifeTime;
 
 		m_transformFeedback = {};
@@ -49,7 +51,7 @@ namespace Phoenix {
 	}
 
 
-	ParticleSystem::~ParticleSystem()
+	ParticleSystemEx::~ParticleSystemEx()
 	{
 		if (m_transformFeedback[0] != 0)
 			glDeleteTransformFeedbacks(2, m_transformFeedback.data());
@@ -68,17 +70,10 @@ namespace Phoenix {
 	}
 
 
-	bool ParticleSystem::InitParticleSystem(Section* sec, const std::vector<Particle> emitter, std::vector<std::string> billboardShaderVars)
+	bool ParticleSystemEx::InitParticleSystem(Section* sec, const std::vector<ParticleEx> particles, std::vector<std::string> billboardShaderVars)
 	{
 		if (m_numEmitters == 0)
 			return false;
-
-		Particle* Emitter = new Particle[m_numEmitters];
-
-		// Init the particle emitters
-		for (unsigned int i = 0; i < m_numEmitters; i++) {
-			Emitter[i] = emitter[i];
-		}
 
 		// Gen the Query
 		glGenQueries(1, &m_queryPrimitives);
@@ -96,54 +91,63 @@ namespace Phoenix {
 		for (unsigned int i = 0; i < 2; i++) {
 			glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
 			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(Particle) * m_numMaxParticles, NULL, GL_DYNAMIC_DRAW);	// Allocate mem, uploading an empty buffer for all the particles
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_numEmitters, Emitter);				// Upload only the emitters to the Buffer
+			glBufferData(GL_ARRAY_BUFFER, sizeof(ParticleEx) * m_numMaxParticles, particles.data(), GL_DYNAMIC_DRAW);	// Allocate mem, uploading all the particles
 			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 		}
 	
-		m_memUsed = (float)(2 * sizeof(Particle) * m_numMaxParticles) / 1024.0f / 1024.0f;
-
-		delete[] Emitter;
-		Emitter = nullptr;
+		m_memUsed = (float)(2 * sizeof(ParticleEx) * m_numMaxParticles) / 1024.0f / 1024.0f;
 
 		// Setup Vertex Attribute formats
 		// Definitions for Update shader Binding
-		glBindVertexBuffer(BINDING_UPDATE, m_particleBuffer[0], 0, sizeof(Particle));
-
-		glEnableVertexAttribArray(LOC_POSITION);
-		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
-		glVertexAttribBinding(LOC_POSITION, BINDING_UPDATE);
-
-		glEnableVertexAttribArray(LOC_VELOCITY);
-		glVertexAttribFormat(LOC_VELOCITY, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Vel));	// Velocity (12 bytes)
-		glVertexAttribBinding(LOC_VELOCITY, BINDING_UPDATE);
-
-		glEnableVertexAttribArray(LOC_COLOR);
-		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
-		glVertexAttribBinding(LOC_COLOR, BINDING_UPDATE);
-
-		glEnableVertexAttribArray(LOC_LIFETIME);
-		glVertexAttribFormat(LOC_LIFETIME, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, lifeTime));	// Lifetime (4 bytes)
-		glVertexAttribBinding(LOC_LIFETIME, BINDING_UPDATE);
+		glBindVertexBuffer(BINDING_UPDATE, m_particleBuffer[0], 0, sizeof(ParticleEx));
 
 		glEnableVertexAttribArray(LOC_TYPE);
-		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
+		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(ParticleEx, Type));
 		glVertexAttribBinding(LOC_TYPE, BINDING_UPDATE);
 
-		// Definitions for Billboard shader Binding
-		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[0], 0, sizeof(Particle));
+		glEnableVertexAttribArray(LOC_ID);
+		glVertexAttribIFormat(LOC_ID, 1, GL_INT, offsetof(ParticleEx, RandomID));
+		glVertexAttribBinding(LOC_ID, BINDING_UPDATE);
+
+		glEnableVertexAttribArray(LOC_INITPOSITION);
+		glVertexAttribFormat(LOC_INITPOSITION, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, InitPosition));
+		glVertexAttribBinding(LOC_INITPOSITION, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_POSITION);
-		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
+		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Position));
+		glVertexAttribBinding(LOC_POSITION, BINDING_UPDATE);
+
+		glEnableVertexAttribArray(LOC_ROTATION);
+		glVertexAttribFormat(LOC_ROTATION, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Rotation));
+		glVertexAttribBinding(LOC_ROTATION, BINDING_UPDATE);
+
+		glEnableVertexAttribArray(LOC_COLOR);
+		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Color));
+		glVertexAttribBinding(LOC_COLOR, BINDING_UPDATE);
+
+		glEnableVertexAttribArray(LOC_AGE);
+		glVertexAttribFormat(LOC_AGE, 1, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Age));
+		glVertexAttribBinding(LOC_AGE, BINDING_UPDATE);
+
+		glEnableVertexAttribArray(LOC_LIFE);
+		glVertexAttribFormat(LOC_LIFE, 1, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Life));
+		glVertexAttribBinding(LOC_LIFE, BINDING_UPDATE);
+
+		// Definitions for Billboard shader Binding
+		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[0], 0, sizeof(ParticleEx));
+
+		glEnableVertexAttribArray(LOC_TYPE);
+		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(ParticleEx, Type));
+		glVertexAttribBinding(LOC_TYPE, BINDING_BILLBOARD);
+
+		glEnableVertexAttribArray(LOC_POSITION);
+		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Position));
 		glVertexAttribBinding(LOC_POSITION, BINDING_BILLBOARD);
 
 		glEnableVertexAttribArray(LOC_COLOR);
-		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
+		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Color));
 		glVertexAttribBinding(LOC_COLOR, BINDING_BILLBOARD);
 
-		glEnableVertexAttribArray(LOC_TYPE);
-		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
-		glVertexAttribBinding(LOC_TYPE, BINDING_BILLBOARD);
 
 		// Make sure the VAO is not changed from the outside
 		glBindVertexArray(0);
@@ -156,7 +160,6 @@ namespace Phoenix {
 		// Send the variables to the Particle System shader
 		m_particleSystemShader->use();
 		m_particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT);
-		m_particleSystemShader->setValue("fEmissionTime", m_emissionTime); // Time between emissions
 		m_particleSystemShader->setValue("fParticleLifetime", m_particleLifeTime);
 
 		if (!initRandomTexture(1000)) {
@@ -184,7 +187,7 @@ namespace Phoenix {
 	}
 
 
-	void ParticleSystem::Render(float deltaTime, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
+	void ParticleSystemEx::Render(float deltaTime, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
 	{
 		m_time += deltaTime;
 
@@ -197,38 +200,15 @@ namespace Phoenix {
 		m_currTFB = (m_currTFB + 1) & 0x1;
 	}
 
-	void ParticleSystem::UpdateEmitters(float deltaTime)
+	void ParticleSystemEx::UpdateParticles(float deltaTime, const glm::mat4& model)
 	{
-		// NOTE: This method is never used, only useful for debugging and modifying the emitters by hardcode
-		m_time += deltaTime;
-		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
-		//m_numMaxParticles
-		unsigned int nParts = m_numMaxParticles;// m_numEmitters;
-		m_emitterData = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle) * nParts, GL_MAP_WRITE_BIT);
-
-		// Change data and move some random positions
-		for (unsigned int i = 0; i < nParts; i++) {
-			m_emitterData[i].Type = ParticleType::Emitter;
-			float sphere = 4 * 3.1415f * ((float)(i) / ((float)nParts));
-			m_emitterData[i].Pos = glm::vec3(glm::sin(sphere), 3.0 * glm::sin(m_time / 2.0), glm::cos(sphere));
-			m_emitterData[i].Vel = glm::vec3(0.0f, 10.0f, 0.0f);
-			m_emitterData[i].Col = glm::vec3(1, 1, 1);
-			m_emitterData[i].lifeTime = 0.0f;
-		}
-		glUnmapBuffer(GL_ARRAY_BUFFER);
-	}
-
-
-	void ParticleSystem::UpdateParticles(float deltaTime, const glm::mat4& model)
-	{
-		//UpdateEmitters(deltaTime); // For debugging only: Overwrittes the emitter position
-
+	
 		m_particleSystemShader->use();
 		m_particleSystemShader->setValue("model", model);
 		m_particleSystemShader->setValue("gTime", m_time);
 		m_particleSystemShader->setValue("gDeltaTime", deltaTime);
 		m_particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-		m_particleSystemShader->setValue("fEmissionTime", m_emissionTime);
+		m_particleSystemShader->setValue("uiNumMaxParticles", m_numMaxParticles);
 		m_particleSystemShader->setValue("fParticleLifetime", m_particleLifeTime);
 		m_particleSystemShader->setValue("gForce", force);
 		m_particleSystemShader->setValue("gColor", color);
@@ -242,14 +222,14 @@ namespace Phoenix {
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[m_currTFB]);
 
 		// Use Binding for particles (all attributes)
-		glBindVertexBuffer(BINDING_UPDATE, m_particleBuffer[m_currVB], 0, sizeof(Particle));
+		glBindVertexBuffer(BINDING_UPDATE, m_particleBuffer[m_currVB], 0, sizeof(ParticleEx));
 
 		glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, m_queryPrimitives);
 
 		glBeginTransformFeedback(GL_POINTS);
 
 		if (m_isFirst) {
-			glDrawArrays(GL_POINTS, 0, m_numEmitters);
+			glDrawArrays(GL_POINTS, 0, m_numMaxParticles);
 			m_isFirst = false;
 		}
 		else {
@@ -264,7 +244,7 @@ namespace Phoenix {
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 	}
 
-	void ParticleSystem::RenderParticles(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
+	void ParticleSystemEx::RenderParticles(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
 	{
 		//Use the billboard shader and send variables
 		m_billboardShader->use();
@@ -277,14 +257,12 @@ namespace Phoenix {
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currTFB]);
 
 		// Use binding for billboard (only Position and color attributes)
-		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[m_currTFB], 0, sizeof(Particle));
+		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[m_currTFB], 0, sizeof(ParticleEx));
 
 		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
-
-		//debugLogBufferData(); // For debugging only: Outputs to the log the content of the buffers
 	}
 
-	bool ParticleSystem::initShaderBillboard()
+	bool ParticleSystemEx::initShaderBillboard()
 	{
 		m_billboardShader = DEMO->m_shaderManager.addShader(m_pathBillboard);
 		if (m_billboardShader)
@@ -292,10 +270,10 @@ namespace Phoenix {
 		return false;
 	}
 
-	bool ParticleSystem::initShaderParticleSystem()
+	bool ParticleSystemEx::initShaderParticleSystem()
 	{
 		m_particleSystemShader = DEMO->m_shaderManager.addShader(m_pathUpdate,
-			{ "Position1", "Velocity1", "Color1", "Age1", "Type1"});
+			{ "o_Type", "o_ID", "o_InitPosition", "o_Position", "o_Rotation", "o_Color", "o_Age", "o_Life" });
 
 		if (m_particleSystemShader)
 			return true;
@@ -309,7 +287,7 @@ namespace Phoenix {
 		return ((float)rand() / Max);
 	}
 
-	bool ParticleSystem::initRandomTexture(unsigned int Size)
+	bool ParticleSystemEx::initRandomTexture(unsigned int Size)
 	{
 		glm::vec3* pRandomData = new glm::vec3[Size];
 		for (unsigned int i = 0; i < Size; i++) {
@@ -330,28 +308,9 @@ namespace Phoenix {
 		return true;
 	}
 
-	void ParticleSystem::bindRandomTexture(GLuint TexUnit)
+	void ParticleSystemEx::bindRandomTexture(GLuint TexUnit)
 	{
 		glBindTextureUnit(TexUnit, m_textureRandID);
 	}
 
-	void ParticleSystem::debugLogBufferData()
-	{
-		/// DEBUG ONLY
-		/// Output Buffer values
-		LogLevel l = LogLevel::low;
-		Logger::info(l, "Buffers Current VB:{}, current TFB:{}", m_currVB, m_currTFB);
-		for (unsigned int i = 0; i < 2; i++) {
-			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-			Particle* p = (Particle*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
-			Logger::info(l, "SETUP Buffer {}", i);
-			for (unsigned int i = 0; i < m_numMaxParticles; i++)
-			{
-				Logger::info(l, "Part {}: Type: {}, L:{:.2f}, P:({:.2f},{:.2f},{:.2f}), C:({:.2f},{:.2f},{:.2f})", i, (int32_t)p[i].Type, p[i].lifeTime, p[i].Pos.x, p[i].Pos.y, p[i].Pos.z, p[i].Col.x, p[i].Col.y, p[i].Col.z);
-			}
-			Logger::info(l, "");
-			glUnmapBuffer(GL_ARRAY_BUFFER);
-
-		}
-	}
 }

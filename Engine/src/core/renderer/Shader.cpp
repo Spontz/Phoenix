@@ -190,6 +190,11 @@ namespace Phoenix {
 		glUniform1i(glGetUniformLocation(m_id, name.data()), value);
 	}
 
+	void Shader::setValue(std::string_view name, GLuint value) const
+	{
+		glUniform1ui(glGetUniformLocation(m_id, name.data()), value);
+	}
+
 	void Shader::setValue(std::string_view name, GLfloat value) const
 	{
 		glUniform1f(glGetUniformLocation(m_id, name.data()), value);

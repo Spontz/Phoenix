@@ -25,6 +25,7 @@ namespace Phoenix{
 
 		// set uniform scalar
 		void setValue(std::string_view id, GLint value) const;
+		void setValue(std::string_view id, GLuint value) const;
 		void setValue(std::string_view id, GLfloat value) const;
 
 		// set uniform vector from components

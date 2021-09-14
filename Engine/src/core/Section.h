@@ -29,6 +29,7 @@ namespace Phoenix {
 		DrawParticlesImage,
 		DrawParticlesScene,
 		DrawEmitterScene,
+		DrawEmitterSceneEx,
 		SetVariable,
 		Sound,
 		FboBind,
