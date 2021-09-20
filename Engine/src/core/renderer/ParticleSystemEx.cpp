@@ -13,15 +13,16 @@ namespace Phoenix {
 #define LOC_ID			 1
 #define LOC_INITPOSITION 2
 #define LOC_POSITION 3
-#define LOC_ROTATION 4
-#define LOC_COLOR 5
-#define LOC_AGE 6
-#define LOC_LIFE 7
+#define LOC_RANDOMNESS 4
+#define LOC_ROTATION 5
+#define LOC_COLOR 6
+#define LOC_AGE 7
+#define LOC_LIFE 8
 
 #define BINDING_UPDATE	0
 #define BINDING_BILLBOARD	1
 
-	ParticleSystemEx::ParticleSystemEx(std::string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float particleLifeTime)
+	ParticleSystemEx::ParticleSystemEx(std::string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float particleLifeTime, float particleRamndomness)
 	{
 		m_varsBillboard = nullptr;
 
@@ -45,6 +46,7 @@ namespace Phoenix {
 		m_numMaxParticles = numMaxParticles; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
 		m_numEmitters = numEmitters;
 		m_particleLifeTime = particleLifeTime;
+		randomness = particleRamndomness;
 
 		m_transformFeedback = {};
 		m_particleBuffer = {};
@@ -116,6 +118,10 @@ namespace Phoenix {
 		glEnableVertexAttribArray(LOC_POSITION);
 		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Position));
 		glVertexAttribBinding(LOC_POSITION, BINDING_UPDATE);
+
+		glEnableVertexAttribArray(LOC_RANDOMNESS);
+		glVertexAttribFormat(LOC_RANDOMNESS, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Randomness));
+		glVertexAttribBinding(LOC_RANDOMNESS, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_ROTATION);
 		glVertexAttribFormat(LOC_ROTATION, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Rotation));
@@ -210,6 +216,7 @@ namespace Phoenix {
 		m_particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
 		m_particleSystemShader->setValue("uiNumMaxParticles", m_numMaxParticles);
 		m_particleSystemShader->setValue("fParticleLifetime", m_particleLifeTime);
+		m_particleSystemShader->setValue("gRamndomness", randomness);
 		m_particleSystemShader->setValue("gForce", force);
 		m_particleSystemShader->setValue("gColor", color);
 
@@ -272,8 +279,9 @@ namespace Phoenix {
 
 	bool ParticleSystemEx::initShaderParticleSystem()
 	{
+		// TODO: Poner los varyings como parte del init del shader, incluso en la seccion... o que lo detecte solo??
 		m_particleSystemShader = DEMO->m_shaderManager.addShader(m_pathUpdate,
-			{ "o_Type", "o_ID", "o_InitPosition", "o_Position", "o_Rotation", "o_Color", "o_Age", "o_Life" });
+			{ "o_Type", "o_ID", "o_InitPosition", "o_Position", "o_Randomness", "o_Rotation", "o_Color", "o_Age", "o_Life" });
 
 		if (m_particleSystemShader)
 			return true;

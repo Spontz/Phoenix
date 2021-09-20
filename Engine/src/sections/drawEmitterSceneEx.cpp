@@ -28,7 +28,7 @@ namespace Phoenix {
 		int				m_iParticlesPerEmitter = 0;
 		float			m_fParticleLifeTime = 0;
 		float			m_fParticleSpeed = 0;
-		float			m_fEmitterRandomness = 0;
+		float			m_fParticleRandomness = 0;
 		ParticleSystemEx* m_pPartSystem = nullptr;
 
 		// Particles positioning (for all the model)
@@ -72,8 +72,8 @@ namespace Phoenix {
 	bool sDrawEmitterSceneEx::load()
 	{
 		// script validation
-		if ((param.size() != 3) || (strings.size() < 9)) {
-			Logger::error("Draw Emitter Scene EX [{}]: 3 param (Particles per Emitter, Particle Life Time & Randomness) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", identifier);
+		if ((param.size() != 2) || (strings.size() < 9)) {
+			Logger::error("Draw Emitter Scene EX [{}]: 2 param (Particles per Emitter & Particle Life Time) and 9 strings needed (shader path, scene, 3 for positioning, partSpeed, partRandomness, force and color)", identifier);
 			return false;
 		}
 
@@ -96,7 +96,6 @@ namespace Phoenix {
 		// Load Emitters and Particles config
 		m_iParticlesPerEmitter = static_cast<int>(param[0]);
 		m_fParticleLifeTime = param[1];
-		m_fEmitterRandomness = param[2];
 
 		if (m_iParticlesPerEmitter < 0) {
 			Logger::error("Draw Emitter Scene Ex [{}]: Particles per Emitter should be 0 or greater", identifier);
@@ -119,9 +118,7 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
 
 		m_pExprPosition->SymbolTable.add_variable("partSpeed", m_fParticleSpeed);
-		m_pExprPosition->SymbolTable.add_variable("velX", m_vVelocity.x);
-		m_pExprPosition->SymbolTable.add_variable("velY", m_vVelocity.y);
-		m_pExprPosition->SymbolTable.add_variable("velZ", m_vVelocity.z);
+		m_pExprPosition->SymbolTable.add_variable("partRandomness", m_fParticleRandomness);
 
 		m_pExprPosition->SymbolTable.add_variable("forceX", m_vForce.x);
 		m_pExprPosition->SymbolTable.add_variable("forceY", m_vForce.y);
@@ -167,6 +164,7 @@ namespace Phoenix {
 				Particles[numParticle].RandomID = (int32_t)numParticle;
 				Particles[numParticle].InitPosition = m_pModel->meshes[i]->unique_vertices_pos[j];
 				Particles[numParticle].Position = glm::vec3(0, 0, 0);
+				Particles[numParticle].Randomness = glm::vec3(0, 0, 0);
 				Particles[numParticle].Rotation = glm::vec3(0, 0, 0);
 				Particles[numParticle].Color = glm::vec3(0, 0, 0);
 				Particles[numParticle].Age = 0;
@@ -180,9 +178,10 @@ namespace Phoenix {
 					Particles[numParticle].RandomID = (int32_t)numParticle;
 					Particles[numParticle].InitPosition = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
 					Particles[numParticle].Position = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
-					Particles[numParticle].Rotation = glm::vec3(0, 0, 0);
+					Particles[numParticle].Randomness = m_fParticleRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat());
+					Particles[numParticle].Rotation = glm::vec3(0,0,0);
 					Particles[numParticle].Color = Particles[emitterID].Color;	// Inherit the color of the emitter
-					Particles[numParticle].Age = 0;
+					Particles[numParticle].Age = ((float)k/ (float)(m_iParticlesPerEmitter-1)) * (m_fParticleLifeTime);
 					Particles[numParticle].Life = m_fParticleLifeTime;
 					numParticle++;
 				}
@@ -192,7 +191,7 @@ namespace Phoenix {
 		}
 		
 		// Create the particle system
-		m_pPartSystem = new ParticleSystemEx(pathShaders, m_uiNumMaxParticles, m_uiNumEmitters, m_fParticleLifeTime);
+		m_pPartSystem = new ParticleSystemEx(pathShaders, m_uiNumMaxParticles, m_uiNumEmitters, m_fParticleLifeTime, m_fParticleRandomness);
 		if (!m_pPartSystem->InitParticleSystem(this, Particles, uniform))
 			return false;
 
@@ -231,9 +230,10 @@ namespace Phoenix {
 		if (deltaTime < 0) {
 			deltaTime = -deltaTime;	// In case we rewind the demo
 		}
-		// Update Force and Color values
+		// Update particle system, public values
 		m_pPartSystem->force = m_vForce;
 		m_pPartSystem->color = m_vColor;
+		m_pPartSystem->randomness = m_fParticleRandomness;
 
 		m_pPartSystem->Render(deltaTime, model, view, projection);
 
@@ -249,15 +249,15 @@ namespace Phoenix {
 		ss << "Emitters: " << m_uiNumEmitters << std::endl;
 		ss << "Max Particles: " << m_uiNumMaxParticles << std::endl;
 		ss << "Memory Used: " << std::format("{:.1f}", m_pPartSystem->getMemUsedInMb()) << " Mb" << std::endl;
-		ss << "Emission Time: " << m_iParticlesPerEmitter << std::endl;
+		ss << "Particles per Emitter: " << m_iParticlesPerEmitter << std::endl;
 		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
-		ss << "Emitter Randomness: " << m_fEmitterRandomness << std::endl;
 		debugStatic = ss.str();
 	}
 
 	std::string sDrawEmitterSceneEx::debug() {
 		std::stringstream ss;
 		ss << debugStatic;
+		ss << "Particle Randomness: " << std::format("{:.2f}", m_fParticleRandomness) << std::endl;
 		ss << "Generated Particles: " << m_pPartSystem->getNumParticles() << std::endl;
 		return ss.str();
 	}

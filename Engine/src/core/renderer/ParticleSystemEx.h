@@ -23,16 +23,17 @@ enum struct ParticleType : int32_t {
 		int32_t		RandomID;		// Particle ID:			loc 1
 		glm::vec3	InitPosition;	// Initial position:	loc 2
 		glm::vec3	Position;		// Position:			loc 3
-		glm::vec3	Rotation;		// Rotation:			loc 4
-		glm::vec3	Color;			// Color:				loc 5
-		float		Age;			// Age (0 to Life):		loc 6
-		float		Life;			// Life:				loc 7
+		glm::vec3	Randomness;		// Ramdomness:			loc 4
+		glm::vec3	Rotation;		// Rotation:			loc 5
+		glm::vec3	Color;			// Color:				loc 6
+		float		Age;			// Age (0 to Life):		loc 7
+		float		Life;			// Life:				loc 8
 	};
 
 	class ParticleSystemEx
 	{
 	public:
-		ParticleSystemEx(std::string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float particleLifeTime);
+		ParticleSystemEx(std::string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float particleLifeTime, float particleRamndomness);
 		~ParticleSystemEx();
 
 		bool InitParticleSystem(Section* sec, const std::vector<ParticleEx> emitter, std::vector<std::string>	billboardShaderVars);
@@ -41,8 +42,9 @@ enum struct ParticleType : int32_t {
 		int32_t getNumParticles() { return m_numParticles; };
 		float getMemUsedInMb() { return m_memUsed; };
 
-		glm::vec3 force;	// Force to be applied globally
-		glm::vec3 color;	// Color to be applied on each particle when it's emitted
+		glm::vec3	force;		// Force to be applied globally
+		glm::vec3	color;		// Color to be applied on each particle when it's emitted
+		float		randomness;	// Global randomness to apply to particles
 
 	private:
 
@@ -58,29 +60,30 @@ enum struct ParticleType : int32_t {
 	private:
 
 		float					m_time;
-		unsigned int			m_textureRandID;	// TODO: This will be removed once is included in the textureManager
+		unsigned int			m_textureRandID;		// TODO: This will be removed once is included in the textureManager
 		std::string				m_shaderPath;
 		std::string				m_pathBillboard;
-		ShaderVars*				m_varsBillboard;	// Billboard Shader variables
+		ShaderVars*				m_varsBillboard;		// Billboard Shader variables
 
 		std::string				m_pathUpdate;
-		unsigned int			m_numMaxParticles;	// Number of maximum particles
-		unsigned int			m_numEmitters;		// Number of emmiters
+		unsigned int			m_numMaxParticles;		// Number of maximum particles
+		unsigned int			m_numEmitters;			// Number of emmiters
 		float					m_particleLifeTime;
+		
 
 		bool					m_isFirst;
-		unsigned int			m_currVB;			// Variable that indicates the current VB (The value is 0 or 1)
-		unsigned int			m_currTFB;			// Variable that indicates the current TFB (The value is 0 or 1)
-		GLuint					m_VAO;				// Vertex Array Object buffer
-		std::array<GLuint, 2>	m_particleBuffer;	// Vertex Buffer: input
-		std::array<GLuint, 2>	m_transformFeedback;// Transform feedback buffers: output
-		ParticleEx*				m_emitterData;		// Emitter info (for updating emitters positions)
+		unsigned int			m_currVB;				// Variable that indicates the current VB (The value is 0 or 1)
+		unsigned int			m_currTFB;				// Variable that indicates the current TFB (The value is 0 or 1)
+		GLuint					m_VAO;					// Vertex Array Object buffer
+		std::array<GLuint, 2>	m_particleBuffer;		// Vertex Buffer: input
+		std::array<GLuint, 2>	m_transformFeedback;	// Transform feedback buffers: output
+		ParticleEx*				m_emitterData;			// Emitter info (for updating emitters positions)
 		SP_Shader				m_particleSystemShader;
 		SP_Shader				m_billboardShader;
 
-		GLuint					m_queryPrimitives;	// Query to know how many primitives have been written
-		GLuint					m_numParticles;		// Number of particles generated
+		GLuint					m_queryPrimitives;		// Query to know how many primitives have been written
+		GLuint					m_numParticles;			// Number of particles generated
 		
-		float					m_memUsed;			// Memory used (in Mb)
+		float					m_memUsed;				// Memory used (in Mb)
 	};
 }

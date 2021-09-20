@@ -3,7 +3,7 @@
 
 layout (location = 0) in int Type;
 layout (location = 3) in vec3 Position;
-layout (location = 5) in vec3 Color;
+layout (location = 6) in vec3 Color;
 
 
 uniform mat4 model;
