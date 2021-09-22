@@ -22,7 +22,7 @@ namespace Phoenix {
 
 		// Particle engine variables
 		float			m_lastTime = 0;
-		unsigned int	m_uiNumMaxParticles = 0;
+		unsigned int	m_uiNumParticles = 0;
 		unsigned int	m_uiNumEmitters = 0;
 		float			m_fCurrentEmitter = 0;
 		int				m_iParticlesPerEmitter = 0;
@@ -145,11 +145,11 @@ namespace Phoenix {
 		if (!m_pExprPosition->compileFormula())
 			return false;
 
-		m_uiNumMaxParticles = m_uiNumEmitters + static_cast<unsigned int>(m_uiNumEmitters * m_iParticlesPerEmitter);
-		Logger::info(LogLevel::low, "Draw Emitter Scene EX [{}]: Num max of particles will be: {}", identifier, m_uiNumMaxParticles);
+		m_uiNumParticles = m_uiNumEmitters + static_cast<unsigned int>(m_uiNumEmitters * m_iParticlesPerEmitter);
+		Logger::info(LogLevel::low, "Draw Emitter Scene EX [{}]: Num max of particles will be: {}", identifier, m_uiNumParticles);
 
 		std::vector<ParticleEx> Particles;
-		Particles.resize(m_uiNumMaxParticles);
+		Particles.resize(m_uiNumParticles);
 
 		// Load the emitters and particle valies, based in our model vertexes
 		size_t numEmitter = 0;	// Number of Emitter
@@ -191,8 +191,8 @@ namespace Phoenix {
 		}
 		
 		// Create the particle system
-		m_pPartSystem = new ParticleSystemEx(pathShaders, m_uiNumMaxParticles, m_uiNumEmitters, m_fParticleLifeTime, m_fParticleRandomness);
-		if (!m_pPartSystem->InitParticleSystem(this, Particles, uniform))
+		m_pPartSystem = new ParticleSystemEx(pathShaders, m_fParticleLifeTime, m_fParticleRandomness);
+		if (!m_pPartSystem->InitParticleSystem(this, Particles, static_cast<unsigned int>(m_iParticlesPerEmitter), uniform))
 			return false;
 
 		return !GLDRV_checkError();
@@ -247,7 +247,7 @@ namespace Phoenix {
 		std::stringstream ss;
 		ss << "Model used: " << m_pModel->filename << std::endl;
 		ss << "Emitters: " << m_uiNumEmitters << std::endl;
-		ss << "Max Particles: " << m_uiNumMaxParticles << std::endl;
+		ss << "Max Particles: " << m_uiNumParticles << std::endl;
 		ss << "Memory Used: " << std::format("{:.1f}", m_pPartSystem->getMemUsedInMb()) << " Mb" << std::endl;
 		ss << "Particles per Emitter: " << m_iParticlesPerEmitter << std::endl;
 		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;

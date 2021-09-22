@@ -6,23 +6,23 @@
 
 namespace Phoenix {
 
-#define RANDOM_TEXTURE_UNIT 0
+	constexpr int RANDOM_TEXTURE_UNIT = 0;
 
-// TODO: QUITAR ESTO Y USAR LOS VB QUE TENEMOS EN EL ENGINE!!
-#define LOC_TYPE		 0
-#define LOC_ID			 1
-#define LOC_INITPOSITION 2
-#define LOC_POSITION 3
-#define LOC_RANDOMNESS 4
-#define LOC_ROTATION 5
-#define LOC_COLOR 6
-#define LOC_AGE 7
-#define LOC_LIFE 8
+	// TODO: QUITAR ESTO Y USAR LOS VB QUE TENEMOS EN EL ENGINE!!
+	constexpr int LOC_TYPE = 0;
+	constexpr int LOC_ID = 1;
+	constexpr int LOC_INITPOSITION = 2;
+	constexpr int LOC_POSITION = 3;
+	constexpr int LOC_RANDOMNESS = 4;
+	constexpr int LOC_ROTATION = 5;
+	constexpr int LOC_COLOR = 6;
+	constexpr int LOC_AGE = 7;
+	constexpr int LOC_LIFE = 8;
 
-#define BINDING_UPDATE	0
-#define BINDING_BILLBOARD	1
+	constexpr int BINDING_UPDATE = 0;
+	constexpr int BINDING_BILLBOARD = 1;
 
-	ParticleSystemEx::ParticleSystemEx(std::string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float particleLifeTime, float particleRamndomness)
+	ParticleSystemEx::ParticleSystemEx(std::string shaderPath, float particleLifeTime, float particleRamndomness)
 	{
 		m_varsBillboard = nullptr;
 
@@ -36,6 +36,7 @@ namespace Phoenix {
 
 		m_queryPrimitives = 0;
 		m_numParticles = 0;
+		m_numParticlesPerEmitter = 0;
 
 		m_memUsed = 0;
 
@@ -43,8 +44,6 @@ namespace Phoenix {
 		m_pathBillboard = shaderPath + "/billboard.glsl";
 		m_pathUpdate = shaderPath + "/update.glsl";
 
-		m_numMaxParticles = numMaxParticles; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
-		m_numEmitters = numEmitters;
 		m_particleLifeTime = particleLifeTime;
 		randomness = particleRamndomness;
 
@@ -72,10 +71,12 @@ namespace Phoenix {
 	}
 
 
-	bool ParticleSystemEx::InitParticleSystem(Section* sec, const std::vector<ParticleEx> particles, std::vector<std::string> billboardShaderVars)
+	bool ParticleSystemEx::InitParticleSystem(Section* sec, const std::vector<ParticleEx> particles, unsigned int numParticlesPerEmitter, std::vector<std::string> billboardShaderVars)
 	{
-		if (m_numEmitters == 0)
+		if (particles.size() == 0)
 			return false;
+		m_numParticles = static_cast<unsigned int>(particles.size());
+		m_numParticlesPerEmitter = numParticlesPerEmitter;
 
 		// Gen the Query
 		glGenQueries(1, &m_queryPrimitives);
@@ -93,11 +94,11 @@ namespace Phoenix {
 		for (unsigned int i = 0; i < 2; i++) {
 			glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
 			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(ParticleEx) * m_numMaxParticles, particles.data(), GL_DYNAMIC_DRAW);	// Allocate mem, uploading all the particles
+			glBufferData(GL_ARRAY_BUFFER, sizeof(ParticleEx) * m_numParticles, particles.data(), GL_DYNAMIC_DRAW);	// Allocate mem, uploading all the particles
 			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 		}
 	
-		m_memUsed = (float)(2 * sizeof(ParticleEx) * m_numMaxParticles) / 1024.0f / 1024.0f;
+		m_memUsed = (float)(2 * sizeof(ParticleEx) * m_numParticles) / 1024.0f / 1024.0f;
 
 		// Setup Vertex Attribute formats
 		// Definitions for Update shader Binding
@@ -214,7 +215,7 @@ namespace Phoenix {
 		m_particleSystemShader->setValue("gTime", m_time);
 		m_particleSystemShader->setValue("gDeltaTime", deltaTime);
 		m_particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-		m_particleSystemShader->setValue("uiNumMaxParticles", m_numMaxParticles);
+		m_particleSystemShader->setValue("uiNumMaxParticles", m_numParticles);
 		m_particleSystemShader->setValue("fParticleLifetime", m_particleLifeTime);
 		m_particleSystemShader->setValue("gRamndomness", randomness);
 		m_particleSystemShader->setValue("gForce", force);
@@ -236,7 +237,7 @@ namespace Phoenix {
 		glBeginTransformFeedback(GL_POINTS);
 
 		if (m_isFirst) {
-			glDrawArrays(GL_POINTS, 0, m_numMaxParticles);
+			glDrawArrays(GL_POINTS, 0, m_numParticles);
 			m_isFirst = false;
 		}
 		else {
@@ -246,7 +247,7 @@ namespace Phoenix {
 		glEndTransformFeedback();
 
 		glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
-		glGetQueryObjectuiv(m_queryPrimitives, GL_QUERY_RESULT, &m_numParticles);
+		glGetQueryObjectuiv(m_queryPrimitives, GL_QUERY_RESULT, &m_numGenParticles);
 
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 	}

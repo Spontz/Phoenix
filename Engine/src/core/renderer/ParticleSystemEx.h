@@ -11,11 +11,11 @@
 namespace Phoenix {
 
 
-enum struct ParticleType : int32_t {
-	None = 0,
-	Emitter = 1,
-	Shell = 2
-};
+	enum struct ParticleType : int32_t {
+		None = 0,
+		Emitter = 1,
+		Shell = 2
+	};
 
 	struct ParticleEx
 	{
@@ -33,13 +33,13 @@ enum struct ParticleType : int32_t {
 	class ParticleSystemEx
 	{
 	public:
-		ParticleSystemEx(std::string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float particleLifeTime, float particleRamndomness);
+		ParticleSystemEx(std::string shaderPath, float particleLifeTime, float particleRamndomness);
 		~ParticleSystemEx();
 
-		bool InitParticleSystem(Section* sec, const std::vector<ParticleEx> emitter, std::vector<std::string>	billboardShaderVars);
+		bool InitParticleSystem(Section* sec, const std::vector<ParticleEx> particles, unsigned int numParticlesPerEmitter, std::vector<std::string>	billboardShaderVars);
 		void Render(float deltaTime, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 
-		int32_t getNumParticles() { return m_numParticles; };
+		int32_t getNumParticles() { return m_numGenParticles; };
 		float getMemUsedInMb() { return m_memUsed; };
 
 		glm::vec3	force;		// Force to be applied globally
@@ -60,30 +60,30 @@ enum struct ParticleType : int32_t {
 	private:
 
 		float					m_time;
-		unsigned int			m_textureRandID;		// TODO: This will be removed once is included in the textureManager
+		unsigned int			m_textureRandID;			// TODO: This will be removed once is included in the textureManager
 		std::string				m_shaderPath;
 		std::string				m_pathBillboard;
-		ShaderVars*				m_varsBillboard;		// Billboard Shader variables
+		ShaderVars*				m_varsBillboard;			// Billboard Shader variables
 
 		std::string				m_pathUpdate;
-		unsigned int			m_numMaxParticles;		// Number of maximum particles
-		unsigned int			m_numEmitters;			// Number of emmiters
+		unsigned int			m_numParticles;				// Number of maximum particles
+		unsigned int			m_numParticlesPerEmitter;	// Number of particles per emitter
 		float					m_particleLifeTime;
 		
 
 		bool					m_isFirst;
-		unsigned int			m_currVB;				// Variable that indicates the current VB (The value is 0 or 1)
-		unsigned int			m_currTFB;				// Variable that indicates the current TFB (The value is 0 or 1)
-		GLuint					m_VAO;					// Vertex Array Object buffer
-		std::array<GLuint, 2>	m_particleBuffer;		// Vertex Buffer: input
-		std::array<GLuint, 2>	m_transformFeedback;	// Transform feedback buffers: output
-		ParticleEx*				m_emitterData;			// Emitter info (for updating emitters positions)
+		unsigned int			m_currVB;					// Variable that indicates the current VB (The value is 0 or 1)
+		unsigned int			m_currTFB;					// Variable that indicates the current TFB (The value is 0 or 1)
+		GLuint					m_VAO;						// Vertex Array Object buffer
+		std::array<GLuint, 2>	m_particleBuffer;			// Vertex Buffer: input
+		std::array<GLuint, 2>	m_transformFeedback;		// Transform feedback buffers: output
+		ParticleEx*				m_emitterData;				// Emitter info (for updating emitters positions)
 		SP_Shader				m_particleSystemShader;
 		SP_Shader				m_billboardShader;
 
-		GLuint					m_queryPrimitives;		// Query to know how many primitives have been written
-		GLuint					m_numParticles;			// Number of particles generated
+		GLuint					m_queryPrimitives;			// Query to know how many primitives have been written
+		GLuint					m_numGenParticles;			// Number of particles generated
 		
-		float					m_memUsed;				// Memory used (in Mb)
+		float					m_memUsed;					// Memory used (in Mb)
 	};
 }
