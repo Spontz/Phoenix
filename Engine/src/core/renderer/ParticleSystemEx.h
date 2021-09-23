@@ -49,7 +49,7 @@ namespace Phoenix {
 
 	private:
 
-		void UpdateParticles(float deltaTime, const glm::mat4& model);
+		void UpdateParticles(float time, const glm::mat4& model);
 		void RenderParticles(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 
 		bool initShaderBillboard();		// For drawing the quads using geometry shaders
@@ -60,7 +60,6 @@ namespace Phoenix {
 
 	private:
 
-		float					m_time;
 		unsigned int			m_textureRandID;			// TODO: This will be removed once is included in the textureManager
 		std::string				m_shaderPath;
 		std::string				m_pathBillboard;

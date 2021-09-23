@@ -27,7 +27,7 @@ namespace Phoenix {
 		float			m_fCurrentEmitter = 0;
 		int				m_iParticlesPerEmitter = 0;
 		float			m_fParticleLifeTime = 0;
-		float			m_fParticleSpeed = 0;
+		float			m_fParticleSystemTime = 0;
 		float			m_fParticleRandomness = 0;
 		ParticleSystemEx* m_pPartSystem = nullptr;
 
@@ -73,7 +73,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size() != 2) || (strings.size() < 9)) {
-			Logger::error("Draw Emitter Scene EX [{}]: 2 param (Particles per Emitter & Particle Life Time) and 9 strings needed (shader path, scene, 3 for positioning, partSpeed, partRandomness, force and color)", identifier);
+			Logger::error("Draw Emitter Scene EX [{}]: 2 param (Particles per Emitter & Particle Life Time) and 9 strings needed (shader path, scene, 3 for positioning, particleTime, partRandomness, force and color)", identifier);
 			return false;
 		}
 
@@ -117,7 +117,7 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
 		m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
 
-		m_pExprPosition->SymbolTable.add_variable("partSpeed", m_fParticleSpeed);
+		m_pExprPosition->SymbolTable.add_variable("particleSystemTime", m_fParticleSystemTime);
 		m_pExprPosition->SymbolTable.add_variable("partRandomness", m_fParticleRandomness);
 
 		m_pExprPosition->SymbolTable.add_variable("forceX", m_vForce.x);
@@ -225,19 +225,13 @@ namespace Phoenix {
 		model = glm::rotate(model, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
 		model = glm::scale(model, m_vScale);
 
-		// Render particles
-		float deltaTime = runTime - m_lastTime;
-		deltaTime = deltaTime * m_fParticleSpeed;
-		m_lastTime = runTime;
-		//if (deltaTime < 0) {
-		//	deltaTime = -deltaTime;	// In case we rewind the demo
-		//}
 		// Update particle system, public values
 		m_pPartSystem->force = m_vForce;
 		m_pPartSystem->color = m_vColor;
 		m_pPartSystem->randomness = m_fParticleRandomness;
 
-		m_pPartSystem->Render(deltaTime, model, view, projection);
+		// Render particles
+		m_pPartSystem->Render(m_fParticleSystemTime, model, view, projection);
 
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
@@ -259,6 +253,7 @@ namespace Phoenix {
 	std::string sDrawEmitterSceneEx::debug() {
 		std::stringstream ss;
 		ss << debugStatic;
+		ss << "Particle System Time: " << std::format("{:.2f}", m_fParticleSystemTime) << std::endl;
 		ss << "Particle Randomness: " << std::format("{:.2f}", m_fParticleRandomness) << std::endl;
 		ss << "Generated Particles: " << m_pPartSystem->getNumParticles() << std::endl;
 		return ss.str();

@@ -33,7 +33,6 @@ namespace Phoenix {
 		m_currVB = 0;
 		m_currTFB = 1;
 		m_isFirst = true;
-		m_time = 0;
 
 		m_queryPrimitives = 0;
 		m_numGenParticles = 0;
@@ -201,12 +200,10 @@ namespace Phoenix {
 	}
 
 
-	void ParticleSystemEx::Render(float deltaTime, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
+	void ParticleSystemEx::Render(float time, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
 	{
-		m_time += deltaTime;
-
 		glBindVertexArray(m_VAO);
-		UpdateParticles(deltaTime, model);
+		UpdateParticles(time, model);
 		RenderParticles(model, view, projection);
 		glBindVertexArray(0);
 
@@ -214,13 +211,12 @@ namespace Phoenix {
 		m_currTFB = (m_currTFB + 1) & 0x1;
 	}
 
-	void ParticleSystemEx::UpdateParticles(float deltaTime, const glm::mat4& model)
+	void ParticleSystemEx::UpdateParticles(float time, const glm::mat4& model)
 	{
 	
 		m_particleSystemShader->use();
 		m_particleSystemShader->setValue("u_m4Model", model);
-		m_particleSystemShader->setValue("u_fTime", m_time);
-		m_particleSystemShader->setValue("u_fDeltaTime", deltaTime);
+		m_particleSystemShader->setValue("u_fTime", time);
 		m_particleSystemShader->setValue("u_iRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
 		m_particleSystemShader->setValue("u_uiNumMaxParticles", m_numParticles);
 		m_particleSystemShader->setValue("u_uiNumParticlesPerEmitter", m_numParticlesPerEmitter);

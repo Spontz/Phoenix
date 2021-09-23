@@ -74,7 +74,6 @@ out vec3			o_Color;
 out float			o_Age;
 out float			o_Life;
 
-uniform float u_fDeltaTime;
 uniform float u_fTime;
 uniform vec3 u_v3Force;
 uniform vec3 u_v3Color;
@@ -99,13 +98,16 @@ vec3 GetRandomDir(float TexCoord)
 
 void main()
 {
-	float fParticleID = float(gs_in[0].ID)/float(u_uiNumParticlesPerEmitter); // Get particle ID between 0 and 1
+	// Get particle ID between 0 and 1
+	float fParticleID = float(gs_in[0].ID)/float(u_uiNumParticlesPerEmitter);
 	
 	// Calculate the age of the particle, given the current time
 	float IntervalEmission = gs_in[0].Life/float(u_uiNumParticlesPerEmitter); // time between particles = particleLife/numParticles
 	float emissionTime = float(gs_in[0].ID) * IntervalEmission; // Time that the particle should be emitted
+	// RelativeAge: Value between 0 to "Life"
 	float RelativeAge = mod(u_fTime+emissionTime, gs_in[0].Life);
-	float AbsoluteAge =  RelativeAge/ gs_in[0].Life; // This gives a number between 0 to 1 with the real age of the particle
+	// AbsoluteAge: Value from 0 to 1 with the life of the particle
+	float AbsoluteAge =  RelativeAge/gs_in[0].Life;
 	
 	if (gs_in[0].Type == PARTICLE_TYPE_EMITTER) {
 		// Draw the Emitter
@@ -133,22 +135,21 @@ void main()
 		o_Age = RelativeAge;
 		o_Life = gs_in[0].Life;
 		
-		// If new age (RelativeAge) is below the previous age means that the particle has been regenerated, then we capture the new color
+		
+		vec3 newRandom = gs_in[0].Randomness;
+		vec3 newColor = gs_in[0].InitColor;
+		// If new age (RelativeAge) is below the previous age means that the particle has been regenerated
+		// so, we capture the new color and generate a new random seed
 		if(RelativeAge < gs_in[0].Age) {
-			o_InitColor = u_v3Color;
-			o_Color = u_v3Color * (1-AbsoluteAge);
-			vec3 newRandom = u_fRamndomness*GetRandomDir(fParticleID);
-			o_Randomness = newRandom;
-			o_Position = gs_in[0].InitPosition + (vec3(2,0,0) - gs_in[0].InitPosition) * AbsoluteAge + newRandom;
-			
+			newColor = u_v3Color;
+			newRandom = u_fRamndomness*GetRandomDir(fParticleID);
 		}		
-		else {
-			o_InitColor = gs_in[0].InitColor;
-			o_Color = gs_in[0].InitColor * (1-AbsoluteAge);
-			o_Randomness = gs_in[0].Randomness;
-			o_Position = gs_in[0].InitPosition + (vec3(2,0,0) - gs_in[0].InitPosition) * AbsoluteAge + gs_in[0].Randomness;
-		}
 
+		o_InitColor = newColor;
+		o_Randomness = newRandom;
+
+		o_Color = newColor * (1-AbsoluteAge);
+		o_Position = gs_in[0].InitPosition + (vec3(2,0,0) - gs_in[0].InitPosition) * AbsoluteAge + newRandom;
 		
 		EmitVertex();
 		EndPrimitive();		// Generate the emitter
