@@ -148,8 +148,13 @@ void main()
 		o_InitColor = newColor;
 		o_Randomness = newRandom;
 
-		o_Color = newColor * (1-AbsoluteAge);
-		o_Position = gs_in[0].InitPosition + (vec3(2,0,0) - gs_in[0].InitPosition) * AbsoluteAge + newRandom;
+		// Tests
+		//o_Color = mix(newColor, vec3(0,0,0), AbsoluteAge);
+		//o_Position = gs_in[0].InitPosition + (vec3(2,0,0) - gs_in[0].InitPosition) * AbsoluteAge + newRandom;
+		
+		// Example of fire effect:
+		o_Color = mix(newColor, vec3(1,1,0)*(1-AbsoluteAge), AbsoluteAge);
+		o_Position = gs_in[0].InitPosition + (vec3(0,1,0)*AbsoluteAge)+ newRandom;
 		
 		EmitVertex();
 		EndPrimitive();		// Generate the emitter

@@ -73,7 +73,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size() != 2) || (strings.size() < 9)) {
-			Logger::error("Draw Emitter Scene EX [{}]: 2 param (Particles per Emitter & Particle Life Time) and 9 strings needed (shader path, scene, 3 for positioning, particleTime, partRandomness, force and color)", identifier);
+			Logger::error("Draw Emitter Scene EX [{}]: 2 param (Particles per Emitter & Particle Life Time) and 9 strings needed (shader path, scene, 3 for positioning, particleSystemTime, partRandomness, force and color)", identifier);
 			return false;
 		}
 
