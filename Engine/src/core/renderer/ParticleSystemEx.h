@@ -20,14 +20,15 @@ namespace Phoenix {
 	struct ParticleEx
 	{
 		ParticleType Type;			// Particle Type:		loc 0
-		int32_t		RandomID;		// Particle ID:			loc 1
+		int32_t		ID;				// Particle ID:			loc 1
 		glm::vec3	InitPosition;	// Initial position:	loc 2
 		glm::vec3	Position;		// Position:			loc 3
 		glm::vec3	Randomness;		// Ramdomness:			loc 4
 		glm::vec3	Rotation;		// Rotation:			loc 5
-		glm::vec3	Color;			// Color:				loc 6
-		float		Age;			// Age (0 to Life):		loc 7
-		float		Life;			// Life:				loc 8
+		glm::vec3	InitColor;		// Initial color:		loc 6
+		glm::vec3	Color;			// Color:				loc 7
+		float		Age;			// Age (0 to Life):		loc 8
+		float		Life;			// Life:				loc 9
 	};
 
 	class ParticleSystemEx

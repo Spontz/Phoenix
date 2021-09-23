@@ -15,9 +15,10 @@ namespace Phoenix {
 	constexpr int LOC_POSITION = 3;
 	constexpr int LOC_RANDOMNESS = 4;
 	constexpr int LOC_ROTATION = 5;
-	constexpr int LOC_COLOR = 6;
-	constexpr int LOC_AGE = 7;
-	constexpr int LOC_LIFE = 8;
+	constexpr int LOC_INITCOLOR = 6;
+	constexpr int LOC_COLOR = 7;
+	constexpr int LOC_AGE = 8;
+	constexpr int LOC_LIFE = 9;
 
 	constexpr int BINDING_UPDATE = 0;
 	constexpr int BINDING_BILLBOARD = 1;
@@ -35,6 +36,8 @@ namespace Phoenix {
 		m_time = 0;
 
 		m_queryPrimitives = 0;
+		m_numGenParticles = 0;
+
 		m_numParticles = 0;
 		m_numParticlesPerEmitter = 0;
 
@@ -109,7 +112,7 @@ namespace Phoenix {
 		glVertexAttribBinding(LOC_TYPE, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_ID);
-		glVertexAttribIFormat(LOC_ID, 1, GL_INT, offsetof(ParticleEx, RandomID));
+		glVertexAttribIFormat(LOC_ID, 1, GL_INT, offsetof(ParticleEx, ID));
 		glVertexAttribBinding(LOC_ID, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_INITPOSITION);
@@ -127,6 +130,10 @@ namespace Phoenix {
 		glEnableVertexAttribArray(LOC_ROTATION);
 		glVertexAttribFormat(LOC_ROTATION, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Rotation));
 		glVertexAttribBinding(LOC_ROTATION, BINDING_UPDATE);
+
+		glEnableVertexAttribArray(LOC_INITCOLOR);
+		glVertexAttribFormat(LOC_INITCOLOR, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, InitColor));
+		glVertexAttribBinding(LOC_INITCOLOR, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_COLOR);
 		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Color));
@@ -169,7 +176,7 @@ namespace Phoenix {
 		m_particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT);
 		m_particleSystemShader->setValue("fParticleLifetime", m_particleLifeTime);
 
-		if (!initRandomTexture(1000)) {
+		if (!initRandomTexture(m_numParticlesPerEmitter)) {
 			return false;
 		}
 
@@ -211,15 +218,16 @@ namespace Phoenix {
 	{
 	
 		m_particleSystemShader->use();
-		m_particleSystemShader->setValue("model", model);
-		m_particleSystemShader->setValue("gTime", m_time);
-		m_particleSystemShader->setValue("gDeltaTime", deltaTime);
-		m_particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-		m_particleSystemShader->setValue("uiNumMaxParticles", m_numParticles);
-		m_particleSystemShader->setValue("fParticleLifetime", m_particleLifeTime);
-		m_particleSystemShader->setValue("gRamndomness", randomness);
-		m_particleSystemShader->setValue("gForce", force);
-		m_particleSystemShader->setValue("gColor", color);
+		m_particleSystemShader->setValue("u_m4Model", model);
+		m_particleSystemShader->setValue("u_fTime", m_time);
+		m_particleSystemShader->setValue("u_fDeltaTime", deltaTime);
+		m_particleSystemShader->setValue("u_iRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
+		m_particleSystemShader->setValue("u_uiNumMaxParticles", m_numParticles);
+		m_particleSystemShader->setValue("u_uiNumParticlesPerEmitter", m_numParticlesPerEmitter);
+		m_particleSystemShader->setValue("u_fParticleLifetime", m_particleLifeTime);
+		m_particleSystemShader->setValue("u_fRamndomness", randomness);
+		m_particleSystemShader->setValue("u_v3Force", force);
+		m_particleSystemShader->setValue("u_v3Color", color);
 
 
 		bindRandomTexture(RANDOM_TEXTURE_UNIT);
@@ -282,7 +290,7 @@ namespace Phoenix {
 	{
 		// TODO: Poner los varyings como parte del init del shader, incluso en la seccion... o que lo detecte solo??
 		m_particleSystemShader = DEMO->m_shaderManager.addShader(m_pathUpdate,
-			{ "o_Type", "o_ID", "o_InitPosition", "o_Position", "o_Randomness", "o_Rotation", "o_Color", "o_Age", "o_Life" });
+			{ "o_Type", "o_ID", "o_InitPosition", "o_Position", "o_Randomness", "o_Rotation", "o_InitColor", "o_Color", "o_Age", "o_Life" });
 
 		if (m_particleSystemShader)
 			return true;

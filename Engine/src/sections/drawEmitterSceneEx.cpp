@@ -63,10 +63,10 @@ namespace Phoenix {
 			delete m_pPartSystem;
 	}
 
-	static float RandomFloat()
+	static float RandomFloat() // Return a float between -0.5 and 0.5
 	{
 		float Max = RAND_MAX;
-		return ((float)rand() / Max);
+		return (((float)rand() / Max)-0.5f);
 	}
 
 	bool sDrawEmitterSceneEx::load()
@@ -161,11 +161,12 @@ namespace Phoenix {
 			for (size_t j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
 				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 				Particles[numParticle].Type = ParticleType::Emitter;
-				Particles[numParticle].RandomID = (int32_t)numParticle;
+				Particles[numParticle].ID = (int32_t)numParticle;
 				Particles[numParticle].InitPosition = m_pModel->meshes[i]->unique_vertices_pos[j];
 				Particles[numParticle].Position = glm::vec3(0, 0, 0);
 				Particles[numParticle].Randomness = glm::vec3(0, 0, 0);
 				Particles[numParticle].Rotation = glm::vec3(0, 0, 0);
+				Particles[numParticle].InitColor = m_vColor;
 				Particles[numParticle].Color = glm::vec3(0, 0, 0);
 				Particles[numParticle].Age = 0;
 				Particles[numParticle].Life = 0;
@@ -175,13 +176,14 @@ namespace Phoenix {
 				for (size_t k = 0; k < m_iParticlesPerEmitter; k++) {
 					m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 					Particles[numParticle].Type = ParticleType::Shell;
-					Particles[numParticle].RandomID = (int32_t)numParticle;
+					Particles[numParticle].ID = (int32_t)k;
 					Particles[numParticle].InitPosition = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
 					Particles[numParticle].Position = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
 					Particles[numParticle].Randomness = m_fParticleRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat());
 					Particles[numParticle].Rotation = glm::vec3(0,0,0);
-					Particles[numParticle].Color = Particles[emitterID].Color;	// Inherit the color of the emitter
-					Particles[numParticle].Age = ((float)k/ (float)(m_iParticlesPerEmitter-1)) * (m_fParticleLifeTime);
+					Particles[numParticle].InitColor = Particles[emitterID].InitColor;// Inherit the color of the emitter
+					Particles[numParticle].Color = glm::vec3(0, 0, 0);
+					Particles[numParticle].Age = 0;
 					Particles[numParticle].Life = m_fParticleLifeTime;
 					numParticle++;
 				}
@@ -227,9 +229,9 @@ namespace Phoenix {
 		float deltaTime = runTime - m_lastTime;
 		deltaTime = deltaTime * m_fParticleSpeed;
 		m_lastTime = runTime;
-		if (deltaTime < 0) {
-			deltaTime = -deltaTime;	// In case we rewind the demo
-		}
+		//if (deltaTime < 0) {
+		//	deltaTime = -deltaTime;	// In case we rewind the demo
+		//}
 		// Update particle system, public values
 		m_pPartSystem->force = m_vForce;
 		m_pPartSystem->color = m_vColor;
