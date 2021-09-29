@@ -63,10 +63,14 @@ namespace Phoenix {
 			delete m_pPartSystem;
 	}
 
-	static float RandomFloat() // Return a float between -0.5 and 0.5
+	static glm::vec3 RandomVec3() // Return a float between -0.5 and 0.5
 	{
 		float Max = RAND_MAX;
-		return (((float)rand() / Max)-0.5f);
+		glm::vec3 randNum((float)rand(), (float)rand(), (float)rand());
+		randNum /= Max;	// Values between 0 and 1
+		randNum -= 0.5f;	// Values between 0.5 and -0.5
+
+		return randNum;
 	}
 
 	bool sDrawEmitterSceneEx::load()
@@ -90,7 +94,7 @@ namespace Phoenix {
 		// Load unique vertices (it can take a while)
 		m_pModel->loadUniqueVertices();
 
-		// Render states
+		// Set render states
 		render_disableDepthTest = true;
 
 		// Load Emitters and Particles config
@@ -148,19 +152,23 @@ namespace Phoenix {
 		m_uiNumParticles = m_uiNumEmitters + static_cast<unsigned int>(m_uiNumEmitters * m_iParticlesPerEmitter);
 		Logger::info(LogLevel::low, "Draw Emitter Scene EX [{}]: Num max of particles will be: {}", identifier, m_uiNumParticles);
 
-		std::vector<ParticleEx> Particles;
+		
+		// Load the emitters and particle values, based in our model vertexes
+		std::vector<ParticleSystemEx::Particle> Particles;
 		Particles.resize(m_uiNumParticles);
 
-		// Load the emitters and particle valies, based in our model vertexes
 		size_t numEmitter = 0;	// Number of Emitter
 		size_t emitterID = 0;	// Emitter number (inside the array)
 		size_t numParticle = 0;
 
 		m_fCurrentEmitter = 0;
+		// Set the seed
+		srand(static_cast<unsigned int>(time(0)));
+
 		for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
 			for (size_t j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
 				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
-				Particles[numParticle].Type = ParticleType::Emitter;
+				Particles[numParticle].Type = ParticleSystemEx::ParticleType::Emitter;
 				Particles[numParticle].ID = (int32_t)numParticle;
 				Particles[numParticle].InitPosition = m_pModel->meshes[i]->unique_vertices_pos[j];
 				Particles[numParticle].Position = glm::vec3(0, 0, 0);
@@ -175,11 +183,11 @@ namespace Phoenix {
 				// Fill the particles per emitter
 				for (size_t k = 0; k < m_iParticlesPerEmitter; k++) {
 					m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
-					Particles[numParticle].Type = ParticleType::Shell;
+					Particles[numParticle].Type = ParticleSystemEx::ParticleType::Shell;
 					Particles[numParticle].ID = (int32_t)k;
 					Particles[numParticle].InitPosition = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
 					Particles[numParticle].Position = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
-					Particles[numParticle].Randomness = m_fParticleRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat());
+					Particles[numParticle].Randomness = m_fParticleRandomness * RandomVec3();
 					Particles[numParticle].Rotation = glm::vec3(0,0,0);
 					Particles[numParticle].InitColor = Particles[emitterID].InitColor;// Inherit the color of the emitter
 					Particles[numParticle].Color = glm::vec3(0, 0, 0);
@@ -243,10 +251,10 @@ namespace Phoenix {
 		std::stringstream ss;
 		ss << "Model used: " << m_pModel->filename << std::endl;
 		ss << "Emitters: " << m_uiNumEmitters << std::endl;
+		ss << "Particles per Emitter: " << m_iParticlesPerEmitter << std::endl; 
 		ss << "Max Particles: " << m_uiNumParticles << std::endl;
-		ss << "Memory Used: " << std::format("{:.1f}", m_pPartSystem->getMemUsedInMb()) << " Mb" << std::endl;
-		ss << "Particles per Emitter: " << m_iParticlesPerEmitter << std::endl;
 		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
+		ss << "Memory Used: " << std::format("{:.1f}", m_pPartSystem->getMemUsedInMb()) << " Mb" << std::endl;
 		debugStatic = ss.str();
 	}
 

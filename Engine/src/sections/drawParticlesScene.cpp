@@ -1,5 +1,5 @@
 #include "main.h"
-#include "core/renderer/ParticleMesh.h"
+#include "core/renderer/ParticleMeshEx.h"
 #include "core/drivers/mathdriver.h"
 #include "core/renderer/ShaderVars.h"
 
@@ -22,8 +22,12 @@ namespace Phoenix {
 		SP_Model m_pModel;
 
 		// Particle engine variables
-		int				m_iNumParticles = 0;
-		ParticleMesh*	m_pParticleMesh = nullptr;
+		int				m_iNumParticles = 0; 
+		int				m_iNumEmitters = 0;
+		float			m_fCurrentEmitter = 0;
+		int				m_iParticlesPerEmitter = 0;
+		float			m_fParticleLifeTime = 0;
+		ParticleMeshEx*	m_pParticleMesh = nullptr;
 		SP_Shader		m_pShader = nullptr;
 
 		// Particle Matrix positioning (for all the model)
@@ -57,15 +61,37 @@ namespace Phoenix {
 			delete m_pParticleMesh;
 	}
 
+
+	static glm::vec3 RandomVec3() // Return a float between -0.5 and 0.5
+	{
+		float Max = RAND_MAX;
+		glm::vec3 randNum((float)rand(), (float)rand(), (float)rand());
+		randNum /= Max;	// Values between 0 and 1
+		randNum -= 0.5f;	// Values between 0.5 and -0.5
+
+		return randNum;
+	}
+
 	bool sDrawParticlesScene::load()
 	{
 		// script validation
-		if (strings.size() != 5) {
-			Logger::error("Draw Particles Scene [{}]: 5 strings needed (1 for shader file, 1 for 3D model, 3 for positioning)", identifier);
+		if ((param.size() != 2) || (strings.size() != 5)) {
+			Logger::error("Draw Particles Scene [{}]: 2 param (Particles per Emitter & Particle Life Time) + 6 strings needed (shader file, scene, 3 for positioning)", identifier);
 			return false;
 		}
 
+		// Set render states
 		render_disableDepthMask = true;
+
+		// Load Emitters and Particles config
+		m_iParticlesPerEmitter = static_cast<int>(param[0]);
+		m_fParticleLifeTime = param[1];
+
+		// Section checks
+		if (m_iParticlesPerEmitter < 0) {
+			Logger::error("Draw Particles Scene [{}]: Particles per emitter should be greater than 0", identifier);
+			return false;
+		}
 
 		// Load the shader
 		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
@@ -81,26 +107,16 @@ namespace Phoenix {
 		// Load unique vertices (it can take a while)
 		m_pModel->loadUniqueVertices();
 
-		// Calculate particles number
-		m_iNumParticles = 0;
+		// Calculate emitters and total particles number
+		m_iNumEmitters = 0;
 		for (auto& mesh : m_pModel->meshes) {
-			m_iNumParticles += static_cast<uint32_t>(mesh->unique_vertices_pos.size());
+			m_iNumEmitters += static_cast<uint32_t>(mesh->unique_vertices_pos.size());
 		}
+		m_iNumParticles = m_iNumEmitters + (m_iNumEmitters * m_iParticlesPerEmitter);
 
 		if (m_iNumParticles == 0) {
 			Logger::error("Draw Particles Scene [{}]: No vertex found in the model", identifier);
 			return false;
-		}
-		// Load the particles position
-		std::vector<ParticleMesh::Particle> Part;
-		Part.resize(m_iNumParticles);
-		size_t cnt = 0;
-		for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
-			for (size_t j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
-				Part[cnt].Pos = m_pModel->meshes[i]->unique_vertices_pos[j];
-				Part[cnt].Col = glm::vec4(0.0);	// Todo: Inited with black color... should be initied with vertex color
-				cnt++;
-			}
 		}
 
 		// Load particle positioning
@@ -119,16 +135,58 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
 		m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
 
+		m_pExprPosition->SymbolTable.add_variable("nE", m_fCurrentEmitter);
+
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
 			return false;
 
+
+		// Load the emitters and particle values, based in our model vertexes
+		std::vector<ParticleMeshEx::Particle> Particles;
+		Particles.resize(m_iNumParticles);
+
+		size_t numEmitter = 0;	// Number of Emitter
+		size_t emitterID = 0;	// Emitter number (inside the array)
+		size_t numParticle = 0;
+
+		size_t cnt = 0;
+		// Set the seed
+		srand(static_cast<unsigned int>(time(0)));
+
+		for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
+			for (size_t j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
+				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
+				Particles[numParticle].Type = ParticleMeshEx::ParticleType::Emitter;
+				Particles[numParticle].ID = (int32_t)numParticle;
+				Particles[numParticle].InitPosition = m_pModel->meshes[i]->unique_vertices_pos[j];
+				Particles[numParticle].Randomness = glm::vec3(0, 0, 0);
+				Particles[numParticle].InitColor = glm::vec3(1, 0, 0); //TODO: Change to use formulas
+				Particles[numParticle].Life = 0;
+				emitterID = numParticle;
+				numParticle++;
+				// Fill the particles per emitter
+				for (size_t k = 0; k < m_iParticlesPerEmitter; k++) {
+					m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
+					Particles[numParticle].Type = ParticleMeshEx::ParticleType::Shell;
+					Particles[numParticle].ID = (int32_t)k;
+					Particles[numParticle].InitPosition = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
+					Particles[numParticle].Randomness = RandomVec3();
+					Particles[numParticle].InitColor = Particles[emitterID].InitColor;// Inherit the color of the emitter
+					Particles[numParticle].Life = m_fParticleLifeTime;
+					numParticle++;
+				}
+				numEmitter++;
+				m_fCurrentEmitter = static_cast<float>(numEmitter);
+			}
+		}
+		
 		// Create the particle system
-		m_pParticleMesh = new ParticleMesh(m_iNumParticles);
-		if (!m_pParticleMesh->startup(Part))
+		m_pParticleMesh = new ParticleMeshEx();
+		if (!m_pParticleMesh->InitParticleSystem(Particles))
 			return false;
 		// Delete all temporarly elements
-		Part.clear();
+		Particles.clear();
 
 		// Create Shader variables
 		m_pShader->use();
@@ -172,17 +230,16 @@ namespace Phoenix {
 
 		// Get the shader
 		m_pShader->use();
-		m_pShader->setValue("gTime", runTime);	// Send the Time
-		m_pShader->setValue("gVP", projection * view);	// Set Projection x View matrix
-		m_pShader->setValue("gModel", model);			// Set Model matrix
-		m_pShader->setValue("gCameraPos", m_demo.m_pActiveCamera->getPosition());		// Set camera position
-		m_pShader->setValue("gNumParticles", (float)m_iNumParticles);	// Set the total number of particles
+		m_pShader->setValue("m4ViewModel", view * model);	// Set View x Model matrix
+		m_pShader->setValue("m4Projection", projection);
 
+		m_pShader->setValue("iNumParticlesPerEmitter", m_iParticlesPerEmitter);
+		
 		// Set the other shader variable values
 		m_pVars->setValues();
 
 		// Render particles
-		m_pParticleMesh->render(runTime);
+		m_pParticleMesh->render();
 
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
@@ -192,8 +249,12 @@ namespace Phoenix {
 	void sDrawParticlesScene::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "File: " << m_pModel->filename << std::endl;
+		ss << "Model used: " << m_pModel->filename << std::endl;
+		ss << "Emitters: " << m_iNumEmitters << std::endl;
+		ss << "Particles per Emitter: " << m_iParticlesPerEmitter << std::endl; 
 		ss << "Num Particles: " << m_iNumParticles << std::endl;
+		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
+		ss << "Memory Used: " << std::format("{:.1f}", m_pParticleMesh->getMemUsedInMb()) << " Mb" << std::endl;
 		debugStatic = ss.str();
 	}
 

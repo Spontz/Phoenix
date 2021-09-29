@@ -11,33 +11,34 @@
 namespace Phoenix {
 
 
-	enum struct ParticleType : int32_t {
-		None = 0,
-		Emitter = 1,
-		Shell = 2
-	};
-
-	struct ParticleEx
-	{
-		ParticleType Type;			// Particle Type:		loc 0
-		int32_t		ID;				// Particle ID:			loc 1
-		glm::vec3	InitPosition;	// Initial position:	loc 2
-		glm::vec3	Position;		// Position:			loc 3
-		glm::vec3	Randomness;		// Ramdomness:			loc 4
-		glm::vec3	Rotation;		// Rotation:			loc 5
-		glm::vec3	InitColor;		// Initial color:		loc 6
-		glm::vec3	Color;			// Color:				loc 7
-		float		Age;			// Age (0 to Life):		loc 8
-		float		Life;			// Life:				loc 9
-	};
-
 	class ParticleSystemEx
 	{
 	public:
+		enum struct ParticleType : int32_t {
+			None = 0,
+			Emitter = 1,
+			Shell = 2
+		};
+
+		struct Particle
+		{
+			ParticleType Type;			// Particle Type:		loc 0
+			int32_t		ID;				// Particle ID:			loc 1
+			glm::vec3	InitPosition;	// Initial position:	loc 2
+			glm::vec3	Position;		// Position:			loc 3
+			glm::vec3	Randomness;		// Ramdomness:			loc 4
+			glm::vec3	Rotation;		// Rotation:			loc 5
+			glm::vec3	InitColor;		// Initial color:		loc 6
+			glm::vec3	Color;			// Color:				loc 7
+			float		Age;			// Age (0 to Life):		loc 8
+			float		Life;			// Life:				loc 9
+		};
+
+
 		ParticleSystemEx(std::string shaderPath, float particleLifeTime, float particleRamndomness);
 		~ParticleSystemEx();
 
-		bool InitParticleSystem(Section* sec, const std::vector<ParticleEx> particles, unsigned int numParticlesPerEmitter, std::vector<std::string>	billboardShaderVars);
+		bool InitParticleSystem(Section* sec, const std::vector<Particle> particles, unsigned int numParticlesPerEmitter, std::vector<std::string>	billboardShaderVars);
 		void Render(float deltaTime, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 
 		int32_t getNumParticles() { return m_numGenParticles; };
@@ -77,7 +78,7 @@ namespace Phoenix {
 		GLuint					m_VAO;						// Vertex Array Object buffer
 		std::array<GLuint, 2>	m_particleBuffer;			// Vertex Buffer: input
 		std::array<GLuint, 2>	m_transformFeedback;		// Transform feedback buffers: output
-		ParticleEx*				m_emitterData;				// Emitter info (for updating emitters positions)
+		Particle*				m_emitterData;				// Emitter info (for updating emitters positions)
 		SP_Shader				m_particleSystemShader;
 		SP_Shader				m_billboardShader;
 

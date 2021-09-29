@@ -73,7 +73,7 @@ namespace Phoenix {
 	}
 
 
-	bool ParticleSystemEx::InitParticleSystem(Section* sec, const std::vector<ParticleEx> particles, unsigned int numParticlesPerEmitter, std::vector<std::string> billboardShaderVars)
+	bool ParticleSystemEx::InitParticleSystem(Section* sec, const std::vector<Particle> particles, unsigned int numParticlesPerEmitter, std::vector<std::string> billboardShaderVars)
 	{
 		if (particles.size() == 0)
 			return false;
@@ -96,69 +96,69 @@ namespace Phoenix {
 		for (unsigned int i = 0; i < 2; i++) {
 			glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
 			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(ParticleEx) * m_numParticles, particles.data(), GL_DYNAMIC_DRAW);	// Allocate mem, uploading all the particles
+			glBufferData(GL_ARRAY_BUFFER, sizeof(Particle) * m_numParticles, particles.data(), GL_DYNAMIC_DRAW);	// Allocate mem, uploading all the particles
 			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 		}
 	
-		m_memUsed = (float)(2 * sizeof(ParticleEx) * m_numParticles) / 1024.0f / 1024.0f;
+		m_memUsed = (float)(2 * sizeof(Particle) * m_numParticles) / 1024.0f / 1024.0f;
 
 		// Setup Vertex Attribute formats
 		// Definitions for Update shader Binding
-		glBindVertexBuffer(BINDING_UPDATE, m_particleBuffer[0], 0, sizeof(ParticleEx));
+		glBindVertexBuffer(BINDING_UPDATE, m_particleBuffer[0], 0, sizeof(Particle));
 
 		glEnableVertexAttribArray(LOC_TYPE);
-		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(ParticleEx, Type));
+		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));
 		glVertexAttribBinding(LOC_TYPE, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_ID);
-		glVertexAttribIFormat(LOC_ID, 1, GL_INT, offsetof(ParticleEx, ID));
+		glVertexAttribIFormat(LOC_ID, 1, GL_INT, offsetof(Particle, ID));
 		glVertexAttribBinding(LOC_ID, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_INITPOSITION);
-		glVertexAttribFormat(LOC_INITPOSITION, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, InitPosition));
+		glVertexAttribFormat(LOC_INITPOSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, InitPosition));
 		glVertexAttribBinding(LOC_INITPOSITION, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_POSITION);
-		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Position));
+		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Position));
 		glVertexAttribBinding(LOC_POSITION, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_RANDOMNESS);
-		glVertexAttribFormat(LOC_RANDOMNESS, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Randomness));
+		glVertexAttribFormat(LOC_RANDOMNESS, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Randomness));
 		glVertexAttribBinding(LOC_RANDOMNESS, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_ROTATION);
-		glVertexAttribFormat(LOC_ROTATION, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Rotation));
+		glVertexAttribFormat(LOC_ROTATION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Rotation));
 		glVertexAttribBinding(LOC_ROTATION, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_INITCOLOR);
-		glVertexAttribFormat(LOC_INITCOLOR, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, InitColor));
+		glVertexAttribFormat(LOC_INITCOLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, InitColor));
 		glVertexAttribBinding(LOC_INITCOLOR, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_COLOR);
-		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Color));
+		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Color));
 		glVertexAttribBinding(LOC_COLOR, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_AGE);
-		glVertexAttribFormat(LOC_AGE, 1, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Age));
+		glVertexAttribFormat(LOC_AGE, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, Age));
 		glVertexAttribBinding(LOC_AGE, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_LIFE);
-		glVertexAttribFormat(LOC_LIFE, 1, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Life));
+		glVertexAttribFormat(LOC_LIFE, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, Life));
 		glVertexAttribBinding(LOC_LIFE, BINDING_UPDATE);
 
 		// Definitions for Billboard shader Binding
-		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[0], 0, sizeof(ParticleEx));
+		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[0], 0, sizeof(Particle));
 
 		glEnableVertexAttribArray(LOC_TYPE);
-		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(ParticleEx, Type));
+		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));
 		glVertexAttribBinding(LOC_TYPE, BINDING_BILLBOARD);
 
 		glEnableVertexAttribArray(LOC_POSITION);
-		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Position));
+		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Position));
 		glVertexAttribBinding(LOC_POSITION, BINDING_BILLBOARD);
 
 		glEnableVertexAttribArray(LOC_COLOR);
-		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(ParticleEx, Color));
+		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Color));
 		glVertexAttribBinding(LOC_COLOR, BINDING_BILLBOARD);
 
 
@@ -234,7 +234,7 @@ namespace Phoenix {
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[m_currTFB]);
 
 		// Use Binding for particles (all attributes)
-		glBindVertexBuffer(BINDING_UPDATE, m_particleBuffer[m_currVB], 0, sizeof(ParticleEx));
+		glBindVertexBuffer(BINDING_UPDATE, m_particleBuffer[m_currVB], 0, sizeof(Particle));
 
 		glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, m_queryPrimitives);
 
@@ -269,7 +269,7 @@ namespace Phoenix {
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currTFB]);
 
 		// Use binding for billboard (only Position and color attributes)
-		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[m_currTFB], 0, sizeof(ParticleEx));
+		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[m_currTFB], 0, sizeof(Particle));
 
 		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
 	}
