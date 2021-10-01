@@ -1,5 +1,5 @@
 #include "main.h"
-#include "core/renderer/ParticleMesh.h"
+#include "core/renderer/ParticleMeshEx.h"
 #include "core/drivers/mathdriver.h"
 #include "core/renderer/ShaderVars.h"
 
@@ -24,7 +24,7 @@ namespace Phoenix {
 		// Particle engine variables
 		float			m_lastTime = 0;
 		int				m_iNumParticles = 0;
-		ParticleMesh*	m_pParticleMesh = nullptr;
+		ParticleMeshEx*	m_pParticleMesh = nullptr;
 		SP_Shader		m_pShader = nullptr;
 
 		// Particle Matrix positioning (for all the model)
@@ -92,13 +92,17 @@ namespace Phoenix {
 			return false;
 		}
 		// Load the particles position and color
-		std::vector<ParticleMesh::Particle> Part;
-		Part.resize(m_iNumParticles);
+		std::vector<ParticleMeshEx::Particle> Particles;
+		Particles.resize(m_iNumParticles);
 		int cnt = 0;
 		for (int i = 0; i < m_pTexture->width; i++) {
 			for (int j = 0; j < m_pTexture->height; j++) {
-				Part[cnt].Pos = glm::vec3(i, j, 0);
-				Part[cnt].Col = m_pTexture->getColor(i, j);//glm::vec3(1, 0, 0); // Todo: Put here original image color
+				Particles[cnt].Type = ParticleMeshEx::ParticleType::Emitter; 
+				Particles[cnt].ID = cnt;
+				Particles[cnt].InitPosition = glm::vec3(i, j, 0);
+				Particles[cnt].Randomness = glm::vec3(0, 0, 0);
+				Particles[cnt].InitColor = m_pTexture->getColor(i, j);
+				Particles[cnt].Life = 0;
 				cnt++;
 			}
 		}
@@ -124,11 +128,11 @@ namespace Phoenix {
 			return false;
 
 		// Create the particle system
-		m_pParticleMesh = new ParticleMesh(m_iNumParticles);
-		if (!m_pParticleMesh->startup(Part))
+		m_pParticleMesh = new ParticleMeshEx();
+		if (!m_pParticleMesh->init(Particles))
 			return false;
 		// Delete all temporarly elements
-		Part.clear();
+		Particles.clear();
 
 		// Create Shader variables
 		m_pShader->use();
@@ -173,17 +177,14 @@ namespace Phoenix {
 
 		// Get the shader
 		m_pShader->use();
-		m_pShader->setValue("gTime", runTime);	// Send the Time
-		m_pShader->setValue("gVP", projection * view);	// Set Projection x View matrix
-		m_pShader->setValue("gModel", model);			// Set Model matrix
-		m_pShader->setValue("gCameraPos", m_demo.m_pActiveCamera->getPosition());		// Set camera position
-		m_pShader->setValue("gNumParticles", (float)m_iNumParticles);	// Set the total number of particles
+		m_pShader->setValue("m4ViewModel", view * model);	// Set View x Model matrix
+		m_pShader->setValue("m4Projection", projection);
 
 		// Set the other shader variable values
 		m_pVars->setValues();
 
 		// Render particles
-		m_pParticleMesh->render(runTime);
+		m_pParticleMesh->render();
 
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
@@ -193,7 +194,7 @@ namespace Phoenix {
 	void sDrawParticlesImage::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "File: " << m_pTexture->filename << std::endl;
+		ss << "Image: " << m_pTexture->filename << std::endl;
 		ss << "Num Particles: " << m_iNumParticles << std::endl;
 		debugStatic = ss.str();
 	}

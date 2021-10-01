@@ -161,7 +161,7 @@ namespace Phoenix {
 				Particles[numParticle].ID = (int32_t)numParticle;
 				Particles[numParticle].InitPosition = m_pModel->meshes[i]->unique_vertices_pos[j];
 				Particles[numParticle].Randomness = glm::vec3(0, 0, 0);
-				Particles[numParticle].InitColor = glm::vec3(1, 0, 0); //TODO: Change to use formulas
+				Particles[numParticle].InitColor = glm::vec4(1, 0, 0, 1); //TODO: Change to use formulas
 				Particles[numParticle].Life = 0;
 				emitterID = numParticle;
 				numParticle++;
@@ -183,7 +183,7 @@ namespace Phoenix {
 		
 		// Create the particle system
 		m_pParticleMesh = new ParticleMeshEx();
-		if (!m_pParticleMesh->InitParticleSystem(Particles))
+		if (!m_pParticleMesh->init(Particles))
 			return false;
 		// Delete all temporarly elements
 		Particles.clear();

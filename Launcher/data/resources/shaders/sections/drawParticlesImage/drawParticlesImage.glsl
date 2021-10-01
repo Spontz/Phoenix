@@ -1,5 +1,5 @@
 #type vertex
-#version 450 core
+#version 440 core
 layout (location = 0) in int Type;
 layout (location = 1) in int ID;
 layout (location = 2) in vec3 InitPosition;
@@ -9,8 +9,6 @@ layout (location = 5) in float Life;
 
 uniform mat4 m4ViewModel; // view x Model matrix
 uniform float fTime;
-uniform int iNumParticlesPerEmitter;
-uniform float fRandomnessFactor;
 
 out VS_OUT
 {
@@ -18,38 +16,15 @@ out VS_OUT
 	vec4	Position;
 } vs_out;
 
-#define PARTICLE_TYPE_EMITTER 1
-#define PARTICLE_TYPE_SHELL 2
-
 void main(void)
 {
-	// Get particle ID between 0 and 1
-	float fParticleID = float(ID)/float(iNumParticlesPerEmitter);
-	// Calculate the age of the particle, given the current time
-	float IntervalEmission = Life/float(iNumParticlesPerEmitter); // time between particles = particleLife/numParticles
-	float emissionTime = float(ID) * IntervalEmission; // Time that the particle should be emitted
-	// RelativeAge: Value between 0 to "Life"
-	float RelativeAge = mod(fTime+emissionTime, Life);
-	// AbsoluteAge: Value from 0 to 1 with the life of the particle
-	float AbsoluteAge =  RelativeAge/Life;
-	
-	vec3 finalPosition = InitPosition;
-	vec4 finalColor = InitColor;
-	vec3 finalRandom = Randomness * fRandomnessFactor;
-	
-	if (Type == PARTICLE_TYPE_SHELL) {
-		// Example of fire effect:
-		finalColor = mix(InitColor, vec4(1,1,0,1)*(1-AbsoluteAge), AbsoluteAge);
-		finalPosition = InitPosition + (vec3(0,1,0)*AbsoluteAge)+ finalRandom;
-	}
-	
-	vs_out.Color = finalColor;
-	vs_out.Position = m4ViewModel * vec4(finalPosition, 1.0);
+	vs_out.Color = InitColor;
+	vs_out.Position = m4ViewModel * vec4(InitPosition, 1.0);
 }
 
 
 #type geometry
-#version 450 core
+#version 440 core
 
 layout(points) in;
 layout(triangle_strip) out;
@@ -106,7 +81,7 @@ void main()
 }
 
 #type fragment
-#version 450 core
+#version 440 core
 layout (location = 0) out vec4 FragColor;
 
 uniform sampler2D partTexture;

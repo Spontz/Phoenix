@@ -25,17 +25,17 @@ namespace Phoenix {
 			int32_t			ID;				// Particle ID:			loc 1
 			glm::vec3		InitPosition;	// Initial position:	loc 2
 			glm::vec3		Randomness;		// Ramdomness:			loc 3
-			glm::vec3		InitColor;		// Initial color:		loc 4
+			glm::vec4		InitColor;		// Initial color:		loc 4
 			float			Life;			// Life:				loc 5
 		};
 
 		ParticleMeshEx();
 		~ParticleMeshEx();
 
-		bool InitParticleSystem(std::vector<Particle> const& Part);
+		bool init(std::vector<Particle> const& Part);
 		void render();
 		void shutdown();
-		float getMemUsedInMb() { return m_memUsed; };
+		float getMemUsedInMb() { return m_memUsed; };	
 
 	private:
 

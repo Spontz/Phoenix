@@ -20,7 +20,7 @@ namespace Phoenix {
 		shutdown();
 	}
 
-	bool ParticleMeshEx::InitParticleSystem(std::vector<Particle> const& Part)
+	bool ParticleMeshEx::init(std::vector<Particle> const& Part)
 	{
 		m_numParticles = static_cast<uint32_t>(Part.size());
 
@@ -45,7 +45,7 @@ namespace Phoenix {
 			{ ShaderDataType::Int,		"ID"},
 			{ ShaderDataType::Float3,	"InitPosition"},
 			{ ShaderDataType::Float3,	"Randomness"},
-			{ ShaderDataType::Float3,	"InitColor"},
+			{ ShaderDataType::Float4,	"InitColor"},
 			{ ShaderDataType::Float,	"Life"}
 			});
 
