@@ -77,7 +77,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size() != 2) || (strings.size() < 9)) {
-			Logger::error("Draw Emitter Scene EX [{}]: 2 param (Particles per Emitter & Particle Life Time) and 9 strings needed (shader path, scene, 3 for positioning, particleSystemTime, partRandomness, force and color)", identifier);
+			Logger::error("Draw Emitter Scene Ex [{}]: 2 param (Particles per Emitter & Particle Life Time) and 9 strings needed (shader path, scene, 3 for positioning, particleSystemTime, partRandomness, force and color)", identifier);
 			return false;
 		}
 
@@ -140,7 +140,7 @@ namespace Phoenix {
 		}
 
 		if (m_uiNumEmitters <= 0) {
-			Logger::error("Draw Emitter Scene EX [{}]: No emitters found in the 3D model", identifier);
+			Logger::error("Draw Emitter Scene Ex [{}]: No emitters found in the 3D model", identifier);
 			return false;
 		}
 		m_pExprPosition->SymbolTable.add_constant("TnE", static_cast<float>(m_uiNumEmitters));
@@ -150,7 +150,7 @@ namespace Phoenix {
 			return false;
 
 		m_uiNumParticles = m_uiNumEmitters + static_cast<unsigned int>(m_uiNumEmitters * m_iParticlesPerEmitter);
-		Logger::info(LogLevel::low, "Draw Emitter Scene EX [{}]: Num max of particles will be: {}", identifier, m_uiNumParticles);
+		Logger::info(LogLevel::low, "Draw Emitter Scene Ex [{}]: Num max of particles will be: {}", identifier, m_uiNumParticles);
 
 		
 		// Load the emitters and particle values, based in our model vertexes
