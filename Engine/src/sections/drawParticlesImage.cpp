@@ -1,5 +1,5 @@
 #include "main.h"
-#include "core/renderer/ParticleMeshEx.h"
+#include "core/renderer/ParticleMesh.h"
 #include "core/drivers/mathdriver.h"
 #include "core/renderer/ShaderVars.h"
 
@@ -22,9 +22,12 @@ namespace Phoenix {
 		SP_Texture m_pTexture;
 
 		// Particle engine variables
-		float			m_lastTime = 0;
 		int				m_iNumParticles = 0;
-		ParticleMeshEx*	m_pParticleMesh = nullptr;
+		int				m_iNumEmitters = 0;
+		float			m_fCurrentEmitter = 0;
+		int				m_iParticlesPerEmitter = 0;
+		float			m_fParticleLifeTime = 0;
+		ParticleMesh*	m_pParticleMesh = nullptr;
 		SP_Shader		m_pShader = nullptr;
 
 		// Particle Matrix positioning (for all the model)
@@ -58,16 +61,36 @@ namespace Phoenix {
 			delete m_pParticleMesh;
 	}
 
+	static glm::vec3 RandomVec3() // Return a float between -0.5 and 0.5
+	{
+		float Max = RAND_MAX;
+		glm::vec3 randNum((float)rand(), (float)rand(), (float)rand());
+		randNum /= Max;	// Values between 0 and 1
+		randNum -= 0.5f;	// Values between 0.5 and -0.5
+
+		return randNum;
+	}
+
 	bool sDrawParticlesImage::load()
 	{
 		// script validation
-		if (strings.size() != 5) {
-			Logger::error("Draw Particles Image [{}]: 5 strings needed (1 for shader file, 1 for image, 3 for positioning)", identifier);
+		if ((param.size() != 2) || (strings.size() != 5)) {
+			Logger::error("Draw Particles Image [{}]: 2 param (Particles per Emitter & Particle Life Time) + 5 strings needed (shader file, image, 3 for positioning)", identifier);
 			return false;
 		}
 
 		// Set States
 		render_disableDepthMask = true;
+
+		// Load Emitters and Particles config
+		m_iParticlesPerEmitter = static_cast<int>(param[0]);
+		m_fParticleLifeTime = param[1];
+
+		// Section checks
+		if (m_iParticlesPerEmitter < 0) {
+			Logger::error("Draw Particles Scene [{}]: Particles per emitter should be greater than 0", identifier);
+			return false;
+		}
 
 		// Load the shader
 		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
@@ -85,26 +108,12 @@ namespace Phoenix {
 
 
 		// Calculate particles number
-		m_iNumParticles = m_pTexture->width * m_pTexture->height;
+		m_iNumEmitters = m_pTexture->width * m_pTexture->height;
+		m_iNumParticles = m_iNumEmitters + m_iNumEmitters * m_iParticlesPerEmitter;
 
 		if (m_iNumParticles == 0) {
 			Logger::error("Draw Particles Image [{}]: Image size is zero, no particles to draw", identifier);
 			return false;
-		}
-		// Load the particles position and color
-		std::vector<ParticleMeshEx::Particle> Particles;
-		Particles.resize(m_iNumParticles);
-		int cnt = 0;
-		for (int i = 0; i < m_pTexture->width; i++) {
-			for (int j = 0; j < m_pTexture->height; j++) {
-				Particles[cnt].Type = ParticleMeshEx::ParticleType::Emitter; 
-				Particles[cnt].ID = cnt;
-				Particles[cnt].InitPosition = glm::vec3(i, j, 0);
-				Particles[cnt].Randomness = glm::vec3(0, 0, 0);
-				Particles[cnt].InitColor = m_pTexture->getColor(i, j);
-				Particles[cnt].Life = 0;
-				cnt++;
-			}
 		}
 
 		// Load particle positioning
@@ -123,12 +132,54 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
 		m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
 
+		m_pExprPosition->SymbolTable.add_variable("nE", m_fCurrentEmitter);
+
+		// Add constants
+		m_pExprPosition->SymbolTable.add_constant("imageWidth", static_cast<float>(m_pTexture->width));
+		m_pExprPosition->SymbolTable.add_constant("imageHeight", static_cast<float>(m_pTexture->height));
+		m_pExprPosition->SymbolTable.add_constant("particlesNumber", static_cast<float>(m_iNumParticles));
+
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
 			return false;
 
+		// Load the emitters and particle values, based in our source image
+		std::vector<ParticleMesh::Particle> Particles;
+		Particles.resize(m_iNumParticles);
+
+		size_t numEmitter = 0;	// Number of Emitter
+		size_t emitterID = 0;	// Emitter number (inside the array)
+		size_t numParticle = 0;
+
+		for (int i = 0; i < m_pTexture->width; i++) {
+			for (int j = 0; j < m_pTexture->height; j++) {
+				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
+				Particles[numParticle].Type = ParticleMesh::ParticleType::Emitter;
+				Particles[numParticle].ID = (int32_t)numEmitter;
+				Particles[numParticle].InitPosition = glm::vec3(i, j, 0);
+				Particles[numParticle].Randomness = glm::vec3(0, 0, 0);
+				Particles[numParticle].InitColor = m_pTexture->getColor(i, j);
+				Particles[numParticle].Life = 0;
+				emitterID = numParticle;
+				numParticle++;
+				// Fill the particles per emitter
+				for (size_t k = 0; k < m_iParticlesPerEmitter; k++) {
+					//m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
+					Particles[numParticle].Type = ParticleMesh::ParticleType::Shell;
+					Particles[numParticle].ID = (int32_t)k;
+					Particles[numParticle].InitPosition = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
+					Particles[numParticle].Randomness = RandomVec3();
+					Particles[numParticle].InitColor = Particles[emitterID].InitColor;// Inherit the color of the emitter
+					Particles[numParticle].Life = m_fParticleLifeTime;
+					numParticle++;
+				}
+				numEmitter++;
+				m_fCurrentEmitter = static_cast<float>(numEmitter);
+			}
+		}
+
 		// Create the particle system
-		m_pParticleMesh = new ParticleMeshEx();
+		m_pParticleMesh = new ParticleMesh();
 		if (!m_pParticleMesh->init(Particles))
 			return false;
 		// Delete all temporarly elements
@@ -195,7 +246,13 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Image: " << m_pTexture->filename << std::endl;
+		ss << "Width: " << m_pTexture->width << std::endl;
+		ss << "Height: " << m_pTexture->height << std::endl;
+		ss << "Emitters: " << m_iNumEmitters << std::endl;
+		ss << "Particles per Emitter: " << m_iParticlesPerEmitter << std::endl;
 		ss << "Num Particles: " << m_iNumParticles << std::endl;
+		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
+		ss << "Memory Used: " << std::format("{:.1f}", m_pParticleMesh->getMemUsedInMb()) << " Mb" << std::endl;
 		debugStatic = ss.str();
 	}
 

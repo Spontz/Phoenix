@@ -6,8 +6,9 @@
 
 namespace Phoenix {
 
-	ParticleMesh::ParticleMesh(uint32_t numParticles) :
-		m_numParticles(numParticles),
+	ParticleMesh::ParticleMesh() :
+		m_numParticles(0),
+		m_memUsed(0),
 		m_particles(nullptr),
 		m_VertexArray(nullptr)
 	{
@@ -19,13 +20,20 @@ namespace Phoenix {
 		shutdown();
 	}
 
-	bool ParticleMesh::startup(std::vector<Particle> const& Part)
+	bool ParticleMesh::init(std::vector<Particle> const& Part)
 	{
-		// Application memory particle buffers (double buffered)
-		m_particles = new Particle[m_numParticles];
+		m_numParticles = static_cast<uint32_t>(Part.size());
 
-		// Load the ID's of the particles
-		initialize_particles(Part);
+		if (m_numParticles == 0)
+			return false;
+
+		m_memUsed = (float)(sizeof(Particle) * m_numParticles) / 1024.0f / 1024.0f;
+
+		// Allocte mem for particles
+		m_particles = new Particle[m_numParticles];
+		for (uint32_t i = 0; i < m_numParticles; i++)
+			m_particles[i] = Part[i];
+
 
 		// Allocate Vertex Array
 		m_VertexArray = std::make_shared<VertexArray>();
@@ -33,8 +41,12 @@ namespace Phoenix {
 		// Create & Load the Vertex Buffer
 		auto pVB = std::make_shared<VertexBuffer>(&m_particles[0], m_numParticles * static_cast<uint32_t>(sizeof(Particle)));
 		pVB->SetLayout({
-			{ ShaderDataType::Float3,	"aPos"},
-			{ ShaderDataType::Float4,	"aColor"}
+			{ ShaderDataType::Int,		"Type"},
+			{ ShaderDataType::Int,		"ID"},
+			{ ShaderDataType::Float3,	"InitPosition"},
+			{ ShaderDataType::Float3,	"Randomness"},
+			{ ShaderDataType::Float4,	"InitColor"},
+			{ ShaderDataType::Float,	"Life"}
 			});
 
 		m_VertexArray->AddVertexBuffer(pVB);
@@ -43,30 +55,7 @@ namespace Phoenix {
 		return true;
 	}
 
-	void ParticleMesh::initialize_particles(std::vector<Particle> Part)
-	{
-		if (Part.empty()) {
-			for (uint32_t i = 0; i < m_numParticles; i++)
-			{
-				m_particles[i].Pos = glm::vec3(0.0f);
-				m_particles[i].Col = glm::vec4(0.0f);
-			}
-		}
-		else {
-			if (Part.size() != m_numParticles)
-				Logger::error("ParticleMesh: The number of positions does not match the number of particles!");
-			else {
-				for (uint32_t i = 0; i < m_numParticles; i++)
-				{
-					m_particles[i] = Part[i];
-				}
-			}
-		}
-
-	}
-
-
-	void ParticleMesh::render(float currentTime)
+	void ParticleMesh::render()
 	{
 		// Bind our vertex arrays
 		m_VertexArray->bind();
@@ -77,11 +66,13 @@ namespace Phoenix {
 
 	void ParticleMesh::shutdown()
 	{
+		m_numParticles = 0;
+		m_memUsed = 0;
+
 		if (m_particles)
 			delete[] m_particles;
 
 		m_particles = nullptr;
 		m_VertexArray = nullptr;
 	}
-
 }

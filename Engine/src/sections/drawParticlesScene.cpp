@@ -1,5 +1,5 @@
 #include "main.h"
-#include "core/renderer/ParticleMeshEx.h"
+#include "core/renderer/ParticleMesh.h"
 #include "core/drivers/mathdriver.h"
 #include "core/renderer/ShaderVars.h"
 
@@ -22,12 +22,12 @@ namespace Phoenix {
 		SP_Model m_pModel;
 
 		// Particle engine variables
-		int				m_iNumParticles = 0; 
+		int				m_iNumParticles = 0;
 		int				m_iNumEmitters = 0;
 		float			m_fCurrentEmitter = 0;
 		int				m_iParticlesPerEmitter = 0;
 		float			m_fParticleLifeTime = 0;
-		ParticleMeshEx*	m_pParticleMesh = nullptr;
+		ParticleMesh*	m_pParticleMesh = nullptr;
 		SP_Shader		m_pShader = nullptr;
 
 		// Particle Matrix positioning (for all the model)
@@ -76,7 +76,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size() != 2) || (strings.size() != 5)) {
-			Logger::error("Draw Particles Scene [{}]: 2 param (Particles per Emitter & Particle Life Time) + 6 strings needed (shader file, scene, 3 for positioning)", identifier);
+			Logger::error("Draw Particles Scene [{}]: 2 param (Particles per Emitter & Particle Life Time) + 5 strings needed (shader file, scene, 3 for positioning)", identifier);
 			return false;
 		}
 
@@ -141,24 +141,23 @@ namespace Phoenix {
 		if (!m_pExprPosition->compileFormula())
 			return false;
 
-
 		// Load the emitters and particle values, based in our model vertexes
-		std::vector<ParticleMeshEx::Particle> Particles;
+		std::vector<ParticleMesh::Particle> Particles;
 		Particles.resize(m_iNumParticles);
 
 		size_t numEmitter = 0;	// Number of Emitter
 		size_t emitterID = 0;	// Emitter number (inside the array)
 		size_t numParticle = 0;
 
-		size_t cnt = 0;
+		//size_t cnt = 0;
 		// Set the seed
 		srand(static_cast<unsigned int>(time(0)));
 
 		for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
 			for (size_t j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
 				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
-				Particles[numParticle].Type = ParticleMeshEx::ParticleType::Emitter;
-				Particles[numParticle].ID = (int32_t)numParticle;
+				Particles[numParticle].Type = ParticleMesh::ParticleType::Emitter;
+				Particles[numParticle].ID = (int32_t)numEmitter;
 				Particles[numParticle].InitPosition = m_pModel->meshes[i]->unique_vertices_pos[j];
 				Particles[numParticle].Randomness = glm::vec3(0, 0, 0);
 				Particles[numParticle].InitColor = glm::vec4(1, 0, 0, 1); //TODO: Change to use formulas
@@ -168,7 +167,7 @@ namespace Phoenix {
 				// Fill the particles per emitter
 				for (size_t k = 0; k < m_iParticlesPerEmitter; k++) {
 					m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
-					Particles[numParticle].Type = ParticleMeshEx::ParticleType::Shell;
+					Particles[numParticle].Type = ParticleMesh::ParticleType::Shell;
 					Particles[numParticle].ID = (int32_t)k;
 					Particles[numParticle].InitPosition = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
 					Particles[numParticle].Randomness = RandomVec3();
@@ -182,7 +181,7 @@ namespace Phoenix {
 		}
 		
 		// Create the particle system
-		m_pParticleMesh = new ParticleMeshEx();
+		m_pParticleMesh = new ParticleMesh();
 		if (!m_pParticleMesh->init(Particles))
 			return false;
 		// Delete all temporarly elements
