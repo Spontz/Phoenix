@@ -22,7 +22,6 @@ namespace Phoenix {
 
 		// Particle engine variables
 		float			m_lastTime = 0;
-		unsigned int	m_uiNumMaxParticles = 0;
 		unsigned int	m_uiNumEmitters = 0;
 		float			m_fCurrentEmitter = 0;
 		float			m_fEmissionTime = 0;
@@ -148,10 +147,8 @@ namespace Phoenix {
 		if (!m_pExprPosition->compileFormula())
 			return false;
 
-		m_uiNumMaxParticles = m_uiNumEmitters + static_cast<unsigned int>(static_cast<float>(m_uiNumEmitters) * m_fParticleLifeTime * (1.0f / m_fEmissionTime));
-		Logger::info(LogLevel::low, "Draw Emitter Scene [{}]: Num max of particles will be: {}", identifier, m_uiNumMaxParticles);
-
-		std::vector<Particle> Emitter;
+		
+		std::vector<ParticleSystem::Particle> Emitter;
 		Emitter.resize(m_uiNumEmitters);
 
 		// Load the emitters, based in our model vertexes
@@ -160,7 +157,7 @@ namespace Phoenix {
 		for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
 			for (size_t j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
 				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
-				Emitter[numEmitter].Type = ParticleType::Emitter;
+				Emitter[numEmitter].Type = ParticleSystem::ParticleType::Emitter;
 				Emitter[numEmitter].Pos = m_pModel->meshes[i]->unique_vertices_pos[j];
 				Emitter[numEmitter].Vel = m_vVelocity + (m_fEmitterRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat()));
 				Emitter[numEmitter].Col = m_vColor;
@@ -171,8 +168,8 @@ namespace Phoenix {
 		}
 
 		// Create the particle system
-		m_pPartSystem = new ParticleSystem(pathShaders, m_uiNumMaxParticles, m_uiNumEmitters, m_fEmissionTime, m_fParticleLifeTime);
-		if (!m_pPartSystem->InitParticleSystem(this, Emitter, uniform))
+		m_pPartSystem = new ParticleSystem(pathShaders);
+		if (!m_pPartSystem->Init(this, Emitter, m_fEmissionTime, m_fParticleLifeTime, uniform))
 			return false;
 
 		return !GLDRV_checkError();
@@ -226,7 +223,7 @@ namespace Phoenix {
 		std::stringstream ss;
 		ss << "Model used: " << m_pModel->filename << std::endl;
 		ss << "Emitters: " << m_uiNumEmitters << std::endl;
-		ss << "Max Particles: " << m_uiNumMaxParticles << std::endl;
+		ss << "Max Particles: " << m_pPartSystem->getNumMaxParticles() << std::endl;
 		ss << "Memory Used: " << std::format("{:.1f}", m_pPartSystem->getMemUsedInMb()) << " Mb" << std::endl;
 		ss << "Emission Time: " << m_fEmissionTime << std::endl;
 		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
@@ -237,7 +234,7 @@ namespace Phoenix {
 	std::string sDrawEmitterScene::debug() {
 		std::stringstream ss;
 		ss << debugStatic;
-		ss << "Generated Particles: " << m_pPartSystem->getNumParticles() << std::endl;
+		ss << "Generated Particles: " << m_pPartSystem->getNumGenParticles() << std::endl;
 		return ss.str();
 	}
 }

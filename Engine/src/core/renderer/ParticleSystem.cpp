@@ -6,19 +6,20 @@
 
 namespace Phoenix {
 
-#define RANDOM_TEXTURE_UNIT 0
+	constexpr int RANDOM_TEXTURE_UNIT = 0;
 
-#define LOC_POSITION 0
-#define LOC_VELOCITY 1
-#define LOC_COLOR 2
-#define LOC_LIFETIME 3
-#define LOC_TYPE 4
-#define LOC_ID 5
+	// TODO: QUITAR ESTO Y USAR LOS VB QUE TENEMOS EN EL ENGINE!!
+	constexpr int LOC_POSITION = 0;
+	constexpr int LOC_VELOCITY = 1;
+	constexpr int LOC_COLOR = 2;
+	constexpr int LOC_LIFETIME = 3;
+	constexpr int LOC_TYPE = 4;
+	constexpr int LOC_ID = 5;
+	
+	constexpr int BINDING_UPDATE = 0;
+	constexpr int BINDING_BILLBOARD = 1;
 
-#define BINDING_UPDATE	0
-#define BINDING_BILLBOARD	1
-
-	ParticleSystem::ParticleSystem(std::string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime)
+	ParticleSystem::ParticleSystem(std::string shaderPath)
 	{
 		m_varsBillboard = nullptr;
 
@@ -31,7 +32,7 @@ namespace Phoenix {
 		m_time = 0;
 
 		m_queryPrimitives = 0;
-		m_numParticles = 0;
+		m_numGenParticles = 0;
 
 		m_memUsed = 0;
 
@@ -39,10 +40,10 @@ namespace Phoenix {
 		m_pathBillboard = shaderPath + "/billboard.glsl";
 		m_pathUpdate = shaderPath + "/update.glsl";
 
-		m_numMaxParticles = numMaxParticles; // Should be at least greather than: numEmitters + numEmitters*gShellLifetime*(1/gLauncherLifetime)
-		m_numEmitters = numEmitters;
-		m_emissionTime = emissionTime;
-		m_particleLifeTime = particleLifeTime;
+		m_numMaxParticles = 0;
+		m_numEmitters = 0;
+		m_emissionTime = 0;
+		m_particleLifeTime = 0;
 
 		m_transformFeedback = {};
 		m_particleBuffer = {};
@@ -68,17 +69,16 @@ namespace Phoenix {
 	}
 
 
-	bool ParticleSystem::InitParticleSystem(Section* sec, const std::vector<Particle> emitter, std::vector<std::string> billboardShaderVars)
+	bool ParticleSystem::Init(Section* sec, const std::vector<Particle> emitters, float emissionTime,float particleLifeTime, std::vector<std::string> billboardShaderVars)
 	{
-		if (m_numEmitters == 0)
+		if (emitters.size() == 0)
 			return false;
 
-		Particle* Emitter = new Particle[m_numEmitters];
-
-		// Init the particle emitters
-		for (unsigned int i = 0; i < m_numEmitters; i++) {
-			Emitter[i] = emitter[i];
-		}
+		m_numEmitters = static_cast<unsigned int>(emitters.size());
+		m_emissionTime = emissionTime; 
+		m_particleLifeTime = particleLifeTime;
+		
+		m_numMaxParticles = m_numEmitters + static_cast<unsigned int>(static_cast<float>(m_numEmitters) * m_particleLifeTime * (1.0f / m_emissionTime));
 
 		// Gen the Query
 		glGenQueries(1, &m_queryPrimitives);
@@ -97,14 +97,11 @@ namespace Phoenix {
 			glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
 			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(Particle) * m_numMaxParticles, NULL, GL_DYNAMIC_DRAW);	// Allocate mem, uploading an empty buffer for all the particles
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_numEmitters, Emitter);				// Upload only the emitters to the Buffer
+			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_numEmitters, emitters.data());				// Upload only the emitters to the Buffer
 			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 		}
 	
 		m_memUsed = (float)(2 * sizeof(Particle) * m_numMaxParticles) / 1024.0f / 1024.0f;
-
-		delete[] Emitter;
-		Emitter = nullptr;
 
 		// Setup Vertex Attribute formats
 		// Definitions for Update shader Binding
@@ -259,7 +256,7 @@ namespace Phoenix {
 		glEndTransformFeedback();
 
 		glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
-		glGetQueryObjectuiv(m_queryPrimitives, GL_QUERY_RESULT, &m_numParticles);
+		glGetQueryObjectuiv(m_queryPrimitives, GL_QUERY_RESULT, &m_numGenParticles);
 
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 	}
@@ -295,7 +292,7 @@ namespace Phoenix {
 	bool ParticleSystem::initShaderParticleSystem()
 	{
 		m_particleSystemShader = DEMO->m_shaderManager.addShader(m_pathUpdate,
-			{ "Position1", "Velocity1", "Color1", "Age1", "Type1"});
+			{ "o_Position", "o_Velocity", "o_Color", "o_Age", "o_Type"});
 
 		if (m_particleSystemShader)
 			return true;

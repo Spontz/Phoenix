@@ -202,7 +202,7 @@ namespace Phoenix {
 		
 		// Create the particle system
 		m_pPartSystem = new ParticleSystemEx(pathShaders, m_fParticleLifeTime, m_fParticleRandomness);
-		if (!m_pPartSystem->InitParticleSystem(this, Particles, static_cast<unsigned int>(m_iParticlesPerEmitter), uniform))
+		if (!m_pPartSystem->Init(this, Particles, static_cast<unsigned int>(m_iParticlesPerEmitter), uniform))
 			return false;
 
 		return !GLDRV_checkError();

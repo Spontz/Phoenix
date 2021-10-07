@@ -73,7 +73,7 @@ namespace Phoenix {
 	}
 
 
-	bool ParticleSystemEx::InitParticleSystem(Section* sec, const std::vector<Particle> particles, unsigned int numParticlesPerEmitter, std::vector<std::string> billboardShaderVars)
+	bool ParticleSystemEx::Init(Section* sec, const std::vector<Particle> particles, unsigned int numParticlesPerEmitter, std::vector<std::string> billboardShaderVars)
 	{
 		if (particles.size() == 0)
 			return false;

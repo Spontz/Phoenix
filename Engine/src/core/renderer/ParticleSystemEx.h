@@ -38,7 +38,7 @@ namespace Phoenix {
 		ParticleSystemEx(std::string shaderPath, float particleLifeTime, float particleRamndomness);
 		~ParticleSystemEx();
 
-		bool InitParticleSystem(Section* sec, const std::vector<Particle> particles, unsigned int numParticlesPerEmitter, std::vector<std::string>	billboardShaderVars);
+		bool Init(Section* sec, const std::vector<Particle> particles, unsigned int numParticlesPerEmitter, std::vector<std::string> billboardShaderVars);
 		void Render(float deltaTime, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 
 		int32_t getNumParticles() { return m_numGenParticles; };

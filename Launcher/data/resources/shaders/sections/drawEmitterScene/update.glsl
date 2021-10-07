@@ -43,11 +43,11 @@ in VS_OUT
 } gs_in[];
 
 // Info sent to FS
-out vec3 Position1;
-out vec3 Velocity1;
-out vec3 Color1;
-out float Age1;
-flat out int Type1;
+out vec3		o_Position;
+out vec3		o_Velocity;
+out vec3		o_Color;
+out float		o_Age;
+flat out int	o_Type;
 
 uniform float gDeltaTime;
 uniform float gTime;
@@ -78,28 +78,28 @@ void main()
 	if (gs_in[0].Type == PARTICLE_TYPE_EMITTER) {
 		// If it's time to create a new particle shell...
 		if (Age >= fEmissionTime) {
-			Type1 = PARTICLE_TYPE_SHELL;
-			Position1 = vec3(model*vec4(gs_in[0].Position + DeltaP, 1.0));
-			Velocity1 = gs_in[0].Velocity + GetRandomDir(Age/fEmissionTime);
-			Color1 = gColor;				//Apply the global color
-			//Color1 = gs_in[0].Color;		//Apply the same color as the emitter
-			Age1 = 0.0;
+			o_Type = PARTICLE_TYPE_SHELL;
+			o_Position = vec3(model*vec4(gs_in[0].Position + DeltaP, 1.0));
+			o_Velocity = gs_in[0].Velocity + GetRandomDir(Age/fEmissionTime);
+			o_Color = gColor;				//Apply the global color
+			//o_Color = gs_in[0].Color;		//Apply the same color as the emitter
+			o_Age = 0.0;
 			
 			EmitVertex();
 			EndPrimitive();	// Generate a new particle from the launcher position
 			Age = 0.0;		// Set the age of the emitter to 0, so it can generate new particles later
 		}
 		// Draw the Emitter
-		Type1 = PARTICLE_TYPE_EMITTER;
-		Position1 = gs_in[0].Position;
-		Velocity1 = gs_in[0].Velocity;
-		Color1 = gColor; // Apply the global Color
-		Age1 = Age;
+		o_Type = PARTICLE_TYPE_EMITTER;
+		o_Position = gs_in[0].Position;
+		o_Velocity = gs_in[0].Velocity;
+		o_Color = gColor; // Apply the global Color
+		o_Age = Age;
 		
 		EmitVertex();
 		EndPrimitive();		// Generate the emitter
     }
-	
+/*
 	// If its a normal particle...
 	if (gs_in[0].Type == PARTICLE_TYPE_SHELL) {
 		
@@ -107,16 +107,17 @@ void main()
 		if (Age < fParticleLifetime) {
 			vec3 DeltaV = gForce * gDeltaTime; // vDelta = accel*tDetla
 
-			Type1 = PARTICLE_TYPE_SHELL;
-			Position1 = gs_in[0].Position + DeltaP; // x = x0 + xDelta
-			Velocity1 = gs_in[0].Velocity + DeltaV; // v = v0 + vDelta
-			Color1 = gs_in[0].Color - 0.01*vec3(1.0, 1.0, 1.0)*(Age/fParticleLifetime);
-			Age1 = Age;
+			o_Type = PARTICLE_TYPE_SHELL;
+			o_Position = gs_in[0].Position + DeltaP; // x = x0 + xDelta
+			o_Velocity = gs_in[0].Velocity + DeltaV; // v = v0 + vDelta
+			o_Color = gs_in[0].Color - 0.01*vec3(1.0, 1.0, 1.0)*(Age/fParticleLifetime);
+			o_Age = Age;
 			
 			EmitVertex();
 			EndPrimitive(); // Update the particle status and position
 		}
 	}
+*/
 }
 
 

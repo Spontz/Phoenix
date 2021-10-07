@@ -10,33 +10,34 @@
 
 namespace Phoenix {
 
-
-enum struct ParticleType : int32_t {
-	None = 0,
-	Emitter = 1,
-	Shell = 2		// todo: never used
-};
-
-	struct Particle
-	{
-		glm::vec3 Pos;		// Position:	loc 0 (vec3)
-		glm::vec3 Vel;		// Velocity:	loc 1 (vec3)
-		glm::vec3 Col;		// Color:		loc 2 (vec3)
-		float lifeTime;		// lifeTime:	loc 3 (float)
-		ParticleType Type;	// type:		loc 4 (int32)
-	};
-
 	class ParticleSystem
 	{
 	public:
-		ParticleSystem(std::string shaderPath, unsigned int	numMaxParticles, unsigned int numEmitters, float emissionTime, float particleLifeTime);
+		enum struct ParticleType : int32_t {
+			None = 0,
+			Emitter = 1,
+			Shell = 2
+		};
+
+		struct Particle
+		{
+			glm::vec3 Pos;		// Position:	loc 0 (vec3)
+			glm::vec3 Vel;		// Velocity:	loc 1 (vec3)
+			glm::vec3 Col;		// Color:		loc 2 (vec3)
+			float lifeTime;		// lifeTime:	loc 3 (float)
+			ParticleType Type;	// type:		loc 4 (int32)
+		};
+
+
+		ParticleSystem(std::string shaderPath);
 		~ParticleSystem();
 
-		bool InitParticleSystem(Section* sec, const std::vector<Particle> emitter, std::vector<std::string>	billboardShaderVars);
+		bool Init(Section* sec, const std::vector<Particle> emitters, float emissionTime, float particleLifeTime, std::vector<std::string> billboardShaderVars);
 		void Render(float deltaTime, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 		void UpdateEmitters(float deltaTime);
 
-		int32_t getNumParticles() { return m_numParticles; };
+		int32_t getNumGenParticles() { return m_numGenParticles; };
+		int32_t getNumMaxParticles() { return m_numMaxParticles; };
 		float getMemUsedInMb() { return m_memUsed; };
 
 		glm::vec3 force;	// Force to be applied globally
@@ -80,7 +81,7 @@ enum struct ParticleType : int32_t {
 		SP_Shader				m_billboardShader;
 
 		GLuint					m_queryPrimitives;	// Query to know how many primitives have been written
-		GLuint					m_numParticles;		// Number of particles generated
+		GLuint					m_numGenParticles;	// Number of particles generated
 		
 		float					m_memUsed;			// Memory used (in Mb)
 	};
