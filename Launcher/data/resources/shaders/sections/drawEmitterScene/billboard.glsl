@@ -1,9 +1,10 @@
 #type vertex
 #version 450 core
 
-layout (location = 0) in vec3 Position;
-layout (location = 2) in vec3 Color;
-layout (location = 4) in int Type;
+layout (location = 0) in int Type;
+layout (location = 1) in vec3 Position;
+layout (location = 3) in vec3 Color;
+
 
 uniform mat4 model;
 uniform mat4 view;
@@ -104,8 +105,5 @@ out vec4 FragColor;
 
 void main()
 {
-	//if (fs_in.Type != 0)
-		FragColor = texture(partTexture, fs_in.TexCoord) * vec4(fs_in.Color.rgb, 1.0f);
-	//else
-		//discard;
+	FragColor = texture(partTexture, fs_in.TexCoord) * vec4(fs_in.Color.rgb, 1.0f);
 }

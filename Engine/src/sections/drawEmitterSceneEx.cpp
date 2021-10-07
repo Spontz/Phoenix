@@ -251,7 +251,7 @@ namespace Phoenix {
 		std::stringstream ss;
 		ss << "Model used: " << m_pModel->filename << std::endl;
 		ss << "Emitters: " << m_uiNumEmitters << std::endl;
-		ss << "Particles per Emitter: " << m_iParticlesPerEmitter << std::endl; 
+		ss << "Particles per Emitter: " << m_iParticlesPerEmitter << std::endl;
 		ss << "Max Particles: " << m_uiNumParticles << std::endl;
 		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
 		ss << "Memory Used: " << std::format("{:.1f}", m_pPartSystem->getMemUsedInMb()) << " Mb" << std::endl;

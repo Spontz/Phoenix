@@ -172,6 +172,8 @@ namespace Phoenix {
 		if (!m_pPartSystem->Init(this, Emitter, m_fEmissionTime, m_fParticleLifeTime, uniform))
 			return false;
 
+		//Emitter.clear(); // TODO: Delete emitters... it's worth it? or can be used for updating emitter values?
+
 		return !GLDRV_checkError();
 	}
 
@@ -222,12 +224,13 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Model used: " << m_pModel->filename << std::endl;
-		ss << "Emitters: " << m_uiNumEmitters << std::endl;
-		ss << "Max Particles: " << m_pPartSystem->getNumMaxParticles() << std::endl;
-		ss << "Memory Used: " << std::format("{:.1f}", m_pPartSystem->getMemUsedInMb()) << " Mb" << std::endl;
 		ss << "Emission Time: " << m_fEmissionTime << std::endl;
 		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
 		ss << "Emitter Randomness: " << m_fEmitterRandomness << std::endl;
+		ss << "Emitters: " << m_uiNumEmitters << std::endl;
+		ss << "Particles per Emitter: " << m_pPartSystem->getNumParticlesPerEmitter() << std::endl;
+		ss << "Max Particles: " << m_pPartSystem->getNumMaxParticles() << std::endl;
+		ss << "Memory Used: " << std::format("{:.1f}", m_pPartSystem->getMemUsedInMb()) << " Mb" << std::endl;
 		debugStatic = ss.str();
 	}
 

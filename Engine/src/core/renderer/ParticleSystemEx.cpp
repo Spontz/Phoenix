@@ -161,7 +161,6 @@ namespace Phoenix {
 		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Color));
 		glVertexAttribBinding(LOC_COLOR, BINDING_BILLBOARD);
 
-
 		// Make sure the VAO is not changed from the outside
 		glBindVertexArray(0);
 

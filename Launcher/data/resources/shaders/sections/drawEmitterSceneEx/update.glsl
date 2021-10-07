@@ -74,6 +74,10 @@ out vec3			o_Color;
 out float			o_Age;
 out float			o_Life;
 
+#define PARTICLE_TYPE_EMITTER 1
+#define PARTICLE_TYPE_SHELL 2
+
+uniform mat4 u_m4Model;
 uniform float u_fTime;
 uniform vec3 u_v3Force;
 uniform vec3 u_v3Color;
@@ -82,11 +86,6 @@ uniform sampler1D u_iRandomTexture;
 uniform float u_fParticleLifetime;
 uniform uint u_uiNumMaxParticles;
 uniform uint u_uiNumParticlesPerEmitter;
-
-#define PARTICLE_TYPE_EMITTER 1
-#define PARTICLE_TYPE_SHELL 2
-
-uniform mat4 u_m4Model;
 
 // Get a random number, used for calculate the new direction
 vec3 GetRandomDir(float TexCoord)

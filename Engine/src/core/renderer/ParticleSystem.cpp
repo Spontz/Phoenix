@@ -9,12 +9,11 @@ namespace Phoenix {
 	constexpr int RANDOM_TEXTURE_UNIT = 0;
 
 	// TODO: QUITAR ESTO Y USAR LOS VB QUE TENEMOS EN EL ENGINE!!
-	constexpr int LOC_POSITION = 0;
-	constexpr int LOC_VELOCITY = 1;
-	constexpr int LOC_COLOR = 2;
-	constexpr int LOC_LIFETIME = 3;
-	constexpr int LOC_TYPE = 4;
-	constexpr int LOC_ID = 5;
+	constexpr int LOC_TYPE = 0;
+	constexpr int LOC_POSITION = 1;
+	constexpr int LOC_VELOCITY = 2;
+	constexpr int LOC_COLOR = 3;
+	constexpr int LOC_LIFETIME = 4;
 	
 	constexpr int BINDING_UPDATE = 0;
 	constexpr int BINDING_BILLBOARD = 1;
@@ -40,8 +39,10 @@ namespace Phoenix {
 		m_pathBillboard = shaderPath + "/billboard.glsl";
 		m_pathUpdate = shaderPath + "/update.glsl";
 
-		m_numMaxParticles = 0;
 		m_numEmitters = 0;
+		m_numMaxParticles = 0;
+		m_numParticlesPerEmitter = 0;
+		
 		m_emissionTime = 0;
 		m_particleLifeTime = 0;
 
@@ -74,11 +75,15 @@ namespace Phoenix {
 		if (emitters.size() == 0)
 			return false;
 
+		if (emissionTime <= 0)
+			return false;
+
 		m_numEmitters = static_cast<unsigned int>(emitters.size());
 		m_emissionTime = emissionTime; 
 		m_particleLifeTime = particleLifeTime;
 		
-		m_numMaxParticles = m_numEmitters + static_cast<unsigned int>(static_cast<float>(m_numEmitters) * m_particleLifeTime * (1.0f / m_emissionTime));
+		m_numParticlesPerEmitter = static_cast<unsigned int>(m_particleLifeTime * (1.0f / m_emissionTime));
+		m_numMaxParticles = m_numEmitters + m_numEmitters * m_numParticlesPerEmitter;
 
 		// Gen the Query
 		glGenQueries(1, &m_queryPrimitives);
@@ -97,7 +102,7 @@ namespace Phoenix {
 			glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
 			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(Particle) * m_numMaxParticles, NULL, GL_DYNAMIC_DRAW);	// Allocate mem, uploading an empty buffer for all the particles
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_numEmitters, emitters.data());				// Upload only the emitters to the Buffer
+			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_numEmitters, emitters.data());		// Upload only the emitters to the Buffer
 			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 		}
 	
@@ -106,6 +111,10 @@ namespace Phoenix {
 		// Setup Vertex Attribute formats
 		// Definitions for Update shader Binding
 		glBindVertexBuffer(BINDING_UPDATE, m_particleBuffer[0], 0, sizeof(Particle));
+
+		glEnableVertexAttribArray(LOC_TYPE);
+		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
+		glVertexAttribBinding(LOC_TYPE, BINDING_UPDATE);
 
 		glEnableVertexAttribArray(LOC_POSITION);
 		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
@@ -123,12 +132,12 @@ namespace Phoenix {
 		glVertexAttribFormat(LOC_LIFETIME, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, lifeTime));	// Lifetime (4 bytes)
 		glVertexAttribBinding(LOC_LIFETIME, BINDING_UPDATE);
 
-		glEnableVertexAttribArray(LOC_TYPE);
-		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
-		glVertexAttribBinding(LOC_TYPE, BINDING_UPDATE);
-
 		// Definitions for Billboard shader Binding
 		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[0], 0, sizeof(Particle));
+
+		glEnableVertexAttribArray(LOC_TYPE);
+		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
+		glVertexAttribBinding(LOC_TYPE, BINDING_BILLBOARD);
 
 		glEnableVertexAttribArray(LOC_POSITION);
 		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
@@ -137,10 +146,6 @@ namespace Phoenix {
 		glEnableVertexAttribArray(LOC_COLOR);
 		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
 		glVertexAttribBinding(LOC_COLOR, BINDING_BILLBOARD);
-
-		glEnableVertexAttribArray(LOC_TYPE);
-		glVertexAttribIFormat(LOC_TYPE, 1, GL_INT, offsetof(Particle, Type));	// Type (4 bytes)
-		glVertexAttribBinding(LOC_TYPE, BINDING_BILLBOARD);
 
 		// Make sure the VAO is not changed from the outside
 		glBindVertexArray(0);
@@ -156,7 +161,7 @@ namespace Phoenix {
 		m_particleSystemShader->setValue("fEmissionTime", m_emissionTime); // Time between emissions
 		m_particleSystemShader->setValue("fParticleLifetime", m_particleLifeTime);
 
-		if (!initRandomTexture(1000)) {
+		if (!initRandomTexture(m_numParticlesPerEmitter)) {
 			return false;
 		}
 
@@ -197,7 +202,6 @@ namespace Phoenix {
 	void ParticleSystem::UpdateEmitters(float deltaTime)
 	{
 		// NOTE: This method is never used, only useful for debugging and modifying the emitters by hardcode
-		m_time += deltaTime;
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
 		//m_numMaxParticles
 		unsigned int nParts = m_numMaxParticles;// m_numEmitters;
@@ -215,20 +219,18 @@ namespace Phoenix {
 		glUnmapBuffer(GL_ARRAY_BUFFER);
 	}
 
-
 	void ParticleSystem::UpdateParticles(float deltaTime, const glm::mat4& model)
 	{
 		//UpdateEmitters(deltaTime); // For debugging only: Overwrittes the emitter position
-
 		m_particleSystemShader->use();
-		m_particleSystemShader->setValue("model", model);
-		m_particleSystemShader->setValue("gTime", m_time);
-		m_particleSystemShader->setValue("gDeltaTime", deltaTime);
-		m_particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
-		m_particleSystemShader->setValue("fEmissionTime", m_emissionTime);
-		m_particleSystemShader->setValue("fParticleLifetime", m_particleLifeTime);
-		m_particleSystemShader->setValue("gForce", force);
-		m_particleSystemShader->setValue("gColor", color);
+		m_particleSystemShader->setValue("u_m4Model", model);
+		m_particleSystemShader->setValue("u_fTime", m_time);
+		m_particleSystemShader->setValue("u_fDeltaTime", deltaTime);
+		m_particleSystemShader->setValue("u_iRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
+		m_particleSystemShader->setValue("u_fEmissionTime", m_emissionTime);
+		m_particleSystemShader->setValue("u_fParticleLifetime", m_particleLifeTime);
+		m_particleSystemShader->setValue("u_v3Force", force);
+		m_particleSystemShader->setValue("u_v3Color", color);
 
 
 		bindRandomTexture(RANDOM_TEXTURE_UNIT);

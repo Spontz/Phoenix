@@ -38,6 +38,7 @@ namespace Phoenix {
 
 		int32_t getNumGenParticles() { return m_numGenParticles; };
 		int32_t getNumMaxParticles() { return m_numMaxParticles; };
+		int32_t getNumParticlesPerEmitter() { return m_numParticlesPerEmitter; };
 		float getMemUsedInMb() { return m_memUsed; };
 
 		glm::vec3 force;	// Force to be applied globally
@@ -59,30 +60,33 @@ namespace Phoenix {
 	private:
 
 		float					m_time;
-		unsigned int			m_textureRandID;	// TODO: This will be removed once is included in the textureManager
+		unsigned int			m_textureRandID;			// TODO: This will be removed once is included in the textureManager
 		std::string				m_shaderPath;
 		std::string				m_pathBillboard;
-		ShaderVars*				m_varsBillboard;	// Billboard Shader variables
+		ShaderVars*				m_varsBillboard;			// Billboard Shader variables
 
 		std::string				m_pathUpdate;
-		unsigned int			m_numMaxParticles;	// Number of maximum particles
-		unsigned int			m_numEmitters;		// Number of emmiters
+		
+		unsigned int			m_numEmitters;				// Number of emmiters
+		unsigned int			m_numMaxParticles;			// Number of maximum particles
+		unsigned int			m_numParticlesPerEmitter;	// Number of particles per emitter
+		
 		float					m_emissionTime;
 		float					m_particleLifeTime;
 
 		bool					m_isFirst;
-		unsigned int			m_currVB;			// Variable that indicates the current VB (The value is 0 or 1)
-		unsigned int			m_currTFB;			// Variable that indicates the current TFB (The value is 0 or 1)
-		GLuint					m_VAO;				// Vertex Array Object buffer
-		std::array<GLuint, 2>	m_particleBuffer;	// Vertex Buffer: input
-		std::array<GLuint, 2>	m_transformFeedback;// Transform feedback buffers: output
-		Particle*				m_emitterData;		// Emitter info (for updating emitters positions)
+		unsigned int			m_currVB;					// Variable that indicates the current VB (The value is 0 or 1)
+		unsigned int			m_currTFB;					// Variable that indicates the current TFB (The value is 0 or 1)
+		GLuint					m_VAO;						// Vertex Array Object buffer
+		std::array<GLuint, 2>	m_particleBuffer;			// Vertex Buffer: input
+		std::array<GLuint, 2>	m_transformFeedback;		// Transform feedback buffers: output
+		Particle*				m_emitterData;				// Emitter info (for updating emitters positions)
 		SP_Shader				m_particleSystemShader;
 		SP_Shader				m_billboardShader;
 
-		GLuint					m_queryPrimitives;	// Query to know how many primitives have been written
-		GLuint					m_numGenParticles;	// Number of particles generated
+		GLuint					m_queryPrimitives;			// Query to know how many primitives have been written
+		GLuint					m_numGenParticles;			// Number of particles generated
 		
-		float					m_memUsed;			// Memory used (in Mb)
+		float					m_memUsed;					// Memory used (in Mb)
 	};
 }
