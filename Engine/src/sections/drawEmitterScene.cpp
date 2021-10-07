@@ -172,7 +172,7 @@ namespace Phoenix {
 		if (!m_pPartSystem->Init(this, Emitter, m_fEmissionTime, m_fParticleLifeTime, uniform))
 			return false;
 
-		//Emitter.clear(); // TODO: Delete emitters... it's worth it? or can be used for updating emitter values?
+		Emitter.clear(); // Delete emitters... it's worth it? or can be used for updating emitter values?
 
 		return !GLDRV_checkError();
 	}

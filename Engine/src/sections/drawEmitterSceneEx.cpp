@@ -205,6 +205,8 @@ namespace Phoenix {
 		if (!m_pPartSystem->Init(this, Particles, static_cast<unsigned int>(m_iParticlesPerEmitter), uniform))
 			return false;
 
+		Particles.clear();
+
 		return !GLDRV_checkError();
 	}
 
