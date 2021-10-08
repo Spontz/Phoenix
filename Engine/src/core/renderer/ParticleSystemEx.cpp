@@ -23,12 +23,13 @@ namespace Phoenix {
 	constexpr int BINDING_UPDATE = 0;
 	constexpr int BINDING_BILLBOARD = 1;
 
-	ParticleSystemEx::ParticleSystemEx(std::string shaderPath, float particleLifeTime, float particleRamndomness)
+	ParticleSystemEx::ParticleSystemEx(std::string shaderPath, float particleLifeTime)
 	{
 		m_varsBillboard = nullptr;
 
 		force = glm::vec3(0, 0, 0);
 		color = glm::vec3(1, 1, 1);
+		randomness = 0;
 
 		m_currVB = 0;
 		m_currTFB = 1;
@@ -47,8 +48,7 @@ namespace Phoenix {
 		m_pathUpdate = shaderPath + "/update.glsl";
 
 		m_particleLifeTime = particleLifeTime;
-		randomness = particleRamndomness;
-
+		
 		m_transformFeedback = {};
 		m_particleBuffer = {};
 	}

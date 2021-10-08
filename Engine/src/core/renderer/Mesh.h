@@ -54,6 +54,12 @@ constexpr uint32_t NUM_BONES_PER_VERTEX = 4; // Number of Bones per Vertex
 		VertexBoneData	Bone;
 	};
 
+	struct UniqueVertex {
+		glm::vec3		Position = { 0.0f, 0.0f, 0.0f };
+		glm::vec3		PositionPolar = { 0.0f, 0.0f, 0.0f }; // Polar coordinates of the vertex
+		glm::vec3		Normal = { 0.0f, 0.0f, 0.0f };
+	};
+
 	class Mesh;
 	using SP_Mesh = std::shared_ptr<Mesh>;
 	using WP_Mesh = std::weak_ptr<Mesh>;
@@ -99,8 +105,7 @@ constexpr uint32_t NUM_BONES_PER_VERTEX = 4; // Number of Bones per Vertex
 		SP_VertexArray				m_VertexArray;	// Vertex Array Object
 
 	public:
-		std::vector<glm::vec3>		unique_vertices_pos;	// Unique vertices cartesian positions
-		std::vector<glm::vec3>		unique_vertices_polar;	// Unique vertices polar position (x=distance, y=alpha, z=beta)
+		std::vector<UniqueVertex>	m_uniqueVertices;	// Unique vertices
 		glm::mat4					m_matModel;				// Model Matrix for positioning the mesh
 		glm::mat4					m_matPrevModel;			// Previous model Matrix for positioning the mesh (useful for effects like motion blur)
 		std::string					m_nodeName;

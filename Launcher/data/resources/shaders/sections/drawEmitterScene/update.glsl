@@ -60,6 +60,7 @@ uniform vec3 u_v3Color;
 uniform sampler1D u_iRandomTexture;
 uniform float u_fEmissionTime;
 uniform float u_fParticleLifetime;
+uniform float u_fRamndomness;
 
 // Get a random number, used for calculate the new direction
 vec3 GetRandomDir(float TexCoord)
@@ -72,14 +73,15 @@ vec3 GetRandomDir(float TexCoord)
 void main()
 {
     float Age = gs_in[0].Age + u_fDeltaTime; // Increment the age of the particle
-	vec3 DeltaP = u_fDeltaTime * gs_in[0].Velocity; // Position Delta: xDelta = v*t
+	vec3 DeltaP = gs_in[0].Velocity * u_fDeltaTime; // Position Delta: xDelta = v*t
 	
 	if (gs_in[0].Type == PARTICLE_TYPE_EMITTER) {
 		// If it's time to create a new particle shell...
 		if (Age >= u_fEmissionTime) {
 			o_Type = PARTICLE_TYPE_SHELL;
 			o_Position = vec3(u_m4Model*vec4(gs_in[0].Position + DeltaP, 1.0));
-			o_Velocity = gs_in[0].Velocity + GetRandomDir(Age/u_fEmissionTime);
+			//o_Velocity = gs_in[0].Velocity + u_fRamndomness*GetRandomDir(gs_in[0].Color.x);
+			o_Velocity = gs_in[0].Velocity + u_fRamndomness*GetRandomDir(u_v3Color.x);
 			o_Color = u_v3Color;				//Apply the global color
 			//o_Color = gs_in[0].Color;			//Apply the same color as the emitter
 			o_Age = 0.0;
@@ -110,7 +112,7 @@ void main()
 			o_Type = PARTICLE_TYPE_SHELL;
 			o_Position = gs_in[0].Position + DeltaP; // x = x0 + xDelta
 			o_Velocity = gs_in[0].Velocity + DeltaV; // v = v0 + vDelta
-			o_Color = gs_in[0].Color - 0.01*vec3(1.0, 1.0, 1.0)*(Age/u_fParticleLifetime);
+			o_Color = gs_in[0].Color - vec3(1.0)*(u_fDeltaTime/u_fParticleLifetime);
 			o_Age = Age;
 			
 			EmitVertex();

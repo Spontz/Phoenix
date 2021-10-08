@@ -24,6 +24,7 @@ namespace Phoenix {
 
 		force = glm::vec3(0, 0, 0);
 		color = glm::vec3(1, 1, 1);
+		randomness = 0;
 
 		m_currVB = 0;
 		m_currTFB = 1;
@@ -45,7 +46,7 @@ namespace Phoenix {
 		
 		m_emissionTime = 0;
 		m_particleLifeTime = 0;
-
+		
 		m_transformFeedback = {};
 		m_particleBuffer = {};
 	}
@@ -229,6 +230,7 @@ namespace Phoenix {
 		m_particleSystemShader->setValue("u_iRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
 		m_particleSystemShader->setValue("u_fEmissionTime", m_emissionTime);
 		m_particleSystemShader->setValue("u_fParticleLifetime", m_particleLifeTime);
+		m_particleSystemShader->setValue("u_fRamndomness", randomness);
 		m_particleSystemShader->setValue("u_v3Force", force);
 		m_particleSystemShader->setValue("u_v3Color", color);
 
@@ -302,19 +304,22 @@ namespace Phoenix {
 	}
 
 	// TODO: Investigate if we should move this "Random texture 1D generator" to the TextureManager class
-	static float RandomFloat()
+	static glm::vec3 RandomVec3() // Return a float between -0.5 and 0.5
 	{
 		float Max = RAND_MAX;
-		return ((float)rand() / Max);
+		glm::vec3 randNum((float)rand(), (float)rand(), (float)rand());
+		randNum /= Max;	// Values between 0 and 1
+		randNum -= 0.5f;	// Values between 0.5 and -0.5
+
+		return randNum;
 	}
+
 
 	bool ParticleSystem::initRandomTexture(unsigned int Size)
 	{
 		glm::vec3* pRandomData = new glm::vec3[Size];
 		for (unsigned int i = 0; i < Size; i++) {
-			pRandomData[i].x = RandomFloat();
-			pRandomData[i].y = RandomFloat();
-			pRandomData[i].z = RandomFloat();
+			pRandomData[i] = RandomVec3();
 		}
 
 		glGenTextures(1, &m_textureRandID);

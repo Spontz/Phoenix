@@ -62,29 +62,32 @@ namespace Phoenix {
 
 	void Mesh::loadUniqueVerticesPos()
 	{
-		if (!unique_vertices_pos.empty())
-			unique_vertices_pos.clear();
-		if (!unique_vertices_polar.empty())
-			unique_vertices_polar.clear();
+		if (!m_uniqueVertices.empty())
+			m_uniqueVertices.clear();
+
+		
 
 		// Loads the unique vertices list
 		bool vertexFound = false;
-		for (int i = 0; i < m_vertices.size(); i++) {
+		for (auto& vertex : m_vertices) {
 			vertexFound = false;
-			for (int j = 0; j < unique_vertices_pos.size(); j++) {
-				if (m_vertices[i].Position == unique_vertices_pos[j]) {
+			for (auto& uniqueVertex : m_uniqueVertices) {
+				if (vertex.Position == uniqueVertex.Position) {
 					vertexFound = true;
 				}
 			}
 			if (vertexFound == false) {
-				unique_vertices_pos.push_back(m_vertices[i].Position);
-				float r = glm::sqrt(m_vertices[i].Position.x * m_vertices[i].Position.x +
-					m_vertices[i].Position.y * m_vertices[i].Position.y +
-					m_vertices[i].Position.z * m_vertices[i].Position.z);
-				float a = glm::atan(m_vertices[i].Position.y, m_vertices[i].Position.x);
-				float b = glm::acos(m_vertices[i].Position.z / r);
-				unique_vertices_polar.push_back(glm::vec3(a, b, r));
-				//unique_vertices_polar.push_back(glm::polar(m_vertices[i].Position));
+				//UniqueVertex newUniqueVertex;
+				UniqueVertex newUniqueVertex;
+				newUniqueVertex.Position = vertex.Position;
+				newUniqueVertex.Normal = vertex.Normal;
+				float r = glm::sqrt(vertex.Position.x * vertex.Position.x +
+					vertex.Position.y * vertex.Position.y +
+					vertex.Position.z * vertex.Position.z);
+				float a = glm::atan(vertex.Position.y, vertex.Position.x);
+				float b = glm::acos(vertex.Position.z / r);
+				newUniqueVertex.PositionPolar = glm::vec3(a, b, r); // Same as: glm::polar(m_vertices[i].Position)
+				m_uniqueVertices.push_back(newUniqueVertex);
 			}
 		}
 

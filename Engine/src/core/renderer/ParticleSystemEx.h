@@ -35,7 +35,7 @@ namespace Phoenix {
 		};
 
 
-		ParticleSystemEx(std::string shaderPath, float particleLifeTime, float particleRamndomness);
+		ParticleSystemEx(std::string shaderPath, float particleLifeTime);
 		~ParticleSystemEx();
 
 		bool Init(Section* sec, const std::vector<Particle> particles, unsigned int numParticlesPerEmitter, std::vector<std::string> billboardShaderVars);

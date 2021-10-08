@@ -41,8 +41,9 @@ namespace Phoenix {
 		int32_t getNumParticlesPerEmitter() { return m_numParticlesPerEmitter; };
 		float getMemUsedInMb() { return m_memUsed; };
 
-		glm::vec3 force;	// Force to be applied globally
-		glm::vec3 color;	// Color to be applied on each particle when it's emitted
+		glm::vec3	force;		// Force to be applied globally
+		glm::vec3	color;		// Color to be applied on each particle when it's emitted
+		float		randomness;	// Global randomness to apply to particles
 
 	private:
 

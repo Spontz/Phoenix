@@ -27,7 +27,7 @@ namespace Phoenix {
 		float			m_fEmissionTime = 0;
 		float			m_fParticleLifeTime = 0;
 		float			m_fParticleSpeed = 0;
-		float			m_fEmitterRandomness = 0;
+		float			m_fParticleRandomness = 0;
 		ParticleSystem* m_pPartSystem = nullptr;
 
 		// Particles positioning (for all the model)
@@ -71,8 +71,8 @@ namespace Phoenix {
 	bool sDrawEmitterScene::load()
 	{
 		// script validation
-		if ((param.size() != 3) || (strings.size() < 9)) {
-			Logger::error("Draw Emitter Scene [{}]: 3 param (emission time, Particle Life Time & Randomness) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", identifier);
+		if ((param.size() != 2) || (strings.size() < 9)) {
+			Logger::error("Draw Emitter Scene [{}]: 3 param (Emission time & Particle Life Time) and 9 strings needed (shader path, model, 3 for positioning, part speed, velocity, force and color)", identifier);
 			return false;
 		}
 
@@ -95,7 +95,6 @@ namespace Phoenix {
 		// Load Emitters and Particles config
 		m_fEmissionTime = param[0];
 		m_fParticleLifeTime = param[1];
-		m_fEmitterRandomness = param[2];
 
 		if (m_fEmissionTime <= 0) {
 			Logger::error("Draw Emitter Scene [{}]: Emission time should be greater than 0", identifier);
@@ -118,6 +117,9 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
 
 		m_pExprPosition->SymbolTable.add_variable("partSpeed", m_fParticleSpeed);
+
+		m_pExprPosition->SymbolTable.add_variable("partRandomness", m_fParticleRandomness);
+
 		m_pExprPosition->SymbolTable.add_variable("velX", m_vVelocity.x);
 		m_pExprPosition->SymbolTable.add_variable("velY", m_vVelocity.y);
 		m_pExprPosition->SymbolTable.add_variable("velZ", m_vVelocity.z);
@@ -134,7 +136,7 @@ namespace Phoenix {
 
 		// Read the number of emmitters
 		for (auto& mesh : m_pModel->meshes) {
-			m_uiNumEmitters += static_cast<uint32_t>(mesh->unique_vertices_pos.size());
+			m_uiNumEmitters += static_cast<uint32_t>(mesh->m_uniqueVertices.size());
 		}
 
 		if (m_uiNumEmitters <= 0) {
@@ -154,12 +156,12 @@ namespace Phoenix {
 		// Load the emitters, based in our model vertexes
 		size_t numEmitter = 0;
 		m_fCurrentEmitter = 0;
-		for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
-			for (size_t j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
+		for (auto& mesh : m_pModel->meshes) {
+			for (auto& uniqueVertex : mesh->m_uniqueVertices) {
 				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 				Emitter[numEmitter].Type = ParticleSystem::ParticleType::Emitter;
-				Emitter[numEmitter].Pos = m_pModel->meshes[i]->unique_vertices_pos[j];
-				Emitter[numEmitter].Vel = m_vVelocity + (m_fEmitterRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat()));
+				Emitter[numEmitter].Pos = uniqueVertex.Position;
+				Emitter[numEmitter].Vel = uniqueVertex.Normal + (m_fParticleRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat()));
 				Emitter[numEmitter].Col = m_vColor;
 				Emitter[numEmitter].lifeTime = 0.0f;
 				numEmitter++;
@@ -212,6 +214,7 @@ namespace Phoenix {
 		// Update Force and Color values
 		m_pPartSystem->force = m_vForce;
 		m_pPartSystem->color = m_vColor;
+		m_pPartSystem->randomness = m_fParticleRandomness;
 
 		m_pPartSystem->Render(deltaTime, model, view, projection);
 
@@ -226,7 +229,6 @@ namespace Phoenix {
 		ss << "Model used: " << m_pModel->filename << std::endl;
 		ss << "Emission Time: " << m_fEmissionTime << std::endl;
 		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
-		ss << "Emitter Randomness: " << m_fEmitterRandomness << std::endl;
 		ss << "Emitters: " << m_uiNumEmitters << std::endl;
 		ss << "Particles per Emitter: " << m_pPartSystem->getNumParticlesPerEmitter() << std::endl;
 		ss << "Max Particles: " << m_pPartSystem->getNumMaxParticles() << std::endl;
@@ -237,6 +239,7 @@ namespace Phoenix {
 	std::string sDrawEmitterScene::debug() {
 		std::stringstream ss;
 		ss << debugStatic;
+		ss << "Particle Randomness: " << std::format("{:.2f}", m_fParticleRandomness) << std::endl;
 		ss << "Generated Particles: " << m_pPartSystem->getNumGenParticles() << std::endl;
 		return ss.str();
 	}

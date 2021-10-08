@@ -110,7 +110,7 @@ namespace Phoenix {
 		// Calculate emitters and total particles number
 		m_iNumEmitters = 0;
 		for (auto& mesh : m_pModel->meshes) {
-			m_iNumEmitters += static_cast<uint32_t>(mesh->unique_vertices_pos.size());
+			m_iNumEmitters += static_cast<uint32_t>(mesh->m_uniqueVertices.size());
 		}
 		m_iNumParticles = m_iNumEmitters + (m_iNumEmitters * m_iParticlesPerEmitter);
 
@@ -154,11 +154,11 @@ namespace Phoenix {
 		srand(static_cast<unsigned int>(time(0)));
 
 		for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
-			for (size_t j = 0; j < m_pModel->meshes[i]->unique_vertices_pos.size(); j++) {
+			for (size_t j = 0; j < m_pModel->meshes[i]->m_uniqueVertices.size(); j++) {
 				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 				Particles[numParticle].Type = ParticleMesh::ParticleType::Emitter;
 				Particles[numParticle].ID = (int32_t)numEmitter;
-				Particles[numParticle].InitPosition = m_pModel->meshes[i]->unique_vertices_pos[j];
+				Particles[numParticle].InitPosition = m_pModel->meshes[i]->m_uniqueVertices[j].Position;
 				Particles[numParticle].Randomness = glm::vec3(0, 0, 0);
 				Particles[numParticle].InitColor = glm::vec4(1, 0, 0, 1); //TODO: Change to use formulas
 				Particles[numParticle].Life = 0;
