@@ -16,12 +16,13 @@ namespace Phoenix {
 		~TextureManager();
 
 	public:
-		SP_Texture addTexture(std::string_view const& path, bool flip = true, std::string_view const& type = "texture_diffuse");
-		SP_Texture addTextureFromMem(const unsigned char* data, int32_t len, bool flip, std::string_view const& type = "texture_diffuse");
-		SP_Cubemap addCubemap(std::vector<std::string> const& path, bool flip); // TODO: Cubemap should be a SharedPointer, as it is in Texture class
-		int32_t	getOpenGLTextureID(int32_t index);
-		void initTextureStates();
-		void clear();
+		SP_Texture	addTexture(std::string_view const& path);
+		SP_Texture	addTexture(std::string_view const& path, Texture::Properties& texProperties);
+		SP_Texture	addTextureFromMem(const unsigned char* data, int32_t len, Texture::Properties& texProperties);
+		SP_Cubemap	addCubemap(std::vector<std::string> const& path, bool flip); // TODO: Add Cubemap::Properties as we do for textures
+		int32_t		getOpenGLTextureID(int32_t index);
+		void		initTextureStates();
+		void		clear();
 
 	public:
 		std::vector<SP_Texture>	texture;	// Texture list

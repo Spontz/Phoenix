@@ -100,6 +100,6 @@ namespace Phoenix {
 
 	std::string sDrawQuad::debug()
 	{
-		return "";
+		return debugStatic;
 	}
 }

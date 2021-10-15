@@ -19,7 +19,13 @@ namespace Phoenix {
 		clear();
 	}
 
-	SP_Texture TextureManager::addTexture(std::string_view const& path, bool flip, std::string_view const& type) {
+	SP_Texture TextureManager::addTexture(std::string_view const& path)
+	{
+		Texture::Properties props;	// Load default properties
+		return addTexture(path, props);
+	}
+
+	SP_Texture TextureManager::addTexture(std::string_view const& path, Texture::Properties& texProperties) {
 		unsigned int i;
 		SP_Texture p_tex;
 
@@ -32,8 +38,8 @@ namespace Phoenix {
 
 		if (p_tex == nullptr) { // If the texture has not been found, we need to load it for the first time
 			SP_Texture new_tex = std::make_shared<Texture>();
-			if (new_tex->load(path, flip)) {
-				new_tex->type = type;
+			new_tex->properties = texProperties;
+			if (new_tex->load(path)) {
 				texture.push_back(new_tex);
 				mem += new_tex->mem;
 				p_tex = new_tex;
@@ -47,8 +53,8 @@ namespace Phoenix {
 		else { // If the texture is catched we should not do anything, unless we have been told to upload it again
 			if (forceLoad) {
 				mem -= p_tex->mem; // Decrease the overall texture memory
-				if (p_tex->load(path, flip)) {
-					p_tex->type = type;
+				p_tex->properties = texProperties;
+				if (p_tex->load(path)) {
 					mem += p_tex->mem;
 					Logger::info(LogLevel::med, "Texture {} [id: {}] force reload OK. Overall texture Memory: {:.3f}Mb", path, i, mem);
 				}
@@ -60,12 +66,12 @@ namespace Phoenix {
 		return p_tex;
 	}
 
-	SP_Texture TextureManager::addTextureFromMem(const unsigned char* data, int len, bool flip, std::string_view const& type) {
+	SP_Texture TextureManager::addTextureFromMem(const unsigned char* data, int len, Texture::Properties& texProperties) {
 		SP_Texture p_tex;
 
 		auto new_tex = std::make_shared<Texture>();
-		if (new_tex->loadFromMem(data, len, flip)) {
-			new_tex->type = type;
+		new_tex->properties = texProperties;
+		if (new_tex->loadFromMem(data, len)) {
 			texture.push_back(new_tex);
 			mem += new_tex->mem;
 			p_tex = new_tex;

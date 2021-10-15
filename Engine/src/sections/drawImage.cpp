@@ -19,7 +19,7 @@ namespace Phoenix {
 	private:
 		bool		m_bFullscreen = true;		// Draw image at fullscreen?
 		bool		m_bFitToContent = false;	// Fit to content: true:respect image aspect ratio, false:stretch to viewport/quad
-
+		bool		m_bFilter = true;			// Use Bilinear filter?
 
 		glm::vec3	m_vTranslation = { 0, 0, 0 };
 		glm::vec3	m_vRotation = { 0, 0, 0 };
@@ -55,10 +55,10 @@ namespace Phoenix {
 
 	bool sDrawImage::load()
 	{
-		if ((param.size() != 4) || (strings.size() < 5)) {
+		if ((param.size() != 5) || (strings.size() < 5)) {
 			Logger::error(
-				"DrawImage [{}]: 4 param needed (Clear screen buffer, clear depth buffer, fullscreen &"
-				"fit to content) and 5 strings needed (Image & shader paths and 3 for position)",
+				"DrawImage [{}]: 5 param needed (Clear screen buffer, clear depth buffer, fullscreen, "
+				"fit to content & filter) and 5 strings needed (Image & shader paths and 3 for position)",
 				identifier
 			);
 			return false;
@@ -69,9 +69,12 @@ namespace Phoenix {
 		render_clearDepth = static_cast<bool>(param[1]);
 		m_bFullscreen = static_cast<bool>(param[2]);
 		m_bFitToContent = static_cast<bool>(param[3]);
+		m_bFilter = static_cast<bool>(param[4]);
 
 		// Load the Image
-		m_pTexture = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + strings[0]);
+		Texture::Properties texProps;
+		texProps.use_linear = m_bFilter;
+		m_pTexture = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + strings[0], texProps);
 		if (!m_pTexture)
 			return false;
 		m_fTexAspectRatio = static_cast<float>(m_pTexture->width) / static_cast<float>(m_pTexture->height);
@@ -180,33 +183,6 @@ namespace Phoenix {
 			m_pVars->setValues();
 			m_pTexture->bind();
 			m_demo.m_pRes->drawQuadFS(); // Draw a quad with the video
-
-			/*
-			// View / projection / model Matrixes
-			glm::mat4 view = m_demo.camera->getViewMatrix();
-			glm::mat4 projection = m_demo.m_pCamera->getProjectionMatrix();
-
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, m_vTranslation);
-			model = glm::rotate(model, glm::radians(m_vRotation.x), glm::vec3(1, 0, 0));
-			model = glm::rotate(model, glm::radians(m_vRotation.y), glm::vec3(0, 1, 0));
-			model = glm::rotate(model, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
-			model = glm::scale(model, glm::vec3(m_vScale.x, m_vScale.y*m_fTexAspectRatio, m_vScale.z));
-
-			// Draw the image
-			m_pShader->use();
-			m_pShader->setValue("model", model);
-			m_pShader->setValue("projection", projection);
-			m_pShader->setValue("view", view);
-			m_pShader->setValue("screenTexture", 0);
-
-			m_pTexture->bind();
-
-			// Set the values
-			m_pVars->setValues();
-
-			m_demo.res->Draw_QuadFS();
-			*/
 		}
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
@@ -218,8 +194,9 @@ namespace Phoenix {
 		std::stringstream ss;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		ss << "File: " << m_pTexture->filename << std::endl;
-		ss << "Fullscreen: " << m_bFullscreen << std::endl;
-		ss << "Fit To Content: " << m_bFitToContent << std::endl;
+		ss << "Fullscreen: " << (m_bFullscreen ? "Yes":"No") << std::endl;
+		ss << "Fit To Content: " << (m_bFitToContent ? "Yes":"No") << std::endl;
+		ss << "Bilinear filter: " << (m_bFilter ? "Yes":"No") << std::endl;
 		debugStatic = ss.str();
 	}
 

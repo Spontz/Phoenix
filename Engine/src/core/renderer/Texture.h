@@ -22,18 +22,24 @@ namespace Phoenix {
 
 	class Texture {
 	public:
+		struct Properties final {
+			bool	flip = true;
+			bool	use_linear = true;
+			std::string_view type = "texture_diffuse";
+		};
+
+	public:
 		std::string	filename;
-		std::string type;					// texture_diffuse / texture_specular / texture_normal / texture_height
 		int			width, height, components;
 		float		mem;						// Size in Mb
-		bool		use_linear;
 		GLuint		m_textureID;
+		Properties	properties;					// Texture properties
 
 		Texture();
 		virtual ~Texture();
 
-		bool load(std::string_view const& file_name, bool flip);
-		bool loadFromMem(const unsigned char* data, int len, bool flip);
+		bool load(std::string_view const& file_name);
+		bool loadFromMem(const unsigned char* data, int len);
 		bool keepData();	// Stores data texture in memory
 		void freeData();	// Frees data texture from memory
 		void bind(GLuint TexUnit = 0) const;

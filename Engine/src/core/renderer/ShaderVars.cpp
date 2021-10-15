@@ -15,37 +15,43 @@ namespace Phoenix {
 
 	bool ShaderVars::ReadString(std::string_view StringVar)
 	{
-		// std::string	var_name, var_type, var_value;
-
 		std::vector<std::string>	vars;
+		bool	has_properties = false;
 
 		splitString(StringVar.data(), vars, ' ');	// Split the main string by spaces
 
-		if (vars.size() != 3) {
+		if (vars.size() < 3) {
 			Logger::error(
 				"Error reading Shader Variable [section: {}], format is: 'uniform <var_type> "
-				"<var_name> <var_value>', but the string was: 'uniform {}'",
+				"<var_name> <var_value> <option>', but the string was: 'uniform {}'",
 				my_section->type_str,
 				StringVar
 			);
 			return false;
 		}
 
-		auto var_type = vars[0];
-		auto var_name = vars[1];
-		auto var_value = vars[2];
+		std::string var_type = vars[0];
+		std::string var_name = vars[1];
+		std::string var_value = vars[2];
+		std::vector<std::string> var_properties;
+		if (vars.size() > 3) {
+			has_properties = true;
+			// Load all properties
+			for (int i = 3; i < vars.size(); i++) {
+				var_properties.push_back(vars[i]);
+			}
+		}
 
-		Logger::info(
-			LogLevel::med,
-			"Shader Variable read [section: {}, shader gl_id: {}]: type [{}], name [{}], "
-			"value [{}]",
-			my_section->type_str,
-			my_shader->getId(),
-			var_type,
-			var_name,
-			var_value
-		);
+		if (has_properties) {
+			// Concatenate all properties in a single string
+			std::string concatProperties;
+			for (const auto& str : var_properties)
+				concatProperties += str + ",";
 
+			Logger::info(LogLevel::med, "Shader Variable read [section: {}, shader gl_id: {}]: type [{}], name [{}], value [{}], properties [{}]", my_section->type_str, my_shader->getId(), var_type, var_name, var_value, concatProperties);
+		}
+		else
+			Logger::info(LogLevel::med, "Shader Variable read [section: {}, shader gl_id: {}]: type [{}], name [{}], value [{}]", my_section->type_str, my_shader->getId(), var_type, var_name, var_value);
 
 		if (var_type == "float")	// FLOAT detected
 		{
@@ -150,13 +156,7 @@ namespace Phoenix {
 				auto const fboNum = std::stoi(var_value.substr(3));
 
 				if (fboNum<0 || fboNum>(FBO_BUFFERS - 1)) {
-					Logger::error(
-						"Section {}: sampler2D fbo not correct, it should be 'fboX', where X=>0 and X<={}, you "
-						"choose: {}",
-						my_section->identifier,
-						(FBO_BUFFERS - 1),
-						var_value
-					);
+					Logger::error("Section {}: sampler2D fbo not correct, it should be 'fboX', where X=>0 and X<={}, you choose: {}", my_section->identifier, (FBO_BUFFERS - 1), var_value);
 					return false;
 				}
 				int fboAttachments = DEMO->m_fboManager.fbo[fboNum]->numAttachments;
@@ -184,7 +184,15 @@ namespace Phoenix {
 				var->loc = my_shader->getUniformLocation(var->name.c_str());
 				var->texUnitID = static_cast<int>(sampler2D.size());
 				var->isFBO = false;
-				var->texture = DEMO->m_textureManager.addTexture(DEMO->m_dataFolder + var_value);
+
+				Texture::Properties texProperties;
+				// Load texture properties
+				for (auto const& prop : var_properties) {
+					if (!loadTextureProperty(texProperties, prop))
+						Logger::error("Section {}: sampler2D has a non recognized property: {}", my_section->identifier, prop);
+				}					
+
+				var->texture = DEMO->m_textureManager.addTexture(DEMO->m_dataFolder + var_value, texProperties);
 				if (var->texture) // If texture is valid
 					sampler2D.push_back(var);
 			}
@@ -204,7 +212,6 @@ namespace Phoenix {
 		std::shared_ptr<varMat4> my_mat4;
 		std::shared_ptr<varSampler2D> my_sampler2D;
 
-		// TODO: Optimize and remove the ".size()" evaluation. Replace for something more optimal
 		for (i = 0; i < vfloat.size(); i++) {
 			my_vfloat = vfloat[i];
 			my_vfloat->eva->Expression.value();
@@ -247,8 +254,6 @@ namespace Phoenix {
 			// recalculated (therefore texGLid is changed), therefoere we need to look everytime if the
 			// texGLid id has changed
 			if (my_sampler2D->isFBO) {
-				//Fbo* my_fbo = DEMO->fboManager.fbo[my_sampler2D->fboNum];
-				//glBindTextureUnit(my_sampler2D->texUnitID, my_fbo->m_colorAttachment[0]);
 				glBindTextureUnit(my_sampler2D->texUnitID, DEMO->m_fboManager.getOpenGLTextureID(
 					my_sampler2D->fboNum,
 					my_sampler2D->fboAttachment)
@@ -278,5 +283,26 @@ namespace Phoenix {
 		strs.push_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
 
 		return strs.size();
+	}
+	bool ShaderVars::loadTextureProperty(Texture::Properties& texProperty, const std::string& property)
+	{
+		if (property ==  "FILTER:NONE") {
+			texProperty.use_linear = false;
+			return true;
+		}
+		else if (property == "FILTER:LINEAR") {
+			texProperty.use_linear = true;
+			return true;
+		}
+		else if (property == "FLIP:TRUE") {
+			texProperty.flip = true;
+			return true;
+		}
+		else if (property == "FLIP:FALSE") {
+			texProperty.flip = false;
+			return true;
+		}
+
+		return false; // Property was not recognized
 	}
 }

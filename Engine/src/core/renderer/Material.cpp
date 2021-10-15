@@ -130,8 +130,11 @@ namespace Phoenix {
 					filepath = m_ModelFilename.substr(0, m_ModelFilename.find_last_of('.')) + ".jpg";
 				}
 				const auto fullpath = m_ModelDirectory + "/" + filepath.C_Str();
+				Texture::Properties texProps;
+				texProps.flip = false;
+				texProps.type = typeName;
 				textureStack tex;
-				tex.tex = DEMO->m_textureManager.addTexture(fullpath, false, typeName);
+				tex.tex = DEMO->m_textureManager.addTexture(fullpath, texProps);
 				tex.blendOperation = operation;
 				tex.strength = blendFactor;
 				if (tex.tex) {
@@ -144,11 +147,15 @@ namespace Phoenix {
 			case TextureStorageType::EmbeddedNonCompressed:
 			{
 				aiTexture const* pTexture = m_pScene->GetEmbeddedTexture(filepath.C_Str());
+				Texture::Properties texProps;
+				texProps.flip = false;
+				texProps.type = typeName;
+
 				textureStack tex;
 				if (storageType == TextureStorageType::EmbeddedCompressed)
-					tex.tex = DEMO->m_textureManager.addTextureFromMem(reinterpret_cast<unsigned char*>(pTexture->pcData), pTexture->mWidth, false, typeName);
+					tex.tex = DEMO->m_textureManager.addTextureFromMem(reinterpret_cast<unsigned char*>(pTexture->pcData), pTexture->mWidth, texProps);
 				else
-					tex.tex = DEMO->m_textureManager.addTextureFromMem(reinterpret_cast<unsigned char*>(pTexture->pcData), pTexture->mWidth * pTexture->mHeight, false, typeName);
+					tex.tex = DEMO->m_textureManager.addTextureFromMem(reinterpret_cast<unsigned char*>(pTexture->pcData), pTexture->mWidth * pTexture->mHeight, texProps);
 				tex.blendOperation = operation;
 				tex.strength = blendFactor;
 				if (tex.tex) {
@@ -169,11 +176,15 @@ namespace Phoenix {
 				}
 				else {
 					aiTexture const* pTexture = m_pScene->mTextures[index];
+					Texture::Properties texProps;
+					texProps.flip = false;
+					texProps.type = typeName;
+
 					textureStack tex;
 					if (storageType == TextureStorageType::IndexCompressed)
-						tex.tex = DEMO->m_textureManager.addTextureFromMem(reinterpret_cast<unsigned char*>(pTexture->pcData), pTexture->mWidth, false, typeName);
+						tex.tex = DEMO->m_textureManager.addTextureFromMem(reinterpret_cast<unsigned char*>(pTexture->pcData), pTexture->mWidth, texProps);
 					else
-						tex.tex = DEMO->m_textureManager.addTextureFromMem(reinterpret_cast<unsigned char*>(pTexture->pcData), pTexture->mWidth * pTexture->mHeight, false, typeName);
+						tex.tex = DEMO->m_textureManager.addTextureFromMem(reinterpret_cast<unsigned char*>(pTexture->pcData), pTexture->mWidth * pTexture->mHeight, texProps);
 					tex.blendOperation = operation;
 					tex.strength = blendFactor;
 					if (tex.tex) {

@@ -8,16 +8,20 @@
 namespace Phoenix {
 
 	Texture::Texture()
+		:
+		filename(""),
+		width(-1),
+		height(-1),
+		components(-1),
+		mem(0),
+		m_textureID(0),
+		m_mipmapLevels(0),
+		textureData(nullptr)		
 	{
-		type = "texture_diffuse"; // default is set to diffuse texture
-		use_linear = true;
-		m_textureID = 0;
-		m_mipmapLevels = 1;
-		mem = 0;
-		textureData = nullptr;
-		width = -1;
-		height = -1;
-		components = -1;
+		// Set default texture properties
+		properties.flip = true;
+		properties.type = "texture_diffuse";
+		properties.use_linear = true;
 	}
 
 	Texture::~Texture()
@@ -31,7 +35,7 @@ namespace Phoenix {
 		freeData();
 	}
 
-	bool Texture::load(std::string_view const& file_name, bool flip)
+	bool Texture::load(std::string_view const& file_name)
 	{
 		// If we already have loaded this texture, we unload it first
 		if (m_textureID > 0) {
@@ -41,7 +45,7 @@ namespace Phoenix {
 			mem = 0;
 		}
 
-		stbi_set_flip_vertically_on_load(flip); // required for loading textures properly
+		stbi_set_flip_vertically_on_load(properties.flip); // required for loading textures properly
 
 		filename = file_name;
 		if (filename.empty())
@@ -65,7 +69,7 @@ namespace Phoenix {
 		return is_loaded;
 	}
 
-	bool Texture::loadFromMem(const unsigned char* data, int len, bool flip)
+	bool Texture::loadFromMem(const unsigned char* data, int len)
 	{
 		// If we already have loaded this texture, we unload it first
 		if (m_textureID > 0) {
@@ -75,7 +79,7 @@ namespace Phoenix {
 			mem = 0;
 		}
 
-		stbi_set_flip_vertically_on_load(flip); // required for loading textures properly
+		stbi_set_flip_vertically_on_load(properties.flip); // required for loading textures properly
 
 		filename = "Embedded texture";
 		bool is_loaded = true;
@@ -173,8 +177,15 @@ namespace Phoenix {
 			m_mipmapLevels = 1;
 		glTextureStorage2D(m_textureID, m_mipmapLevels, internalFormat, width, height);
 
-		glTextureParameteri(m_textureID, GL_TEXTURE_MIN_FILTER, m_mipmapLevels == 1 ? GL_LINEAR : GL_LINEAR_MIPMAP_LINEAR);
-		glTextureParameteri(m_textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		if (properties.use_linear) {
+			glTextureParameteri(m_textureID, GL_TEXTURE_MIN_FILTER, m_mipmapLevels == 1 ? GL_LINEAR : GL_LINEAR_MIPMAP_LINEAR);
+			glTextureParameteri(m_textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
+		else {
+			glTextureParameteri(m_textureID, GL_TEXTURE_MIN_FILTER, m_mipmapLevels == 1 ? GL_NEAREST : GL_LINEAR_MIPMAP_NEAREST);
+			glTextureParameteri(m_textureID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		}
+		
 
 		glTextureParameteri(m_textureID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTextureParameteri(m_textureID, GL_TEXTURE_WRAP_T, GL_REPEAT);

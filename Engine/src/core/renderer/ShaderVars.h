@@ -54,5 +54,6 @@ namespace Phoenix {
         Section* my_section;	// Section where the vars are needed (required for formula variables, like time, etc.)
 
         size_t splitString(const std::string& txt, std::vector<std::string>& strs, char ch);
+        bool loadTextureProperty(Texture::Properties& texProperty, const std::string& property);
     };
 }
