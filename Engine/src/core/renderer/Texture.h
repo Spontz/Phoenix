@@ -9,13 +9,6 @@
 
 namespace Phoenix {
 
-	// flags for texture properties
-#define NO_MIPMAP 1
-#define CLAMP_TO_EDGE 2
-#define CLAMP 4
-#define MODULATE 8
-#define TEXTURE_1D 16
-
 	class Texture;
 	using SP_Texture = std::shared_ptr<Texture>;
 	using WP_Texture = std::weak_ptr<Texture>;
