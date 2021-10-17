@@ -14,11 +14,11 @@ namespace Phoenix {
 
 	class Cubemap {
 	public:
-		std::vector<std::string> filename;
-		std::vector<int> width;
-		std::vector<int> height;
-		float mem;
-		GLuint cubemapID;
+		std::vector<std::string>	filename;
+		std::vector<int>			width;
+		std::vector<int>			height;
+		float						m_mem;
+		GLuint						cubemapID;
 
 		Cubemap();
 		virtual ~Cubemap();

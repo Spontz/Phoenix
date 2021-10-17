@@ -10,7 +10,7 @@ namespace Phoenix {
 	Cubemap::Cubemap()
 	{
 		cubemapID = 0;
-		mem = 0;
+		m_mem = 0;
 	}
 
 	Cubemap::~Cubemap()
@@ -20,7 +20,7 @@ namespace Phoenix {
 			width.clear();
 			height.clear();
 			cubemapID = 0;
-			mem = 0;
+			m_mem = 0;
 		}
 	}
 
@@ -30,7 +30,7 @@ namespace Phoenix {
 		if (cubemapID > 0) {
 			glGenTextures(1, &cubemapID);
 			cubemapID = 0;
-			mem = 0;
+			m_mem = 0;
 		}
 
 		bool is_loaded = true;
@@ -74,7 +74,7 @@ namespace Phoenix {
 				Logger::error("Failed loading cubemap from file: {}", faces_file_name[i]);
 				is_loaded = false;
 			}
-			mem += (float)(Width * Height * 3) / 1048576.0f;		// Calculate the texture mem (in mb)
+			m_mem += (float)(Width * Height * 3) / 1048576.0f;		// Calculate the texture mem (in mb)
 			stbi_image_free(data);
 		}
 		// Check if the cubemap images sizes are OK

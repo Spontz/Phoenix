@@ -108,7 +108,7 @@ namespace Phoenix {
 
 
 		// Calculate particles number
-		m_iNumEmitters = m_pTexture->width * m_pTexture->height;
+		m_iNumEmitters = m_pTexture->m_width * m_pTexture->m_height;
 		m_iNumParticles = m_iNumEmitters + m_iNumEmitters * m_iParticlesPerEmitter;
 
 		if (m_iNumParticles == 0) {
@@ -135,8 +135,8 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_variable("nE", m_fCurrentEmitter);
 
 		// Add constants
-		m_pExprPosition->SymbolTable.add_constant("imageWidth", static_cast<float>(m_pTexture->width));
-		m_pExprPosition->SymbolTable.add_constant("imageHeight", static_cast<float>(m_pTexture->height));
+		m_pExprPosition->SymbolTable.add_constant("imageWidth", static_cast<float>(m_pTexture->m_width));
+		m_pExprPosition->SymbolTable.add_constant("imageHeight", static_cast<float>(m_pTexture->m_height));
 		m_pExprPosition->SymbolTable.add_constant("particlesNumber", static_cast<float>(m_iNumParticles));
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
@@ -151,8 +151,8 @@ namespace Phoenix {
 		size_t emitterID = 0;	// Emitter number (inside the array)
 		size_t numParticle = 0;
 
-		for (int i = 0; i < m_pTexture->width; i++) {
-			for (int j = 0; j < m_pTexture->height; j++) {
+		for (int i = 0; i < m_pTexture->m_width; i++) {
+			for (int j = 0; j < m_pTexture->m_height; j++) {
 				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 				Particles[numParticle].Type = ParticleMesh::ParticleType::Emitter;
 				Particles[numParticle].ID = (int32_t)numEmitter;
@@ -245,9 +245,9 @@ namespace Phoenix {
 	void sDrawParticlesImage::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "Image: " << m_pTexture->filename << std::endl;
-		ss << "Width: " << m_pTexture->width << std::endl;
-		ss << "Height: " << m_pTexture->height << std::endl;
+		ss << "Image: " << m_pTexture->m_filename << std::endl;
+		ss << "Width: " << m_pTexture->m_width << std::endl;
+		ss << "Height: " << m_pTexture->m_height << std::endl;
 		ss << "Emitters: " << m_iNumEmitters << std::endl;
 		ss << "Particles per Emitter: " << m_iParticlesPerEmitter << std::endl;
 		ss << "Num Particles: " << m_iNumParticles << std::endl;

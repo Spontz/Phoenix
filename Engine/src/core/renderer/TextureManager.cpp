@@ -10,7 +10,7 @@ namespace Phoenix {
 	TextureManager::TextureManager() {
 		texture.clear();
 		cubemap.clear();
-		mem = 0;
+		m_mem = 0;
 		forceLoad = false;
 	}
 
@@ -31,19 +31,19 @@ namespace Phoenix {
 
 		// check if texture is already loaded, then we just retrieve the ID of our texture
 		for (i = 0; i < texture.size(); i++) {
-			if (texture[i]->filename.compare(path) == 0) {
+			if (texture[i]->m_filename.compare(path) == 0) {
 				p_tex = texture[i];
 			}
 		}
 
 		if (p_tex == nullptr) { // If the texture has not been found, we need to load it for the first time
 			SP_Texture new_tex = std::make_shared<Texture>();
-			new_tex->properties = texProperties;
+			new_tex->m_properties = texProperties;
 			if (new_tex->load(path)) {
 				texture.push_back(new_tex);
-				mem += new_tex->mem;
+				m_mem += new_tex->m_mem;
 				p_tex = new_tex;
-				Logger::info(LogLevel::med, "Texture {} [id: {}] loaded OK. Overall texture Memory: {:.3f}Mb", path, texture.size() - 1, mem);
+				Logger::info(LogLevel::med, "Texture {} [id: {}] loaded OK. Overall texture Memory: {:.3f}Mb", path, texture.size() - 1, m_mem);
 			}
 			else {
 				Logger::error("Could not load texture: {}", path);
@@ -52,11 +52,11 @@ namespace Phoenix {
 		}
 		else { // If the texture is catched we should not do anything, unless we have been told to upload it again
 			if (forceLoad) {
-				mem -= p_tex->mem; // Decrease the overall texture memory
-				p_tex->properties = texProperties;
+				m_mem -= p_tex->m_mem; // Decrease the overall texture memory
+				p_tex->m_properties = texProperties;
 				if (p_tex->load(path)) {
-					mem += p_tex->mem;
-					Logger::info(LogLevel::med, "Texture {} [id: {}] force reload OK. Overall texture Memory: {:.3f}Mb", path, i, mem);
+					m_mem += p_tex->m_mem;
+					Logger::info(LogLevel::med, "Texture {} [id: {}] force reload OK. Overall texture Memory: {:.3f}Mb", path, i, m_mem);
 				}
 				else
 					Logger::error("Could not load texture: {}", path);
@@ -70,12 +70,12 @@ namespace Phoenix {
 		SP_Texture p_tex;
 
 		auto new_tex = std::make_shared<Texture>();
-		new_tex->properties = texProperties;
+		new_tex->m_properties = texProperties;
 		if (new_tex->loadFromMem(data, len)) {
 			texture.push_back(new_tex);
-			mem += new_tex->mem;
+			m_mem += new_tex->m_mem;
 			p_tex = new_tex;
-			Logger::info(LogLevel::med, "Texture embedded [id: {}] loaded OK. Overall texture Memory: {:.3f}Mb", texture.size() - 1, mem);
+			Logger::info(LogLevel::med, "Texture embedded [id: {}] loaded OK. Overall texture Memory: {:.3f}Mb", texture.size() - 1, m_mem);
 		}
 		else {
 			Logger::error("Could not load embedded texture");
@@ -104,8 +104,8 @@ namespace Phoenix {
 			if (new_cubemap->load(path, flip)) {
 				cubemap.push_back(new_cubemap);
 				p_cubemap = new_cubemap;
-				mem += new_cubemap->mem;
-				Logger::info(LogLevel::med, "Cubemap {} [id: {}] loaded OK. Overall texture Memory: {:.3f}Mb", path[0], cubemap.size() - 1, mem);
+				m_mem += new_cubemap->m_mem;
+				Logger::info(LogLevel::med, "Cubemap {} [id: {}] loaded OK. Overall texture Memory: {:.3f}Mb", path[0], cubemap.size() - 1, m_mem);
 			}
 			else {
 				for (i = 0; i < path.size(); i++)
@@ -114,10 +114,10 @@ namespace Phoenix {
 		}
 		else { // If the cubemap is catched we should not do anything, unless we have been told to upload it again
 			if (forceLoad) {
-				mem -= p_cubemap->mem; // Decrease the overall texture memory
+				m_mem -= p_cubemap->m_mem; // Decrease the overall texture memory
 				if (p_cubemap->load(path, flip)) {
-					mem += p_cubemap->mem;
-					Logger::info(LogLevel::med, "Cubemap {} [id:{}] force reload OK. Overall texture Memory : {:.3f}Mb", path[0], i, mem);
+					m_mem += p_cubemap->m_mem;
+					Logger::info(LogLevel::med, "Cubemap {} [id:{}] force reload OK. Overall texture Memory : {:.3f}Mb", path[0], i, m_mem);
 				}
 				else {
 					for (i = 0; i < path.size(); i++)
@@ -147,6 +147,6 @@ namespace Phoenix {
 	{
 		texture.clear();
 		cubemap.clear();
-		mem = 0;
+		m_mem = 0;
 	}
 }

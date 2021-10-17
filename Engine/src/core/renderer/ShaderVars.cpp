@@ -250,9 +250,9 @@ namespace Phoenix {
 		for (i = 0; i < sampler2D.size(); i++) {
 			my_sampler2D = sampler2D[i];
 			my_shader->setValue(my_sampler2D->name.c_str(), my_sampler2D->texUnitID);
-			// TODO: This ugly and dirty. This is needed because when we rezise the screen, the FBO's are
-			// recalculated (therefore texGLid is changed), therefoere we need to look everytime if the
-			// texGLid id has changed
+			// This ugly and dirty. This is needed because when we rezise the screen, the FBO's are
+			// recalculated (therefore texGLid is changed), therefoere we need to look everytime if
+			// the 'texture GL id' has changed
 			if (my_sampler2D->isFBO) {
 				glBindTextureUnit(my_sampler2D->texUnitID, DEMO->m_fboManager.getOpenGLTextureID(
 					my_sampler2D->fboNum,
@@ -284,22 +284,23 @@ namespace Phoenix {
 
 		return strs.size();
 	}
+
 	bool ShaderVars::loadTextureProperty(Texture::Properties& texProperty, const std::string& property)
 	{
 		if (property ==  "FILTER:NONE") {
-			texProperty.use_linear = false;
+			texProperty.m_useLinearFilter = false;
 			return true;
 		}
 		else if (property == "FILTER:LINEAR") {
-			texProperty.use_linear = true;
+			texProperty.m_useLinearFilter = true;
 			return true;
 		}
 		else if (property == "FLIP:TRUE") {
-			texProperty.flip = true;
+			texProperty.m_flip = true;
 			return true;
 		}
 		else if (property == "FLIP:FALSE") {
-			texProperty.flip = false;
+			texProperty.m_flip = false;
 			return true;
 		}
 

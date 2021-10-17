@@ -15,6 +15,7 @@ namespace Phoenix {
 		float		height = 0.0f;;
 		int			ratio = 0;
 		int			numColorAttachments = 0;
+		bool		useBilinearFilter = true;	// Use Bilinear Filter?
 	};
 
 	class FboManager {

@@ -73,11 +73,11 @@ namespace Phoenix {
 
 		// Load the Image
 		Texture::Properties texProps;
-		texProps.use_linear = m_bFilter;
+		texProps.m_useLinearFilter = m_bFilter;
 		m_pTexture = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + strings[0], texProps);
 		if (!m_pTexture)
 			return false;
-		m_fTexAspectRatio = static_cast<float>(m_pTexture->width) / static_cast<float>(m_pTexture->height);
+		m_fTexAspectRatio = static_cast<float>(m_pTexture->m_width) / static_cast<float>(m_pTexture->m_height);
 
 		// Load the Shader
 		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[1]);
@@ -99,8 +99,8 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
 		m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
 		// Add constants
-		m_pExprPosition->SymbolTable.add_constant("texWidth", static_cast<float>(m_pTexture->width));
-		m_pExprPosition->SymbolTable.add_constant("texHeight", static_cast<float>(m_pTexture->height));
+		m_pExprPosition->SymbolTable.add_constant("texWidth", static_cast<float>(m_pTexture->m_width));
+		m_pExprPosition->SymbolTable.add_constant("texHeight", static_cast<float>(m_pTexture->m_height));
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
@@ -193,7 +193,7 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
-		ss << "File: " << m_pTexture->filename << std::endl;
+		ss << "File: " << m_pTexture->m_filename << std::endl;
 		ss << "Fullscreen: " << (m_bFullscreen ? "Yes":"No") << std::endl;
 		ss << "Fit To Content: " << (m_bFitToContent ? "Yes":"No") << std::endl;
 		ss << "Bilinear filter: " << (m_bFilter ? "Yes":"No") << std::endl;

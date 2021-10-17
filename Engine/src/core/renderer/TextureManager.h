@@ -19,7 +19,7 @@ namespace Phoenix {
 		SP_Texture	addTexture(std::string_view const& path);
 		SP_Texture	addTexture(std::string_view const& path, Texture::Properties& texProperties);
 		SP_Texture	addTextureFromMem(const unsigned char* data, int32_t len, Texture::Properties& texProperties);
-		SP_Cubemap	addCubemap(std::vector<std::string> const& path, bool flip); // TODO: Add Cubemap::Properties as we do for textures
+		SP_Cubemap	addCubemap(std::vector<std::string> const& path, bool flip);
 		int32_t		getOpenGLTextureID(int32_t index);
 		void		initTextureStates();
 		void		clear();
@@ -27,7 +27,7 @@ namespace Phoenix {
 	public:
 		std::vector<SP_Texture>	texture;	// Texture list
 		std::vector<SP_Cubemap>	cubemap;	// Cubemap list
-		float					mem;		// Texture memory in MegaBytes
+		float					m_mem;		// Texture memory in MegaBytes
 		bool					forceLoad;	// Force texture loading each time we add a texture (should be enabled when working on slave mode)
 	};
 }

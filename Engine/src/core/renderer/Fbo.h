@@ -14,7 +14,7 @@ namespace Phoenix {
 		int				width, height;
 		int				iformat, format, ttype, components;
 		unsigned int	numAttachments;
-		bool			use_linear;
+		bool			m_useLinearFilter;
 		std::string		engineFormat;			// format of the FBO, by a name given by the engine
 		GLuint			m_frameBuffer;			// Our handle to the Frame Buffer
 		GLuint			m_depthAttachment;		// Our handle to the Render Buffer
@@ -23,7 +23,7 @@ namespace Phoenix {
 		Fbo();
 		~Fbo();
 
-		bool upload(std::string EngineFormat, int Width, int Height, int iFormat, int Format, int Type, unsigned int numColorAttachments);
+		bool upload(std::string EngineFormat, int Width, int Height, int iFormat, int Format, int Type, unsigned int numColorAttachments, bool useLinearFilter);
 		void bind() const;
 		void bind_tex(GLuint texUnit = 0, GLuint attachment = 0) const;
 

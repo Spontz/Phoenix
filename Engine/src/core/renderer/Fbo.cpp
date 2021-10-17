@@ -15,7 +15,7 @@ namespace Phoenix {
 		format(0),
 		components(0),
 		ttype(0),
-		use_linear(true),
+		m_useLinearFilter(true),
 		numAttachments(1),		// By default, 1 attachment
 		m_frameBuffer(0),
 		m_depthAttachment(0),
@@ -33,7 +33,7 @@ namespace Phoenix {
 		}
 	}
 
-	bool Fbo::upload(std::string EngineFormat, int Width, int Height, int iFormat, int Format, int Type, unsigned int numColorAttachments)
+	bool Fbo::upload(std::string EngineFormat, int Width, int Height, int iFormat, int Format, int Type, unsigned int numColorAttachments, bool useLinearFilter)
 	{
 		if ((Width == 0) || (Height == 0)) {
 			Logger::error("Fbo error: Size is zero!");
@@ -46,6 +46,7 @@ namespace Phoenix {
 		format = Format;
 		ttype = Type;
 		numAttachments = numColorAttachments;
+		m_useLinearFilter = useLinearFilter;
 
 		// Check Color attachments
 		if (numAttachments <= 0) { // TODO: This validation is nonsense
@@ -67,8 +68,15 @@ namespace Phoenix {
 			for (unsigned int i = 0; i < numAttachments; i++) {
 				glBindTexture(GL_TEXTURE_2D, m_colorAttachment[i]);
 				glTexImage2D(GL_TEXTURE_2D, 0, iformat, width, height, 0, format, ttype, NULL);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				if (m_useLinearFilter) {
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				}
+				else {
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				}
+					
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_colorAttachment[i], 0);

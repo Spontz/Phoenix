@@ -232,7 +232,7 @@ namespace Phoenix {
 			ss << "  Material.KsStrenght:" << std::to_string(mat->strenghtSpecular) << std::endl;
 			for (auto& texture : mat->textures) {
 				ss << "  Texture shader name: " << texture.shaderName << std::endl;
-				ss << "  Texture file: " << texture.tex->filename << std::endl;
+				ss << "  Texture file: " << texture.tex->m_filename << std::endl;
 			}
 			ss << std::endl;
 		}

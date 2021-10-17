@@ -16,17 +16,17 @@ namespace Phoenix {
 	class Texture {
 	public:
 		struct Properties final {
-			bool	flip = true;
-			bool	use_linear = true;
-			std::string_view type = "texture_diffuse";
+			bool				m_flip = true;
+			bool				m_useLinearFilter = true;
+			std::string_view	m_type = "texture_diffuse";
 		};
 
 	public:
-		std::string	filename;
-		int			width, height, components;
-		float		mem;						// Size in Mb
+		std::string	m_filename;
+		int			m_width, m_height, m_components;
+		float		m_mem;						// Size in Mb
 		GLuint		m_textureID;
-		Properties	properties;					// Texture properties
+		Properties	m_properties;				// Texture properties
 
 		Texture();
 		virtual ~Texture();
@@ -39,8 +39,8 @@ namespace Phoenix {
 		glm::vec4 getColor(int x, int y);
 
 	private:
-		GLsizei m_mipmapLevels;
-		unsigned char* textureData;
+		GLsizei			m_mipmapLevels;
+		unsigned char*	m_textureData;
 
 		void uploadtoGPU(const unsigned char* data);
 	};

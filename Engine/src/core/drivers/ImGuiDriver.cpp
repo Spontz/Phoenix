@@ -268,7 +268,7 @@ namespace Phoenix {
 		ImGui::Text("Demo status: %s", demoStatus.c_str());
 		ImGui::Text("Time: %.2f/%.2f", m_demo.m_demoRunTime, m_demo.m_demoEndTime);
 		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->getCPUload());
-		ImGui::Text("Texture mem used: %.2fmb", m_demo.m_textureManager.mem + m_demo.m_fboManager.mem + m_demo.m_efxBloomFbo.mem + m_demo.m_efxAccumFbo.mem);
+		ImGui::Text("Texture mem used: %.2fmb", m_demo.m_textureManager.m_mem + m_demo.m_fboManager.mem + m_demo.m_efxBloomFbo.mem + m_demo.m_efxAccumFbo.mem);
 		if (m_demo.m_slaveMode)
 			ImGui::Text("Slave Mode ON");
 		else

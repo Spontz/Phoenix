@@ -131,8 +131,8 @@ namespace Phoenix {
 				}
 				const auto fullpath = m_ModelDirectory + "/" + filepath.C_Str();
 				Texture::Properties texProps;
-				texProps.flip = false;
-				texProps.type = typeName;
+				texProps.m_flip = false;
+				texProps.m_type = typeName;
 				textureStack tex;
 				tex.tex = DEMO->m_textureManager.addTexture(fullpath, texProps);
 				tex.blendOperation = operation;
@@ -148,8 +148,8 @@ namespace Phoenix {
 			{
 				aiTexture const* pTexture = m_pScene->GetEmbeddedTexture(filepath.C_Str());
 				Texture::Properties texProps;
-				texProps.flip = false;
-				texProps.type = typeName;
+				texProps.m_flip = false;
+				texProps.m_type = typeName;
 
 				textureStack tex;
 				if (storageType == TextureStorageType::EmbeddedCompressed)
@@ -177,8 +177,8 @@ namespace Phoenix {
 				else {
 					aiTexture const* pTexture = m_pScene->mTextures[index];
 					Texture::Properties texProps;
-					texProps.flip = false;
-					texProps.type = typeName;
+					texProps.m_flip = false;
+					texProps.m_type = typeName;
 
 					textureStack tex;
 					if (storageType == TextureStorageType::IndexCompressed)
