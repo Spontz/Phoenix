@@ -92,25 +92,25 @@ namespace Phoenix {
 
 
 	private:
-		glm::vec3				m_Position = DEFAULT_CAM_POSITION;
-		glm::vec3				m_Target = DEFAULT_CAM_TARGET;
-		glm::vec3				m_Up = DEFAULT_CAM_UP;
-		glm::vec3				m_Right = DEFAULT_CAM_RIGHT;
-		mutable glm::vec3		m_Front = DEFAULT_CAM_FRONT; // TODO: To be changed by a function
+		glm::vec3			m_Position = DEFAULT_CAM_POSITION;
+		glm::vec3			m_Target = DEFAULT_CAM_TARGET;
+		glm::vec3			m_Up = DEFAULT_CAM_UP;
+		glm::vec3			m_Right = DEFAULT_CAM_RIGHT;
+		mutable glm::vec3	m_Front = DEFAULT_CAM_FRONT; // TODO: To be changed by a function
 
 		// Euler angles
-		float m_Yaw = DEFAULT_CAM_YAW;
-		float m_Pitch = DEFAULT_CAM_PITCH;
-		float m_Roll = DEFAULT_CAM_ROLL;
-		float m_Fov = DEFAULT_CAM_FOV;
+		float				m_Yaw = DEFAULT_CAM_YAW;
+		float				m_Pitch = DEFAULT_CAM_PITCH;
+		float				m_Roll = DEFAULT_CAM_ROLL;
+		float				m_Fov = DEFAULT_CAM_FOV;
 
 		// Camera behaviour
-		float m_MovementSpeed = DEFAULT_CAM_MOVEMENT_SPEED;
-		float m_RollSpeed = DEFAULT_CAM_ROLL_SPEED;
-		float m_MouseSensitivity = DEFAULT_CAM_SENSITIVITY;
+		float				m_MovementSpeed = DEFAULT_CAM_MOVEMENT_SPEED;
+		float				m_RollSpeed = DEFAULT_CAM_ROLL_SPEED;
+		float				m_MouseSensitivity = DEFAULT_CAM_SENSITIVITY;
 
 		// Frustum
-		float m_FrustumNear = DEFAULT_CAM_NEAR;
-		float m_FrustumFar = DEFAULT_CAM_FAR;
+		float				m_FrustumNear = DEFAULT_CAM_NEAR;
+		float				m_FrustumFar = DEFAULT_CAM_FAR;
 	};
 }

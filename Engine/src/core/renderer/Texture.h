@@ -23,7 +23,9 @@ namespace Phoenix {
 
 	public:
 		std::string	m_filename;
-		int			m_width, m_height, m_components;
+		int			m_width;
+		int			m_height;
+		int			m_components;
 		float		m_mem;						// Size in Mb
 		GLuint		m_textureID;
 		Properties	m_properties;				// Texture properties

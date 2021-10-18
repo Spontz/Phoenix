@@ -93,7 +93,7 @@ namespace Phoenix {
 		// check if cubemap is already loaded, then we just return the ID of our texture
 		bool already_loaded = true;
 		for (i = 0; i < cubemap.size(); i++) {
-			if (cubemap[i]->filename == path) // Check if all the paths are the same (so cubemap is already loaded)
+			if (cubemap[i]->m_filename == path) // Check if all the paths are the same (so cubemap is already loaded)
 			{
 				p_cubemap = cubemap[i];
 			}

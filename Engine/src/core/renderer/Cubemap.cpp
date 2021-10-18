@@ -9,17 +9,17 @@ namespace Phoenix {
 
 	Cubemap::Cubemap()
 	{
-		cubemapID = 0;
+		m_cubemapID = 0;
 		m_mem = 0;
 	}
 
 	Cubemap::~Cubemap()
 	{
-		if (cubemapID != 0) {
-			glDeleteTextures(1, &cubemapID);
-			width.clear();
-			height.clear();
-			cubemapID = 0;
+		if (m_cubemapID != 0) {
+			glDeleteTextures(1, &m_cubemapID);
+			m_width.clear();
+			m_height.clear();
+			m_cubemapID = 0;
 			m_mem = 0;
 		}
 	}
@@ -27,9 +27,9 @@ namespace Phoenix {
 	bool Cubemap::load(std::vector<std::string> faces_file_name, bool flip)
 	{
 		// If we already have loaded this cubemap, we unload it first
-		if (cubemapID > 0) {
-			glGenTextures(1, &cubemapID);
-			cubemapID = 0;
+		if (m_cubemapID > 0) {
+			glGenTextures(1, &m_cubemapID);
+			m_cubemapID = 0;
 			m_mem = 0;
 		}
 
@@ -37,16 +37,16 @@ namespace Phoenix {
 
 		stbi_set_flip_vertically_on_load(flip); // required for loading textures properly
 
-		glGenTextures(1, &cubemapID);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapID);
+		glGenTextures(1, &m_cubemapID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemapID);
 
 		int Width, Height, components;
 		for (unsigned int i = 0; i < faces_file_name.size(); i++)
 		{
-			filename.push_back(faces_file_name[i]);
+			m_filename.push_back(faces_file_name[i]);
 			unsigned char* data = stbi_load(faces_file_name[i].c_str(), &Width, &Height, &components, 0);
-			width.push_back(Width);
-			height.push_back(Height);
+			m_width.push_back(Width);
+			m_height.push_back(Height);
 			if (data)
 			{
 				GLenum internalFormat = 0;
@@ -80,7 +80,7 @@ namespace Phoenix {
 		// Check if the cubemap images sizes are OK
 		for (unsigned int i = 0; i < faces_file_name.size(); i++)
 		{
-			if ((width[0] != width[i]) || (height[0] != height[i])) {
+			if ((m_width[0] != m_width[i]) || (m_height[0] != m_height[i])) {
 				Logger::error("The cubemap image {} has a different size from the first one. Please check that all cubemap images have same size", faces_file_name[i]);
 				is_loaded = false;
 			}
@@ -98,6 +98,6 @@ namespace Phoenix {
 
 	void Cubemap::bind(GLuint TexUnit) const
 	{
-		glBindTextureUnit(TexUnit, cubemapID);
+		glBindTextureUnit(TexUnit, m_cubemapID);
 	}
 }

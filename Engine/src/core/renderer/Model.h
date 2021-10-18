@@ -62,36 +62,36 @@ namespace Phoenix {
 
 	public:
 		std::vector<SP_Mesh>	meshes;
-		std::string			directory;			// Path of the model file
-		std::string			filename;			// Name of the model file
-		std::string			filepath;			// Full path of the model file
-		bool				playAnimation;		// Do we want to compute the transformations for playing animations?
-		bool				useCamera;			// Do we want to use the camera of the model?
+		std::string				directory;			// Path of the model file
+		std::string				filename;			// Name of the model file
+		std::string				filepath;			// Full path of the model file
+		bool					playAnimation;		// Do we want to compute the transformations for playing animations?
+		bool					useCamera;			// Do we want to use the camera of the model?
 
 		// Matrices
-		glm::mat4			m_matProjection;	// Projection matrix
-		glm::mat4			m_matView;			// View matrix
-		glm::mat4			m_matBaseModel;		// Base model matrix (the intial matrix of all sub-meshes)
-		glm::mat4			m_matMVP;			// Model-View-Projection matrix
+		glm::mat4				m_matProjection;	// Projection matrix
+		glm::mat4				m_matView;			// View matrix
+		glm::mat4				m_matBaseModel;		// Base model matrix (the intial matrix of all sub-meshes)
+		glm::mat4				m_matMVP;			// Model-View-Projection matrix
 
-		glm::mat4			m_matPrevProjection;// Projection matrix
-		glm::mat4			m_matPrevView;		// View matrix
-		glm::mat4			m_matPrevMVP;		// Model-View-Projection matrix
+		glm::mat4				m_matPrevProjection;// Projection matrix
+		glm::mat4				m_matPrevView;		// View matrix
+		glm::mat4				m_matPrevMVP;		// Model-View-Projection matrix
 
 		std::vector<Camera*>	m_camera;
 
 		// Stats
-		uint32_t			m_statNumVertices;
-		uint32_t			m_statNumFaces;
-		uint32_t			m_statNumMeshes;
-		uint32_t			m_statNumCameras;
-		uint32_t			m_statNumAnimations;
-		uint32_t			m_statNumBones;
+		uint32_t				m_statNumVertices;
+		uint32_t				m_statNumFaces;
+		uint32_t				m_statNumMeshes;
+		uint32_t				m_statNumCameras;
+		uint32_t				m_statNumAnimations;
+		uint32_t				m_statNumBones;
 
 	private:
-		Assimp::Importer					m_Importer;
-		const aiScene* m_pScene;
-		glm::mat4							m_matGlobalInverseTransform;// Global transformation matrix for nodes (vertices relative to bones)
+		Assimp::Importer		m_Importer;
+		const aiScene*			m_pScene;
+		glm::mat4				m_matGlobalInverseTransform;// Global transformation matrix for nodes (vertices relative to bones)
 		// Bones info
 		std::map<std::string, BoneInfo>		m_boneInfoMap;				// maps a bone name to its information
 		std::vector<glm::mat4>				m_boneTransforms;			// Bone transformations
@@ -99,7 +99,6 @@ namespace Phoenix {
 		unsigned int						m_currentCamera;			// Current Camera
 		unsigned int						m_currentAnimation;			// Current Animation
 		double								m_animDuration;				// Animation duration in seconds
-
 		bool								m_bLoadedUniqueVertices;	// Have we loaded the unique vertices for each mesh?
 	};
 }

@@ -132,7 +132,7 @@ namespace Phoenix {
 	void sDrawSkybox::loadDebugStatic()
 	{
 		std::stringstream ss;
-		for (auto& file : m_pCubemap->filename) {
+		for (auto& file : m_pCubemap->m_filename) {
 			ss << "File: " << file << std::endl;
 		}
 		debugStatic = ss.str();
