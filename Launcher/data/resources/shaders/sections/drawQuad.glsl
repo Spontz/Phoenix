@@ -21,5 +21,5 @@ uniform sampler2D screenTexture;
 
 void main(void)
 {
-    FragColor = texture2D(screenTexture, TexCoords);
+    FragColor = texture(screenTexture, TexCoords);
 }
