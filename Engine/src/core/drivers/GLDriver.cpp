@@ -402,7 +402,7 @@ namespace Phoenix {
 		m_demo.m_textureManager.initTextureStates();
 	}
 
-	void glDriver::initRender(int clear) {
+	void glDriver::initRender(bool clear) {
 		// Vsync Management
 		glfwSwapInterval(config.vsync); // 0 -Disabled, 1-60pfs, 2-30fps, 3-20fps,...
 

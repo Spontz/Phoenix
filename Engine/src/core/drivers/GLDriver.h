@@ -77,7 +77,7 @@ namespace Phoenix {
 	public:
 		void	initFramework();
 		bool	initGraphics();
-		void	initRender(int clear);
+		void	initRender(bool clear);
 		bool	checkError_(const char* file, int line);
 		void	drawGrid(bool drawAxisX, bool drawAxisY, bool drawAxisZ);
 		void	drawGui();

@@ -778,7 +778,7 @@ namespace Phoenix {
 			}
 
 			// prepare engine for render
-			GLDRV->initRender(1);
+			GLDRV->initRender(true);
 
 			// Show grid only if we are in Debug
 			if (m_debug && m_debug_drawGrid) {
