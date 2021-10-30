@@ -95,7 +95,7 @@ namespace Phoenix {
 		m_pModel->loadUniqueVertices();
 
 		// Set render states
-		render_disableDepthTest = true;
+		render_disableDepthMask = true;
 
 		// Load Emitters and Particles config
 		m_iParticlesPerEmitter = static_cast<int>(param[0]);

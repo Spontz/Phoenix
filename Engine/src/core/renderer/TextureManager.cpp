@@ -66,7 +66,8 @@ namespace Phoenix {
 		return p_tex;
 	}
 
-	SP_Texture TextureManager::addTextureFromMem(const unsigned char* data, int len, Texture::Properties& texProperties) {
+	SP_Texture TextureManager::addTextureFromMem(const unsigned char* data, int32_t len, Texture::Properties& texProperties)
+	{
 		SP_Texture p_tex;
 
 		auto new_tex = std::make_shared<Texture>();
@@ -129,7 +130,7 @@ namespace Phoenix {
 		return p_cubemap;
 	}
 
-	int TextureManager::getOpenGLTextureID(int index)
+	int TextureManager::getOpenGLTextureID(int32_t index)
 	{
 		if (index < texture.size())
 			return texture[index]->m_textureID;
