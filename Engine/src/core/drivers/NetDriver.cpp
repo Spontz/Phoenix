@@ -29,8 +29,8 @@ namespace Phoenix {
 	// constructors/destructor /////////////////////////////////////////////////////////////////////////
 	NetDriver::NetDriver()
 		:
-		m_iPortReceive(28000),
-		m_iPortSend(28001),
+		m_iPortReceive(29000),
+		m_iPortSend(29001),
 		m_bInitialized(false),
 		m_bConnectedToEditor(false),
 		m_pServConnect(nullptr) {
