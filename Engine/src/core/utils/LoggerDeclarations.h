@@ -5,6 +5,8 @@
 
 #include <format>
 
+// TODO: Use a single Logger.h file, instead of "Logger.h + LoggerDeclarations.h" files
+
 namespace Phoenix {
 
 	enum class LogLevel {

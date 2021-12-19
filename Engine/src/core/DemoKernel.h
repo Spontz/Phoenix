@@ -5,6 +5,10 @@
 
 namespace Phoenix { class DemoKernel; }
 
+
+#include "core/events/Event.h"
+#include "core/events/DemoKernelEvent.h"
+
 #include "drivers/GlDriver.h"
 #include "drivers/NetDriver.h"
 

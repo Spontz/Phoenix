@@ -114,7 +114,7 @@ namespace Phoenix {
 
 	// methods
 
-	void DemoKernel::getArguments(int argc, char* argv[])
+	void DemoKernel::getArguments(int32_t argc, char* argv[])
 	{
 		std::vector <std::string> sources;
 		for (int i = 1; i < argc; ++i) {
