@@ -7,7 +7,7 @@
 #include "core/events/Event.h"
 #include "core/input/MouseCodes.h"
 
-namespace Hazel {
+namespace Phoenix {
 
 	class MouseMovedEvent : public Event
 	{

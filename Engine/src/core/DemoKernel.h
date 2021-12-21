@@ -5,6 +5,7 @@
 
 namespace Phoenix { class DemoKernel; }
 
+#include "core/Window.h"
 
 #include "core/events/Event.h"
 #include "core/events/DemoKernelEvent.h"
@@ -52,6 +53,9 @@ namespace Phoenix {
 		~DemoKernel();
 
 	public:
+		void OnEvent(Event& e);
+		bool OnWindowClose(WindowCloseEvent& e) { return true; }; // TODO
+		bool OnWindowResize(WindowResizeEvent& e) { return true; }; // TODO
 		static DemoKernel& getInstance();
 		static void release();
 		static std::string getEngineVersion();
@@ -170,6 +174,10 @@ namespace Phoenix {
 
 		float m_fVar[MULTIPURPOSE_VARS]; // Multi-purpose variables, shared across sections
 		float m_fBeat[MAX_BEATS]; // intensity of the current music track
+
+	private:
+		std::unique_ptr<Window> m_Window;
+
 	};
 
 }

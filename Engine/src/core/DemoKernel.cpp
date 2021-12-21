@@ -23,6 +23,23 @@ namespace Phoenix {
 
 	// static methods
 
+	void DemoKernel::OnEvent(Event& e)
+	{
+		PX_PROFILE_FUNCTION();
+
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<WindowCloseEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowClose));
+		dispatcher.Dispatch<WindowResizeEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowResize));
+		/*
+		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
+		{
+			if (e.Handled)
+				break;
+			(*it)->OnEvent(e);
+		}
+		*/
+	}
+
 	DemoKernel& DemoKernel::getInstance() {
 		if (!kpDemoKernel)
 			kpDemoKernel = new DemoKernel();
@@ -202,6 +219,11 @@ namespace Phoenix {
 
 		// get initial sync timer values
 		initTimer();
+
+
+		// Let's go refactor!!!
+		m_Window = Window::Create(WindowProps("hola"));
+		m_Window->SetEventCallback(PX_BIND_EVENT_FN(DemoKernel::OnEvent));
 
 		return true;
 	}

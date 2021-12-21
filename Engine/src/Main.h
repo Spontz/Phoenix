@@ -22,6 +22,7 @@ static constexpr uint32_t MAX_BEATS = 5;
 static_assert(FBO_BUFFERS >= 25);
 
 #define BIT(x) (1 << x)
+#define PX_BIND_EVENT_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
 #include "core/Demokernel.h"
 #include "core/resource/Resource.h"
