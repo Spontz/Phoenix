@@ -54,8 +54,8 @@ namespace Phoenix {
 
 	public:
 		void OnEvent(Event& e);
-		bool OnWindowClose(WindowCloseEvent& e) { return true; }; // TODO
-		bool OnWindowResize(WindowResizeEvent& e) { return true; }; // TODO
+		bool OnWindowClose(WindowCloseEvent& e);
+		bool OnWindowResize(WindowResizeEvent& e);
 		static DemoKernel& getInstance();
 		static void release();
 		static std::string getEngineVersion();

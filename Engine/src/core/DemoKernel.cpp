@@ -40,6 +40,18 @@ namespace Phoenix {
 		*/
 	}
 
+	bool DemoKernel::OnWindowClose(WindowCloseEvent& e)
+	{
+		m_exitDemo = true;
+		return true;
+	}
+
+	bool DemoKernel::OnWindowResize(WindowResizeEvent& e)
+	{
+		GLDRV->resizeWindow((int)e.GetWidth(), (int)e.GetHeight()); // TODO: Remove this casts, resizeWindow function should be "unsigned int"
+		return true;
+	}
+
 	DemoKernel& DemoKernel::getInstance() {
 		if (!kpDemoKernel)
 			kpDemoKernel = new DemoKernel();
@@ -221,7 +233,7 @@ namespace Phoenix {
 		initTimer();
 
 
-		// Let's go refactor!!!
+		// Let's go refactor!!! 
 		m_Window = Window::Create(WindowProps("hola"));
 		m_Window->SetEventCallback(PX_BIND_EVENT_FN(DemoKernel::OnEvent));
 
