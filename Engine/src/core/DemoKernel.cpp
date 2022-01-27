@@ -284,6 +284,14 @@ namespace Phoenix {
 
 			doExec();
 
+			m_SectionLayer->Begin();
+			{
+				PX_PROFILE_SCOPE("SectionLayer Exec");
+
+				m_SectionLayer->DoExec(); // TODO
+			}
+			m_SectionLayer->End();
+
 			{
 				PX_PROFILE_SCOPE("LayerStack OnUpdate");
 

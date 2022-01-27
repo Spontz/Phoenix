@@ -10,6 +10,7 @@ namespace Phoenix { class DemoKernel; }
 #include "core/events/Event.h"
 #include "core/events/DemoKernelEvent.h"
 
+#include "core/layers/SectionLayer.h"
 #include "core/layers/ImGuiLayer.h"
 
 #include "drivers/GlDriver.h"
@@ -190,6 +191,7 @@ namespace Phoenix {
 	private:
 		std::unique_ptr<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer;
+		SectionLayer* m_SectionLayer;
 		LayerStack m_LayerStack;
 
 	};
