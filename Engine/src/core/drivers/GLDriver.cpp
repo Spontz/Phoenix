@@ -681,10 +681,6 @@ namespace Phoenix {
 
 	}
 
-	int glDriver::WindowShouldClose() {
-		return glfwWindowShouldClose(m_glfw_window);
-	}
-
 	bool glDriver::checkError_(const char* file, int line) {
 		if (m_demo.m_debug)
 		{

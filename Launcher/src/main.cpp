@@ -66,14 +66,14 @@ int main(int argc, char* argv[])
 #endif
 
 	Phoenix::Logger::info(Phoenix::LogLevel::high, "Initializing main loop...");
-	demo.mainLoop();
+	demo.Run();
 
 #ifdef PROFILE_PHOENIX
 	PX_PROFILE_END_SESSION();
 #endif
 
 	Phoenix::Logger::info(Phoenix::LogLevel::high, "Closing demo. We hope you enjoyed watching this demo! See you next time! Watch more at www.spontz.org.");
-	demo.closeDemo();
+	demo.Close();
 	Phoenix::glDriver::release();
 	Phoenix::DemoKernel::release();
 	Phoenix::NetDriver::release();

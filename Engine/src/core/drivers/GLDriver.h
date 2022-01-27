@@ -109,11 +109,10 @@ namespace Phoenix {
 		void	calcMousePos(float x, float y);
 		void	moveWindow(int x, int y);
 		void	resizeWindow(int width, int height);
-		void	ProcessInput();
+		void	ProcessInput(); // TODO: This is not required because we handle events outside
 
 		void	swapBuffers();
 
-		int		WindowShouldClose();
 		void	close();
 
 	private:

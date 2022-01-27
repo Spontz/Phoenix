@@ -6,9 +6,11 @@
 namespace Phoenix { class DemoKernel; }
 
 #include "core/Window.h"
-
+#include "core/LayerStack.h"
 #include "core/events/Event.h"
 #include "core/events/DemoKernelEvent.h"
+
+#include "core/layers/ImGuiLayer.h"
 
 #include "drivers/GlDriver.h"
 #include "drivers/NetDriver.h"
@@ -54,13 +56,23 @@ namespace Phoenix {
 
 	public:
 		void OnEvent(Event& e);
-		bool OnWindowClose(WindowCloseEvent& e);
-		bool OnWindowResize(WindowResizeEvent& e);
+
+		void PushLayer(Layer* layer);
+		void PushOverlay(Layer* layer);
+
+		Window& GetWindow() { return *m_Window; }
+
+		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
+
 		static DemoKernel& getInstance();
 		static void release();
 		static std::string getEngineVersion();
 		static std::string getLibAssimpVersion();
 		static std::string getLibDyadVersion();
+
+	private:
+		bool OnWindowClose(WindowCloseEvent& e);
+		bool OnWindowResize(WindowResizeEvent& e);
 
 	public:
 		// Resources Management
@@ -69,8 +81,8 @@ namespace Phoenix {
 		void getArguments(int32_t argc, char* argv[]);
 		bool initDemo();
 		void initNetwork();
-		void mainLoop();
-		void closeDemo();
+		void Run();
+		void Close();
 
 		// Data folder operations
 		bool checkDataFolder() const;
@@ -177,6 +189,8 @@ namespace Phoenix {
 
 	private:
 		std::unique_ptr<Window> m_Window;
+		ImGuiLayer* m_ImGuiLayer;
+		LayerStack m_LayerStack;
 
 	};
 

@@ -30,14 +30,29 @@ namespace Phoenix {
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowClose));
 		dispatcher.Dispatch<WindowResizeEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowResize));
-		/*
+		
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{
 			if (e.Handled)
 				break;
 			(*it)->OnEvent(e);
 		}
-		*/
+	}
+
+	void DemoKernel::PushLayer(Layer* layer)
+	{
+		PX_PROFILE_FUNCTION();
+
+		m_LayerStack.PushLayer(layer);
+		layer->OnAttach();
+	}
+
+	void DemoKernel::PushOverlay(Layer* layer)
+	{
+		PX_PROFILE_FUNCTION();
+
+		m_LayerStack.PushOverlay(layer);
+		layer->OnAttach();
 	}
 
 	bool DemoKernel::OnWindowClose(WindowCloseEvent& e)
@@ -251,30 +266,41 @@ namespace Phoenix {
 			Logger::info(LogLevel::high, "Running in standalone mode");
 	}
 
-	void DemoKernel::mainLoop()
+	void DemoKernel::Run()
 	{
 		if (m_debug)
-			Logger::info(LogLevel::med, "************ Main demo loop started!");
+			Logger::info(LogLevel::med, "************ Demo Run loop started!");
 
 		m_status = DemoStatus::PLAY;
 
-		/* Loop until the user closes the window */
-		while ((!GLDRV->WindowShouldClose()) && (!m_exitDemo)) {
+		// Loop until the user closes the window
+		while (!m_exitDemo) {
 #ifdef PROFILE_PHOENIX
 			PX_PROFILE_SCOPE("RunLoop");
 #endif
 
 			// Poll for and process events
-			GLDRV->ProcessInput();
+			//GLDRV->ProcessInput(); // TODO: remove, not required??
 
 			doExec();
 
 			{
-#ifdef PROFILE_PHOENIX
-				PX_PROFILE_SCOPE("glfwPollEvents");
-#endif
-				glfwPollEvents();
+				PX_PROFILE_SCOPE("LayerStack OnUpdate");
+
+				for (Layer* layer : m_LayerStack)
+					layer->OnUpdate(m_realFrameTime);
 			}
+
+			m_ImGuiLayer->Begin();
+			{
+				PX_PROFILE_SCOPE("LayerStack OnImGuiRender");
+
+				for (Layer* layer : m_LayerStack)
+					layer->OnImGuiRender();
+			}
+			m_ImGuiLayer->End();
+
+			m_Window->OnUpdate(); // Poll events and do SwapBuffers
 
 		}
 	}
@@ -414,7 +440,7 @@ namespace Phoenix {
 		m_demoEndTime = theTime;
 	}
 
-	void DemoKernel::closeDemo()
+	void DemoKernel::Close()
 	{
 		Logger::info(LogLevel::low, "Closing GL driver...");
 		GLDRV->close();				// Close GL driver
@@ -728,7 +754,7 @@ namespace Phoenix {
 					);
 
 				if (m_exitDemo) {
-					closeDemo();
+					Close();
 					exit(EXIT_SUCCESS);
 				}
 			}
