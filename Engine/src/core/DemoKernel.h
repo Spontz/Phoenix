@@ -116,8 +116,8 @@ namespace Phoenix {
 		void pauseTimer();
 
 		void initControlVars(); // Init control vars
-		void initSectionQueues(); // Init Section Queues
-		void reinitSectionQueues(); // ReInit Section Queues
+		void initSectionQueues(); // Init Section Queues - TODO: DELETE THIS
+		void reinitSectionQueues(); // ReInit Section Queues - TODO: DELETE THIS
 		void processSectionQueues(); // Process Section Queues
 
 	public:
@@ -161,7 +161,7 @@ namespace Phoenix {
 		Resource* m_pRes;
 
 		// loading information
-		int32_t m_iLoadedSections;
+		int32_t m_iLoadedSections; // TODO: Delete
 
 		// realtime information
 		float m_demoRunTime; // seconds ellapsed since 0.0 <- demo init

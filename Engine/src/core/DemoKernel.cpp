@@ -242,15 +242,24 @@ namespace Phoenix {
 		initControlVars();
 
 		// prepare sections
-		initSectionQueues();
+		//initSectionQueues(); // TODO: Remove this, old code. Replaced by "m_SectionLayer->Init();"
+
+		// Window creation
+		m_Window = Window::Create(WindowProps("hola"));
+		m_Window->SetEventCallback(PX_BIND_EVENT_FN(DemoKernel::OnEvent));
+
+		// Create embeeded layers
+		m_SectionLayer = new SectionLayer(&m_sectionManager);
+		PushOverlay(m_SectionLayer);
+
+		m_SectionLayer->InitSections();
+
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
+
 
 		// get initial sync timer values
 		initTimer();
-
-
-		// Let's go refactor!!! 
-		m_Window = Window::Create(WindowProps("hola"));
-		m_Window->SetEventCallback(PX_BIND_EVENT_FN(DemoKernel::OnEvent));
 
 		return true;
 	}
@@ -296,7 +305,7 @@ namespace Phoenix {
 				PX_PROFILE_SCOPE("LayerStack OnUpdate");
 
 				for (Layer* layer : m_LayerStack)
-					layer->OnUpdate(m_realFrameTime);
+					layer->OnUpdate(m_realFrameTime); // Render the layers
 			}
 
 			m_ImGuiLayer->Begin();
@@ -304,7 +313,7 @@ namespace Phoenix {
 				PX_PROFILE_SCOPE("LayerStack OnImGuiRender");
 
 				for (Layer* layer : m_LayerStack)
-					layer->OnImGuiRender();
+					layer->OnImGuiRender();			// Update the ImGui components (if any)
 			}
 			m_ImGuiLayer->End();
 
@@ -357,7 +366,8 @@ namespace Phoenix {
 			}
 
 			// reset section queues
-			reinitSectionQueues();
+			//reinitSectionQueues(); // TODO: Delete this
+			m_SectionLayer->ReInitSections();
 		}
 		// play state
 		else {
@@ -384,7 +394,8 @@ namespace Phoenix {
 
 			if (m_sound) BASSDRV->play();
 			// reinit section queues
-			reinitSectionQueues();
+			//reinitSectionQueues(); // TODO: Delete this
+			m_SectionLayer->ReInitSections();
 		}
 	}
 
@@ -403,7 +414,8 @@ namespace Phoenix {
 		}
 
 		initControlVars();
-		reinitSectionQueues();
+		//reinitSectionQueues(); // TODO: Delete this
+		m_SectionLayer->ReInitSections();
 		initTimer();
 	}
 

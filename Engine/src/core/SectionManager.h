@@ -9,6 +9,7 @@ namespace Phoenix {
 
 	class SectionManager final {
 		friend class DemoKernel;
+		friend class SectionLayer;
 		friend class ImGuiDriver; // hack
 		friend class sLoading; // hack
 		friend class SpoReader; // hack
@@ -33,7 +34,6 @@ namespace Phoenix {
 
 	private:
 		// Sections list, script order
-		// hack: slow
 		std::vector<Section*> m_section;
 
 		// Ready section list: Sections to be loaded (ascendent order by start time)
@@ -42,5 +42,8 @@ namespace Phoenix {
 		// Exec section list: Sections to be executed this frame (first element is the layer, and second
 		// the ID of the section)
 		std::vector<std::pair<int32_t, int32_t>> m_execSection;
+
+		// loading information
+		int32_t m_LoadedSections;
 	};
 }
