@@ -444,7 +444,7 @@ namespace Phoenix {
 			std::stringstream ss;
 			ss << ds->type_str << " id/layer[" << ds->identifier << "/" + std::to_string(ds->layer) << "]";
 			if (m_expandAllSectionsChanged)
-				ImGui::SetNextTreeNodeOpen(m_expandAllSections);
+				ImGui::SetNextItemOpen(m_expandAllSections);
 			if (ImGui::CollapsingHeader(ss.str().c_str())) {
 				ImGuiTextBuffer sectionInfoText;
 				sectionInfoText.appendf(ds->debug().c_str());
