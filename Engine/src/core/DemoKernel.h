@@ -114,6 +114,7 @@ namespace Phoenix {
 		void initTimer();
 		void processTimer();
 		void pauseTimer();
+		void checkDemoEnd();	// Checks if demo has been finished and should be restarted (or not)
 
 		void initControlVars(); // Init control vars
 		void initSectionQueues(); // Init Section Queues - TODO: DELETE THIS

@@ -199,9 +199,13 @@ namespace Phoenix {
 
 	bool DemoKernel::initDemo()
 	{
+		// Window creation
+		m_Window = Window::Create(WindowProps("hola")); // TODO: Put the right properties 
+		m_Window->SetEventCallback(PX_BIND_EVENT_FN(DemoKernel::OnEvent));
+
 		// initialize graphics driver
-		if (!GLDRV->initGraphics())
-			return false;
+		//if (!GLDRV->initGraphics())
+		//	return false;
 		Logger::info(LogLevel::med, "OpenGL environment created");
 
 		// initialize sound driver
@@ -244,9 +248,6 @@ namespace Phoenix {
 		// prepare sections
 		//initSectionQueues(); // TODO: Remove this, old code. Replaced by "m_SectionLayer->Init();"
 
-		// Window creation
-		m_Window = Window::Create(WindowProps("hola"));
-		m_Window->SetEventCallback(PX_BIND_EVENT_FN(DemoKernel::OnEvent));
 
 		// Create embeeded layers
 		m_SectionLayer = new SectionLayer(&m_sectionManager);
@@ -290,8 +291,10 @@ namespace Phoenix {
 
 			// Poll for and process events
 			//GLDRV->ProcessInput(); // TODO: remove, not required??
-
-			doExec();
+			//doExec(); // TODO: Delete this
+			
+			// Check if demo should be ended or should be restarted
+			checkDemoEnd();
 
 			m_SectionLayer->Begin();
 			{
@@ -322,9 +325,9 @@ namespace Phoenix {
 		}
 	}
 
-	void DemoKernel::doExec()
+	void DemoKernel::doExec() // TODO: Deprecate this
 	{
-		// control exit demo (debug, loop) when end time arrives
+	/*	// control exit demo (debug, loop) when end time arrives
 		if ((m_demoEndTime > 0) && (m_demoRunTime > m_demoEndTime)) {
 
 			if (m_loop) {
@@ -341,7 +344,7 @@ namespace Phoenix {
 				}
 			}
 		}
-
+		*/
 		// non-play state
 		if (m_status != DemoStatus::PLAY) {
 
@@ -659,6 +662,27 @@ namespace Phoenix {
 
 		// fps calculation
 		calculateFPS(m_realFrameTime);
+	}
+
+	void DemoKernel::checkDemoEnd()
+	{
+		// control exit demo (debug, loop) when end time arrives
+		if ((m_demoEndTime > 0) && (m_demoRunTime > m_demoEndTime)) {
+
+			if (m_loop) {
+				restartDemo();
+			}
+			else {
+				if (m_debug) {
+					m_demoRunTime = m_demoEndTime;
+					pauseDemo();
+				}
+				else {
+					m_exitDemo = true;
+					return;
+				}
+			}
+		}
 	}
 
 	void DemoKernel::initControlVars()

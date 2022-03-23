@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 #endif
 
 	// Initialize the GL Framework
-	gldrv.initFramework();
+	//gldrv.initFramework();
 
 	// Check the data folder
 	if (!demo.checkDataFolder()) {
