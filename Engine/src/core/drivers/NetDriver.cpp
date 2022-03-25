@@ -135,11 +135,11 @@ namespace Phoenix {
 			} else if (sAction == "windowPos") {
 				int x = std::stoi(Message[3]);
 				int y = std::stoi(Message[4]);
-				GLDRV->moveWindow(x, y);
+				DEMO->m_Window->SetWindowPos(x, y);
 			} else if (sAction == "windowSize") {
-				int width = std::stoi(Message[3]);
-				int height = std::stoi(Message[4]);
-				GLDRV->resizeWindow(width, height);
+				uint32_t width = std::stoul(Message[3]);
+				uint32_t height = std::stoul(Message[4]);
+				DEMO->m_Window->SetWindowSize(width, height);
 			} else if (sAction == "ping") {
 				sResult = "pong";
 			} else if (sAction == "end") {

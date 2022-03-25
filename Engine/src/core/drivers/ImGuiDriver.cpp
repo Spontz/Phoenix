@@ -68,10 +68,10 @@ namespace Phoenix {
 	{
 		show_log = m_demo.m_debug; // if we are on debug, the log is opened by default
 		m_VersionEngine = m_demo.getEngineVersion();
-		m_VersionOpenGL = GLDRV->getOpenGLVersion();
-		m_VendorOpenGL = GLDRV->getOpenGLVendor();
-		m_RendererOpenGL = GLDRV->getOpenGLRenderer();
-		m_VersionGLFW = GLDRV->getGLFWVersion();
+		m_VersionOpenGL = m_demo.m_Window->getGLVersion();
+		m_VendorOpenGL = m_demo.m_Window->getGLVendor();
+		m_RendererOpenGL = m_demo.m_Window->getGLRenderer();
+		m_VersionGLFW = m_demo.m_Window->getGLFWVersion();
 		m_VersionBASS = BASSDRV->getVersion();
 		m_VersionDyad = m_demo.getLibDyadVersion();
 		m_VersionASSIMP = m_demo.getLibAssimpVersion();

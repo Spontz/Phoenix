@@ -722,7 +722,11 @@ namespace Phoenix {
 	}
 
 	void glDriver::swapBuffers() {
-		glfwSwapBuffers(m_glfw_window);
+		if (m_glfw_window)
+		{
+			glfwSwapBuffers(m_glfw_window);
+		}
+		
 	}
 
 	void glDriver::close() {
@@ -731,49 +735,12 @@ namespace Phoenix {
 		delete m_imGui;
 
 		// Close GLFW
-		glfwSetWindowShouldClose(m_glfw_window, GL_TRUE);
-		glfwTerminate();
-	}
-
-	const std::string glDriver::getGLFWVersion()
-	{
-		return glfwGetVersionString();
-	}
-
-	const std::string glDriver::getOpenGLVersion()
-	{
-		std::string strVersion = (const char*)glGetString(GL_VERSION);
-		return strVersion;
-	}
-
-	const std::string glDriver::getOpenGLVendor()
-	{
-		std::string strVersion = (const char*)glGetString(GL_VENDOR);
-		return strVersion;
-	}
-
-	const std::string glDriver::getOpenGLRenderer()
-	{
-		std::string strVersion = (const char*)glGetString(GL_RENDERER);
-		return strVersion;
-	}
-
-	const std::vector<std::string> glDriver::getOpenGLExtensions()
-	{
-		// Show supported OpenGL extensions
-		std::vector<std::string> sv;
-
-		GLint nExt = 0;
-		glGetIntegerv(GL_NUM_EXTENSIONS, &nExt);
-		for (GLint i = 0; i < nExt; i++)
-		{
-			std::string s = (const char*)glGetStringi(GL_EXTENSIONS, i);
-			sv.push_back(s);
+		if (m_glfw_window) {
+			glfwSetWindowShouldClose(m_glfw_window, GL_TRUE);
+			glfwTerminate();
 		}
-
-		return sv;
+		
 	}
-
 
 	void glDriver::calcMousePos(float x, float y) {
 		Viewport vp = GetCurrentViewport();

@@ -63,7 +63,7 @@ namespace Phoenix {
 
 	bool DemoKernel::OnWindowResize(WindowResizeEvent& e)
 	{
-		GLDRV->resizeWindow((int)e.GetWidth(), (int)e.GetHeight()); // TODO: Remove this casts, resizeWindow function should be "unsigned int"
+		m_Window->SetWindowSize(e.GetWidth(), e.GetHeight());
 		return true;
 	}
 
@@ -200,7 +200,12 @@ namespace Phoenix {
 	bool DemoKernel::initDemo()
 	{
 		// Window creation
-		m_Window = Window::Create(WindowProps("hola")); // TODO: Put the right properties 
+		WindowProps winProps;
+		winProps.Title = "Test Phoenix 2.0";
+		winProps.Width = GLDRV->config.framebuffer_width;
+		winProps.Height = GLDRV->config.framebuffer_height;
+		winProps.Fullscreen = GLDRV->config.fullScreen;
+		m_Window = new Window(winProps);
 		m_Window->SetEventCallback(PX_BIND_EVENT_FN(DemoKernel::OnEvent));
 
 		// initialize graphics driver
@@ -219,10 +224,10 @@ namespace Phoenix {
 		// Show versions
 		Logger::info(LogLevel::med, "Component versions:");
 		Logger::info(LogLevel::high, "Spontz visuals engine 'Phoenix' version: {}", getEngineVersion());
-		Logger::info(LogLevel::med, "OpenGL driver version: {}", GLDRV->getOpenGLVersion());
-		Logger::info(LogLevel::med, "OpenGL driver vendor: {}", GLDRV->getOpenGLVendor());
-		Logger::info(LogLevel::med, "OpenGL driver renderer: {}", GLDRV->getOpenGLRenderer());
-		Logger::info(LogLevel::med, "GLFW library version: {}", GLDRV->getGLFWVersion());
+		Logger::info(LogLevel::med, "OpenGL driver version: {}",  m_Window->getGLVersion());
+		Logger::info(LogLevel::med, "OpenGL driver vendor: {}", m_Window->getGLVendor());
+		Logger::info(LogLevel::med, "OpenGL driver renderer: {}", m_Window->getGLRenderer());
+		Logger::info(LogLevel::med, "GLFW library version: {}", m_Window->getGLFWVersion());
 		Logger::info(LogLevel::med, "Bass library version: {}", BASSDRV->getVersion());
 		Logger::info(LogLevel::med, "Network Dyad.c library version: {}", getLibDyadVersion());
 		Logger::info(LogLevel::med, "Assimp library version: {}", getLibAssimpVersion());
@@ -230,7 +235,7 @@ namespace Phoenix {
 		Logger::info(LogLevel::med, "List of supported OpenGL extensions:");
 		{
 			Logger::ScopedIndent _;
-			const std::vector<std::string> extensions = GLDRV->getOpenGLExtensions();
+			const std::vector<std::string> extensions = m_Window->getGLExtensions();
 			for (const auto& extension : extensions)
 				Logger::info(LogLevel::med, extension);
 		}

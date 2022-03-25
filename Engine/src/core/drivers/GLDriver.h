@@ -93,12 +93,7 @@ namespace Phoenix {
 		void	guiChangeAttachment();
 		void	guiAddLog(std::string message);
 
-		const std::string				getGLFWVersion();
-		const std::string				getOpenGLVersion();
-		const std::string				getOpenGLVendor();
-		const std::string				getOpenGLRenderer();
-		const std::vector<std::string>	getOpenGLExtensions();
-
+		
 		Viewport		GetFramebufferViewport() const;
 		float			GetFramebufferAspectRatio() const;
 		void			SetFramebuffer(); // Unbinds any framebuffer and sets default viewport
