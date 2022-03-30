@@ -17,27 +17,7 @@
 
 namespace Phoenix {
 
-	// globals
-
 	DemoKernel* kpDemoKernel = nullptr;
-
-	// static methods
-
-	void DemoKernel::OnEvent(Event& e)
-	{
-		PX_PROFILE_FUNCTION();
-
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowCloseEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowClose));
-		dispatcher.Dispatch<WindowResizeEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowResize));
-		
-		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
-		{
-			if (e.Handled)
-				break;
-			(*it)->OnEvent(e);
-		}
-	}
 
 	void DemoKernel::PushLayer(Layer* layer)
 	{
@@ -53,6 +33,123 @@ namespace Phoenix {
 
 		m_LayerStack.PushOverlay(layer);
 		layer->OnAttach();
+	}
+
+	void DemoKernel::OnEvent(Event& e)
+	{
+		PX_PROFILE_FUNCTION();
+
+		// Send to the dispatcher the events that DmoKernel can handle
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<WindowCloseEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowClose));
+		dispatcher.Dispatch<WindowResizeEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowResize));
+		dispatcher.Dispatch<KeyPressedEvent>(PX_BIND_EVENT_FN(DemoKernel::OnKeyPressed));
+		dispatcher.Dispatch<KeyReleasedEvent>(PX_BIND_EVENT_FN(DemoKernel::OnKeyReleased));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(PX_BIND_EVENT_FN(DemoKernel::OnMouseButtonPressed));
+		
+		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
+		{
+			if (e.Handled)
+				break;
+			(*it)->OnEvent(e);
+		}
+	}
+	
+	bool DemoKernel::OnKeyPressed(KeyPressedEvent& e)
+	{
+		uint16_t key = e.GetKeyCode();
+
+		if (key == Key::EXIT)
+			m_exitDemo = true;
+		if (m_debug) {
+			switch (key) {
+			case Key::FASTFORWARD:
+				fastforwardDemo();
+				break;
+			case Key::REWIND:
+				rewindDemo();
+				break;
+			case Key::TIME:
+				Logger::info(LogLevel::high, "Demo time: {:.4f}", m_demoRunTime);
+				break;
+			case Key::PLAY_PAUSE:
+				if (m_status == DemoStatus::PLAY)
+					pauseDemo();
+				else
+					playDemo();
+				break;
+			case Key::RESTART:
+				restartDemo();
+				break;
+			case Key::SHOWLOG:
+				//GLDRV->guiDrawLog();
+				break;
+			case Key::SHOWINFO:
+				//GLDRV->guiDrawInfo();
+				break;
+			case Key::SHOWVERSION:
+				//GLDRV->guiDrawVersion();
+				break;
+			case Key::SHOWFPSHIST:
+				//GLDRV->guiDrawFpsHistogram();
+				break;
+			case Key::SHOWFBO:
+				//GLDRV->guiDrawFbo();
+				break;
+			case Key::CHANGEATTACH:
+				//GLDRV->guiChangeAttachment();
+				break;
+			case Key::SHOWSECTIONINFO:
+				//GLDRV->guiDrawSections();
+				break;
+			case Key::SHOWSOUND:
+				//GLDRV->guiDrawSound();
+				break;
+			case Key::SHOWGRIDPANEL:
+				//GLDRV->guiDrawGridPanel();
+				break;
+			case Key::SHOWHELP:
+				//GLDRV->guiDrawHelpPanel();
+				break;
+			case Key::CAM_CAPTURE:
+				if (m_pActiveCamera->capturePos()) {
+					Logger::sendEditor("Camera position saved!");
+				}
+				else {
+					Logger::error("Camera file was not saved");
+				}
+				break;
+			case Key::CAM_RESET:
+				m_pActiveCamera->reset();
+				break;
+			case Key::CAM_MULTIPLIER:
+				m_pActiveCamera->multiplyMovementSpeed(2.0f);
+				break;
+			case Key::CAM_DIVIDER:
+				m_pActiveCamera->divideMovementSpeed(2.0f);
+				break;
+			}
+		}
+		return true;
+	}
+
+	bool DemoKernel::OnKeyReleased(KeyReleasedEvent& e)
+	{
+		uint16_t key = e.GetKeyCode();
+
+		if (m_debug) {
+			if (m_status & DemoStatus::PAUSE)
+				pauseDemo();
+			else
+				playDemo();
+		}
+
+		return true;
+	}
+
+	bool DemoKernel::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+	{
+		return true;
 	}
 
 	bool DemoKernel::OnWindowClose(WindowCloseEvent& e)
@@ -211,7 +308,7 @@ namespace Phoenix {
 
 	bool DemoKernel::initDemo()
 	{
-		// Window and graphics driverinitializaition
+		// Window and graphics driver initializaition
 		if (!m_Window->Init(m_demoName))
 			return false;
 		m_Window->SetEventCallback(PX_BIND_EVENT_FN(DemoKernel::OnEvent));
@@ -255,19 +352,15 @@ namespace Phoenix {
 		// initialize global control variables
 		initControlVars();
 
-		// prepare sections
-		//initSectionQueues(); // TODO: Remove this, old code. Replaced by "m_SectionLayer->Init();"
-
-
-		// Create embeeded layers
+		// Create the two embeeded layers of the engine: SectionLayer and ImGuiLayer
 		m_SectionLayer = new SectionLayer(&m_sectionManager);
 		PushOverlay(m_SectionLayer);
 
+		// Load sections
 		m_SectionLayer->LoadSections();
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
-
 
 		// get initial sync timer values
 		initTimer();
@@ -289,7 +382,7 @@ namespace Phoenix {
 	void DemoKernel::Run()
 	{
 		if (m_debug)
-			Logger::info(LogLevel::med, "************ Demo Run loop started!");
+			Logger::info(LogLevel::med, "Main demo Run loop started!");
 
 		m_status = DemoStatus::PLAY;
 
@@ -299,56 +392,60 @@ namespace Phoenix {
 			PX_PROFILE_SCOPE("RunLoop");
 #endif
 
-			// Poll for and process events
-			//GLDRV->ProcessInput(); // TODO: This is not needed anymore, right?
-			//doExec(); // TODO: Delete this
-			
 			// Check if demo should be ended or should be restarted
 			checkDemoEnd();
 
-			Logger::info(LogLevel::med, "Start queue processing (init and exec) for second: {:.4f}", m_demoRunTime);
+			// If demo is not playing...
+			if (m_status != DemoStatus::PLAY) {
 
-			m_SectionLayer->ProcessSections(m_demoRunTime);
-			{
-				PX_PROFILE_SCOPE("SectionLayer Exec");
-				
-				// Prepare render
-				m_Window->InitRender(true);
+				ProcessAndExecuteSections();
+				pauseTimer();
+				if (m_status & DemoStatus::REWIND) {
+					// decrease demo runtime
+					m_demoRunTime -= 10.0f * m_realFrameTime;
+					if (m_demoRunTime < m_demoStartTime) {
+						m_demoRunTime = m_demoStartTime;
+						pauseDemo();
+					}
+				}
+				else if (m_status & DemoStatus::FASTFORWARD) {
 
-				// Show grid only if we are in Debug
-				if (m_debug && m_debug_drawGrid) {
-					PX_PROFILE_SCOPE("DrawGrid");
-					m_pRes->draw3DGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
+					// increase demo runtime
+					m_demoRunTime += 10.0f * m_realFrameTime;
+					if (m_demoRunTime > m_demoEndTime) {
+						m_demoRunTime = m_demoEndTime;
+						pauseDemo();
+					}
 				}
 
-				// Set the default camera // TODO: Refactor with a function "SetDefaultCamera" or something like this
-				m_pActiveCamera = m_pDefaultCamera;
+				// reset section queues
+				//reinitSectionQueues(); // TODO: Delete this
+				m_SectionLayer->ReInitSections();
 
-				// Execute the Secions
-				m_SectionLayer->DoExec(m_demoRunTime);
-
-				// Set back to the frambuffer and restore the viewport
-				m_Window->SetFramebuffer();
+				// Poll events and do SwapBuffers
+				m_Window->OnUpdate();
 			}
-			m_SectionLayer->End();
+			// play state
+			else {
+				ProcessAndExecuteSections();
+				ProcessAndExecuteLayers();
+				ProcessAndExecuteImGUILayer();
 
-			{
-				PX_PROFILE_SCOPE("LayerStack OnUpdate");
+				// Poll events and do SwapBuffers
+				m_Window->OnUpdate();
 
-				for (Layer* layer : m_LayerStack)
-					layer->OnUpdate(m_realFrameTime); // Render the layers
+				// Update the timing information for the sections
+				processTimer();
 			}
+			
 
-			m_ImGuiLayer->Begin();
-			{
-				PX_PROFILE_SCOPE("LayerStack OnImGuiRender");
+			// update sound driver once a frame
+			if (m_sound)
+				BASSDRV->update();
 
-				for (Layer* layer : m_LayerStack)
-					layer->OnImGuiRender();			// Update the ImGui components (if any)
-			}
-			m_ImGuiLayer->End();
-
-			m_Window->OnUpdate(); // Poll events and do SwapBuffers
+			// Update network driver
+			if (m_slaveMode)
+				NetDriver::getInstance().update();
 
 		}
 	}
@@ -409,6 +506,7 @@ namespace Phoenix {
 			processTimer();
 		}
 
+		/*
 		// update sound driver once a frame
 		if (m_sound)
 			BASSDRV->update();
@@ -416,6 +514,7 @@ namespace Phoenix {
 		// Update network driver
 		if (m_slaveMode)
 			NetDriver::getInstance().update();
+		*/
 	}
 
 	void DemoKernel::playDemo()
@@ -713,6 +812,57 @@ namespace Phoenix {
 		}
 	}
 
+	void DemoKernel::ProcessAndExecuteSections()
+	{
+		Logger::info(LogLevel::med, "Start queue processing (init and exec) for second: {:.4f}", m_demoRunTime);
+
+		m_SectionLayer->ProcessSections(m_demoRunTime);
+		{
+			PX_PROFILE_SCOPE("SectionLayer Exec");
+
+			// Prepare render
+			m_Window->InitRender(true);
+
+			// Show grid only if we are in Debug // TODO: Sacar esto a otra layer
+			if (m_debug && m_debug_drawGrid) {
+				PX_PROFILE_SCOPE("DrawGrid");
+				m_pRes->draw3DGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
+			}
+
+			// Set the default camera // TODO: Refactor with a function "SetDefaultCamera" or something like this
+			m_pActiveCamera = m_pDefaultCamera;
+
+			// Execute the Secions
+			m_SectionLayer->ExecuteSections(m_demoRunTime);
+
+			// Set back to the frambuffer and restore the viewport
+			m_Window->SetFramebuffer();
+		}
+		m_SectionLayer->End();
+	}
+
+	void DemoKernel::ProcessAndExecuteLayers()
+	{
+		{
+			PX_PROFILE_SCOPE("LayerStack OnUpdate");
+
+			for (Layer* layer : m_LayerStack)
+				layer->OnUpdate(m_realFrameTime); // Render the layers
+		}
+	}
+
+	void DemoKernel::ProcessAndExecuteImGUILayer()
+	{
+		m_ImGuiLayer->Begin();
+		{
+			PX_PROFILE_SCOPE("LayerStack OnImGuiRender");
+
+			for (Layer* layer : m_LayerStack)
+				layer->OnImGuiRender();			// Update the ImGui components (if any)
+		}
+		m_ImGuiLayer->End();
+	}
+
 	void DemoKernel::initControlVars()
 	{
 		// reset time
@@ -917,11 +1067,7 @@ namespace Phoenix {
 #ifdef PROFILE_PHOENIX
 				PX_PROFILE_SCOPE("DrawGrid");
 #endif
-				GLDRV->drawGrid(
-					m_debug_drawGridAxisX,
-					m_debug_drawGridAxisY,
-					m_debug_drawGridAxisZ
-				);
+				//GLDRV->drawGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
 		}
 
 			// Set the default camera

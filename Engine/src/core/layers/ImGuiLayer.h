@@ -8,6 +8,8 @@
 #include "core/events/KeyEvent.h"
 #include "core/events/MouseEvent.h"
 
+#include "core/drivers/ImGuiDriver.h"
+
 namespace Phoenix {
 
 	class ImGuiLayer : public Layer

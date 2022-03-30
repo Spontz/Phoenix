@@ -431,44 +431,6 @@ namespace Phoenix {
 		}
 	}
 
-	void glDriver::drawGrid(bool drawAxisX, bool drawAxisY, bool drawAxisZ)
-	{
-		glm::mat4 MVP;
-		glm::mat4 VP;
-
-		glm::mat4 projection = m_demo.m_pActiveCamera->getProjection();
-		glm::mat4 view = m_demo.m_pActiveCamera->getView();
-
-		VP = projection * view;
-
-		glm::mat4 model = glm::mat4(1.0f);
-
-		// X Axis
-		if (drawAxisX)
-		{
-			MVP = VP * model;
-			m_demo.m_pRes->drawOneGrid(glm::vec3(1, 0, 0), &MVP);
-		}
-
-		// Y Axis
-		if (drawAxisY)
-		{
-			model = glm::mat4(1.0f);
-			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
-			MVP = VP * model;
-			m_demo.m_pRes->drawOneGrid(glm::vec3(0, 1, 0), &MVP);
-		}
-
-		// Z Axis
-		if (drawAxisZ)
-		{
-			model = glm::mat4(1.0f);
-			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 0, 1));
-			MVP = VP * model;
-			m_demo.m_pRes->drawOneGrid(glm::vec3(0, 0, 1), &MVP);
-		}
-	}
-
 	void glDriver::drawGui()
 	{
 		m_imGui->drawGui();

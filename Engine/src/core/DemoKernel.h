@@ -72,6 +72,9 @@ namespace Phoenix {
 		static std::string getLibDyadVersion();
 
 	private:
+		bool OnKeyPressed(KeyPressedEvent& e);
+		bool OnKeyReleased(KeyReleasedEvent& e);
+		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 
@@ -115,6 +118,11 @@ namespace Phoenix {
 		void processTimer();
 		void pauseTimer();
 		void checkDemoEnd();	// Checks if demo has been finished and should be restarted (or not)
+
+
+		void ProcessAndExecuteSections();	// Process and Execute (render) the layer with all the sections
+		void ProcessAndExecuteLayers();		// Process and Execute (render) the other layers that may be added by other apps
+		void ProcessAndExecuteImGUILayer();	// Process and Execute (render) the layer with the ImGUI debug info
 
 		void initControlVars(); // Init control vars
 		void initSectionQueues(); // Init Section Queues - TODO: DELETE THIS
@@ -165,19 +173,19 @@ namespace Phoenix {
 		int32_t m_iLoadedSections; // TODO: Delete
 
 		// realtime information
-		float m_demoRunTime; // seconds ellapsed since 0.0 <- demo init
-		float m_beforeFrameTime; // time before render the actual frame
-		float m_afterFrameTime; // time after render the actual frame
-		float m_frameTime; // last frame time (used by sections)
-		float m_realFrameTime; // last frame time (used by kernel)
-		uint32_t m_uiFrameCount; // demo frame count since start
+		float m_demoRunTime;		// seconds ellapsed since 0.0 <- demo init
+		float m_beforeFrameTime;	// time before render the actual frame
+		float m_afterFrameTime;		// time after render the actual frame
+		float m_frameTime;			// last frame time (used by sections)
+		float m_realFrameTime;		// last frame time (used by kernel)
+		uint32_t m_uiFrameCount;	// demo frame count since start
 
 		// fps calculation
-		uint32_t m_accumFrameCount; // frame count since last fps calculation
-		float m_accumFrameTime; // time since last fps calculation
-		float m_fps; // frames per second
+		uint32_t m_accumFrameCount;	// frame count since last fps calculation
+		float m_accumFrameTime;		// time since last fps calculation
+		float m_fps;				// frames per second
 
-		bool m_exitDemo; // exits demo at next loop if true
+		bool m_exitDemo;			// exits demo at next loop if true
 
 		int32_t m_mouseX, m_mouseY; // Mouse global coordinates
 		int32_t m_mouseXVar, m_mouseYVar; // Mouse variation from the center of the screen

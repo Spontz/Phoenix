@@ -174,7 +174,7 @@ namespace Phoenix {
 		}
 	}
 
-	void SectionLayer::DoExec(float DemoRunTime)
+	void SectionLayer::ExecuteSections(float DemoRunTime)
 	{
 		// Run Exec sections
 		Logger::ScopedIndent _;
