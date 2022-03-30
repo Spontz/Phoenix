@@ -311,7 +311,7 @@ namespace Phoenix {
 			config.fullScreen ? glfwGetPrimaryMonitor() : nullptr,
 			nullptr
 		);
-		// Check if we ned to overwride parameters
+		// Check if we need to overwride parameters
 		if (m_demo.m_overrideWindowConfigParams) {
 			config.framebuffer_width = m_demo.m_windowWidth;
 			config.framebuffer_height = m_demo.m_windowHeight;
@@ -447,7 +447,7 @@ namespace Phoenix {
 		if (drawAxisX)
 		{
 			MVP = VP * model;
-			m_demo.m_pRes->drawGrid(glm::vec3(1, 0, 0), &MVP);
+			m_demo.m_pRes->drawOneGrid(glm::vec3(1, 0, 0), &MVP);
 		}
 
 		// Y Axis
@@ -456,7 +456,7 @@ namespace Phoenix {
 			model = glm::mat4(1.0f);
 			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
 			MVP = VP * model;
-			m_demo.m_pRes->drawGrid(glm::vec3(0, 1, 0), &MVP);
+			m_demo.m_pRes->drawOneGrid(glm::vec3(0, 1, 0), &MVP);
 		}
 
 		// Z Axis
@@ -465,7 +465,7 @@ namespace Phoenix {
 			model = glm::mat4(1.0f);
 			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 0, 1));
 			MVP = VP * model;
-			m_demo.m_pRes->drawGrid(glm::vec3(0, 0, 1), &MVP);
+			m_demo.m_pRes->drawOneGrid(glm::vec3(0, 0, 1), &MVP);
 		}
 	}
 

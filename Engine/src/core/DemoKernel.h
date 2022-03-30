@@ -184,7 +184,8 @@ namespace Phoenix {
 
 		// Window parameters
 		bool m_overrideWindowConfigParams; // Override Window config file parameters
-		int32_t m_windowPosX, m_windowPosY, m_windowWidth, m_windowHeight; // Window properties
+		int32_t m_windowPosX, m_windowPosY;
+		int32_t m_windowWidth, m_windowHeight; // Window properties
 
 		float m_fVar[MULTIPURPOSE_VARS]; // Multi-purpose variables, shared across sections
 		float m_fBeat[MAX_BEATS]; // intensity of the current music track
@@ -196,7 +197,7 @@ namespace Phoenix {
 		ImGuiLayer* m_ImGuiLayer;
 		SectionLayer* m_SectionLayer;
 		LayerStack m_LayerStack;
-
+		bool m_WindowResizing;
 	};
 
 }

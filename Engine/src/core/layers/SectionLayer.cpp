@@ -27,7 +27,7 @@ namespace Phoenix {
 	{
 	}
 
-	void SectionLayer::InitSections()
+	void SectionLayer::LoadSections()
 	{
 		Section* pSection = nullptr;
 		Section* pTmpSection = nullptr;
@@ -132,104 +132,65 @@ namespace Phoenix {
 			const auto ds = m_SectionManager->m_section[sec_id];
 			if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
 				ds->inited = FALSE; // Mark the section as not inited
-				Logger::info(LogLevel::low,	"Section {} [layer: {} id: {}] marked to be inited", sec_id, ds->layer, ds->identifier);
+				Logger::info(LogLevel::low, "Section {} [layer: {} id: {}] marked to be inited", sec_id, ds->layer, ds->identifier);
 			}
 		}
 	}
 
-	void SectionLayer::Begin()
+	void SectionLayer::ProcessSections(float DemoRunTime)
 	{
+		// Check the sections that need to be executed
+		Logger::ScopedIndent _;
+		Logger::info(LogLevel::low, "Processing sections that must be executed...");
+		m_SectionManager->m_execSection.clear();
+		for (auto i = 0; i < m_SectionManager->m_section.size(); ++i) {
+			const auto pSection = m_SectionManager->m_section[i];
+			// If time is OK
+			if (pSection->startTime <= DemoRunTime && pSection->endTime >= DemoRunTime) {
+				// If its enabled, loaded and is not hte Loading section
+				if (pSection->enabled && pSection->loaded && pSection->type != SectionType::Loading) {
+					// Load the section: first the layer and then the ID
+					m_SectionManager->m_execSection.push_back(std::make_pair(pSection->layer, i));
+				}
+			}
+		}
+
+		// Sort sections by Layer
+		sort(m_SectionManager->m_execSection.begin(), m_SectionManager->m_execSection.end());
+
+		Logger::info(LogLevel::low, "Section queue process complete: {} sections to be executed", m_SectionManager->m_execSection.size());
+		// Run Init sections
+		Logger::info(LogLevel::low, "Running Init Sections...");
+		for (auto i = 0; i < m_SectionManager->m_execSection.size(); ++i) {
+			// The second value is the ID of the section
+			const auto sec_id = m_SectionManager->m_execSection[i].second;
+			const auto ds = m_SectionManager->m_section[sec_id];
+			if (ds->inited == FALSE) {
+				ds->runTime = DemoRunTime - ds->startTime;
+				ds->init();			// Init the Section
+				ds->inited = TRUE;
+				Logger::info(LogLevel::low, "Section {} [layer: {} id: {} type: {}] inited", sec_id, ds->layer, ds->identifier, ds->type_str);
+			}
+		}
 	}
 
-	void SectionLayer::DoExec()
+	void SectionLayer::DoExec(float DemoRunTime)
 	{
+		// Run Exec sections
+		Logger::ScopedIndent _;
+		Logger::info(LogLevel::low, "Running Exec Sections...");
+		for (auto i = 0; i < m_SectionManager->m_execSection.size(); ++i) {
+			// The second value is the ID of the section
+			const auto sec_id = m_SectionManager->m_execSection[i].second;
+			const auto ds = m_SectionManager->m_section[sec_id];
+			ds->runTime = DemoRunTime - ds->startTime;
+			ds->exec();			// Exec the Section
+			Logger::info(LogLevel::low, "Section {} [layer: {} id: {} type: {}] executed", sec_id, ds->layer, ds->identifier, ds->type_str);
+		}
+		Logger::info(LogLevel::med, "End queue processing!");
 	}
 
 	void SectionLayer::End()
 	{
 	}
-
-	void SectionLayer::ProcessSections(float DemoRunTime)
-	{
-		Logger::info(LogLevel::med,	"Start queue processing (init and exec) for second: {:.4f}", DemoRunTime);
-
-		// Check the sections that need to be executed
-		{
-			Logger::ScopedIndent _;
-			Logger::info(LogLevel::low, "Analysing sections that must be executed...");
-			m_SectionManager->m_execSection.clear();
-			for (auto i = 0; i < m_SectionManager->m_section.size(); ++i) {
-				const auto pSection = m_SectionManager->m_section[i];
-				// If time is OK
-				if (pSection->startTime <= DemoRunTime && pSection->endTime >= DemoRunTime) {
-					// If its enabled, loaded and is not hte Loading section
-					if (pSection->enabled && pSection->loaded && pSection->type != SectionType::Loading) {
-						// Load the section: first the layer and then the ID
-						m_SectionManager->m_execSection.push_back(std::make_pair(pSection->layer, i));
-					}
-				}
-			}
-
-			// Sort sections by Layer
-			sort(m_SectionManager->m_execSection.begin(), m_SectionManager->m_execSection.end());
-
-			Logger::info(LogLevel::low,	"Exec Section queue complete: {} sections to be executed", m_SectionManager->m_execSection.size());
-			// Run Init sections
-			Logger::info(LogLevel::low, "Running Init Sections...");
-			for (auto i = 0; i < m_SectionManager->m_execSection.size(); ++i) {
-				// The second value is the ID of the section
-				const auto sec_id = m_SectionManager->m_execSection[i].second;
-				const auto ds = m_SectionManager->m_section[sec_id];
-				if (ds->inited == FALSE) {
-					ds->runTime = DemoRunTime - ds->startTime;
-					ds->init();			// Init the Section
-					ds->inited = TRUE;
-					Logger::info(LogLevel::low,
-						"Section {} [layer: {} id: {} type: {}] inited",
-						sec_id,
-						ds->layer,
-						ds->identifier,
-						ds->type_str
-					);
-				}
-			}
-
-			// prepare engine for render
-			GLDRV->initRender(true);
-
-			// Show grid only if we are in Debug
-			if (DEMO->m_debug && DEMO->m_debug_drawGrid) {
-#ifdef PROFILE_PHOENIX
-				PX_PROFILE_SCOPE("DrawGrid");
-#endif
-				GLDRV->drawGrid(DEMO->m_debug_drawGridAxisX, DEMO->m_debug_drawGridAxisY, DEMO->m_debug_drawGridAxisZ);
-			}
-
-			// Set the default camera // TODO: Refactor with a function "SetDefaultCamera" or something like this
-			DEMO->m_pActiveCamera = DEMO->m_pDefaultCamera;
-
-			// Run Exec sections
-			Logger::info(LogLevel::low, "Running Exec Sections...");
-			{
-				Logger::ScopedIndent _;
-#ifdef PROFILE_PHOENIX
-				PX_PROFILE_SCOPE("ExecSections");
-#endif
-				for (auto i = 0; i < m_SectionManager->m_execSection.size(); ++i) {
-					// The second value is the ID of the section
-					const auto sec_id = m_SectionManager->m_execSection[i].second;
-					const auto ds = m_SectionManager->m_section[sec_id];
-					ds->runTime = DemoRunTime - ds->startTime;
-					ds->exec();			// Exec the Section
-					Logger::info(LogLevel::low, "Section {} [layer: {} id: {} type: {}] executed", sec_id, ds->layer, ds->identifier, ds->type_str);
-				}
-			}
-			Logger::info(LogLevel::med, "End queue processing!");
-
-			// Set back to the frambuffer and restore the viewport
-			GLDRV->SetFramebuffer();
-		}
-
-	}
-	
 }

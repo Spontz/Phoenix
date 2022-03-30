@@ -21,16 +21,14 @@ namespace Phoenix {
 		virtual void OnDetach() override;
 		virtual void OnEvent(Event & e) override;
 		
-		void InitSections();	// Initialize and Load Sections
-		void ReInitSections();	// Re-Initialize Sections
-		void Begin();			// Pre-Executing the sections
-		void DoExec();			// Execute sections
-		void End();				// Post-Executing the sections
+		void LoadSections();						// Load Sections
+		void ReInitSections();						// Re-Initialize Sections
+		void ProcessSections(float DemoRunTime);	// Process Sections (sort & prepare sections that need to be rendered and execute them)
+		void DoExec(float DemoRuntime);				// Execute sections
+		void End();									// Post-Executing the sections
 
 		
 	private:
-		void ProcessSections(float DemoRunTime);	// Process Sections (sort & prepare sections that need to be rendered and execute them)
-
 		SectionManager* m_SectionManager;
 	};
 

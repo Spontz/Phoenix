@@ -114,7 +114,7 @@ namespace Phoenix {
 		model = glm::scale(model, glm::vec3(zero2one, m_fSY, 0));		// Scale the bar
 		m_demo.m_pRes->drawObjQuadTex(m_pTexBar, &model);
 
-		GLDRV->swapBuffers();
+		m_demo.m_Window->OnUpdate();
 	}
 
 	void sLoading::end()

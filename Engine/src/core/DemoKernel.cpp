@@ -63,7 +63,13 @@ namespace Phoenix {
 
 	bool DemoKernel::OnWindowResize(WindowResizeEvent& e)
 	{
-		m_Window->SetWindowSize(e.GetWidth(), e.GetHeight());
+		if (!m_WindowResizing) {
+			m_WindowResizing = true;
+			m_windowWidth = static_cast<uint32_t>(std::max(e.GetWidth(), 1));
+			m_windowHeight = static_cast<uint32_t>(std::max(e.GetHeight(), 1));
+			m_Window->OnWindowResize(m_windowWidth, m_windowHeight);
+			m_WindowResizing = false;
+		}
 		return true;
 	}
 
@@ -144,14 +150,20 @@ namespace Phoenix {
 		m_windowPosX(30),
 		m_windowPosY(30),
 		m_windowWidth(640),
-		m_windowHeight(480)
+		m_windowHeight(480),
+		m_WindowResizing(false)
 	{
+		// Create the Window management
+		m_Window = new Window();
+		m_Window->m_demo = this;
+
 		memset(m_fVar, 0, MULTIPURPOSE_VARS * sizeof(float));
 		memset(m_fBeat, 0, MAX_BEATS * sizeof(float));
 	}
 
 	DemoKernel::~DemoKernel()
 	{
+		delete m_Window;
 		delete m_pDefaultCamera;
 		delete m_pRes;
 	}
@@ -199,18 +211,11 @@ namespace Phoenix {
 
 	bool DemoKernel::initDemo()
 	{
-		// Window creation
-		WindowProps winProps;
-		winProps.Title = "Test Phoenix 2.0";
-		winProps.Width = GLDRV->config.framebuffer_width;
-		winProps.Height = GLDRV->config.framebuffer_height;
-		winProps.Fullscreen = GLDRV->config.fullScreen;
-		m_Window = new Window(winProps);
+		// Window and graphics driverinitializaition
+		if (!m_Window->Init(m_demoName))
+			return false;
 		m_Window->SetEventCallback(PX_BIND_EVENT_FN(DemoKernel::OnEvent));
 
-		// initialize graphics driver
-		//if (!GLDRV->initGraphics())
-		//	return false;
 		Logger::info(LogLevel::med, "OpenGL environment created");
 
 		// initialize sound driver
@@ -258,7 +263,7 @@ namespace Phoenix {
 		m_SectionLayer = new SectionLayer(&m_sectionManager);
 		PushOverlay(m_SectionLayer);
 
-		m_SectionLayer->InitSections();
+		m_SectionLayer->LoadSections();
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
@@ -295,17 +300,35 @@ namespace Phoenix {
 #endif
 
 			// Poll for and process events
-			//GLDRV->ProcessInput(); // TODO: remove, not required??
+			//GLDRV->ProcessInput(); // TODO: This is not needed anymore, right?
 			//doExec(); // TODO: Delete this
 			
 			// Check if demo should be ended or should be restarted
 			checkDemoEnd();
 
-			m_SectionLayer->Begin();
+			Logger::info(LogLevel::med, "Start queue processing (init and exec) for second: {:.4f}", m_demoRunTime);
+
+			m_SectionLayer->ProcessSections(m_demoRunTime);
 			{
 				PX_PROFILE_SCOPE("SectionLayer Exec");
+				
+				// Prepare render
+				m_Window->InitRender(true);
 
-				m_SectionLayer->DoExec(); // TODO
+				// Show grid only if we are in Debug
+				if (m_debug && m_debug_drawGrid) {
+					PX_PROFILE_SCOPE("DrawGrid");
+					m_pRes->draw3DGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
+				}
+
+				// Set the default camera // TODO: Refactor with a function "SetDefaultCamera" or something like this
+				m_pActiveCamera = m_pDefaultCamera;
+
+				// Execute the Secions
+				m_SectionLayer->DoExec(m_demoRunTime);
+
+				// Set back to the frambuffer and restore the viewport
+				m_Window->SetFramebuffer();
 			}
 			m_SectionLayer->End();
 

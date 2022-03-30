@@ -43,6 +43,7 @@ namespace Phoenix {
 		static void setLogLevel(LogLevel level);
 		static void openLogFile();
 		static void closeLogFile();
+		static void flushLogFile();
 
 	private:
 		static std::string formatMsg(const std::string_view src, const std::string_view Message);

@@ -104,7 +104,7 @@ namespace Phoenix {
 		void	calcMousePos(float x, float y);
 		void	moveWindow(int x, int y);
 		void	resizeWindow(int width, int height);
-		void	ProcessInput(); // TODO: This is not required because we handle events outside
+		void	ProcessInput(); // TODO: Se han de procesar estos eventos en el event handler "DemoKernelEvent?
 
 		void	swapBuffers();
 

@@ -53,9 +53,9 @@ namespace Phoenix {
 			Logger::error("Fbo::upload: Requested {} attachments, but should be at least 1", numAttachments);
 			numAttachments = 1;
 		}
-		if (numAttachments > GLDRV_MAX_COLOR_ATTACHMENTS) {
-			Logger::error("Fbo::upload: MAX number of attachments reached. Requested {} attachments, but max attachments are: {}", numAttachments, GLDRV_MAX_COLOR_ATTACHMENTS);
-			numAttachments = GLDRV_MAX_COLOR_ATTACHMENTS;
+		if (numAttachments > FBO_MAX_COLOR_ATTACHMENTS) {
+			Logger::error("Fbo::upload: MAX number of attachments reached. Requested {} attachments, but max attachments are: {}", numAttachments, FBO_MAX_COLOR_ATTACHMENTS);
+			numAttachments = FBO_MAX_COLOR_ATTACHMENTS;
 		}
 
 		// Setup our Framebuffer
@@ -93,8 +93,8 @@ namespace Phoenix {
 			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_depthAttachment, 0);
 
 			// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-			unsigned int attachments[GLDRV_MAX_COLOR_ATTACHMENTS];
-			for (int i = 0; i < GLDRV_MAX_COLOR_ATTACHMENTS; i++) {
+			unsigned int attachments[FBO_MAX_COLOR_ATTACHMENTS];
+			for (int i = 0; i < FBO_MAX_COLOR_ATTACHMENTS; i++) {
 				attachments[i] = GL_COLOR_ATTACHMENT0 + i;
 			}
 

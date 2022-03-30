@@ -6,11 +6,32 @@
 
 namespace Phoenix
 {
-	Window::Window(const WindowProps& props)
+	Window::Window()
+		:
+		m_demo(nullptr),
+		m_timeCurrentFrame(0.0f),
+		m_timeDelta(0.0f),
+		m_timeLastFrame(0.0f),
+		m_GLFWindow(nullptr),
+		//m_imGui(nullptr),
+		m_currentViewport{ 0,0,0,0 },
+		m_mouse_lastxpos(0),
+		m_mouse_lastypos(0),
+		m_mouseX(0),
+		m_mouseY(0),
+		m_currentViewportExprTK{ ViewportExprTK {0,0,0} }
 	{
 		PX_PROFILE_FUNCTION();
 
-		Init(props);
+		// Fbo's config
+		for (FboConfig& fboCfg : fboConfig) {
+			fboCfg.format = "none";
+			fboCfg.width = 0;
+			fboCfg.height = 0;
+			fboCfg.ratio = 0;
+			fboCfg.numColorAttachments = 0;
+		}
+
 	}
 
 	Window::~Window()
@@ -28,6 +49,72 @@ namespace Phoenix
 		m_GLContext->SwapBuffers();
 	}
 
+	void Window::InitRender(bool clear)
+	{
+		InitOpenGLRenderStates();
+
+		// Set the internal timer
+		m_timeLastFrame = m_timeCurrentFrame;
+		m_timeCurrentFrame = static_cast<float>(glfwGetTime());
+		m_timeDelta = m_timeCurrentFrame - m_timeLastFrame;
+
+		// set the viewport to the standard size
+		SetCurrentViewport(GetFramebufferViewport());
+
+		// clear some buffers if needed
+		if (clear) {
+			glClearColor(0, 0, 0, 0);
+
+			if (m_Data.WindowProperties.Stencil) {
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+			}
+			else {
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			}
+		}
+	}
+
+	bool Window::checkError_(const char* file, int line)
+	{
+		if (m_demo->m_debug)
+		{
+			GLenum err = glGetError();
+			std::string glError;
+
+			if (err == GL_NO_ERROR)
+				return false;
+			switch (err) {
+			case GL_INVALID_ENUM:
+				glError = "INVALID_ENUM";
+				break;
+			case GL_INVALID_VALUE:
+				glError = "INVALID_VALUE";
+				break;
+			case GL_INVALID_OPERATION:
+				glError = "INVALID_OPERATION";
+				break;
+			case GL_STACK_OVERFLOW:
+				glError = "STACK_OVERFLOW";
+				break;
+			case GL_STACK_UNDERFLOW:
+				glError = "STACK_UNDERLFOW";
+				break;
+			case GL_OUT_OF_MEMORY:
+				glError = "OUT_OF_MEMORY";
+				break;
+			case GL_INVALID_FRAMEBUFFER_OPERATION:
+				glError = "INVALID_FRAMEBUFFER_OPERATION";
+				break;
+			default:
+				glError = "UNHANDLED ERROR";
+				break;
+			}
+			Logger::error("GL Error: {0}, at {1}:{2}", glError, file, line);
+			return true;
+		}
+		return false;
+	}
+
 	void Window::SetWindowPos(int x, int y)
 	{
 		if (m_GLFWindow)
@@ -37,7 +124,7 @@ namespace Phoenix
 	void Window::SetWindowSize(uint32_t width, uint32_t height)
 	{
 		if (m_GLFWindow)
-			glfwSetWindowSize(m_GLFWindow, width, height);
+			glfwSetWindowSize(m_GLFWindow, width, height); // TODO: Validar si esto genera un Callback (debería)
 	}
 
 	void Window::SetVSync(bool enabled)
@@ -57,11 +144,123 @@ namespace Phoenix
 		return m_Data.WindowProperties.VSync;
 	}
 
-	void Window::Init(const WindowProps& props)
+	void Window::InitFbos()
+	{
+		////////////// efxBloom FBO Manager: internal FBO's that are being used by the engine effects
+		{
+			// Clear Fbo's, if there is any
+			if (m_demo->m_efxBloomFbo.fbo.size() > 0) {
+				Logger::info(LogLevel::low,	"Regenerating Bloom efx FBO's!...");
+				m_demo->m_efxBloomFbo.clearFbos();
+			}
+
+			// init fbo's for Bloom
+			FboConfig bloomFbo;
+			bloomFbo.format = "RGB_16F";
+			bloomFbo.numColorAttachments = 1;
+			bloomFbo.ratio = 4;		// We use a division by 4 vs the framebuffer size
+			bloomFbo.width = static_cast<float>(m_Data.WindowProperties.Width) / static_cast<float>(bloomFbo.ratio);
+			bloomFbo.height = static_cast<float>(m_Data.WindowProperties.Height) / static_cast<float>(bloomFbo.ratio);
+
+			int res = 0;
+			for (int i = 0; i < EFXBLOOM_FBO_BUFFERS; i++) {
+				if (m_demo->m_efxBloomFbo.addFbo(bloomFbo) >= 0) {
+					Logger::info(LogLevel::low,	"EfxBloom Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}", i, bloomFbo.width, bloomFbo.height, bloomFbo.format);
+				}
+				else {
+					Logger::error("Error in efxBloom Fbo definition: m_efxBloomFbo number {}", i);
+				}
+			}
+
+		}
+
+		////////////// efxAccum FBO Manager: internal FBO's that are being used by the engine effects
+		// TODO: Que pasa si varios efectos de Accum se lanzan a la vez? no pueden usar la misma textura, asi que se mezclarán! deberíamos tener una fboConfig por cada efecto? es un LOCURON!!
+		{
+			// Clear Fbo's, if there is any
+			if (m_demo->m_efxAccumFbo.fbo.size() > 0) {
+				Logger::info(LogLevel::low, "Regenerating Accum efx FBO's!...");
+				m_demo->m_efxAccumFbo.clearFbos();
+			}
+
+			// init fbo's for Accum
+			FboConfig accumFbo;
+			accumFbo.format = "RGBA_16F";
+			accumFbo.numColorAttachments = 1;
+			accumFbo.ratio = 1;	// Same size as the framebuffer
+			accumFbo.width = static_cast<float>(m_Data.WindowProperties.Width) / static_cast<float>(accumFbo.ratio);
+			accumFbo.height = static_cast<float>(m_Data.WindowProperties.Height) / static_cast<float>(accumFbo.ratio);
+
+			int res = 0;
+			for (int i = 0; i < EFXACCUM_FBO_BUFFERS; i++) {
+				if (m_demo->m_efxAccumFbo.addFbo(accumFbo) >= 0) {
+					Logger::info(LogLevel::low, "EfxAccum Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}", i, accumFbo.width, accumFbo.height, accumFbo.format);
+				}
+				else {
+					Logger::error("Error in efxAccum Fbo definition: m_efxAccumFbo number {}", i);
+				}
+			}
+
+		}
+
+		////////////// FBO Manager: Generic FBO's that can be used by the user
+		// Clear Fbo's, if there is any
+		if (m_demo->m_fboManager.fbo.size() > 0) {
+			Logger::info(LogLevel::low, "Ooops! we need to regenerate the FBO's! clearing generic FBO's first!");
+			m_demo->m_fboManager.clearFbos();
+		}
+
+		// init fbo's
+		for (int i = 0; i < FBO_BUFFERS; i++) {
+			if (fboConfig[i].ratio != 0) {
+				fboConfig[i].width = static_cast<float>(m_Data.WindowProperties.Width) / static_cast<float>(fboConfig[i].ratio);
+				fboConfig[i].height = static_cast<float>(m_Data.WindowProperties.Height) / static_cast<float>(fboConfig[i].ratio);
+			}
+
+			if (m_demo->m_fboManager.addFbo(fboConfig[i]) >= 0) {
+				Logger::info(LogLevel::low,	"Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}", i, fboConfig[i].width, fboConfig[i].height, fboConfig[i].format);
+			}
+			else {
+				Logger::error("Error in FBO definition: FBO number {} has a non recongised format: '{}', please check 'graphics.spo' file.", i, fboConfig[i].format);
+			}
+		}
+	}
+
+	Viewport Window::GetFramebufferViewport() const
+	{
+		return Viewport::FromRenderTargetAndAspectRatio(m_Data.WindowProperties.Width, m_Data.WindowProperties.Height, m_Data.WindowProperties.AspectRatio);
+	}
+
+	void Window::SetFramebuffer()
+	{
+		m_demo->m_fboManager.unbind(false, false);
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// Restore the driver viewport
+		//SetCurrentViewport(GetFramebufferViewport());
+	}
+
+	Viewport const& Window::GetCurrentViewport() const
+	{
+		return m_currentViewport;
+	}
+
+	void Window::SetCurrentViewport(Viewport const& viewport)
+	{
+		glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+
+		m_currentViewport = viewport;
+
+		m_currentViewportExprTK.Width = static_cast<float>(viewport.width);
+		m_currentViewportExprTK.Height = static_cast<float>(viewport.height);
+		m_currentViewportExprTK.AspectRatio = m_currentViewport.GetAspectRatio();
+	}
+
+	bool Window::Init(std::string const &title)
 	{
 		PX_PROFILE_FUNCTION();
-
-		m_Data.WindowProperties = props;
+		
+		// Set window Title
+		m_Data.WindowProperties.Title = title;
 
 		Logger::info(LogLevel::low, "Creating window {} ({}, {})", m_Data.WindowProperties.Title, m_Data.WindowProperties.Width, m_Data.WindowProperties.Height);
 
@@ -69,7 +268,7 @@ namespace Phoenix
 			PX_PROFILE_SCOPE("glfwInit");
 			if (!glfwInit()) {
 				Logger::error("GLFW could not be initialized!");
-				return;
+				return false;
 			}
 		}
 		
@@ -92,6 +291,14 @@ namespace Phoenix
 				nullptr);
 		}
 
+		// Check if we need to overwride parameters
+		if (m_demo->m_overrideWindowConfigParams) {
+			m_Data.WindowProperties.Width = m_demo->m_windowWidth;
+			m_Data.WindowProperties.Height = m_demo->m_windowHeight;
+			glfwSetWindowSize(m_GLFWindow, m_demo->m_windowWidth, m_demo->m_windowHeight);
+			SetWindowPos(m_demo->m_windowPosX, m_demo->m_windowPosY);
+		}
+
 		m_GLContext = std::make_unique<GLContext>(m_GLFWindow);
 		m_GLContext->Init();
 
@@ -107,7 +314,7 @@ namespace Phoenix
 		// Set VSync
 		SetVSync(m_Data.WindowProperties.VSync);
 
-		// Set GLFW callbacks
+		// Set GLFW callbacks: TODO: We can enable or disable events by just commenting this Callbacks
 		glfwSetErrorCallback(glfwErrorCallback);
 		glfwSetWindowSizeCallback(m_GLFWindow, glfwWindowSizeCallback);
 		glfwSetWindowCloseCallback(m_GLFWindow, glfwWindowCloseCallback);
@@ -116,6 +323,7 @@ namespace Phoenix
 		glfwSetMouseButtonCallback(m_GLFWindow, glfwMouseButtonCallback);
 		glfwSetScrollCallback(m_GLFWindow, glfwMouseScrollCallback);
 		glfwSetCursorPosCallback(m_GLFWindow, glMouseMoveCallback);
+		
 				
 		// Enable debug mode and debug callback
 		if (m_Data.WindowProperties.DebugMode) {
@@ -126,6 +334,33 @@ namespace Phoenix
 			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
 			glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, NULL, GL_TRUE);
 		}
+
+		// init fbo's
+		InitFbos();
+
+		// Init internal timer
+		m_timeCurrentFrame = static_cast<float>(glfwGetTime());
+
+		return true;
+	}
+
+	void Window::InitOpenGLRenderStates()
+	{
+		glDisable(GL_BLEND);						// blending disabled
+		glBlendFunc(GL_ONE, GL_ONE);				// Additive blending function by default
+		glBlendEquation(GL_FUNC_ADD);				// ADD function by default
+
+		glDisable(GL_CULL_FACE);					// cull face disabled
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	// draw cwise and ccwise in fill mode
+
+		glEnable(GL_DEPTH_TEST);					// depth test enabled
+		glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL
+
+		// Init lights colors, fbo's, shader ID's and texture States
+		DEMO->m_lightManager.initAllLightsColors();
+		DEMO->m_fboManager.unbind(true, true);
+		DEMO->m_shaderManager.unbindShaders();
+		DEMO->m_textureManager.initTextureStates();
 	}
 
 	void Window::Shutdown()
@@ -156,7 +391,7 @@ namespace Phoenix
 		Logger::error("GLFW Error: {}", err_str);
 	}
 
-	void Window::glfwWindowSizeCallback(GLFWwindow* p_glfw_window, int width, int height)
+	void Window::glfwWindowSizeCallback(GLFWwindow* p_glfw_window, int width, int height) // TODO: Impementar el resizing
 	{
 		WindowData& data = *(WindowData*)glfwGetWindowUserPointer(p_glfw_window);
 		data.WindowProperties.Width = width;
@@ -166,6 +401,7 @@ namespace Phoenix
 		data.EventCallback(event);
 	}
 
+
 	void Window::glfwWindowCloseCallback(GLFWwindow* p_glfw_window)
 	{
 		WindowData& data = *(WindowData*)glfwGetWindowUserPointer(p_glfw_window);
@@ -173,10 +409,34 @@ namespace Phoenix
 		data.EventCallback(event);
 	}
 
+	void Window::OnWindowResize(uint32_t width, uint32_t height)
+	{
+		m_Data.WindowProperties.Width = width;
+		m_Data.WindowProperties.Height = height;
+
+		// Change the debug font Size when we resize the screen
+		//m_imGui->changeFontSize(m_demo.m_debugFontSize, width, height);// TODO:Interact with imGUI
+
+		m_mouse_lastxpos = static_cast<float>(width) / 2.0f;
+		m_mouse_lastypos = static_cast<float>(height) / 2.0f;
+
+		// Recalculate viewport sizes
+		SetCurrentViewport(GetFramebufferViewport());
+
+		// Recalculate fbo's with the new window size
+		InitFbos();
+
+		InitRender(true);
+		//Logger::info(LogLevel::low, "Window Size: %d,%d", width, height);
+		//Logger::info(LogLevel::low, "Current viewport Size: %d,%d, Pos: %d, %d", m_current_viewport.width, m_current_viewport.height, m_current_viewport.x, m_current_viewport.y);
+		//Logger::info(LogLevel::low, "Current viewport exprtk: %.2f,%.2f, aspect: %.2f", m_exprtkCurrentViewport.width, m_exprtkCurrentViewport.height, m_exprtkCurrentViewport.aspect_ratio);
+	}
+
+
 	void Window::glfwKeyCallback(GLFWwindow* p_glfw_window, int key, int scancode, int action, int mods)
 	{
 		WindowData& data = *(WindowData*)glfwGetWindowUserPointer(p_glfw_window);
-
+		
 		switch (action)
 		{
 			case GLFW_PRESS:

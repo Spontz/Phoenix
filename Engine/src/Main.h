@@ -12,6 +12,7 @@ static constexpr uint32_t PHOENIX_MINOR_VERSION = 0;
 static constexpr uint32_t PHOENIX_BUILD_VERSION = 0;
 
 static constexpr uint32_t FBO_BUFFERS = 25;
+static constexpr uint32_t FBO_MAX_COLOR_ATTACHMENTS = 4;
 static constexpr uint32_t EFXBLOOM_FBO_BUFFERS = 2;
 static constexpr uint32_t EFXACCUM_FBO_BUFFERS = 2;
 static constexpr uint32_t MULTIPURPOSE_VARS = 10;
