@@ -198,7 +198,7 @@ namespace Phoenix {
 		float m_fVar[MULTIPURPOSE_VARS]; // Multi-purpose variables, shared across sections
 		float m_fBeat[MAX_BEATS]; // intensity of the current music track
 
-		Window* m_Window;
+		std::unique_ptr<Window> m_Window;
 
 	private:
 		

@@ -251,7 +251,7 @@ namespace Phoenix {
 		m_WindowResizing(false)
 	{
 		// Create the Window management
-		m_Window = new Window();
+		m_Window = std::make_unique<Window>();
 		m_Window->m_demo = this;
 
 		memset(m_fVar, 0, MULTIPURPOSE_VARS * sizeof(float));
@@ -260,7 +260,6 @@ namespace Phoenix {
 
 	DemoKernel::~DemoKernel()
 	{
-		delete m_Window;
 		delete m_pDefaultCamera;
 		delete m_pRes;
 	}
@@ -392,13 +391,13 @@ namespace Phoenix {
 			PX_PROFILE_SCOPE("RunLoop");
 #endif
 
-			// Check if demo should be ended or should be restarted
-			checkDemoEnd();
-
-			// If demo is not playing...
-			if (m_status != DemoStatus::PLAY) {
-
-				ProcessAndExecuteSections();
+			// Evaluate the time of the demo
+			if (m_status == DemoStatus::PLAY) {
+				// If demo is playing: Update the timing information for the sections
+				processTimer();
+			}
+			else{
+				// If the demo is not PLAYING...
 				pauseTimer();
 				if (m_status & DemoStatus::REWIND) {
 					// decrease demo runtime
@@ -409,7 +408,6 @@ namespace Phoenix {
 					}
 				}
 				else if (m_status & DemoStatus::FASTFORWARD) {
-
 					// increase demo runtime
 					m_demoRunTime += 10.0f * m_realFrameTime;
 					if (m_demoRunTime > m_demoEndTime) {
@@ -417,27 +415,23 @@ namespace Phoenix {
 						pauseDemo();
 					}
 				}
-
 				// reset section queues
 				//reinitSectionQueues(); // TODO: Delete this
 				m_SectionLayer->ReInitSections();
+			}			
 
-				// Poll events and do SwapBuffers
-				m_Window->OnUpdate();
-			}
-			// play state
-			else {
-				ProcessAndExecuteSections();
-				ProcessAndExecuteLayers();
-				ProcessAndExecuteImGUILayer();
+			// Check if demo should be ended or should be restarted
+			checkDemoEnd();
 
-				// Poll events and do SwapBuffers
-				m_Window->OnUpdate();
+			ProcessAndExecuteSections();
+			ProcessAndExecuteLayers();
+			ProcessAndExecuteImGUILayer();
 
-				// Update the timing information for the sections
-				processTimer();
-			}
+
 			
+
+			// Poll events and do SwapBuffers
+			m_Window->OnUpdate();
 
 			// update sound driver once a frame
 			if (m_sound)
@@ -593,7 +587,7 @@ namespace Phoenix {
 	void DemoKernel::Close()
 	{
 		Logger::info(LogLevel::low, "Closing GL driver...");
-		GLDRV->close();				// Close GL driver
+		//GLDRV->close();				// Close GL driver
 
 		Logger::info(LogLevel::low, "Clearing memory...");
 		m_sectionManager.clear();	// Delete all sections
