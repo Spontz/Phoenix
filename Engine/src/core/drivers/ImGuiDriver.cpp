@@ -180,7 +180,7 @@ namespace Phoenix {
 		ImGui::DestroyContext();
 	}
 
-	void ImGuiDriver::changeFontSize(float baseSize, int width, int height)
+	void ImGuiDriver::changeFontSize(float baseSize, int32_t width, int32_t height)
 	{
 
 		m_fontScale = static_cast<float>(width + height) / (1024.0f + 768.0f) * baseSize;

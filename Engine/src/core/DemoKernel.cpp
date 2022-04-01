@@ -39,7 +39,7 @@ namespace Phoenix {
 	{
 		PX_PROFILE_FUNCTION();
 
-		// Send to the dispatcher the events that DmoKernel can handle
+		// Send to the dispatcher the events that DemoKernel can handle
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowClose));
 		dispatcher.Dispatch<WindowResizeEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowResize));
@@ -58,10 +58,15 @@ namespace Phoenix {
 	bool DemoKernel::OnKeyPressed(KeyPressedEvent& e)
 	{
 		uint16_t key = e.GetKeyCode();
+		bool EventHandled = false;
 
 		if (key == Key::EXIT)
+		{
 			m_exitDemo = true;
+			EventHandled = true;
+		}
 		if (m_debug) {
+			EventHandled = true;
 			switch (key) {
 			case Key::FASTFORWARD:
 				fastforwardDemo();
@@ -81,23 +86,26 @@ namespace Phoenix {
 			case Key::RESTART:
 				restartDemo();
 				break;
+			/*
 			case Key::SHOWLOG:
-				//GLDRV->guiDrawLog();
+				m_ImGuiLayer->show_log = !m_ImGuiLayer->show_log;
 				break;
 			case Key::SHOWINFO:
-				//GLDRV->guiDrawInfo();
+				m_ImGuiLayer->show_info = !m_ImGuiLayer->show_info;
 				break;
 			case Key::SHOWVERSION:
-				//GLDRV->guiDrawVersion();
+				m_ImGuiLayer->show_version = !m_ImGuiLayer->show_version;
 				break;
 			case Key::SHOWFPSHIST:
-				//GLDRV->guiDrawFpsHistogram();
+				m_ImGuiLayer->show_fpsHistogram = !m_ImGuiLayer->show_fpsHistogram;
 				break;
 			case Key::SHOWFBO:
-				//GLDRV->guiDrawFbo();
+				m_ImGuiLayer->show_fbo = !m_ImGuiLayer->show_fbo;
 				break;
 			case Key::CHANGEATTACH:
-				//GLDRV->guiChangeAttachment();
+				m_ImGuiLayer->m_numFboAttachmentToDraw++;
+				if (m_ImGuiLayer->m_numFboAttachmentToDraw >= FBO_MAX_COLOR_ATTACHMENTS)
+					m_ImGuiLayer->m_numFboAttachmentToDraw = 0;
 				break;
 			case Key::SHOWSECTIONINFO:
 				//GLDRV->guiDrawSections();
@@ -111,6 +119,7 @@ namespace Phoenix {
 			case Key::SHOWHELP:
 				//GLDRV->guiDrawHelpPanel();
 				break;
+				*/
 			case Key::CAM_CAPTURE:
 				if (m_pActiveCamera->capturePos()) {
 					Logger::sendEditor("Camera position saved!");
@@ -128,9 +137,12 @@ namespace Phoenix {
 			case Key::CAM_DIVIDER:
 				m_pActiveCamera->divideMovementSpeed(2.0f);
 				break;
+			default:
+				EventHandled = false;
+				break;
 			}
 		}
-		return true;
+		return EventHandled;
 	}
 
 	bool DemoKernel::OnKeyReleased(KeyReleasedEvent& e)
@@ -252,7 +264,7 @@ namespace Phoenix {
 	{
 		// Create the Window management
 		m_Window = std::make_unique<Window>();
-		m_Window->m_demo = this;
+		m_Window->m_demo = this; // Hack guarro
 
 		memset(m_fVar, 0, MULTIPURPOSE_VARS * sizeof(float));
 		memset(m_fBeat, 0, MAX_BEATS * sizeof(float));

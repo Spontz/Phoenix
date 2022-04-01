@@ -10,6 +10,7 @@ namespace Phoenix {
 	class SectionManager final {
 		friend class DemoKernel;
 		friend class SectionLayer;
+		friend class ImGuiLayer;
 		friend class ImGuiDriver;	// hack
 		friend class sLoading;		// hack
 		friend class SpoReader;		// hack
