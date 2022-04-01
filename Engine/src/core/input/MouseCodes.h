@@ -9,20 +9,18 @@ namespace Phoenix {
 	{
 		enum : MouseCode
 		{
-			// From glfw3.h
-			Button0                = 0,
-			Button1                = 1,
-			Button2                = 2,
-			Button3                = 3,
-			Button4                = 4,
-			Button5                = 5,
-			Button6                = 6,
-			Button7                = 7,
+			BUTTON_1		= GLFW_MOUSE_BUTTON_1,
+			BUTTON_2		= GLFW_MOUSE_BUTTON_2,
+			BUTTON_3		= GLFW_MOUSE_BUTTON_3,
+			BUTTON_4		= GLFW_MOUSE_BUTTON_4,
+			BUTTON_5		= GLFW_MOUSE_BUTTON_5,
+			BUTTON_6		= GLFW_MOUSE_BUTTON_6,
+			BUTTON_7		= GLFW_MOUSE_BUTTON_7,
 
-			ButtonLast             = Button7,
-			ButtonLeft             = Button0,
-			ButtonRight            = Button1,
-			ButtonMiddle           = Button2
+			BUTTON_LAST		= GLFW_MOUSE_BUTTON_LAST,
+			BUTTON_LEFT		= GLFW_MOUSE_BUTTON_LEFT,
+			BUTTON_RIGHT	= GLFW_MOUSE_BUTTON_RIGHT,
+			BUTTON_MIDDLE	= GLFW_MOUSE_BUTTON_MIDDLE
 		};
 	}
 }

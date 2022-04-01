@@ -49,6 +49,27 @@ namespace Phoenix {
 		}
 	};
 
+	struct MouseStatus
+	{
+		bool RightClick;
+		bool LeftClick;
+		bool MiddleClick;
+
+		float PosX, PosY;
+		float LastPosX, LastPosY;
+
+		MouseStatus() :
+			RightClick(false),
+			LeftClick(false),
+			MiddleClick(false),
+			PosX(0),
+			PosY(0),
+			LastPosX(0),
+			LastPosY(0)
+		{}
+
+	};
+
 	// Viewport management for ExprTK formulas
 	struct ViewportExprTK {
 		float			Width;
@@ -86,9 +107,7 @@ namespace Phoenix {
 		void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; };
 		void SetVSync(bool enabled);
 		bool IsVSync();
-
-		// Mouse position
-		float			m_mouseX, m_mouseY;
+		glm::vec2 CalcMousePos(glm::vec2 pos);
 
 		// FBO Management
 		void	InitFbos();
@@ -124,18 +143,24 @@ namespace Phoenix {
 		static void glfwWindowSizeCallback(GLFWwindow* p_glfw_window, int width, int height);
 		static void glfwWindowCloseCallback(GLFWwindow* p_glfw_window);
 
+		bool OnMouseButtonPressed(uint16_t button);
+		bool OnMouseButtonReleased(uint16_t button);
+		bool OnMouseMoved(float PosX, float PosY);
+		bool OnMouseScrolled(float OffsetX, float OffsetY);
 		void OnWindowResize(uint32_t width, uint32_t height);
-
+		void OnProcessInput();
+		
 	private:
 		DemoKernel*					m_demo;
 		GLFWwindow*					m_GLFWindow;
 		Viewport					m_currentViewport;
 		std::unique_ptr<GLContext>	m_GLContext;
 
+		MouseStatus		m_MouseStatus;
+
 		float			m_timeCurrentFrame;
 		float			m_timeLastFrame;
 		float			m_timeDelta;
-		float			m_mouse_lastxpos, m_mouse_lastypos;
 
 		struct WindowData
 		{

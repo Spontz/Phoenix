@@ -16,7 +16,7 @@ namespace Phoenix {
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
-		virtual void OnUpdate(float ts) {} // TODO: instead of float... Timestep?
+		virtual void OnUpdate(float ts) {}
 		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& event) {}
 

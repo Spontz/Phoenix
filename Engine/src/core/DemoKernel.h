@@ -10,6 +10,8 @@ namespace Phoenix { class DemoKernel; }
 #include "core/events/Event.h"
 #include "core/events/DemoKernelEvent.h"
 
+#include "core/input/Input.h"
+
 #include "core/layers/SectionLayer.h"
 #include "core/layers/ImGuiLayer.h"
 
@@ -49,6 +51,7 @@ namespace Phoenix {
 		FASTFORWARD = 16
 	};
 
+
 	class DemoKernel final
 	{
 	private:
@@ -75,6 +78,9 @@ namespace Phoenix {
 		bool OnKeyPressed(KeyPressedEvent& e);
 		bool OnKeyReleased(KeyReleasedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+		bool OnMouseButtonReleased(MouseButtonReleasedEvent& e);
+		bool OnMouseMoved(MouseMovedEvent& e);
+		bool OnMouseScrolled(MouseScrolledEvent& e);
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 
@@ -97,6 +103,8 @@ namespace Phoenix {
 		void loadSpoFiles();
 		bool loadScriptFromNetwork(std::string_view script);
 
+		// ImGUI management
+		bool ImGuiWantCaptureMouse();
 
 		// Demo control
 		void playDemo();
@@ -110,8 +118,7 @@ namespace Phoenix {
 		void setEndTime(float theTime);
 
 	private:
-		void doExec();
-
+	
 		// Timing controls
 		void calculateFPS(float frameRate);
 		void initTimer();
@@ -124,10 +131,7 @@ namespace Phoenix {
 		void ProcessAndExecuteLayers();		// Process and Execute (render) the other layers that may be added by other apps
 		void ProcessAndExecuteImGUILayer();	// Process and Execute (render) the layer with the ImGUI debug info
 
-		void initControlVars(); // Init control vars
-		void initSectionQueues(); // Init Section Queues - TODO: DELETE THIS
-		void reinitSectionQueues(); // ReInit Section Queues - TODO: DELETE THIS
-		void processSectionQueues(); // Process Section Queues
+		void InitControlVars(); // Init control vars
 
 	public:
 		std::string m_dataFolder; // Path to "data" folder
@@ -187,9 +191,6 @@ namespace Phoenix {
 
 		bool m_exitDemo;			// exits demo at next loop if true
 
-		int32_t m_mouseX, m_mouseY; // Mouse global coordinates
-		int32_t m_mouseXVar, m_mouseYVar; // Mouse variation from the center of the screen
-
 		// Window parameters
 		bool m_overrideWindowConfigParams; // Override Window config file parameters
 		int32_t m_windowPosX, m_windowPosY;
@@ -205,6 +206,7 @@ namespace Phoenix {
 		ImGuiLayer* m_ImGuiLayer;
 		SectionLayer* m_SectionLayer;
 		LayerStack m_LayerStack;
+		
 		bool m_WindowResizing;
 	};
 

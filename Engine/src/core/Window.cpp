@@ -15,10 +15,6 @@ namespace Phoenix
 		m_GLFWindow(nullptr),
 		//m_imGui(nullptr),
 		m_currentViewport{ 0,0,0,0 },
-		m_mouse_lastxpos(0),
-		m_mouse_lastypos(0),
-		m_mouseX(0),
-		m_mouseY(0),
 		m_currentViewportExprTK{ ViewportExprTK {0,0,0} }
 	{
 		PX_PROFILE_FUNCTION();
@@ -113,6 +109,24 @@ namespace Phoenix
 			return true;
 		}
 		return false;
+	}
+
+	// Calculate mouse position in coordinates from 0 to 1
+	glm::vec2 Window::CalcMousePos(glm::vec2 pos)
+	{
+		Viewport vp = GetCurrentViewport();
+		glm::vec2 final_pos(0,0);
+
+		if ((pos.x >= vp.x) && (pos.x <= static_cast<float>(vp.width + vp.x)) &&	// Validate we are inside the valid zone of X
+			(pos.y >= vp.y) && (pos.y <= static_cast<float>((vp.height + vp.y)))) {	// Validate we are inside the valid zone of Y
+
+			final_pos.x = (pos.x - static_cast<float>(vp.x)) / static_cast<float>(vp.width);
+			final_pos.y = (pos.y - static_cast<float>(vp.y)) / static_cast<float>(vp.height);
+			final_pos.x -= 0.5f;	// Change scale from -0.5 to 0.5
+			final_pos.y -= 0.5f;
+			final_pos.y *= -1.0f;
+		}
+		return final_pos;
 	}
 
 	void Window::SetWindowPos(int x, int y)
@@ -409,16 +423,84 @@ namespace Phoenix
 		data.EventCallback(event);
 	}
 
+	bool Window::OnMouseButtonPressed(uint16_t button)
+	{
+		switch (button) {
+		case Mouse::BUTTON_RIGHT:
+			m_MouseStatus.RightClick = true;
+			glm::vec2 MousePos = CalcMousePos(glm::vec2(m_MouseStatus.PosX, m_MouseStatus.PosY));
+			Logger::sendEditor("Mouse position [{:.4f}, {:.4f}]", MousePos.x, MousePos.y);
+			break;
+		case Mouse::BUTTON_LEFT:
+			m_MouseStatus.LeftClick = true;
+			m_MouseStatus.LastPosX = m_MouseStatus.PosX;
+			m_MouseStatus.LastPosY = m_MouseStatus.PosY;
+			break;
+		case Mouse::BUTTON_MIDDLE:
+			m_MouseStatus.MiddleClick = true;
+			break;
+		}
+		return true;
+	}
+
+	bool Window::OnMouseButtonReleased(uint16_t button)
+	{
+		switch (button) {
+		case Mouse::BUTTON_RIGHT:
+			m_MouseStatus.RightClick = false;
+			break;
+		case Mouse::BUTTON_LEFT:
+			m_MouseStatus.LeftClick = false;
+			m_MouseStatus.LastPosX = m_MouseStatus.PosX;
+			m_MouseStatus.LastPosY = m_MouseStatus.PosY;
+			break;
+		case Mouse::BUTTON_MIDDLE:
+			m_MouseStatus.MiddleClick = false;
+			break;
+		}
+		return true;
+	}
+
+	bool Window::OnMouseMoved(float PosX, float PosY)
+	{
+		m_MouseStatus.PosX = PosX;
+		m_MouseStatus.PosY = PosY;
+		if (m_MouseStatus.LeftClick || m_MouseStatus.RightClick) {
+			float x = m_MouseStatus.PosX;
+			float y = m_MouseStatus.PosY;
+			// Move camera with Left click
+			if (m_MouseStatus.LeftClick) {
+
+				float xoffset = x - m_MouseStatus.LastPosX;
+				float yoffset = m_MouseStatus.LastPosY - y; // reversed since y-coordinates go from bottom to top
+
+				m_MouseStatus.LastPosX = x;
+				m_MouseStatus.LastPosY = y;
+
+				m_demo->m_pActiveCamera->processMouseMovement(xoffset, yoffset);
+			}
+			// Capture mouse position with Right click
+			if (m_MouseStatus.RightClick) {
+				//glm::vec2 MousePos = CalcMousePos(glm::vec2(m_MouseStatus.PosX, m_MouseStatus.PosY));
+				//Logger::sendEditor("Mouse position [{:.4f}, {:.4f}]", MousePos.x, MousePos.y);
+			}
+		}
+		return true;
+	}
+
+	bool Window::OnMouseScrolled(float OffsetX, float OffsetY)
+	{
+		m_demo->m_pActiveCamera->processMouseScroll(OffsetY);
+		return true;
+	}
+	
 	void Window::OnWindowResize(uint32_t width, uint32_t height)
 	{
 		m_Data.WindowProperties.Width = width;
 		m_Data.WindowProperties.Height = height;
 
-		// Change the debug font Size when we resize the screen
-		//m_imGui->changeFontSize(m_demo.m_debugFontSize, width, height);// TODO:Interact with imGUI
-
-		m_mouse_lastxpos = static_cast<float>(width) / 2.0f;
-		m_mouse_lastypos = static_cast<float>(height) / 2.0f;
+		m_MouseStatus.LastPosX = static_cast<float>(width) / 2.0f;
+		m_MouseStatus.LastPosY = static_cast<float>(height) / 2.0f;
 
 		// Recalculate viewport sizes
 		SetCurrentViewport(GetFramebufferViewport());
@@ -430,6 +512,26 @@ namespace Phoenix
 		//Logger::info(LogLevel::low, "Window Size: %d,%d", width, height);
 		//Logger::info(LogLevel::low, "Current viewport Size: %d,%d, Pos: %d, %d", m_current_viewport.width, m_current_viewport.height, m_current_viewport.x, m_current_viewport.y);
 		//Logger::info(LogLevel::low, "Current viewport exprtk: %.2f,%.2f, aspect: %.2f", m_exprtkCurrentViewport.width, m_exprtkCurrentViewport.height, m_exprtkCurrentViewport.aspect_ratio);
+	}
+
+	void Window::OnProcessInput()
+	{
+		PX_PROFILE_FUNCTION();
+
+		if (m_demo->m_debug) {
+			if (Input::IsKeyPressed(Key::CAM_FORWARD))
+				m_demo->m_pActiveCamera->processKeyboard(CameraMovement::FORWARD, m_timeDelta);
+			if (Input::IsKeyPressed(Key::CAM_BACKWARD))
+				m_demo->m_pActiveCamera->processKeyboard(CameraMovement::BACKWARD, m_timeDelta);
+			if (Input::IsKeyPressed(Key::CAM_STRAFE_LEFT))
+				m_demo->m_pActiveCamera->processKeyboard(CameraMovement::LEFT, m_timeDelta);
+			if (Input::IsKeyPressed(Key::CAM_STRAFE_RIGHT))
+				m_demo->m_pActiveCamera->processKeyboard(CameraMovement::RIGHT, m_timeDelta);
+			if (Input::IsKeyPressed(Key::CAM_ROLL_RIGHT))
+				m_demo->m_pActiveCamera->processKeyboard(CameraMovement::ROLL_RIGHT, m_timeDelta);
+			if (Input::IsKeyPressed(Key::CAM_ROLL_LEFT))
+				m_demo->m_pActiveCamera->processKeyboard(CameraMovement::ROLL_LEFT, m_timeDelta);
+		}
 	}
 
 
@@ -448,12 +550,6 @@ namespace Phoenix
 			case GLFW_RELEASE:
 			{
 				KeyReleasedEvent event(key);
-				data.EventCallback(event);
-				break;
-			}
-			case GLFW_REPEAT:
-			{
-				KeyPressedEvent event(key, 1);
 				data.EventCallback(event);
 				break;
 			}
@@ -493,7 +589,7 @@ namespace Phoenix
 	{
 		WindowData& data = *(WindowData*)glfwGetWindowUserPointer(p_glfw_window);
 
-		MouseScrolledEvent event((float)xOffset, (float)yOffset);
+		MouseScrolledEvent event(static_cast<float>(xOffset), static_cast<float>(yOffset));
 		data.EventCallback(event);
 	}
 
@@ -501,11 +597,8 @@ namespace Phoenix
 	{
 		WindowData& data = *(WindowData*)glfwGetWindowUserPointer(p_glfw_window);
 
-		MouseMovedEvent event((float)xPos, (float)yPos);
+		MouseMovedEvent event(static_cast<float>(xPos), static_cast<float>(yPos));
 		data.EventCallback(event);
 	}
-
-	
-
 
 }

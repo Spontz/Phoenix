@@ -9,9 +9,9 @@ namespace Phoenix {
 	{
 		enum : KeyCode
 		{
-			// From glfw3.h
 			EXIT				= GLFW_KEY_ESCAPE,
 			TIME				= GLFW_KEY_ENTER,
+			
 			SHOWLOG				= GLFW_KEY_BACKSPACE,
 			SHOWVERSION			= GLFW_KEY_0,
 			SHOWINFO			= GLFW_KEY_1,

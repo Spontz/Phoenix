@@ -82,6 +82,7 @@ namespace Phoenix {
 		// Prepare the text
 		m_helpText.appendf(helpText.c_str());
 	}
+
 	void ImGuiLayer::OnAttach()
 	{
 		PX_PROFILE_FUNCTION();
