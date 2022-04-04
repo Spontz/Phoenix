@@ -180,6 +180,26 @@ namespace Phoenix {
 		return true;
 	}
 
+	void DemoKernel::OnProcessInput(float timeStep)
+	{
+		PX_PROFILE_FUNCTION();
+
+		if (m_debug) {
+			if (Input::IsKeyPressed(Key::CAM_FORWARD))
+				m_pActiveCamera->processKeyboard(CameraMovement::FORWARD, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_BACKWARD))
+				m_pActiveCamera->processKeyboard(CameraMovement::BACKWARD, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_STRAFE_LEFT))
+				m_pActiveCamera->processKeyboard(CameraMovement::LEFT, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_STRAFE_RIGHT))
+				m_pActiveCamera->processKeyboard(CameraMovement::RIGHT, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_ROLL_RIGHT))
+				m_pActiveCamera->processKeyboard(CameraMovement::ROLL_RIGHT, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_ROLL_LEFT))
+				m_pActiveCamera->processKeyboard(CameraMovement::ROLL_LEFT, timeStep);
+		}
+	}
+
 	DemoKernel& DemoKernel::getInstance() {
 		if (!kpDemoKernel)
 			kpDemoKernel = new DemoKernel();
@@ -437,8 +457,8 @@ namespace Phoenix {
 			// Poll events and do SwapBuffers
 			m_Window->OnUpdate();
 
-			// Process Input from Window
-			m_Window->OnProcessInput();
+			// Process Input keys to control Active Camera
+			OnProcessInput(m_realFrameTime);
 
 			// update sound driver once a frame
 			if (m_sound)
@@ -524,9 +544,6 @@ namespace Phoenix {
 
 	void DemoKernel::Close()
 	{
-		Logger::info(LogLevel::low, "Closing GL driver...");
-		//GLDRV->close();				// Close GL driver
-
 		Logger::info(LogLevel::low, "Clearing memory...");
 		m_sectionManager.clear();	// Delete all sections
 		m_textureManager.clear();	// Delete all textures
@@ -678,6 +695,12 @@ namespace Phoenix {
 			return false;
 		else
 			return (ImGui::GetIO().WantCaptureMouse);
+	}
+
+	void DemoKernel::ImGuiAddLogMessage(std::string_view message)
+	{
+		if (m_ImGuiLayer)
+			m_ImGuiLayer->addLog(message);
 	}
 
 	void DemoKernel::initTimer()

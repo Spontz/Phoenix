@@ -207,7 +207,7 @@ namespace Phoenix {
 
 		Particles.clear();
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sDrawEmitterSceneEx::init()

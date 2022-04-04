@@ -19,7 +19,7 @@ namespace Phoenix {
 
 	const glm::mat4 CameraProjectionFPS::getProjection()
 	{
-		return glm::perspective(glm::radians(m_Fov), GLDRV->GetFramebufferViewport().GetAspectRatio(), m_FrustumNear, m_FrustumFar);
+		return glm::perspective(glm::radians(m_Fov), DEMO->m_Window->GetFramebufferViewport().GetAspectRatio(), m_FrustumNear, m_FrustumFar);
 	}
 
 	const glm::mat4 CameraProjectionFPS::getView()
@@ -202,7 +202,7 @@ namespace Phoenix {
 
 	const glm::mat4 CameraProjectionTarget::getProjection()
 	{
-		return glm::perspective(glm::radians(m_Fov), GLDRV->GetFramebufferViewport().GetAspectRatio(), m_FrustumNear, m_FrustumFar);
+		return glm::perspective(glm::radians(m_Fov), DEMO->m_Window->GetFramebufferViewport().GetAspectRatio(), m_FrustumNear, m_FrustumFar);
 	}
 
 	const glm::mat4 CameraProjectionTarget::getView()

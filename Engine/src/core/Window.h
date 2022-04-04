@@ -19,9 +19,6 @@
 
 namespace Phoenix {
 
-
-#define GL_checkError() DEMO->m_Window.checkError_(__FILE__, __LINE__) 
-
 	struct WindowProps
 	{
 		std::string	Title;
@@ -81,8 +78,9 @@ namespace Phoenix {
 	class Window
 	{
 		friend class DemoKernel;
-		friend class SpoReader; // This is needed in order to allow writing the config parameters
+		friend class SpoReader;		// This is needed in order to allow writing the config parameters
 		friend class WindowResizeEvent;
+		friend class MathDriver;	// This is needed in order to access privatevariables (like mouse coordinates)
 
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
@@ -148,7 +146,6 @@ namespace Phoenix {
 		bool OnMouseMoved(float PosX, float PosY);
 		bool OnMouseScrolled(float OffsetX, float OffsetY);
 		void OnWindowResize(uint32_t width, uint32_t height);
-		void OnProcessInput();
 		
 	private:
 		DemoKernel*					m_demo;

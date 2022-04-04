@@ -197,7 +197,7 @@ namespace Phoenix {
 		// Set shader variables values
 		m_pVars->setValues();
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sDrawParticlesImage::init()

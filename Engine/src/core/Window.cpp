@@ -514,27 +514,6 @@ namespace Phoenix
 		//Logger::info(LogLevel::low, "Current viewport exprtk: %.2f,%.2f, aspect: %.2f", m_exprtkCurrentViewport.width, m_exprtkCurrentViewport.height, m_exprtkCurrentViewport.aspect_ratio);
 	}
 
-	void Window::OnProcessInput()
-	{
-		PX_PROFILE_FUNCTION();
-
-		if (m_demo->m_debug) {
-			if (Input::IsKeyPressed(Key::CAM_FORWARD))
-				m_demo->m_pActiveCamera->processKeyboard(CameraMovement::FORWARD, m_timeDelta);
-			if (Input::IsKeyPressed(Key::CAM_BACKWARD))
-				m_demo->m_pActiveCamera->processKeyboard(CameraMovement::BACKWARD, m_timeDelta);
-			if (Input::IsKeyPressed(Key::CAM_STRAFE_LEFT))
-				m_demo->m_pActiveCamera->processKeyboard(CameraMovement::LEFT, m_timeDelta);
-			if (Input::IsKeyPressed(Key::CAM_STRAFE_RIGHT))
-				m_demo->m_pActiveCamera->processKeyboard(CameraMovement::RIGHT, m_timeDelta);
-			if (Input::IsKeyPressed(Key::CAM_ROLL_RIGHT))
-				m_demo->m_pActiveCamera->processKeyboard(CameraMovement::ROLL_RIGHT, m_timeDelta);
-			if (Input::IsKeyPressed(Key::CAM_ROLL_LEFT))
-				m_demo->m_pActiveCamera->processKeyboard(CameraMovement::ROLL_LEFT, m_timeDelta);
-		}
-	}
-
-
 	void Window::glfwKeyCallback(GLFWwindow* p_glfw_window, int key, int scancode, int action, int mods)
 	{
 		WindowData& data = *(WindowData*)glfwGetWindowUserPointer(p_glfw_window);

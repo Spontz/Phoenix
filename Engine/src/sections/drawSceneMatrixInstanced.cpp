@@ -181,7 +181,7 @@ namespace Phoenix {
 		// Update object matrices
 		updateMatrices(true);
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sDrawSceneMatrixInstanced::init()

@@ -176,7 +176,7 @@ namespace Phoenix {
 
 		Emitter.clear(); // Delete emitters... it's worth it? or can be used for updating emitter values?
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sDrawEmitterScene::init()

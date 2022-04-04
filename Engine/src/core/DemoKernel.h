@@ -40,6 +40,7 @@ namespace Phoenix {
 
 
 #define DEMO (&Phoenix::DemoKernel::getInstance())
+#define DEMO_checkGLError() DEMO->m_Window->checkError_(__FILE__, __LINE__) 
 
 	// Demo status
 	enum DemoStatus : char
@@ -83,6 +84,7 @@ namespace Phoenix {
 		bool OnMouseScrolled(MouseScrolledEvent& e);
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
+		void OnProcessInput(float timeStep);
 
 	public:
 		// Resources Management
@@ -105,6 +107,7 @@ namespace Phoenix {
 
 		// ImGUI management
 		bool ImGuiWantCaptureMouse();
+		void ImGuiAddLogMessage(std::string_view message);
 
 		// Demo control
 		void playDemo();
@@ -180,8 +183,8 @@ namespace Phoenix {
 		float m_demoRunTime;		// seconds ellapsed since 0.0 <- demo init
 		float m_beforeFrameTime;	// time before render the actual frame
 		float m_afterFrameTime;		// time after render the actual frame
-		float m_frameTime;			// last frame time (used by sections)
-		float m_realFrameTime;		// last frame time (used by kernel)
+		float m_frameTime;			// last frame time (used by sections). If the demo is paused, this frameTime will be 0
+		float m_realFrameTime;		// last frame time (used by kernel). Even if the demo is paused, the frameTime will be calculated
 		uint32_t m_uiFrameCount;	// demo frame count since start
 
 		// fps calculation

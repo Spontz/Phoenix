@@ -29,7 +29,7 @@ namespace Phoenix {
 			clearDepth = clearDepth;
 			Fbo* my_fbo = fbo[fbo_num];
 			// Adjust the viewport to the fbo size
-			GLDRV->SetCurrentViewport({ 0,0,static_cast<unsigned int>(my_fbo->width),static_cast<unsigned int>(my_fbo->height) });
+			DEMO->m_Window->SetCurrentViewport({ 0,0,static_cast<unsigned int>(my_fbo->width),static_cast<unsigned int>(my_fbo->height) });
 			my_fbo->bind();
 			if (clearColor)	glClear(GL_COLOR_BUFFER_BIT);
 			if (clearDepth)	glClear(GL_DEPTH_BUFFER_BIT);
@@ -42,7 +42,7 @@ namespace Phoenix {
 		if (currentFbo >= 0) {
 			Fbo* my_fbo = fbo[currentFbo];
 			// Adjust the viewport to the fbo size
-			GLDRV->SetCurrentViewport({ 0,0,static_cast<unsigned int>(my_fbo->width),static_cast<unsigned int>(my_fbo->height) });
+			DEMO->m_Window->SetCurrentViewport({ 0,0,static_cast<unsigned int>(my_fbo->width),static_cast<unsigned int>(my_fbo->height) });
 			my_fbo->bind();
 			if (clearColor)	glClear(GL_COLOR_BUFFER_BIT);
 			if (clearDepth)	glClear(GL_DEPTH_BUFFER_BIT);
@@ -65,7 +65,7 @@ namespace Phoenix {
 		clearDepth = clearDepth;
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		// Restore the driver viewport
-		GLDRV->SetCurrentViewport(GLDRV->GetFramebufferViewport());
+		DEMO->m_Window->SetCurrentViewport(DEMO->m_Window->GetFramebufferViewport());
 		if (clearColor)	glClear(GL_COLOR_BUFFER_BIT);
 		if (clearDepth)	glClear(GL_DEPTH_BUFFER_BIT);
 	}

@@ -99,7 +99,7 @@ namespace Phoenix {
 		if (!m_pExprLight->compileFormula())
 			return false;
 		
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sLight::init()

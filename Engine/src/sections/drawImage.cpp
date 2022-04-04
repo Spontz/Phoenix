@@ -117,7 +117,7 @@ namespace Phoenix {
 		// Set shader variables values
 		m_pVars->setValues();
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sDrawImage::init()
@@ -140,7 +140,7 @@ namespace Phoenix {
 
 			// Render aspect ratio, stored for Keeping image proportions
 			if (m_bFullscreen)
-				m_fRenderAspectRatio = GLDRV->GetCurrentViewport().GetAspectRatio();
+				m_fRenderAspectRatio = m_demo.m_Window->GetCurrentViewport().GetAspectRatio();
 			else
 				m_fRenderAspectRatio = m_vScale.x / m_vScale.y;
 

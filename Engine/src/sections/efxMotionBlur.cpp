@@ -81,7 +81,7 @@ namespace Phoenix {
 		m_uiBufferColor = m_demo.m_fboManager.fbo[m_uiFboNum]->m_colorAttachment[0];
 		m_uiBufferVelocity = m_demo.m_fboManager.fbo[m_uiFboNum]->m_colorAttachment[1];
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sEfxMotionBlur::init()
