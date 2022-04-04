@@ -365,7 +365,7 @@ namespace Phoenix {
 	{
 		return glm::perspective(
 			glm::radians(m_Fov),
-			GLDRV->GetFramebufferViewport().GetAspectRatio(),
+			DEMO->m_Window->GetFramebufferViewport().GetAspectRatio(),
 			m_FrustumNear,
 			m_FrustumFar
 		);

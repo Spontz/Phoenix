@@ -15,7 +15,6 @@ namespace Phoenix { class DemoKernel; }
 #include "core/layers/SectionLayer.h"
 #include "core/layers/ImGuiLayer.h"
 
-#include "drivers/GlDriver.h"
 #include "drivers/NetDriver.h"
 
 #include "core/renderer/Spline.h"

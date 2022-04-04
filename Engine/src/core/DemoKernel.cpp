@@ -3,7 +3,6 @@
 
 #include "main.h"
 #include "core/scripting/SpoReader.h"
-#include "core/drivers/glDriver.h"
 #include "core/drivers/BassDriver.h"
 #include "core/drivers/NetDriver.h"
 #include "core/resource/Resource.h"
