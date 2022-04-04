@@ -76,7 +76,7 @@ namespace Phoenix {
 		m_VersionASSIMP = m_demo.getLibAssimpVersion();
 		m_VersionImGUI = IMGUI_VERSION;
 
-		for (int i = 0; i < RENDERTIME_SAMPLES; i++)
+		for (int i = 0; i < RENDERTIMES_SAMPLES; i++)
 			m_renderTimes[i] = 0.0f;
 
 		// Prepare the text
