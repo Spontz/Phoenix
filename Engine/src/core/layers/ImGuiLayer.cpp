@@ -554,7 +554,13 @@ namespace Phoenix {
 				show_fpsHistogram = !show_fpsHistogram;
 				break;
 			case Key::SHOWFBO:
-				show_fbo = !show_fbo;
+				m_numFboSetToDraw++;
+				show_fbo = true;
+				if (m_numFboSetToDraw > (ceil((float)FBO_BUFFERS / (float)m_numFboPerPage)))
+				{
+					m_numFboSetToDraw = 0;
+					show_fbo = false;
+				}
 				break;
 			case Key::CHANGEATTACH:
 				m_numFboAttachmentToDraw++;
