@@ -448,7 +448,7 @@ namespace Phoenix {
 			// Check if demo should be ended or should be restarted
 			checkDemoEnd();
 
-			ProcessAndExecuteSections();
+			ProcessAndExecuteSectionsLayer();
 			ProcessAndExecuteLayers();
 			ProcessAndExecuteImGUILayer();
 
@@ -774,7 +774,7 @@ namespace Phoenix {
 		}
 	}
 
-	void DemoKernel::ProcessAndExecuteSections()
+	void DemoKernel::ProcessAndExecuteSectionsLayer()
 	{
 		Logger::info(LogLevel::med, "Start queue processing (init and exec) for second: {:.4f}", m_demoRunTime);
 
@@ -785,11 +785,7 @@ namespace Phoenix {
 			// Prepare render
 			m_Window->InitRender(true);
 
-			// Show grid only if we are in Debug // TODO: Sacar esto a otra layer
-			if (m_debug && m_debug_drawGrid) {
-				PX_PROFILE_SCOPE("DrawGrid");
-				m_pRes->draw3DGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
-			}
+
 
 			// Set the default camera // TODO: Refactor with a function "SetDefaultCamera" or something like this
 			m_pActiveCamera = m_pDefaultCamera;
@@ -801,6 +797,12 @@ namespace Phoenix {
 			m_Window->SetFramebuffer();
 		}
 		m_SectionLayer->End();
+
+		// Show grid only if we are in Debug // TODO: Sacar esto a otra layer
+		if (m_debug && m_debug_drawGrid) {
+			PX_PROFILE_SCOPE("DrawGrid");
+			m_pRes->draw3DGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
+		}
 	}
 
 	void DemoKernel::ProcessAndExecuteLayers()

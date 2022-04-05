@@ -160,8 +160,10 @@ namespace Phoenix
 
 	void Window::InitFbos()
 	{
+		Logger::info(LogLevel::low, "FBO regeneration Init.");
 		////////////// efxBloom FBO Manager: internal FBO's that are being used by the engine effects
 		{
+			Logger::ScopedIndent _;
 			// Clear Fbo's, if there is any
 			if (m_demo->m_efxBloomFbo.fbo.size() > 0) {
 				Logger::info(LogLevel::low,	"Regenerating Bloom efx FBO's!...");
@@ -191,6 +193,7 @@ namespace Phoenix
 		////////////// efxAccum FBO Manager: internal FBO's that are being used by the engine effects
 		// TODO: Que pasa si varios efectos de Accum se lanzan a la vez? no pueden usar la misma textura, asi que se mezclarán! deberíamos tener una fboConfig por cada efecto? es un LOCURON!!
 		{
+			Logger::ScopedIndent _;
 			// Clear Fbo's, if there is any
 			if (m_demo->m_efxAccumFbo.fbo.size() > 0) {
 				Logger::info(LogLevel::low, "Regenerating Accum efx FBO's!...");
@@ -219,25 +222,29 @@ namespace Phoenix
 
 		////////////// FBO Manager: Generic FBO's that can be used by the user
 		// Clear Fbo's, if there is any
-		if (m_demo->m_fboManager.fbo.size() > 0) {
-			Logger::info(LogLevel::low, "Ooops! we need to regenerate the FBO's! clearing generic FBO's first!");
-			m_demo->m_fboManager.clearFbos();
-		}
-
-		// init fbo's
-		for (int i = 0; i < FBO_BUFFERS; i++) {
-			if (fboConfig[i].ratio != 0) {
-				fboConfig[i].width = static_cast<float>(m_Data.WindowProperties.Width) / static_cast<float>(fboConfig[i].ratio);
-				fboConfig[i].height = static_cast<float>(m_Data.WindowProperties.Height) / static_cast<float>(fboConfig[i].ratio);
+		{
+			Logger::ScopedIndent _;
+			if (m_demo->m_fboManager.fbo.size() > 0) {
+				Logger::info(LogLevel::low, "Regenerating generic FBO's!...");
+				m_demo->m_fboManager.clearFbos();
 			}
 
-			if (m_demo->m_fboManager.addFbo(fboConfig[i]) >= 0) {
-				Logger::info(LogLevel::low,	"Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}", i, fboConfig[i].width, fboConfig[i].height, fboConfig[i].format);
-			}
-			else {
-				Logger::error("Error in FBO definition: FBO number {} has a non recongised format: '{}', please check 'graphics.spo' file.", i, fboConfig[i].format);
+			// init fbo's
+			for (int i = 0; i < FBO_BUFFERS; i++) {
+				if (fboConfig[i].ratio != 0) {
+					fboConfig[i].width = static_cast<float>(m_Data.WindowProperties.Width) / static_cast<float>(fboConfig[i].ratio);
+					fboConfig[i].height = static_cast<float>(m_Data.WindowProperties.Height) / static_cast<float>(fboConfig[i].ratio);
+				}
+
+				if (m_demo->m_fboManager.addFbo(fboConfig[i]) >= 0) {
+					Logger::info(LogLevel::low,	"Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}", i, fboConfig[i].width, fboConfig[i].height, fboConfig[i].format);
+				}
+				else {
+					Logger::error("Error in FBO definition: FBO number {} has a non recongised format: '{}', please check 'graphics.spo' file.", i, fboConfig[i].format);
+				}
 			}
 		}
+		Logger::info(LogLevel::low, "FBO regeneration complete.");
 	}
 
 	Viewport Window::GetFramebufferViewport() const

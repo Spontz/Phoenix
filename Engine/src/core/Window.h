@@ -38,7 +38,7 @@ namespace Phoenix {
 			Height(480),
 			AspectRatio(16.0f/9.0f),
 			DebugMode(false),
-			VSync(true),
+			VSync(false),
 			Fullscreen(false),
 			Multisampling(false),
 			Stencil(false)

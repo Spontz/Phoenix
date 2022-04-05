@@ -434,7 +434,7 @@ namespace Phoenix {
 			return;
 		}
 
-		ImGui::Text("Showing FBO's: %d to %d - Attachment: %d", fboNumMin, fboNumMax, m_numFboAttachmentToDraw);
+		ImGui::Text("Showing FBO's: %d to %d (Total: %d) - Attachment: %d", fboNumMin, fboNumMax, (m_demo.m_fboManager.fbo.size()-1), m_numFboAttachmentToDraw);
 		for (size_t i = fboNumMin; i <= fboNumMax; ++i) {
 			if (i < m_demo.m_fboManager.fbo.size()) {
 				Fbo* my_fbo = m_demo.m_fboManager.fbo[i];

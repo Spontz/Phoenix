@@ -129,9 +129,9 @@ namespace Phoenix {
 		void checkDemoEnd();	// Checks if demo has been finished and should be restarted (or not)
 
 
-		void ProcessAndExecuteSections();	// Process and Execute (render) the layer with all the sections
-		void ProcessAndExecuteLayers();		// Process and Execute (render) the other layers that may be added by other apps
-		void ProcessAndExecuteImGUILayer();	// Process and Execute (render) the layer with the ImGUI debug info
+		void ProcessAndExecuteSectionsLayer();	// Process and Execute (render) the layer with all the sections
+		void ProcessAndExecuteLayers();			// Process and Execute (render) the other layers that may be added by other apps
+		void ProcessAndExecuteImGUILayer();		// Process and Execute (render) the layer with the ImGUI debug info
 
 		void InitControlVars(); // Init control vars
 
