@@ -175,9 +175,6 @@ namespace Phoenix {
 		// Resources
 		Resource* m_pRes;
 
-		// loading information
-		int32_t m_iLoadedSections; // TODO: Delete
-
 		// realtime information
 		float m_demoRunTime;		// seconds ellapsed since 0.0 <- demo init
 		float m_beforeFrameTime;	// time before render the actual frame

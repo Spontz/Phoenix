@@ -90,7 +90,7 @@ namespace Phoenix {
 
 		float zero2one = 0;
 		if (m_demo.m_sectionManager.m_loadSection.size() > 0)
-			zero2one = (float)m_demo.m_iLoadedSections / (float)(m_demo.m_sectionManager.m_loadSection.size());
+			zero2one = static_cast<float>(m_demo.m_sectionManager.m_LoadedSections) / static_cast<float>(m_demo.m_sectionManager.m_loadSection.size());
 
 		m_demo.m_Window->InitRender(true);
 		{

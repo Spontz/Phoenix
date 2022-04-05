@@ -78,11 +78,6 @@ namespace Phoenix {
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_colorAttachment[i], 0);
 			}
 			// create a depth buffer object for depth and stencil attachment (we won't be sampling these)
-			//glGenRenderbuffers(1, &m_depthAttachment);	// TODO: Replace this for glCreateRenderbuffers?? use glCreateTextures??
-			//glBindRenderbuffer(GL_RENDERBUFFER, m_depthAttachment);
-			//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-			//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthAttachment);
-			// Todo: Test if the depth attachment works properly
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_depthAttachment);
 			glBindTexture(GL_TEXTURE_2D, m_depthAttachment);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);

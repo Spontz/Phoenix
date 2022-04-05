@@ -111,7 +111,6 @@ namespace Phoenix {
 				else
 					Logger::error("Section {} [id: {}, DataSource: {}] not loaded properly!", sec_id, pSection->identifier, pSection->DataSource);
 
-				// TODO: This is required??
 				if (DEMO->m_exitDemo) {
 					DEMO->Close();
 					exit(EXIT_SUCCESS);

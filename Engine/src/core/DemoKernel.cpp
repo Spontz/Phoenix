@@ -265,7 +265,6 @@ namespace Phoenix {
 		m_fps(0),
 		m_uiFrameCount(0),
 		m_slaveMode(false),
-		m_iLoadedSections(0),
 		m_exitDemo(false),
 		m_pRes(nullptr),
 		m_overrideWindowConfigParams(false),
