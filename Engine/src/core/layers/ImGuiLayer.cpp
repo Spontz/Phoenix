@@ -93,8 +93,8 @@ namespace Phoenix {
 		m_io = &(ImGui::GetIO()); (void)m_io;
 		m_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;		// Enable Keyboard Controls
 		//m_io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;		// Enable Gamepad Controls
-		//m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;			// Enable Docking	- TODO: Experimental?
-		//m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		// Enable Multi-Viewport / Platform Windows - TODO: Experimental?
+		//m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;			// Enable Docking	- Experimental (not available yet)
+		//m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		// Enable Multi-Viewport / Platform Windows - Experimental (not available yet)
 		//m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
 		//m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 

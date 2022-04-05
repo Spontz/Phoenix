@@ -784,8 +784,6 @@ namespace Phoenix {
 			// Prepare render
 			m_Window->InitRender(true);
 
-
-
 			// Set the default camera // TODO: Refactor with a function "SetDefaultCamera" or something like this
 			m_pActiveCamera = m_pDefaultCamera;
 
@@ -797,7 +795,7 @@ namespace Phoenix {
 		}
 		m_SectionLayer->End();
 
-		// Show grid only if we are in Debug // TODO: Sacar esto a otra layer
+		// Show grid only if we are in Debug // TODO: Create a new layer for the Grid and other debug elements?
 		if (m_debug && m_debug_drawGrid) {
 			PX_PROFILE_SCOPE("DrawGrid");
 			m_pRes->draw3DGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
