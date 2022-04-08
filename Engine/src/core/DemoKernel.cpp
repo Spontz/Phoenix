@@ -42,6 +42,7 @@ namespace Phoenix {
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowClose));
 		dispatcher.Dispatch<WindowResizeEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowResize));
+		dispatcher.Dispatch<WindowMoveEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowMove));
 		dispatcher.Dispatch<KeyPressedEvent>(PX_BIND_EVENT_FN(DemoKernel::OnKeyPressed));
 		dispatcher.Dispatch<KeyReleasedEvent>(PX_BIND_EVENT_FN(DemoKernel::OnKeyReleased));
 		dispatcher.Dispatch<MouseButtonPressedEvent>(PX_BIND_EVENT_FN(DemoKernel::OnMouseButtonPressed));
@@ -176,6 +177,14 @@ namespace Phoenix {
 			m_Window->OnWindowResize(m_windowWidth, m_windowHeight);
 			m_WindowResizing = false;
 		}
+		return true;
+	}
+
+	bool DemoKernel::OnWindowMove(WindowMoveEvent& e)
+	{
+		m_windowPosX = e.GetPosX();
+		m_windowPosY = e.GetPosY();
+		m_Window->SetWindowPos(m_windowPosX, m_windowPosY);
 		return true;
 	}
 

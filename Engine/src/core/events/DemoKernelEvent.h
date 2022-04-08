@@ -30,6 +30,28 @@ namespace Phoenix {
 		int32_t m_Width, m_Height;
 	};
 
+	class WindowMoveEvent : public Event
+	{
+	public:
+		WindowMoveEvent(int32_t posX, int32_t posY)
+			: m_PosX(posX), m_PosY(posY) {}
+
+		int32_t GetPosX() const { return m_PosX; }
+		int32_t GetPosY() const { return m_PosY; }
+
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "WindowMoveEvent: " << m_PosX << ", " << m_PosY;
+			return ss.str();
+		}
+
+		EVENT_CLASS_TYPE(WindowMove)
+		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+	private:
+		int32_t m_PosX, m_PosY;
+	};
+
 	class WindowCloseEvent : public Event
 	{
 	public:

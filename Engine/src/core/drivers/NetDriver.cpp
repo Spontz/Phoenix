@@ -133,17 +133,20 @@ namespace Phoenix {
 				float time = std::stof(Message[3]);
 				DEMO->setEndTime(time);
 			} else if (sAction == "windowPos") {
-				int x = std::stoi(Message[3]);
-				int y = std::stoi(Message[4]);
-				DEMO->m_Window->SetWindowPos(x, y);
+				int32_t x = std::stoi(Message[3]);
+				int32_t y = std::stoi(Message[4]);
+				WindowMoveEvent WinMoveEvent(x, y);
+				DEMO->OnEvent(WinMoveEvent);
 			} else if (sAction == "windowSize") {
 				uint32_t width = std::stoul(Message[3]);
 				uint32_t height = std::stoul(Message[4]);
-				DEMO->m_Window->SetWindowSize(width, height);
+				WindowResizeEvent WinResizeEvent(width, height);
+				DEMO->OnEvent(WinResizeEvent);
 			} else if (sAction == "ping") {
 				sResult = "pong";
 			} else if (sAction == "end") {
-				DEMO->m_exitDemo = true;
+				WindowCloseEvent WinClosed;
+				DEMO->OnEvent(WinClosed);
 			} else {
 				sResult = "NOK";
 				sInfo = "Unknown command (" + sAction + "): " + sMessage;

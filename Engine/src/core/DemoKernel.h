@@ -83,6 +83,7 @@ namespace Phoenix {
 		bool OnMouseScrolled(MouseScrolledEvent& e);
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
+		bool OnWindowMove(WindowMoveEvent& e);
 		void OnProcessInput(float timeStep);
 
 	public:
