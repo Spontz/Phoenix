@@ -137,8 +137,15 @@ namespace Phoenix {
 
 		for (auto const& sectionId : ids)
 			if (getSection(sectionId)) {
-				m_section.erase(m_section.begin() + getSectionIndex(sectionId));
-				//Logger::sendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
+				int i = getSectionIndex(sectionId);
+				if (i>=0)
+				{
+					delete m_section[i];
+					m_section.erase(m_section.begin() + i);
+					//Logger::sendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
+				}
+				Logger::error("Section NOT deleted: {}", sectionId);
+				failed = true;
 			}
 			else {
 				Logger::error("Section NOT deleted: {}", sectionId);
