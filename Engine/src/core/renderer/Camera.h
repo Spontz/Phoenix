@@ -65,6 +65,7 @@ namespace Phoenix {
 		const glm::vec3& getPosition() { return m_Position; };
 		const glm::vec3& getTarget() { return m_Target; };
 		const glm::vec3& getFront() { return m_Front; };
+		const glm::vec3& getUpVector() { return m_Up; };
 
 		float getMovementSpeed() const { return m_MovementSpeed; };
 		float getYaw() const { return m_Yaw; };
@@ -73,6 +74,7 @@ namespace Phoenix {
 		float getFov() const { return m_Fov; };
 		float getFrustumNear() const { return m_FrustumNear; };
 		float getFrustumFar() const { return m_FrustumFar; };
+		
 
 		virtual void processKeyboard(CameraMovement direction, float deltaTime) {};
 		virtual void processMouseMovement(float xoffset, float yoffset, bool constrainPitch = true) {};

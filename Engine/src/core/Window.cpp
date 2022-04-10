@@ -375,6 +375,7 @@ namespace Phoenix
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	// draw cwise and ccwise in fill mode
 
 		glEnable(GL_DEPTH_TEST);					// depth test enabled
+		glDepthMask(GL_TRUE);						// depth Mask enabled
 		glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL
 
 		// Init lights colors, fbo's, shader ID's and texture States
