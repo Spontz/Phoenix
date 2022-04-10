@@ -144,8 +144,10 @@ namespace Phoenix {
 					m_section.erase(m_section.begin() + i);
 					//Logger::sendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 				}
-				Logger::error("Section NOT deleted: {}", sectionId);
-				failed = true;
+				else {
+					Logger::error("Section NOT deleted: {}", sectionId);
+					failed = true;
+				}
 			}
 			else {
 				Logger::error("Section NOT deleted: {}", sectionId);
