@@ -201,7 +201,7 @@ namespace Phoenix {
 	void ImGuiLayer::SetDarkThemeColors()
 	{
 		auto& colors = ImGui::GetStyle().Colors;
-		colors[ImGuiCol_WindowBg] = ImVec4{ 0.1f, 0.105f, 0.11f, 1.0f };
+		colors[ImGuiCol_WindowBg] = ImVec4{ 0.1f, 0.105f, 0.11f, 0.7f };
 
 		// Headers
 		colors[ImGuiCol_Header] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
@@ -317,9 +317,9 @@ namespace Phoenix {
 			ImGui::TreePop();
 		}
 
-		if (ImGui::TreeNode("Default camera info"))
+		if (ImGui::TreeNode("Internal camera info"))
 		{
-			drawCameraInfo(m_demo.m_pDefaultCamera);
+			drawCameraInfo(m_demo.m_pInternalCamera);
 			ImGui::TreePop();
 		}
 

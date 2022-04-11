@@ -59,6 +59,7 @@ namespace Phoenix {
 		Camera();
 		virtual ~Camera() = default;
 
+		virtual void copyData(const Camera& other);
 		virtual const glm::mat4 getProjection() { return glm::mat4(1.0f); };
 		virtual const glm::mat4 getView() { return glm::mat4(1.0f); };
 		

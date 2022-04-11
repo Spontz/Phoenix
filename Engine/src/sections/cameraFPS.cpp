@@ -183,7 +183,8 @@ namespace Phoenix {
 		switch (m_iCameraMode)
 		{
 		case CameraMode::FREE:				// FREE camera: Do nothing
-			//DEMO->m_pActiveCamera = m_pCam;
+			DEMO->m_pActiveCamera = DEMO->m_pInternalCamera;
+			DEMO->m_pActiveCameraExprTk->copyData(*(DEMO->m_pActiveCamera));
 			return;
 			break;
 		case CameraMode::ONLY_SPLINE:		// Only spline: Do not use formulas
@@ -226,12 +227,8 @@ namespace Phoenix {
 		m_pCam->setFov(m_fCamFinalFov);
 		m_pCam->setFrustum(m_fCamFinalFrustumNear, m_fCamFinalFrustumFar);
 
-		//DEMO->m_pActiveCamera = m_pCam; // FIX THIS
-		DEMO->m_pActiveCamera->setPosition(m_pCam->getPosition());
-		DEMO->m_pActiveCamera->setUpVector(m_pCam->getUpVector());
-		DEMO->m_pActiveCamera->setAngles(m_pCam->getYaw(), m_pCam->getPitch(), m_pCam->getRoll());
-		DEMO->m_pActiveCamera->setFov(m_pCam->getFov());
-		DEMO->m_pActiveCamera->setFrustum(m_pCam->getFrustumNear(), m_pCam->getFrustumFar());
+		DEMO->m_pActiveCamera = m_pCam;
+		DEMO->m_pActiveCameraExprTk->copyData(*m_pCam);
 	}
 
 	void sCameraFPS::loadDebugStatic()
@@ -240,7 +237,7 @@ namespace Phoenix {
 		switch (m_iCameraMode)
 		{
 		case CameraMode::FREE:
-			sCameraMode = "Free movement";
+			sCameraMode = "Free (Using internal camera)";
 			break;
 		case CameraMode::ONLY_SPLINE:
 			sCameraMode = "Only Spline";

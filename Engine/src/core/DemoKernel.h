@@ -154,23 +154,24 @@ namespace Phoenix {
 		bool m_debug_drawGridAxisY;
 		bool m_debug_drawGridAxisZ;
 
-		int32_t m_status; // Demo status (play, pause, loading, etc.)
-		float m_demoStartTime; // first demo second
-		float m_demoEndTime; // last demo second (0 = unlimited)
+		int32_t m_status;		// Demo status (play, pause, loading, etc.)
+		float m_demoStartTime;	// first demo second
+		float m_demoEndTime;	// last demo second (0 = unlimited)
 
 		// Managers
 		SectionManager m_sectionManager;
 		TextureManager m_textureManager;
 		VideoManager m_videoManager;
-		FboManager m_fboManager; // FBO Manager (FBO's free to be used by the demo maker)
-		FboManager m_efxBloomFbo; // Bloom efx FBO Manager (internal FBO's used by the engine)
-		FboManager m_efxAccumFbo; // Accumulation efx FBO Manager (internal engine FBO's)
+		FboManager m_fboManager;		// FBO Manager (FBO's free to be used by the demo maker)
+		FboManager m_efxBloomFbo;		// Bloom efx FBO Manager (internal FBO's used by the engine)
+		FboManager m_efxAccumFbo;		// Accumulation efx FBO Manager (internal engine FBO's)
 		ModelManager m_modelManager;
 		ShaderManager m_shaderManager;
 		LightManager m_lightManager;
 
-		Camera* m_pActiveCamera; // Current Active Camera
-		Camera* m_pDefaultCamera; // Default Camera when no camera is defined
+		Camera* m_pActiveCamera;		// Current Active Camera
+		Camera* m_pActiveCameraExprTk;	// Current Active Camera, used in the Math driver
+		Camera* m_pInternalCamera;		// Internal engine Camera, used when no camera is defined
 		Font* m_pText;
 
 		// Resources

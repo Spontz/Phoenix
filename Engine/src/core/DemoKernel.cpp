@@ -98,13 +98,13 @@ namespace Phoenix {
 				}
 				break;
 			case Key::CAM_RESET:
-				m_pActiveCamera->reset();
+				m_pInternalCamera->reset();
 				break;
 			case Key::CAM_MULTIPLIER:
-				m_pActiveCamera->multiplyMovementSpeed(2.0f);
+				m_pInternalCamera->multiplyMovementSpeed(2.0f);
 				break;
 			case Key::CAM_DIVIDER:
-				m_pActiveCamera->divideMovementSpeed(2.0f);
+				m_pInternalCamera->divideMovementSpeed(2.0f);
 				break;
 			default:
 				EventHandled = false;
@@ -194,17 +194,17 @@ namespace Phoenix {
 
 		if (m_debug) {
 			if (Input::IsKeyPressed(Key::CAM_FORWARD))
-				m_pActiveCamera->processKeyboard(CameraMovement::FORWARD, timeStep);
+				m_pInternalCamera->processKeyboard(CameraMovement::FORWARD, timeStep);
 			if (Input::IsKeyPressed(Key::CAM_BACKWARD))
-				m_pActiveCamera->processKeyboard(CameraMovement::BACKWARD, timeStep);
+				m_pInternalCamera->processKeyboard(CameraMovement::BACKWARD, timeStep);
 			if (Input::IsKeyPressed(Key::CAM_STRAFE_LEFT))
-				m_pActiveCamera->processKeyboard(CameraMovement::LEFT, timeStep);
+				m_pInternalCamera->processKeyboard(CameraMovement::LEFT, timeStep);
 			if (Input::IsKeyPressed(Key::CAM_STRAFE_RIGHT))
-				m_pActiveCamera->processKeyboard(CameraMovement::RIGHT, timeStep);
+				m_pInternalCamera->processKeyboard(CameraMovement::RIGHT, timeStep);
 			if (Input::IsKeyPressed(Key::CAM_ROLL_RIGHT))
-				m_pActiveCamera->processKeyboard(CameraMovement::ROLL_RIGHT, timeStep);
+				m_pInternalCamera->processKeyboard(CameraMovement::ROLL_RIGHT, timeStep);
 			if (Input::IsKeyPressed(Key::CAM_ROLL_LEFT))
-				m_pActiveCamera->processKeyboard(CameraMovement::ROLL_LEFT, timeStep);
+				m_pInternalCamera->processKeyboard(CameraMovement::ROLL_LEFT, timeStep);
 		}
 	}
 
@@ -244,7 +244,8 @@ namespace Phoenix {
 		:
 		m_pText(nullptr),
 		m_pActiveCamera(nullptr),
-		m_pDefaultCamera(nullptr),
+		m_pActiveCameraExprTk(nullptr), 
+		m_pInternalCamera(nullptr),
 		m_status(-1),
 		m_demoName("Phoenix Spontz Demoengine"),
 		m_dataFolder("./data/"),
@@ -294,7 +295,8 @@ namespace Phoenix {
 
 	DemoKernel::~DemoKernel()
 	{
-		delete m_pDefaultCamera;
+		delete m_pInternalCamera;
+		delete m_pActiveCameraExprTk;
 		delete m_pRes;
 	}
 
@@ -375,9 +377,12 @@ namespace Phoenix {
 				Logger::info(LogLevel::med, extension);
 		}
 
-		// Create the camera, by default a "projection free"
-		m_pDefaultCamera = new CameraProjectionFPS(Camera::DEFAULT_CAM_POSITION);
-		m_pActiveCamera = m_pDefaultCamera;
+		// Create the intenral engine camera, by default a "projection free"
+		m_pInternalCamera = new CameraProjectionFPS(Camera::DEFAULT_CAM_POSITION);
+		m_pActiveCameraExprTk = new CameraProjectionFPS(Camera::DEFAULT_CAM_POSITION);
+		
+		m_pActiveCamera = m_pInternalCamera;
+		m_pActiveCameraExprTk->copyData(*(m_pInternalCamera));
 
 		// Start loading Basic resources
 		m_pRes->loadAllResources();
@@ -464,7 +469,7 @@ namespace Phoenix {
 			// Poll events and do SwapBuffers
 			m_Window->OnUpdate();
 
-			// Process Input keys to control Active Camera
+			// Process Input keys to control Internal Camera
 			OnProcessInput(m_realFrameTime);
 
 			// update sound driver once a frame
@@ -793,8 +798,9 @@ namespace Phoenix {
 			// Prepare render
 			m_Window->InitRender(true);
 
-			// Set the default camera // TODO: Refactor with a function "SetDefaultCamera" or something like this
-			m_pActiveCamera = m_pDefaultCamera;
+			// Set the default camera
+			m_pActiveCamera = m_pInternalCamera;
+			m_pActiveCameraExprTk->copyData(*m_pInternalCamera);
 
 			// Execute the Secions
 			m_SectionLayer->ExecuteSections(m_demoRunTime);
