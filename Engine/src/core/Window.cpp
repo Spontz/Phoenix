@@ -485,7 +485,7 @@ namespace Phoenix
 				m_MouseStatus.LastPosX = x;
 				m_MouseStatus.LastPosY = y;
 
-				m_demo->m_pInternalCamera->processMouseMovement(xoffset, yoffset);
+				m_demo->m_cameraManager.processMouseMovementInternalCamera(xoffset, yoffset);
 			}
 			// Capture mouse position with Right click
 			if (m_MouseStatus.RightClick) {
@@ -498,7 +498,7 @@ namespace Phoenix
 
 	bool Window::OnMouseScrolled(float OffsetX, float OffsetY)
 	{
-		m_demo->m_pInternalCamera->processMouseScroll(OffsetY);
+		m_demo->m_cameraManager.processMouseScrollInternalCamera(OffsetY);
 		return true;
 	}
 	

@@ -410,8 +410,8 @@ namespace Phoenix {
 		glm::mat4 MVP;
 		glm::mat4 VP;
 
-		glm::mat4 projection = m_demo.m_pActiveCamera->getProjection();
-		glm::mat4 view = m_demo.m_pActiveCamera->getView();
+		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
+		glm::mat4 view = m_demo.m_cameraManager.getActiveView();
 
 		VP = projection * view;
 

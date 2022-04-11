@@ -313,13 +313,13 @@ namespace Phoenix {
 
 		if (ImGui::TreeNode("Active camera info"))
 		{
-			drawCameraInfo(m_demo.m_pActiveCamera);
+			drawCameraInfo(m_demo.m_cameraManager.getActiveCamera());
 			ImGui::TreePop();
 		}
 
 		if (ImGui::TreeNode("Internal camera info"))
 		{
-			drawCameraInfo(m_demo.m_pInternalCamera);
+			drawCameraInfo(m_demo.m_cameraManager.getInternalCamera());
 			ImGui::TreePop();
 		}
 

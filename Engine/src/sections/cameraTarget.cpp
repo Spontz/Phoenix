@@ -182,8 +182,7 @@ namespace Phoenix {
 		switch (m_iCameraMode)
 		{
 		case CameraMode::FREE:				// FREE camera: Do nothing
-			DEMO->m_pActiveCamera = DEMO->m_pInternalCamera;
-			DEMO->m_pActiveCameraExprTk->copyData(*(DEMO->m_pActiveCamera));
+			m_demo.m_cameraManager.setInternalCameraAsActive();
 			return;
 			break;
 		case CameraMode::ONLY_SPLINE:		// Only spline: Do not use formulas
@@ -226,8 +225,7 @@ namespace Phoenix {
 		m_pCam->setFov(m_fCamFinalFov);
 		m_pCam->setFrustum(m_fCamFinalFrustumNear, m_fCamFinalFrustumFar);
 
-		DEMO->m_pActiveCamera = m_pCam;
-		DEMO->m_pActiveCameraExprTk->copyData(*m_pCam);
+		m_demo.m_cameraManager.setActiveCamera(m_pCam);
 	}
 
 	void sCameraTarget::loadDebugStatic()

@@ -28,6 +28,7 @@ namespace Phoenix { class DemoKernel; }
 #include "core/renderer/ModelManager.h"
 #include "core/renderer/ShaderManager.h"
 #include "core/renderer/LightManager.h"
+#include "core/renderer/CameraManager.h"
 #include "core/renderer/Font.h"
 #include "core/renderer/Camera.h"
 #include "core/renderer/CameraTypes.h"
@@ -168,10 +169,8 @@ namespace Phoenix {
 		ModelManager m_modelManager;
 		ShaderManager m_shaderManager;
 		LightManager m_lightManager;
+		CameraManager m_cameraManager;
 
-		Camera* m_pActiveCamera;		// Current Active Camera
-		Camera* m_pActiveCameraExprTk;	// Current Active Camera, used in the Math driver
-		Camera* m_pInternalCamera;		// Internal engine Camera, used when no camera is defined
 		Font* m_pText;
 
 		// Resources
