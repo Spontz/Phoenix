@@ -28,8 +28,8 @@ namespace Phoenix {
 
 		Camera* getActiveCamera() { return m_pActiveCamera; };					// Get the Active Camera details
 		Camera* getInternalCamera() { return m_pInternalCamera; };				// Get the Internal Camera details
-		glm::mat4 getActiveProjection() { return m_pActiveCamera->getProjection(); }
-		glm::mat4 getActiveView() { return m_pActiveCamera->getView(); }
+		const glm::mat4 getActiveProjection() { return m_pActiveCamera->getProjection(); }
+		const glm::mat4 getActiveView() { return m_pActiveCamera->getView(); }
 
 	private:
 		Camera* m_pActiveCamera;		// Current Active Camera
