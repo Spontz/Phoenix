@@ -27,8 +27,8 @@ namespace Phoenix {
 
 		DEMO->m_pRes->m_spShdrObjColor->setValue("color", colAmbient);
 
-		glm::mat4 projection = DEMO->m_pActiveCamera->getProjection();
-		glm::mat4 view = DEMO->m_pActiveCamera->getView();
+		glm::mat4 projection = DEMO->m_cameraManager.getActiveProjection();
+		glm::mat4 view = DEMO->m_cameraManager.getActiveView();
 
 		DEMO->m_pRes->m_spShdrObjColor->setValue("projection", projection);
 		DEMO->m_pRes->m_spShdrObjColor->setValue("view", view);
