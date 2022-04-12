@@ -73,7 +73,7 @@ namespace Phoenix {
 			Logger::error("Loading [{}]: Could not load some of the loading textures", identifier);
 		}
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sLoading::init()
@@ -90,31 +90,32 @@ namespace Phoenix {
 
 		float zero2one = 0;
 		if (m_demo.m_sectionManager.m_loadSection.size() > 0)
-			zero2one = (float)m_demo.m_iLoadedSections / (float)(m_demo.m_sectionManager.m_loadSection.size());
+			zero2one = static_cast<float>(m_demo.m_sectionManager.m_LoadedSections) / static_cast<float>(m_demo.m_sectionManager.m_loadSection.size());
 
-		GLDRV->initRender(true);
-		glClearColor(0, 0, 0, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		m_demo.m_Window->InitRender(true);
+		{
+			glClearColor(0, 0, 0, 0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_ONE, GL_ONE);
-		glDisable(GL_DEPTH_TEST);
-		// Background
-		m_demo.m_pRes->drawQuadFS(m_pTexBack, 1 - zero2one);
-		// Foreground
-		m_demo.m_pRes->drawQuadFS(m_pTexFront, zero2one);
-		glEnable(GL_DEPTH_TEST);
-		glDisable(GL_BLEND);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE, GL_ONE);
+			glDisable(GL_DEPTH_TEST);
+			// Background
+			m_demo.m_pRes->drawQuadFS(m_pTexBack, 1 - zero2one);
+			// Foreground
+			m_demo.m_pRes->drawQuadFS(m_pTexFront, zero2one);
+			glEnable(GL_DEPTH_TEST);
+			glDisable(GL_BLEND);
 
 
-		// Draw the Loading bar
-		glm::mat4 model = glm::mat4(1.0f);
+			// Draw the Loading bar
+			glm::mat4 model = glm::mat4(1.0f);
 
-		model = glm::translate(model, glm::vec3(m_fTX, m_fTY, 0));  // Move the bar
-		model = glm::scale(model, glm::vec3(zero2one, m_fSY, 0));		// Scale the bar
-		m_demo.m_pRes->drawObjQuadTex(m_pTexBar, &model);
-
-		GLDRV->swapBuffers();
+			model = glm::translate(model, glm::vec3(m_fTX, m_fTY, 0));  // Move the bar
+			model = glm::scale(model, glm::vec3(zero2one, m_fSY, 0));		// Scale the bar
+			m_demo.m_pRes->drawObjQuadTex(m_pTexBar, &model);
+		}
+		m_demo.m_Window->OnUpdate();
 	}
 
 	void sLoading::end()

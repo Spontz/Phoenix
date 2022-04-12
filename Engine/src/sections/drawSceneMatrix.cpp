@@ -182,7 +182,7 @@ namespace Phoenix {
 		// Update object matrices
 		updateMatrices(true);
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sDrawSceneMatrix::init()
@@ -209,8 +209,8 @@ namespace Phoenix {
 		// End ShadowMapping
 
 		// view/projection transformations
-		glm::mat4 projection = m_demo.m_pActiveCamera->getProjection();
-		glm::mat4 view = m_demo.m_pActiveCamera->getView();
+		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
+		glm::mat4 view = m_demo.m_cameraManager.getActiveView();
 		m_pShader->setValue("projection", projection);	// TODO: Should we send the projection/view matrices here?
 		m_pShader->setValue("view", view);
 		m_pModel->m_matProjection = projection;			// TODO2: Or should we copy them into the model like we do here?

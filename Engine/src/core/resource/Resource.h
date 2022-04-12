@@ -35,7 +35,8 @@ namespace Phoenix {
 		);
 		void drawSkybox(SP_Cubemap spCubemap); // Draws a skybox for a given cubemap texture
 		void drawCube(); // Draws a cube
-		void drawGrid(glm::vec3 const& color, glm::mat4 const* pWVP);
+		void drawOneGrid(glm::vec3 const& color, glm::mat4 const* pWVP);
+		void draw3DGrid(bool drawAxisX, bool drawAxisY, bool drawAxisZ);
 		void loadGrid();
 
 	private:

@@ -52,7 +52,7 @@ namespace Phoenix {
 		kOutputStream << s;
 
 		// Output to screen log
-		GLDRV->guiAddLog(s);
+		DEMO->ImGuiAddLogMessage(s);
 
 		// Output to Visual Studio
 #if defined(_DEBUG) && defined(WIN32)

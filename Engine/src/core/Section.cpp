@@ -58,9 +58,8 @@ namespace Phoenix {
 	void Section::EvalBlendingEnd()
 	{
 		if (hasBlend) {
-			glDisable(GL_BLEND);
-			if (blendEquation > 0)
-				glBlendEquation(GL_FUNC_ADD);
+			glDisable(GL_BLEND); 
+			glBlendEquation(GL_FUNC_ADD);
 		}
 	}
 

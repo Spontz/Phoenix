@@ -99,7 +99,7 @@ namespace Phoenix {
 		if (!m_pExprLight->compileFormula())
 			return false;
 		
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sLight::init()
@@ -114,8 +114,9 @@ namespace Phoenix {
 		Light* my_light = m_demo.m_lightManager.light[m_iLightNum];
 
 		if (m_bLinkPosToCamera) {
-			my_light->position = m_demo.m_pActiveCamera->getPosition();
-			my_light->direction = m_demo.m_pActiveCamera->getPosition() + (m_demo.m_pActiveCamera->getFront() * 10.0f); // TODO: Remove this hardcode! XD
+			auto cam = m_demo.m_cameraManager.getActiveCamera();
+			my_light->position = cam->getPosition();
+			my_light->direction = cam->getPosition() + (cam->getFront() * 10.0f); // TODO: Remove this hardcode! XD
 		}
 
 

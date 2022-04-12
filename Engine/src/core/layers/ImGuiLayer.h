@@ -1,30 +1,38 @@
-// imGuiDriver.h
+// ImGuiLayer.h
 // Spontz Demogroup
 
 #pragma once
 
-#include "main.h"
+#include "core/Layer.h"
+#include "core/events/DemoKernelEvent.h"
+#include "core/events/KeyEvent.h"
+#include "core/events/MouseEvent.h"
+
 #include "core/renderer/Viewport.h"
 #include "core/renderer/Camera.h"
 
 namespace Phoenix {
 
-#define RENDERTIME_SAMPLES 256
-
-	// ******************************************************************
-
-	class ImGuiDriver final {
-
+	class ImGuiLayer : public Layer
+	{
 	public:
-		ImGuiDriver();
+		ImGuiLayer();
+		~ImGuiLayer() = default;
 
-	public:
-		void init(GLFWwindow* pGLFWWindow);
-		void drawGui();
-		void close();
+		virtual void OnAttach() override;
+		virtual void OnDetach() override;
+		virtual void OnEvent(Event & e) override;
+
+		void Begin();
+		void OnImGuiRender();
+		void End();
+
+		void BlockEvents(bool block) { m_BlockEvents = block; }
+
 		void changeFontSize(float baseSize, int32_t width, int32_t height);
 		void addLog(std::string_view message);
 		void clearLog();
+		void SetDarkThemeColors();
 
 	public:
 		bool	show_log;
@@ -44,7 +52,31 @@ namespace Phoenix {
 		int32_t			m_selectedSection;
 
 	private:
-		GLFWwindow* p_glfw_window;
+
+		const std::string stateStr[6] = {
+			"play",
+			"play - RW",
+			"play - FF",
+			"paused",
+			"paused - RW",
+			"paused - FF"
+		};
+
+		void drawLog();
+		void drawInfo();
+		void drawVersion();
+		void drawSesctionInfo();
+		void drawFPSHistogram();
+		void drawFbo();
+		void drawSound();
+		void drawGridConfig();
+		void drawHelp();
+		void drawCameraInfo(Camera* pCamera);
+
+		bool OnKeyPressed(KeyPressedEvent& e);
+
+	private:
+		bool m_BlockEvents = true;
 		ImGuiIO* m_io;
 		DemoKernel& m_demo;
 
@@ -58,7 +90,9 @@ namespace Phoenix {
 		std::string m_VersionASSIMP;
 		std::string m_VersionImGUI;
 
-		float		m_renderTimes[RENDERTIME_SAMPLES];
+		static constexpr uint32_t RENDERTIMES_SAMPLES = 256;
+
+		float		m_renderTimes[RENDERTIMES_SAMPLES];
 		int32_t		m_maxRenderFPSScale;
 		int32_t		m_currentRenderTime;
 		float		m_fontScale;
@@ -71,28 +105,6 @@ namespace Phoenix {
 		ImGuiTextBuffer		m_log;
 
 		Viewport	m_vp;
-
-
-		const std::string stateStr[6] = {
-			"play",
-			"play - RW",
-			"play - FF",
-			"paused",
-			"paused - RW",
-			"paused - FF"
-		};
-
-		void startDraw();
-		void endDraw();
-		void drawLog();
-		void drawInfo();
-		void drawVersion();
-		void drawSesctionInfo();
-		void drawFPSHistogram();
-		void drawFbo();
-		void drawSound();
-		void drawGridConfig();
-		void drawHelp();
-		void drawCameraInfo(Camera* pCamera);
 	};
+
 }

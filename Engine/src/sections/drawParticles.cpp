@@ -167,7 +167,7 @@ namespace Phoenix {
 		// Set shader variables values
 		m_pVars->setValues();
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sDrawParticles::init()
@@ -184,8 +184,8 @@ namespace Phoenix {
 		// Evaluate the expression
 		m_pExprPosition->Expression.value();
 
-		glm::mat4 projection = m_demo.m_pActiveCamera->getProjection();
-		glm::mat4 view = m_demo.m_pActiveCamera->getView();
+		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
+		glm::mat4 view = m_demo.m_cameraManager.getActiveView();
 
 		// render the loaded model
 		glm::mat4 model = glm::mat4(1.0f);

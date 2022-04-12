@@ -44,7 +44,7 @@ namespace Phoenix {
 		render_clearColor = static_cast<bool>(param[0]);
 		render_clearDepth = static_cast<bool>(param[1]);
 		
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sFboUnbind::init()

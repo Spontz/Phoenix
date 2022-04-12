@@ -133,7 +133,7 @@ namespace Phoenix {
 		// Set shader variables values
 		m_pVars->setValues();
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sDrawScene::init()
@@ -167,12 +167,12 @@ namespace Phoenix {
 		// End ShadowMapping
 
 		// view/projection transformations
-		m_mProjection = m_demo.m_pActiveCamera->getProjection();
+		m_mProjection = m_demo.m_cameraManager.getActiveProjection();
 
 		//m_pShader->setValue("projection", m_mProjection);
 		m_pModel->m_matProjection = m_mProjection;
 
-		m_mView = m_demo.m_pActiveCamera->getView();
+		m_mView = m_demo.m_cameraManager.getActiveView();
 		//if (CameraNumber < 0)
 		//	m_pShader->setValue("view", m_mView);
 		m_pModel->m_matView = m_mView;

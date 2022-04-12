@@ -4,7 +4,7 @@
 
 #include "main.h"
 
-#include <core/utils/LoggerDeclarations.h>
+#include "core/utils/LoggerDeclarations.h"
 
 #include <algorithm>
 #include <chrono>

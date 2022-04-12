@@ -168,7 +168,7 @@ namespace Phoenix {
 		// Create the Camera class
 		m_pCam = new CameraProjectionTarget(CameraProjectionTarget::DEFAULT_CAM_POSITION, CameraProjectionTarget::DEFAULT_CAM_TARGET);
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sCameraTarget::init()
@@ -182,7 +182,7 @@ namespace Phoenix {
 		switch (m_iCameraMode)
 		{
 		case CameraMode::FREE:				// FREE camera: Do nothing
-			DEMO->m_pActiveCamera = m_pCam;
+			m_demo.m_cameraManager.setInternalCameraAsActive();
 			return;
 			break;
 		case CameraMode::ONLY_SPLINE:		// Only spline: Do not use formulas
@@ -225,7 +225,7 @@ namespace Phoenix {
 		m_pCam->setFov(m_fCamFinalFov);
 		m_pCam->setFrustum(m_fCamFinalFrustumNear, m_fCamFinalFrustumFar);
 
-		DEMO->m_pActiveCamera = m_pCam;
+		m_demo.m_cameraManager.setActiveCamera(m_pCam);
 	}
 
 	void sCameraTarget::loadDebugStatic()
@@ -234,7 +234,7 @@ namespace Phoenix {
 		switch (m_iCameraMode)
 		{
 		case CameraMode::FREE:
-			sCameraMode = "Free movement";
+			sCameraMode = "Free (Using internal camera)";
 			break;
 		case CameraMode::ONLY_SPLINE:
 			sCameraMode = "Only Spline";

@@ -3,7 +3,6 @@
 
 #include "main.h"
 #include "core/scripting/SpoReader.h"
-#include "core/drivers/glDriver.h"
 #include "core/drivers/BassDriver.h"
 #include "core/drivers/NetDriver.h"
 #include "core/resource/Resource.h"
@@ -17,11 +16,197 @@
 
 namespace Phoenix {
 
-	// globals
-
 	DemoKernel* kpDemoKernel = nullptr;
 
-	// static methods
+	void DemoKernel::PushLayer(Layer* layer)
+	{
+		PX_PROFILE_FUNCTION();
+
+		m_LayerStack.PushLayer(layer);
+		layer->OnAttach();
+	}
+
+	void DemoKernel::PushOverlay(Layer* layer)
+	{
+		PX_PROFILE_FUNCTION();
+
+		m_LayerStack.PushOverlay(layer);
+		layer->OnAttach();
+	}
+
+	void DemoKernel::OnEvent(Event& e)
+	{
+		PX_PROFILE_FUNCTION();
+
+		// Send to the dispatcher the events that DemoKernel can handle
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<WindowCloseEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowClose));
+		dispatcher.Dispatch<WindowResizeEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowResize));
+		dispatcher.Dispatch<WindowMoveEvent>(PX_BIND_EVENT_FN(DemoKernel::OnWindowMove));
+		dispatcher.Dispatch<KeyPressedEvent>(PX_BIND_EVENT_FN(DemoKernel::OnKeyPressed));
+		dispatcher.Dispatch<KeyReleasedEvent>(PX_BIND_EVENT_FN(DemoKernel::OnKeyReleased));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(PX_BIND_EVENT_FN(DemoKernel::OnMouseButtonPressed));
+		dispatcher.Dispatch<MouseButtonReleasedEvent>(PX_BIND_EVENT_FN(DemoKernel::OnMouseButtonReleased));
+		dispatcher.Dispatch<MouseMovedEvent>(PX_BIND_EVENT_FN(DemoKernel::OnMouseMoved));
+		dispatcher.Dispatch<MouseScrolledEvent>(PX_BIND_EVENT_FN(DemoKernel::OnMouseScrolled));
+		
+		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
+		{
+			if (e.Handled)
+				break;
+			(*it)->OnEvent(e);
+		}
+	}
+	
+	bool DemoKernel::OnKeyPressed(KeyPressedEvent& e)
+	{
+		uint16_t key = e.GetKeyCode();
+		bool EventHandled = false;
+
+		if (key == Key::EXIT)
+		{
+			m_exitDemo = true;
+			EventHandled = true;
+		}
+		if (m_debug) {
+			EventHandled = true;
+			switch (key) {
+			case Key::FASTFORWARD:
+				fastforwardDemo();
+				break;
+			case Key::REWIND:
+				rewindDemo();
+				break;
+			case Key::TIME:
+				Logger::info(LogLevel::high, "Demo time: {:.4f}", m_demoRunTime);
+				break;
+			case Key::PLAY_PAUSE:
+				if (m_status == DemoStatus::PLAY)
+					pauseDemo();
+				else
+					playDemo();
+				break;
+			case Key::RESTART:
+				restartDemo();
+				break;
+			case Key::CAM_CAPTURE:
+				if (m_cameraManager.captureActiveCameraPosition()) {
+					Logger::sendEditor("Camera position saved!");
+				}
+				else {
+					Logger::error("Camera file was not saved");
+				}
+				break;
+			case Key::CAM_RESET:
+				m_cameraManager.resetInternalCamera();
+				break;
+			case Key::CAM_MULTIPLIER:
+				m_cameraManager.increaseInternalCameraSpeed(2.0f);
+				break;
+			case Key::CAM_DIVIDER:
+				m_cameraManager.decreaseInternalCameraSpeed(2.0f);
+				break;
+			default:
+				EventHandled = false;
+				break;
+			}
+		}
+		return EventHandled;
+	}
+
+	bool DemoKernel::OnKeyReleased(KeyReleasedEvent& e)
+	{
+		uint16_t key = e.GetKeyCode();
+
+		if (m_debug) {
+			if (m_status & DemoStatus::PAUSE)
+				pauseDemo();
+			else
+				playDemo();
+		}
+
+		return true;
+	}
+
+	bool DemoKernel::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+	{
+		if (m_debug && !ImGuiWantCaptureMouse()) {
+			return m_Window->OnMouseButtonPressed(e.GetMouseButton());
+		}
+		return true;
+	}
+
+	bool DemoKernel::OnMouseButtonReleased(MouseButtonReleasedEvent& e)
+	{
+		if (m_debug && !ImGuiWantCaptureMouse()) {
+			return m_Window->OnMouseButtonReleased(e.GetMouseButton());
+		}
+		return true;
+	}
+
+	bool DemoKernel::OnMouseMoved(MouseMovedEvent& e)
+	{
+		if (m_debug && !ImGuiWantCaptureMouse()) {
+			return m_Window->OnMouseMoved(e.GetX(), e.GetY());
+		}
+		return true;
+	}
+
+	bool DemoKernel::OnMouseScrolled(MouseScrolledEvent& e)
+	{
+		if (m_debug && !ImGuiWantCaptureMouse()) {
+			return m_Window->OnMouseScrolled(e.GetXOffset(), e.GetYOffset());
+		}
+		return true;
+	}
+
+	bool DemoKernel::OnWindowClose(WindowCloseEvent& e)
+	{
+		m_exitDemo = true;
+		return true;
+	}
+
+	bool DemoKernel::OnWindowResize(WindowResizeEvent& e)
+	{
+		if (!m_WindowResizing) {
+			m_WindowResizing = true;
+			if (m_ImGuiLayer)
+				m_ImGuiLayer->changeFontSize(m_debugFontSize, m_windowWidth, m_windowHeight);
+			m_windowWidth = static_cast<uint32_t>(std::max(e.GetWidth(), 1));
+			m_windowHeight = static_cast<uint32_t>(std::max(e.GetHeight(), 1));
+			m_Window->OnWindowResize(m_windowWidth, m_windowHeight);
+			m_WindowResizing = false;
+		}
+		return true;
+	}
+
+	bool DemoKernel::OnWindowMove(WindowMoveEvent& e)
+	{
+		m_windowPosX = e.GetPosX();
+		m_windowPosY = e.GetPosY();
+		m_Window->SetWindowPos(m_windowPosX, m_windowPosY);
+		return true;
+	}
+
+	void DemoKernel::OnProcessInput(float timeStep)
+	{
+		PX_PROFILE_FUNCTION();
+
+		if (m_debug) {
+			if (Input::IsKeyPressed(Key::CAM_FORWARD))
+				m_cameraManager.processKeyInternalCamera(CameraMovement::FORWARD, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_BACKWARD))
+				m_cameraManager.processKeyInternalCamera(CameraMovement::BACKWARD, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_STRAFE_LEFT))
+				m_cameraManager.processKeyInternalCamera(CameraMovement::LEFT, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_STRAFE_RIGHT))
+				m_cameraManager.processKeyInternalCamera(CameraMovement::RIGHT, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_ROLL_RIGHT))
+				m_cameraManager.processKeyInternalCamera(CameraMovement::ROLL_RIGHT, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_ROLL_LEFT))
+				m_cameraManager.processKeyInternalCamera(CameraMovement::ROLL_LEFT, timeStep);
+		}
+	}
 
 	DemoKernel& DemoKernel::getInstance() {
 		if (!kpDemoKernel)
@@ -58,8 +243,6 @@ namespace Phoenix {
 	DemoKernel::DemoKernel()
 		:
 		m_pText(nullptr),
-		m_pActiveCamera(nullptr),
-		m_pDefaultCamera(nullptr),
 		m_status(-1),
 		m_demoName("Phoenix Spontz Demoengine"),
 		m_dataFolder("./data/"),
@@ -89,32 +272,32 @@ namespace Phoenix {
 		m_fps(0),
 		m_uiFrameCount(0),
 		m_slaveMode(false),
-		m_mouseX(0),
-		m_mouseY(0),
-		m_mouseXVar(0),
-		m_mouseYVar(0),
-		m_iLoadedSections(0),
 		m_exitDemo(false),
 		m_pRes(nullptr),
 		m_overrideWindowConfigParams(false),
 		m_windowPosX(30),
 		m_windowPosY(30),
 		m_windowWidth(640),
-		m_windowHeight(480)
+		m_windowHeight(480),
+		m_WindowResizing(false),
+		m_ImGuiLayer(nullptr)
 	{
+		// Create the Window management
+		m_Window = std::make_unique<Window>();
+		m_Window->m_demo = this; // Hack guarro
+
 		memset(m_fVar, 0, MULTIPURPOSE_VARS * sizeof(float));
 		memset(m_fBeat, 0, MAX_BEATS * sizeof(float));
 	}
 
 	DemoKernel::~DemoKernel()
 	{
-		delete m_pDefaultCamera;
 		delete m_pRes;
 	}
 
 	// methods
 
-	void DemoKernel::getArguments(int argc, char* argv[])
+	void DemoKernel::getArguments(int32_t argc, char* argv[])
 	{
 		std::vector <std::string> sources;
 		for (int i = 1; i < argc; ++i) {
@@ -155,9 +338,11 @@ namespace Phoenix {
 
 	bool DemoKernel::initDemo()
 	{
-		// initialize graphics driver
-		if (!GLDRV->initGraphics())
+		// Window and graphics driver initializaition
+		if (!m_Window->Init(m_demoName))
 			return false;
+		m_Window->SetEventCallback(PX_BIND_EVENT_FN(DemoKernel::OnEvent));
+
 		Logger::info(LogLevel::med, "OpenGL environment created");
 
 		// initialize sound driver
@@ -171,10 +356,10 @@ namespace Phoenix {
 		// Show versions
 		Logger::info(LogLevel::med, "Component versions:");
 		Logger::info(LogLevel::high, "Spontz visuals engine 'Phoenix' version: {}", getEngineVersion());
-		Logger::info(LogLevel::med, "OpenGL driver version: {}", GLDRV->getOpenGLVersion());
-		Logger::info(LogLevel::med, "OpenGL driver vendor: {}", GLDRV->getOpenGLVendor());
-		Logger::info(LogLevel::med, "OpenGL driver renderer: {}", GLDRV->getOpenGLRenderer());
-		Logger::info(LogLevel::med, "GLFW library version: {}", GLDRV->getGLFWVersion());
+		Logger::info(LogLevel::med, "OpenGL driver version: {}",  m_Window->getGLVersion());
+		Logger::info(LogLevel::med, "OpenGL driver vendor: {}", m_Window->getGLVendor());
+		Logger::info(LogLevel::med, "OpenGL driver renderer: {}", m_Window->getGLRenderer());
+		Logger::info(LogLevel::med, "GLFW library version: {}", m_Window->getGLFWVersion());
 		Logger::info(LogLevel::med, "Bass library version: {}", BASSDRV->getVersion());
 		Logger::info(LogLevel::med, "Network Dyad.c library version: {}", getLibDyadVersion());
 		Logger::info(LogLevel::med, "Assimp library version: {}", getLibAssimpVersion());
@@ -182,23 +367,29 @@ namespace Phoenix {
 		Logger::info(LogLevel::med, "List of supported OpenGL extensions:");
 		{
 			Logger::ScopedIndent _;
-			const std::vector<std::string> extensions = GLDRV->getOpenGLExtensions();
+			const std::vector<std::string> extensions = m_Window->getGLExtensions();
 			for (const auto& extension : extensions)
 				Logger::info(LogLevel::med, extension);
 		}
 
-		// Create the camera, by default a "projection free"
-		m_pDefaultCamera = new CameraProjectionFPS(Camera::DEFAULT_CAM_POSITION);
-		m_pActiveCamera = m_pDefaultCamera;
+		// Create the intenral engine camera, by default a "projection free"
+		m_cameraManager.init();
 
 		// Start loading Basic resources
 		m_pRes->loadAllResources();
 
 		// initialize global control variables
-		initControlVars();
+		InitControlVars();
 
-		// prepare sections
-		initSectionQueues();
+		// Create the two embeeded layers of the engine: SectionLayer and ImGuiLayer
+		m_SectionLayer = new SectionLayer(&m_sectionManager);
+		PushOverlay(m_SectionLayer);
+
+		// Load sections
+		m_SectionLayer->LoadSections();
+
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
 
 		// get initial sync timer values
 		initTimer();
@@ -217,96 +408,70 @@ namespace Phoenix {
 			Logger::info(LogLevel::high, "Running in standalone mode");
 	}
 
-	void DemoKernel::mainLoop()
+	void DemoKernel::Run()
 	{
 		if (m_debug)
-			Logger::info(LogLevel::med, "************ Main demo loop started!");
+			Logger::info(LogLevel::med, "Main demo Run loop started!");
 
 		m_status = DemoStatus::PLAY;
 
-		/* Loop until the user closes the window */
-		while ((!GLDRV->WindowShouldClose()) && (!m_exitDemo)) {
+		// Loop until the user closes the window
+		while (!m_exitDemo) {
 #ifdef PROFILE_PHOENIX
 			PX_PROFILE_SCOPE("RunLoop");
 #endif
 
-			// Poll for and process events
-			GLDRV->ProcessInput();
-
-			doExec();
-
-			{
-#ifdef PROFILE_PHOENIX
-				PX_PROFILE_SCOPE("glfwPollEvents");
-#endif
-				glfwPollEvents();
+			// Evaluate the time of the demo
+			if (m_status == DemoStatus::PLAY) {
+				// If demo is playing: Update the timing information for the sections
+				processTimer();
 			}
+			else{
+				// If the demo is not PLAYING...
+				pauseTimer();
+				if (m_status & DemoStatus::REWIND) {
+					// decrease demo runtime
+					m_demoRunTime -= 10.0f * m_realFrameTime;
+					if (m_demoRunTime < m_demoStartTime) {
+						m_demoRunTime = m_demoStartTime;
+						pauseDemo();
+					}
+				}
+				else if (m_status & DemoStatus::FASTFORWARD) {
+					// increase demo runtime
+					m_demoRunTime += 10.0f * m_realFrameTime;
+					if (m_demoRunTime > m_demoEndTime) {
+						m_demoRunTime = m_demoEndTime;
+						pauseDemo();
+					}
+				}
+				// reset section queues
+				m_SectionLayer->ReInitSections();
+			}			
+
+			// Check if demo should be ended or should be restarted
+			checkDemoEnd();
+
+			ProcessAndExecuteSectionsLayer();
+			ProcessAndExecuteLayers();
+			ProcessAndExecuteImGUILayer();
+
+
+			// Poll events and do SwapBuffers
+			m_Window->OnUpdate();
+
+			// Process Input keys to control Internal Camera
+			OnProcessInput(m_realFrameTime);
+
+			// update sound driver once a frame
+			if (m_sound)
+				BASSDRV->update();
+
+			// Update network driver
+			if (m_slaveMode)
+				NetDriver::getInstance().update();
 
 		}
-	}
-
-	void DemoKernel::doExec()
-	{
-		// control exit demo (debug, loop) when end time arrives
-		if ((m_demoEndTime > 0) && (m_demoRunTime > m_demoEndTime)) {
-
-			if (m_loop) {
-				restartDemo();
-			}
-			else {
-				if (m_debug) {
-					m_demoRunTime = m_demoEndTime;
-					pauseDemo();
-				}
-				else {
-					m_exitDemo = true;
-					return;
-				}
-			}
-		}
-
-		// non-play state
-		if (m_status != DemoStatus::PLAY) {
-
-			processSectionQueues();
-			pauseTimer();
-			if (m_status & DemoStatus::REWIND) {
-				// decrease demo runtime
-				m_demoRunTime -= 10.0f * m_realFrameTime;
-				if (m_demoRunTime < m_demoStartTime) {
-					m_demoRunTime = m_demoStartTime;
-					pauseDemo();
-				}
-			}
-			else if (m_status & DemoStatus::FASTFORWARD) {
-
-				// increase demo runtime
-				m_demoRunTime += 10.0f * m_realFrameTime;
-				if (m_demoRunTime > m_demoEndTime) {
-					m_demoRunTime = m_demoEndTime;
-					pauseDemo();
-				}
-			}
-
-			// reset section queues
-			reinitSectionQueues();
-		}
-		// play state
-		else {
-			// Prepare and execute the sections
-			processSectionQueues();
-
-			// Update the timing information for the sections
-			processTimer();
-		}
-
-		// update sound driver once a frame
-		if (m_sound)
-			BASSDRV->update();
-
-		// Update network driver
-		if (m_slaveMode)
-			NetDriver::getInstance().update();
 	}
 
 	void DemoKernel::playDemo()
@@ -316,7 +481,7 @@ namespace Phoenix {
 
 			if (m_sound) BASSDRV->play();
 			// reinit section queues
-			reinitSectionQueues();
+			m_SectionLayer->ReInitSections();
 		}
 	}
 
@@ -334,8 +499,8 @@ namespace Phoenix {
 			BASSDRV->stop();
 		}
 
-		initControlVars();
-		reinitSectionQueues();
+		InitControlVars();
+		m_SectionLayer->ReInitSections();
 		initTimer();
 	}
 
@@ -380,11 +545,8 @@ namespace Phoenix {
 		m_demoEndTime = theTime;
 	}
 
-	void DemoKernel::closeDemo()
+	void DemoKernel::Close()
 	{
-		Logger::info(LogLevel::low, "Closing GL driver...");
-		GLDRV->close();				// Close GL driver
-
 		Logger::info(LogLevel::low, "Clearing memory...");
 		m_sectionManager.clear();	// Delete all sections
 		m_textureManager.clear();	// Delete all textures
@@ -530,6 +692,20 @@ namespace Phoenix {
 		return pSection->loaded;
 	}
 
+	bool DemoKernel::ImGuiWantCaptureMouse()
+	{
+		if (m_ImGuiLayer == nullptr)
+			return false;
+		else
+			return (ImGui::GetIO().WantCaptureMouse);
+	}
+
+	void DemoKernel::ImGuiAddLogMessage(std::string_view message)
+	{
+		if (m_ImGuiLayer)
+			m_ImGuiLayer->addLog(message);
+	}
+
 	void DemoKernel::initTimer()
 	{
 		m_beforeFrameTime = static_cast<float>(glfwGetTime());
@@ -581,7 +757,79 @@ namespace Phoenix {
 		calculateFPS(m_realFrameTime);
 	}
 
-	void DemoKernel::initControlVars()
+	void DemoKernel::checkDemoEnd()
+	{
+		// control exit demo (debug, loop) when end time arrives
+		if ((m_demoEndTime > 0) && (m_demoRunTime > m_demoEndTime)) {
+
+			if (m_loop) {
+				restartDemo();
+			}
+			else {
+				if (m_debug) {
+					m_demoRunTime = m_demoEndTime;
+					pauseDemo();
+				}
+				else {
+					m_exitDemo = true;
+					return;
+				}
+			}
+		}
+	}
+
+	void DemoKernel::ProcessAndExecuteSectionsLayer()
+	{
+		Logger::info(LogLevel::med, "Start queue processing (init and exec) for second: {:.4f}", m_demoRunTime);
+
+		m_SectionLayer->ProcessSections(m_demoRunTime);
+		{
+			PX_PROFILE_SCOPE("SectionLayer Exec");
+
+			// Prepare render
+			m_Window->InitRender(true);
+
+			// Set the internal Camera as Active, so, in case there is no active camera we can use the internal one
+			m_cameraManager.setInternalCameraAsActive();
+
+			// Execute the Secions
+			m_SectionLayer->ExecuteSections(m_demoRunTime);
+
+			// Set back to the frambuffer and restore the viewport
+			m_Window->SetFramebuffer();
+		}
+		m_SectionLayer->End();
+
+		// Show grid only if we are in Debug // TODO: Create a new layer for the Grid and other debug elements?
+		if (m_debug && m_debug_drawGrid) {
+			PX_PROFILE_SCOPE("DrawGrid");
+			m_pRes->draw3DGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
+		}
+	}
+
+	void DemoKernel::ProcessAndExecuteLayers()
+	{
+		{
+			PX_PROFILE_SCOPE("LayerStack OnUpdate");
+
+			for (Layer* layer : m_LayerStack)
+				layer->OnUpdate(m_realFrameTime); // Render the layers
+		}
+	}
+
+	void DemoKernel::ProcessAndExecuteImGUILayer()
+	{
+		m_ImGuiLayer->Begin();
+		{
+			PX_PROFILE_SCOPE("LayerStack OnImGuiRender");
+
+			for (Layer* layer : m_LayerStack)
+				layer->OnImGuiRender();			// Update the ImGui components (if any)
+		}
+		m_ImGuiLayer->End();
+	}
+
+	void DemoKernel::InitControlVars()
 	{
 		// reset time
 		m_demoRunTime = m_demoStartTime;
@@ -596,249 +844,4 @@ namespace Phoenix {
 		m_exitDemo = false;
 	}
 
-	void DemoKernel::initSectionQueues()
-	{
-		Section* pSection = nullptr;
-		Section* pTmpSection = nullptr;
-		Section* pLoadingSection = nullptr;
-
-		int sec_id;
-
-		// Set the demo state to loading
-		m_status = DemoStatus::LOADING;
-		Logger::info(LogLevel::high, "Loading Start...");
-
-		const auto startTime = m_debug ? static_cast<float>(glfwGetTime()) : 0.0f;
-
-		// Search for the loading section, if not found, we will create one
-		for (size_t i = 0; i < m_sectionManager.m_section.size(); i++) {
-			if (m_sectionManager.m_section[i]->type == SectionType::Loading)
-				pLoadingSection = m_sectionManager.m_section[i];
-		}
-
-		if (pLoadingSection == nullptr) {
-			Logger::info(LogLevel::med, "Loading section not found: using default loader");
-			sec_id = m_sectionManager.addSection(SectionType::Loading, "Automatically created", TRUE);
-			if (sec_id < 0) {
-				Logger::error("Critical Error, Loading section not found and could not be created!");
-				return;
-			}
-			else {
-				pLoadingSection = m_sectionManager.m_section[sec_id];
-			}
-		}
-
-		// preload, load and init loading section
-		pLoadingSection->load();
-		pLoadingSection->init();
-		pLoadingSection->loaded = TRUE;
-		pLoadingSection->inited = TRUE;
-		pLoadingSection->exec();
-
-		{
-			Logger::ScopedIndent _;
-			Logger::info(LogLevel::med, "Loading section loaded, inited and executed for first time");
-
-			// Clear the load and run section lists
-			m_sectionManager.m_loadSection.clear();
-			m_sectionManager.m_execSection.clear();
-
-			// Populate Load Section: The sections that need to be loaded
-			for (size_t i = 0; i < m_sectionManager.m_section.size(); i++) {
-				pSection = m_sectionManager.m_section[i];
-				// If we are in slave mode, we load all the sections but if not, we will load only the ones
-				// that are inside the demo time
-				if (m_slaveMode == 1 || ((pSection->startTime < m_demoEndTime || fabs(m_demoEndTime) < FLT_EPSILON) && (pSection->endTime > startTime))) {
-					// If the section is not the "loading", then we add id to the Ready Section lst
-					if (pSection->type != SectionType::Loading) {
-						m_sectionManager.m_loadSection.push_back(static_cast<int32_t>(i));
-						// load section splines (to avoid code load in the sections)
-						// loadSplines(ds); // TODO: Delete this once splines are working
-					}
-				}
-			}
-
-			Logger::info(LogLevel::low,
-				"Ready Section queue complete: {} sections to be loaded",
-				m_sectionManager.m_loadSection.size()
-			);
-
-			// Start Loading the sections of the Ready List
-			m_iLoadedSections = 0;
-			for (size_t i = 0; i < m_sectionManager.m_loadSection.size(); i++) {
-				sec_id = m_sectionManager.m_loadSection[i];
-				pSection = m_sectionManager.m_section[sec_id];
-				if (pSection->load()) {
-					pSection->loadDebugStatic(); // Load static debug info
-					pSection->loaded = TRUE;
-				}
-				// Incrmeent the loading sections even if it has not been sucesfully loaded, because
-				//  it's just for the "loading" screen
-				++m_iLoadedSections;
-
-				// Update loading
-				pLoadingSection->exec();
-				if (pSection->loaded)
-					Logger::info(LogLevel::low,
-						"Section {} [id: {}, DataSource: {}] loaded OK!",
-						sec_id,
-						pSection->identifier,
-						pSection->DataSource
-					);
-				else
-					Logger::error(
-						"Section {} [id: {}, DataSource: {}] not loaded properly!",
-						sec_id,
-						pSection->identifier,
-						pSection->DataSource
-					);
-
-				if (m_exitDemo) {
-					closeDemo();
-					exit(EXIT_SUCCESS);
-				}
-			}
-		}
-
-		Logger::info(LogLevel::med,
-			"Loading complete, {} sections have been loaded.",
-			m_iLoadedSections
-		);
-	}
-
-	void DemoKernel::reinitSectionQueues()
-	{
-		Logger::ScopedIndent _;
-		Logger::info(LogLevel::low, "Analysing sections that must be re-inited...");
-		for (auto i = 0; i < m_sectionManager.m_execSection.size(); i++) {
-			// The second value is the ID of the section
-			const auto sec_id = m_sectionManager.m_execSection[i].second;
-			const auto ds = m_sectionManager.m_section[sec_id];
-			if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
-				ds->inited = FALSE; // Mark the section as not inited
-				Logger::info(LogLevel::low,
-					"Section {} [layer: {} id: {}] marked to be inited",
-					sec_id,
-					ds->layer,
-					ds->identifier
-				);
-			}
-		}
-	}
-
-	void DemoKernel::processSectionQueues()
-	{
-		Logger::info(LogLevel::med,
-			"Start queue processing (init and exec) for second: {:.4f}",
-			m_demoRunTime
-		);
-
-		// Check the sections that need to be executed
-		{
-			Logger::ScopedIndent _;
-			Logger::info(LogLevel::low, "Analysing sections that must be executed...");
-			m_sectionManager.m_execSection.clear();
-			for (auto i = 0; i < m_sectionManager.m_section.size(); ++i) {
-				const auto pSection = m_sectionManager.m_section[i];
-				// If time is OK
-				if (pSection->startTime <= m_demoRunTime && pSection->endTime >= m_demoRunTime) {
-					// If its enabled, loaded and is not hte Loading section
-					if (pSection->enabled && pSection->loaded && pSection->type != SectionType::Loading) {
-						// Load the section: first the layer and then the ID
-						m_sectionManager.m_execSection.push_back(std::make_pair(pSection->layer, i));
-					}
-				}
-			}
-
-			// Sort sections by Layer
-			sort(m_sectionManager.m_execSection.begin(), m_sectionManager.m_execSection.end());
-
-			Logger::info(LogLevel::low,
-				"Exec Section queue complete: {} sections to be executed",
-				m_sectionManager.m_execSection.size()
-			);
-			// Run Init sections
-			Logger::info(LogLevel::low, "Running Init Sections...");
-			for (auto i = 0; i < m_sectionManager.m_execSection.size(); ++i) {
-				// The second value is the ID of the section
-				const auto sec_id = m_sectionManager.m_execSection[i].second;
-				const auto ds = m_sectionManager.m_section[sec_id];
-				if (ds->inited == FALSE) {
-					ds->runTime = m_demoRunTime - ds->startTime;
-					ds->init();			// Init the Section
-					ds->inited = TRUE;
-					Logger::info(LogLevel::low,
-						"Section {} [layer: {} id: {} type: {}] inited",
-						sec_id,
-						ds->layer,
-						ds->identifier,
-						ds->type_str
-					);
-				}
-			}
-
-			// prepare engine for render
-			GLDRV->initRender(true);
-
-			// Show grid only if we are in Debug
-			if (m_debug && m_debug_drawGrid) {
-#ifdef PROFILE_PHOENIX
-				PX_PROFILE_SCOPE("DrawGrid");
-#endif
-				GLDRV->drawGrid(
-					m_debug_drawGridAxisX,
-					m_debug_drawGridAxisY,
-					m_debug_drawGridAxisZ
-				);
-		}
-
-			// Set the default camera
-			m_pActiveCamera = m_pDefaultCamera;
-
-			// Run Exec sections
-			Logger::info(LogLevel::low, "Running Exec Sections...");
-			{
-				Logger::ScopedIndent _;
-#ifdef PROFILE_PHOENIX
-				PX_PROFILE_SCOPE("ExecSections");
-#endif
-				for (auto i = 0; i < m_sectionManager.m_execSection.size(); ++i) {
-					// The second value is the ID of the section
-					const auto sec_id = m_sectionManager.m_execSection[i].second;
-					const auto ds = m_sectionManager.m_section[sec_id];
-					ds->runTime = m_demoRunTime - ds->startTime;
-					ds->exec();			// Exec the Section
-					Logger::info(LogLevel::low,
-						"Section {} [layer: {} id: {} type: {}] executed",
-						sec_id,
-						ds->layer,
-						ds->identifier,
-						ds->type_str
-					);
-				}
-			}
-			Logger::info(LogLevel::med, "End queue processing!");
-
-			// Set back to the frambuffer and restore the viewport
-			GLDRV->SetFramebuffer();
-
-
-			// Show debug info
-			if (m_debug) {
-#ifdef PROFILE_PHOENIX
-				PX_PROFILE_SCOPE("DrawGui");
-#endif
-				GLDRV->drawGui();
-			}
-
-			// swap buffer
-			{
-#ifdef PROFILE_PHOENIX
-				PX_PROFILE_SCOPE("GLDRV::swapBuffers");
-#endif
-				GLDRV->swapBuffers();
-			}
-			}
-
-	}
 }

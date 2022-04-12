@@ -120,7 +120,7 @@ namespace Phoenix {
 		// Set shader variables values
 		m_pVars->setValues();
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sDrawVideo::init()
@@ -147,7 +147,7 @@ namespace Phoenix {
 
 			// Render aspect ratio, stored for Keeping image proportions
 			if (m_bFullscreen)
-				m_fRenderAspectRatio = GLDRV->GetCurrentViewport().GetAspectRatio();
+				m_fRenderAspectRatio = m_demo.m_Window->GetCurrentViewport().GetAspectRatio();
 			else
 				m_fRenderAspectRatio = m_vScale.x / m_vScale.y;
 
@@ -171,8 +171,8 @@ namespace Phoenix {
 			}
 			else
 			{
-				glm::mat4 mView = m_demo.m_pActiveCamera->getView();
-				glm::mat4 mProjection = m_demo.m_pActiveCamera->getProjection();
+				glm::mat4 mView = m_demo.m_cameraManager.getActiveView();
+				glm::mat4 mProjection = m_demo.m_cameraManager.getActiveProjection();
 
 				mModel = glm::translate(mModel, m_vTranslation);
 				mModel = glm::rotate(mModel, glm::radians(m_vRotation.x), glm::vec3(1, 0, 0));

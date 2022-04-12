@@ -61,8 +61,9 @@ namespace Phoenix {
 
 	void Logger::closeLogFile()
 	{
-		if (kOutputStream.is_open())
+		if (kOutputStream.is_open()) {
+			kOutputStream.flush();
 			kOutputStream.close();
+		}
 	}
-
 }

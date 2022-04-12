@@ -17,7 +17,6 @@ int main(int argc, char* argv[])
 #endif
 
 	auto& demo = *DEMO;
-	auto& gldrv = *GLDRV;
 
 	demo.getArguments(argc, argv);
 
@@ -30,9 +29,6 @@ int main(int argc, char* argv[])
 #else
 	Phoenix::Logger::setLogLevel(Phoenix::LogLevel::high); // Define the highest log detail level
 #endif
-
-	// Initialize the GL Framework
-	gldrv.initFramework();
 
 	// Check the data folder
 	if (!demo.checkDataFolder()) {
@@ -66,15 +62,14 @@ int main(int argc, char* argv[])
 #endif
 
 	Phoenix::Logger::info(Phoenix::LogLevel::high, "Initializing main loop...");
-	demo.mainLoop();
+	demo.Run();
 
 #ifdef PROFILE_PHOENIX
 	PX_PROFILE_END_SESSION();
 #endif
 
 	Phoenix::Logger::info(Phoenix::LogLevel::high, "Closing demo. We hope you enjoyed watching this demo! See you next time! Watch more at www.spontz.org.");
-	demo.closeDemo();
-	Phoenix::glDriver::release();
+	demo.Close();
 	Phoenix::DemoKernel::release();
 	Phoenix::NetDriver::release();
 

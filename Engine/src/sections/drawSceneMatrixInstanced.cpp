@@ -181,7 +181,7 @@ namespace Phoenix {
 		// Update object matrices
 		updateMatrices(true);
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sDrawSceneMatrixInstanced::init()
@@ -208,8 +208,8 @@ namespace Phoenix {
 		// End ShadowMapping
 
 		// view/projection transformations
-		glm::mat4 projection = m_demo.m_pActiveCamera->getProjection();
-		glm::mat4 view = m_demo.m_pActiveCamera->getView();
+		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
+		glm::mat4 view = m_demo.m_cameraManager.getActiveView();
 		m_pShader->setValue("projection", projection);
 		m_pShader->setValue("view", view);
 		// For MotionBlur: send the previous matrix

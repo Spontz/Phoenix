@@ -27,7 +27,7 @@ namespace Phoenix {
 	{
 		if (m_frameBuffer) {
 			glDeleteFramebuffers(1, &m_frameBuffer);
-			glDeleteRenderbuffers(1, &m_depthAttachment);
+			glDeleteTextures(1, &m_depthAttachment);
 			glDeleteTextures(numAttachments, m_colorAttachment);
 			delete[] m_colorAttachment;
 		}
@@ -49,13 +49,9 @@ namespace Phoenix {
 		m_useLinearFilter = useLinearFilter;
 
 		// Check Color attachments
-		if (numAttachments <= 0) { // TODO: This validation is nonsense
-			Logger::error("Fbo::upload: Requested {} attachments, but should be at least 1", numAttachments);
-			numAttachments = 1;
-		}
-		if (numAttachments > GLDRV_MAX_COLOR_ATTACHMENTS) {
-			Logger::error("Fbo::upload: MAX number of attachments reached. Requested {} attachments, but max attachments are: {}", numAttachments, GLDRV_MAX_COLOR_ATTACHMENTS);
-			numAttachments = GLDRV_MAX_COLOR_ATTACHMENTS;
+		if (numAttachments > FBO_MAX_COLOR_ATTACHMENTS) {
+			Logger::error("Fbo::upload: MAX number of attachments reached. Requested {} attachments, but max attachments are: {}", numAttachments, FBO_MAX_COLOR_ATTACHMENTS);
+			numAttachments = FBO_MAX_COLOR_ATTACHMENTS;
 		}
 
 		// Setup our Framebuffer
@@ -82,19 +78,14 @@ namespace Phoenix {
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_colorAttachment[i], 0);
 			}
 			// create a depth buffer object for depth and stencil attachment (we won't be sampling these)
-			glGenRenderbuffers(1, &m_depthAttachment);	// TODO: Replace this for glCreateRenderbuffers?? use glCreateTextures??
-			glBindRenderbuffer(GL_RENDERBUFFER, m_depthAttachment);
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthAttachment);
-
-			//glCreateTextures(GL_TEXTURE_2D, 1, &m_depthAttachment);
-			//glBindTexture(GL_TEXTURE_2D, m_depthAttachment);
-			//glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, width, height);
-			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_depthAttachment, 0);
+			glCreateTextures(GL_TEXTURE_2D, 1, &m_depthAttachment);
+			glBindTexture(GL_TEXTURE_2D, m_depthAttachment);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_depthAttachment, 0);
 
 			// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-			unsigned int attachments[GLDRV_MAX_COLOR_ATTACHMENTS];
-			for (int i = 0; i < GLDRV_MAX_COLOR_ATTACHMENTS; i++) {
+			unsigned int attachments[FBO_MAX_COLOR_ATTACHMENTS];
+			for (int i = 0; i < FBO_MAX_COLOR_ATTACHMENTS; i++) {
 				attachments[i] = GL_COLOR_ATTACHMENT0 + i;
 			}
 
@@ -135,8 +126,7 @@ namespace Phoenix {
 
 		// Unbind buffers
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
+		
 		return true;
 	}
 

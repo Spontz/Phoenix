@@ -67,7 +67,7 @@ namespace Phoenix {
 			return false;
 		}
 
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 	void sDrawFbo::init()

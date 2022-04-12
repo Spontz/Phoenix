@@ -51,7 +51,8 @@ namespace Phoenix {
 	class Section {
 		friend class DemoKernel;
 		friend class SectionManager;
-
+		friend class SectionLayer;
+		
 	public:
 		Section();
 		virtual ~Section();

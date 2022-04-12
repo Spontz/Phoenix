@@ -183,7 +183,7 @@ namespace Phoenix {
 		// Set billboard shader variables values (texture, particle size, etc...)
 		m_varsBillboard->setValues();
 		
-		return !GLDRV_checkError();
+		return !DEMO_checkGLError();
 	}
 
 
