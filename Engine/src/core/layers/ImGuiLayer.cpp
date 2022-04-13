@@ -92,6 +92,7 @@ namespace Phoenix {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		m_io = &(ImGui::GetIO()); (void)m_io;
+		m_io->IniFilename = NULL; // Avoid using/saving the ini file
 		m_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;		// Enable Keyboard Controls
 		//m_io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;		// Enable Gamepad Controls
 		//m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;			// Enable Docking	- Experimental (not available yet)
