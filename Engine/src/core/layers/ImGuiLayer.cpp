@@ -47,7 +47,7 @@ namespace Phoenix {
 		m_demo(*DEMO),
 		m_io(nullptr),
 		show_log(false),
-		show_info(true),
+		show_info(false),
 		show_fpsHistogram(false),
 		show_sesctionInfo(false),
 		show_fbo(false),
@@ -65,6 +65,7 @@ namespace Phoenix {
 		m_expandAllSections(true),
 		m_expandAllSectionsChanged(true)
 	{
+		show_info = m_demo.m_debug;	// if we are on debug, we show the fps info by default
 		show_log = m_demo.m_debug; // if we are on debug, the log is opened by default
 		m_VersionEngine = m_demo.getEngineVersion();
 		m_VersionOpenGL = m_demo.m_Window->getGLVersion();
