@@ -20,8 +20,9 @@ namespace Phoenix {
 
 	ParticleSystem::ParticleSystem(std::string shaderPath)
 	{
+		m_varsParticleSystem = nullptr; 
 		m_varsBillboard = nullptr;
-
+		
 		force = glm::vec3(0, 0, 0);
 		color = glm::vec3(1, 1, 1);
 		randomness = 0;
@@ -68,10 +69,13 @@ namespace Phoenix {
 
 		if (m_varsBillboard)
 			delete m_varsBillboard;
+
+		if (m_varsParticleSystem)
+			delete m_varsParticleSystem;
 	}
 
 
-	bool ParticleSystem::Init(Section* sec, const std::vector<Particle> emitters, float emissionTime,float particleLifeTime, std::vector<std::string> billboardShaderVars)
+	bool ParticleSystem::Init(Section* sec, const std::vector<Particle> emitters, float emissionTime,float particleLifeTime, std::vector<std::string> shaderVars)
 	{
 		if (emitters.size() == 0)
 			return false;
@@ -173,12 +177,23 @@ namespace Phoenix {
 			return false;
 		}
 
+
+		//Use the particleSystem shader and send variables
+		m_particleSystemShader->use();
+		m_varsParticleSystem = new ShaderVars(sec, m_particleSystemShader);
+		// Read the shader variables
+		for (int i = 0; i < shaderVars.size(); i++) {
+			m_varsParticleSystem->ReadString(shaderVars[i]);
+		}
+		// Set billboard shader variables values (texture, particle size, etc...)
+		m_varsParticleSystem->setValues();
+
 		//Use the billboard shader and send variables
 		m_billboardShader->use();
 		m_varsBillboard = new ShaderVars(sec, m_billboardShader);
 		// Read the shader variables
-		for (int i = 0; i < billboardShaderVars.size(); i++) {
-			m_varsBillboard->ReadString(billboardShaderVars[i].c_str());
+		for (int i = 0; i < shaderVars.size(); i++) {
+			m_varsBillboard->ReadString(shaderVars[i]);
 		}
 		// Set billboard shader variables values (texture, particle size, etc...)
 		m_varsBillboard->setValues();
@@ -233,7 +248,7 @@ namespace Phoenix {
 		m_particleSystemShader->setValue("u_fRamndomness", randomness);
 		m_particleSystemShader->setValue("u_v3Force", force);
 		m_particleSystemShader->setValue("u_v3Color", color);
-
+		m_varsParticleSystem->setValues();
 
 		bindRandomTexture(RANDOM_TEXTURE_UNIT);
 

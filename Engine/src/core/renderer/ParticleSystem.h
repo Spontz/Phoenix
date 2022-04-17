@@ -32,7 +32,7 @@ namespace Phoenix {
 		ParticleSystem(std::string shaderPath);
 		~ParticleSystem();
 
-		bool Init(Section* sec, const std::vector<Particle> emitters, float emissionTime, float particleLifeTime, std::vector<std::string> billboardShaderVars);
+		bool Init(Section* sec, const std::vector<Particle> emitters, float emissionTime, float particleLifeTime, std::vector<std::string> shaderVars);
 		void Render(float deltaTime, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 		void UpdateEmitters(float deltaTime);
 
@@ -64,6 +64,7 @@ namespace Phoenix {
 		unsigned int			m_textureRandID;			// TODO: This will be removed once is included in the textureManager
 		std::string				m_shaderPath;
 		std::string				m_pathBillboard;
+		ShaderVars*				m_varsParticleSystem;		// ParticleSystem Shader variables
 		ShaderVars*				m_varsBillboard;			// Billboard Shader variables
 
 		std::string				m_pathUpdate;
