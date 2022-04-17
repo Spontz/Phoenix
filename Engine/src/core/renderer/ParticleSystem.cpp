@@ -18,7 +18,7 @@ namespace Phoenix {
 	constexpr int BINDING_UPDATE = 0;
 	constexpr int BINDING_BILLBOARD = 1;
 
-	ParticleSystem::ParticleSystem(std::string shaderPath)
+	ParticleSystem::ParticleSystem(std::string particleSystemShader, std::string billboardShader)
 	{
 		m_varsParticleSystem = nullptr; 
 		m_varsBillboard = nullptr;
@@ -37,9 +37,8 @@ namespace Phoenix {
 
 		m_memUsed = 0;
 
-		m_shaderPath = shaderPath;
-		m_pathBillboard = shaderPath + "/billboard.glsl";
-		m_pathUpdate = shaderPath + "/update.glsl";
+		m_pathBillboard = billboardShader;
+		m_pathUpdate = particleSystemShader;
 
 		m_numEmitters = 0;
 		m_numMaxParticles = 0;

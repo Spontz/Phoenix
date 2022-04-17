@@ -29,7 +29,7 @@ namespace Phoenix {
 		};
 
 
-		ParticleSystem(std::string shaderPath);
+		ParticleSystem(std::string particleSystemShader, std::string billboardShader);
 		~ParticleSystem();
 
 		bool Init(Section* sec, const std::vector<Particle> emitters, float emissionTime, float particleLifeTime, std::vector<std::string> shaderVars);
@@ -62,13 +62,13 @@ namespace Phoenix {
 
 		float					m_time;
 		unsigned int			m_textureRandID;			// TODO: This will be removed once is included in the textureManager
-		std::string				m_shaderPath;
+
 		std::string				m_pathBillboard;
-		ShaderVars*				m_varsParticleSystem;		// ParticleSystem Shader variables
 		ShaderVars*				m_varsBillboard;			// Billboard Shader variables
 
 		std::string				m_pathUpdate;
-		
+		ShaderVars*				m_varsParticleSystem;		// ParticleSystem Shader variables
+
 		unsigned int			m_numEmitters;				// Number of emmiters
 		unsigned int			m_numMaxParticles;			// Number of maximum particles
 		unsigned int			m_numParticlesPerEmitter;	// Number of particles per emitter

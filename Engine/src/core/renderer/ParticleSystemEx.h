@@ -35,10 +35,10 @@ namespace Phoenix {
 		};
 
 
-		ParticleSystemEx(std::string shaderPath, float particleLifeTime);
+		ParticleSystemEx(std::string particleSystemShader, std::string billboardShader, float particleLifeTime);
 		~ParticleSystemEx();
 
-		bool Init(Section* sec, const std::vector<Particle> particles, unsigned int numParticlesPerEmitter, std::vector<std::string> billboardShaderVars);
+		bool Init(Section* sec, const std::vector<Particle> particles, unsigned int numParticlesPerEmitter, std::vector<std::string> shaderVars);
 		void Render(float deltaTime, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 
 		int32_t getNumParticles() { return m_numGenParticles; };
@@ -62,11 +62,12 @@ namespace Phoenix {
 	private:
 
 		unsigned int			m_textureRandID;			// TODO: This will be removed once is included in the textureManager
-		std::string				m_shaderPath;
 		std::string				m_pathBillboard;
 		ShaderVars*				m_varsBillboard;			// Billboard Shader variables
 
 		std::string				m_pathUpdate;
+		ShaderVars*				m_varsParticleSystem;		// ParticleSystem Shader variables
+
 		unsigned int			m_numParticles;				// Number of maximum particles
 		unsigned int			m_numParticlesPerEmitter;	// Number of particles per emitter
 		float					m_particleLifeTime;

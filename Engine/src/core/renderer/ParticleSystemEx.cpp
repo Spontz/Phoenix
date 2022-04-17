@@ -23,9 +23,10 @@ namespace Phoenix {
 	constexpr int BINDING_UPDATE = 0;
 	constexpr int BINDING_BILLBOARD = 1;
 
-	ParticleSystemEx::ParticleSystemEx(std::string shaderPath, float particleLifeTime)
+	ParticleSystemEx::ParticleSystemEx(std::string particleSystemShader, std::string billboardShader, float particleLifeTime)
 	{
 		m_varsBillboard = nullptr;
+		m_varsParticleSystem = nullptr;
 
 		force = glm::vec3(0, 0, 0);
 		color = glm::vec3(1, 1, 1);
@@ -43,9 +44,8 @@ namespace Phoenix {
 
 		m_memUsed = 0;
 
-		m_shaderPath = shaderPath;
-		m_pathBillboard = shaderPath + "/billboard.glsl";
-		m_pathUpdate = shaderPath + "/update.glsl";
+		m_pathBillboard = billboardShader;
+		m_pathUpdate = particleSystemShader;
 
 		m_particleLifeTime = particleLifeTime;
 		
@@ -70,10 +70,13 @@ namespace Phoenix {
 
 		if (m_varsBillboard)
 			delete m_varsBillboard;
+
+		if (m_varsParticleSystem)
+			delete m_varsParticleSystem;
 	}
 
 
-	bool ParticleSystemEx::Init(Section* sec, const std::vector<Particle> particles, unsigned int numParticlesPerEmitter, std::vector<std::string> billboardShaderVars)
+	bool ParticleSystemEx::Init(Section* sec, const std::vector<Particle> particles, unsigned int numParticlesPerEmitter, std::vector<std::string> shaderVars)
 	{
 		if (particles.size() == 0)
 			return false;
@@ -185,12 +188,22 @@ namespace Phoenix {
 			return false;
 		}
 
+		//Use the particleSystem shader and send variables
+		m_particleSystemShader->use();
+		m_varsParticleSystem = new ShaderVars(sec, m_particleSystemShader);
+		// Read the shader variables
+		for (int i = 0; i < shaderVars.size(); i++) {
+			m_varsParticleSystem->ReadString(shaderVars[i]);
+		}
+		// Set billboard shader variables values (texture, particle size, etc...)
+		m_varsParticleSystem->setValues();
+
 		//Use the billboard shader and send variables
 		m_billboardShader->use();
 		m_varsBillboard = new ShaderVars(sec, m_billboardShader);
 		// Read the shader variables
-		for (int i = 0; i < billboardShaderVars.size(); i++) {
-			m_varsBillboard->ReadString(billboardShaderVars[i].c_str());
+		for (int i = 0; i < shaderVars.size(); i++) {
+			m_varsBillboard->ReadString(shaderVars[i]);
 		}
 		// Set billboard shader variables values (texture, particle size, etc...)
 		m_varsBillboard->setValues();
@@ -223,7 +236,7 @@ namespace Phoenix {
 		m_particleSystemShader->setValue("u_fRamndomness", randomness);
 		m_particleSystemShader->setValue("u_v3Force", force);
 		m_particleSystemShader->setValue("u_v3Color", color);
-
+		m_varsParticleSystem->setValues();
 
 		bindRandomTexture(RANDOM_TEXTURE_UNIT);
 

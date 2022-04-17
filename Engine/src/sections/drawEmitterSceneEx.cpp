@@ -76,17 +76,20 @@ namespace Phoenix {
 	bool sDrawEmitterSceneEx::load()
 	{
 		// script validation
-		if ((param.size() != 2) || (strings.size() < 9)) {
-			Logger::error("Draw Emitter Scene Ex [{}]: 2 param (Particles per Emitter & Particle Life Time) and 9 strings needed (shader path, scene, 3 for positioning, particleSystemTime, partRandomness, force and color)", identifier);
+		if ((param.size() != 2) || (strings.size() < 10)) {
+			Logger::error("Draw Emitter Scene Ex [{}]: 2 param (Particles per Emitter & Particle Life Time) and 10 strings needed (2 shaders, scene, 3 for positioning, particleSystemTime, partRandomness, force and color)", identifier);
 			return false;
 		}
 
 		// Load the shaders
-		std::string pathShaders;
-		pathShaders = m_demo.m_dataFolder + strings[0];
+		std::string pathParticleSystemShader;
+		pathParticleSystemShader = m_demo.m_dataFolder + strings[0];
+
+		std::string pathBillboardShader;
+		pathBillboardShader = m_demo.m_dataFolder + strings[1];
 
 		// Load the model
-		m_pModel = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[1]);
+		m_pModel = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[2]);
 
 		if (!m_pModel)
 			return false;
@@ -108,7 +111,7 @@ namespace Phoenix {
 
 		m_pExprPosition = new MathDriver(this);
 		// Load all the other strings
-		for (size_t i = 2; i < strings.size(); i++)
+		for (size_t i = 3; i < strings.size(); i++)
 			m_pExprPosition->expression += strings[i];
 
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
@@ -201,7 +204,7 @@ namespace Phoenix {
 		}
 		
 		// Create the particle system
-		m_pPartSystem = new ParticleSystemEx(pathShaders, m_fParticleLifeTime);
+		m_pPartSystem = new ParticleSystemEx(pathParticleSystemShader, pathBillboardShader, m_fParticleLifeTime);
 		if (!m_pPartSystem->Init(this, Particles, static_cast<unsigned int>(m_iParticlesPerEmitter), uniform))
 			return false;
 
