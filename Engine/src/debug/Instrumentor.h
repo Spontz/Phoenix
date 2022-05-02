@@ -202,7 +202,7 @@ namespace Phoenix {
 
 
 // Set "PX_PROFILE 1" to enable profiling, use "chrome://tracing/" to inspect the generated files
-// Set "PX_PROFILE 0" to disale profiling
+// Set "PX_PROFILE 0" to disable profiling
 #define PX_PROFILE 0
 #if PX_PROFILE
 // Resolve which function signature macro will be used. Note that this only

@@ -780,49 +780,60 @@ namespace Phoenix {
 
 	void DemoKernel::ProcessAndExecuteSectionsLayer()
 	{
+		PX_PROFILE_FUNCTION();
 		Logger::info(LogLevel::med, "Start queue processing (init and exec) for second: {:.4f}", m_demoRunTime);
-
-		m_SectionLayer->ProcessSections(m_demoRunTime);
+		
 		{
-			PX_PROFILE_SCOPE("SectionLayer Exec");
+			// Process
+			{
+				PX_PROFILE_SCOPE("SectionsLayer::ProcessSections");
+				m_SectionLayer->ProcessSections(m_demoRunTime);
+			}
 
-			// Prepare render
-			m_Window->InitRender(true);
+			// Execute
+			{
+				PX_PROFILE_SCOPE("SectionsLayer::ExecuteSections");
 
-			// Set the internal Camera as Active, so, in case there is no active camera we can use the internal one
-			m_cameraManager.setInternalCameraAsActive();
+				// Prepare render
+				m_Window->InitRender(true);
 
-			// Execute the Secions
-			m_SectionLayer->ExecuteSections(m_demoRunTime);
+				// Set the internal Camera as Active, so, in case there is no active camera we can use the internal one
+				m_cameraManager.setInternalCameraAsActive();
 
-			// Set back to the frambuffer and restore the viewport
-			m_Window->SetFramebuffer();
-		}
-		m_SectionLayer->End();
+				// Execute the Secions
+				m_SectionLayer->ExecuteSections(m_demoRunTime);
 
-		// Show grid only if we are in Debug // TODO: Create a new layer for the Grid and other debug elements?
-		if (m_debug && m_debug_drawGrid) {
-			PX_PROFILE_SCOPE("DrawGrid");
-			m_pRes->draw3DGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
+				// Set back to the frambuffer and restore the viewport
+				m_Window->SetFramebuffer();
+			}
+
+			// End
+			{
+				PX_PROFILE_SCOPE("SectionsLayer::EndSections");
+				m_SectionLayer->End();
+			}
+
+
+			// Show grid only if we are in Debug // TODO: Create a new layer for the Grid and other debug elements?
+			if (m_debug && m_debug_drawGrid) {
+				PX_PROFILE_SCOPE("SectionsLayer::DrawGrid (debug)");
+				m_pRes->draw3DGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
+			}
 		}
 	}
 
 	void DemoKernel::ProcessAndExecuteLayers()
 	{
-		{
-			PX_PROFILE_SCOPE("LayerStack OnUpdate");
-
-			for (Layer* layer : m_LayerStack)
-				layer->OnUpdate(m_realFrameTime); // Render the layers
-		}
+		PX_PROFILE_FUNCTION();
+		for (Layer* layer : m_LayerStack)
+			layer->OnUpdate(m_realFrameTime); // Render the layers
 	}
 
 	void DemoKernel::ProcessAndExecuteImGUILayer()
 	{
+		PX_PROFILE_FUNCTION();
 		m_ImGuiLayer->Begin();
 		{
-			PX_PROFILE_SCOPE("LayerStack OnImGuiRender");
-
 			for (Layer* layer : m_LayerStack)
 				layer->OnImGuiRender();			// Update the ImGui components (if any)
 		}
