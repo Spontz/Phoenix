@@ -28,6 +28,6 @@ namespace Phoenix {
 		std::vector<SP_Texture>	texture;	// Texture list
 		std::vector<SP_Cubemap>	cubemap;	// Cubemap list
 		float					m_mem;		// Texture memory in MegaBytes
-		bool					forceLoad;	// Force texture loading each time we add a texture (should be enabled when working on slave mode)
+		bool					m_forceLoad;// Force texture loading each time we add a texture (should be enabled when working on slave mode)
 	};
 }

@@ -625,7 +625,7 @@ namespace Phoenix {
 				LogLevel::med,
 				"Engine is in slave mode, therefore, enabling force loads for shaders and textures!"
 			);
-			m_textureManager.forceLoad = true;
+			m_textureManager.m_forceLoad = true;
 			m_shaderManager.m_forceLoad = true;
 		}
 		return true;

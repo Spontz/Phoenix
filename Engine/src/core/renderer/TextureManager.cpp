@@ -11,7 +11,7 @@ namespace Phoenix {
 		texture.clear();
 		cubemap.clear();
 		m_mem = 0;
-		forceLoad = false;
+		m_forceLoad = false;
 	}
 
 	TextureManager::~TextureManager()
@@ -51,7 +51,7 @@ namespace Phoenix {
 
 		}
 		else { // If the texture is catched we should not do anything, unless we have been told to upload it again
-			if (forceLoad) {
+			if (m_forceLoad) {
 				m_mem -= p_tex->m_mem; // Decrease the overall texture memory
 				p_tex->m_properties = texProperties;
 				if (p_tex->load(path)) {
@@ -114,7 +114,7 @@ namespace Phoenix {
 			}
 		}
 		else { // If the cubemap is catched we should not do anything, unless we have been told to upload it again
-			if (forceLoad) {
+			if (m_forceLoad) {
 				m_mem -= p_cubemap->m_mem; // Decrease the overall texture memory
 				if (p_cubemap->load(path, flip)) {
 					m_mem += p_cubemap->m_mem;
