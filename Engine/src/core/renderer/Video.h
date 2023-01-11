@@ -66,7 +66,7 @@ namespace Phoenix {
 		GLuint m_uiTextureOGLName;  // OpenGL texture name storing video frames
 		bool m_bLoaded;
 		AVFormatContext* m_pFormatContext;  // Holds the format header information (Container)
-		AVCodec* m_pAVCodec;
+		const AVCodec* m_pAVCodec;
 		AVCodecParameters* m_pAVCodecParameters;
 		AVCodecContext* m_pCodecContext;
 		AVFrame* m_pFrame;
