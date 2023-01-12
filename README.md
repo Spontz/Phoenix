@@ -13,23 +13,21 @@ This engine would not exist without inspiration obtained from the following sour
 
 Phoenix uses the following libs:
 
-* GLFW: OpenGL multiplatform library: https://github.com/glfw/glfw
-* GLAD: OpenGL Extension manager: https://glad.dav1d.de
-* GLM: OpenGL mathematics: https://github.com/g-truc/glm
-* Bass: sound support: http://www.un4seen.com
-* Assimp: 3d asset loading: https://github.com/assimp/assimp
-* STB: bitmap loading: https://github.com/nothings/stb
-* Exprtk: mathematical expression evaluator: https://github.com/ArashPartow/exprtk
-* FFMpeg: https://github.com/FFmpeg/FFmpeg
-* Dear ImGUI: graphical user interface: https://github.com/ocornut/imgui
-* dyad.c: networking: https://github.com/rxi/dyad
-* FreeType: glyphs: https://github.com/freetype
+* GLFW: OpenGL multiplatform library - https://github.com/glfw/glfw
+* GLAD: OpenGL Extension manager - https://glad.dav1d.de
+* GLM: OpenGL mathematics - https://github.com/g-truc/glm
+* Bass: sound support - http://www.un4seen.com
+* Assimp: 3d asset loading - https://github.com/assimp/assimp
+* STB: bitmap loading - https://github.com/nothings/stb
+* Exprtk: mathematical expression evaluator - https://github.com/ArashPartow/exprtk
+* FFMpeg: Video decoder - https://github.com/FFmpeg/FFmpeg
+* Dear ImGUI: graphical user interface - https://github.com/ocornut/imgui
+* dyad.c: networking - https://github.com/rxi/dyad
+* FreeType: font rendering - https://github.com/freetype
 
 Instructions (Windows)
 
-Please run 00_bootstrap.bat, this will download dependecies and create vs2019 and vs2021 solutions. Feel free to contact any of us if you need further assistance.
-
-Regards.
+Please run 00_bootstrap.bat, this will download all required dependecies and create the vs2022 project. Feel free to contact any of us if you need further assistance.
 
 
 <p align="center">
