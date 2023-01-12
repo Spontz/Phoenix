@@ -25,10 +25,9 @@ Phoenix uses the following libs:
 * dyad.c: networking - https://github.com/rxi/dyad
 * FreeType: font rendering - https://github.com/freetype
 
-Instructions (Windows)
+## Instructions (Windows)
 
-Please run 00_bootstrap.bat, this will download all required dependecies and create the vs2022 project. Feel free to contact any of us if you need further assistance.
-
+Please run 00_bootstrap.bat, this will download all required dependecies and create the vs2022 project, then compile the project usign Visual Studio. Feel free to contact any of us if you need further assistance.
 
 <p align="center">
   <img width="400" height="400" src="/img/spontzLogo.jpg">
