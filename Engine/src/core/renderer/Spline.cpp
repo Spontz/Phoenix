@@ -2,6 +2,7 @@
 // Spontz Demogroup
 
 #include <main.h>
+#include <filesystem>
 #include "core/renderer/Spline.h"
 
 namespace Phoenix {
@@ -90,7 +91,7 @@ namespace Phoenix {
 		t = step / tlength;
 
 		// Precompute spline coefficients.
-		if (!key1->linear) {
+		if (key1->linear == false) {
 			Hermite(t, &h1, &h2, &h3, &h4);
 			dd0a = (1.0f - key0->tens) * (1.0f + key0->cont) * (1.0f + key0->bias);
 			dd0b = (1.0f - key0->tens) * (1.0f - key0->cont) * (1.0f - key0->bias);
@@ -110,7 +111,7 @@ namespace Phoenix {
 		for (i = 0; i < channels; i++) {
 			d10 = key1->cv[i] - key0->cv[i];
 
-			if (!key1->linear) {
+			if (key1->linear == false) {
 				if (!have_prev_key)
 					dd0 = 0.5f * (dd0a + dd0b) * d10;
 				else
@@ -131,107 +132,91 @@ namespace Phoenix {
 
 	}
 
-
-	int getFloatVector(char* line, float* vector, int max) {
-
-		char result[256], * s;
-		int chan, offset, n;
-
-		chan = 0;
-		offset = 0;
-		do {
-			// read separators
-			s = &line[offset];
-			while ((s[0] == '{') || (s[0] == ' ') || (s[0] == ',') || (s[0] == '\t')) {
-				s++;
-				offset++;
-			}
-
-			// read the float
-			n = 0;
-			while (((s[0] >= '0') && (s[0] <= '9')) || (s[0] == '.') || (s[0] == '-')) {
-				result[n++] = s++[0];
-				offset++;
-			}
-			result[n] = 0;
-
-			// convert string to float
-			if (n > 0) {
-				if (chan >= max)
-					return -1;// error("Script parser: too many floats in vector '%s'", line);
-				sscanf(result, "%f", &vector[chan]);
-				chan++;
-			}
-
-		} while (n > 0);
-
-		return chan;
-	}
-
-
 	bool Spline::load()
 	{
-		char line[512];
-		FILE* f;
-		int chan;
 
-		f = fopen(filename.c_str(), "rt");
-		if (!f) {
-			Logger::error("Error loading spline file: {}", filename);
-			return false;
+		// Read the file
+		uint32_t fileSize;
+		char* fileData = nullptr;
+		std::ifstream f(filename.data(), std::ios::in | std::ios::binary);
+		if (f) {
+			fileSize = static_cast<uint32_t>(std::filesystem::file_size(filename.data()));
+
+			// Allocate storage for the buffer
+			fileData = new char[fileSize + 1];
+
+			// Read the whole file into the buffer.
+			f.read(fileData, fileSize);
+			fileData[fileSize] = '\0'; // add the terminator
+			f.close();
 		}
+
+		// Convert the fileData to StringStream so it can be processed line by line
+		std::stringstream ssFileData;
+		if (fileData) {
+			ssFileData.str(fileData);
+		}
+
+		std::string line;
+		uint32_t lineCnt = 0;
 
 		key.clear();
 		keys = 0;
 		steps = 0;
 		channels = 0;
 
-		for (;;) {
-
-			if (fgets(line, 512, f) == NULL) break;
-
+		while (std::getline(ssFileData, line)) {
 			// comments or empty line
 			if ((line[0] == ';') || (line[0] == '\n') || (line[0] == '\r')) continue;
 
-			KeyFrame new_key;
-			chan = getFloatVector(line, new_key.cv, kszKeyFrameNumChannels);
+			// Get the line values, using the 'tab' separator
+			std::stringstream lineStream(line);
+			std::string value;
+			std::vector<std::string> valueList;
+			int32_t lineChannels = 0;
 
-			if (chan == -1) {
-				Logger::error("Spline load error: too many floats in file: {}, line: '{}'", filename, line);
-				fclose(f);
+			while (std::getline(lineStream, value, '\t')) {
+				valueList.push_back(value);
+			}
+
+			// Validate the line
+			lineChannels = static_cast<int32_t> (valueList.size());
+
+			if (lineChannels >= kszKeyFrameNumChannels) {
+				Logger::error("Spline load error: too many floats in file: {}, line {}: Found {} values, but max is {}", filename, lineCnt, channels, kszKeyFrameNumChannels);
+				return false;
+			}
+			if (lineChannels == 0) {
+				Logger::error("Spline load error : incorrect format in {}, line {}: Zero values detected", filename, lineCnt);
 				return false;
 			}
 
-			if (channels == 0) {
-				if (chan == 0) {
-					Logger::error("Spline: incorrect format in {}", filename);
-					fclose(f);
-					return false;
-				}
-				channels = chan;
+			// Validate if the current line has the same number of channels of the first line
+			if (key.size() == 0) {
+				channels = lineChannels;
 			}
 			else {
-				if (channels != chan) {
-					Logger::error("Spline: incorrect channel in {}", filename);
-					fclose(f);
+				if (lineChannels != channels) {
+					Logger::error("Spline load error : incorrect format in {}, line {} has {} values, but it should be {} as per first line", filename, lineCnt, lineChannels, channels);
 					return false;
 				}
 
 			}
 
-			new_key.tens = 0;
-			new_key.cont = 0;
-			new_key.bias = 0;
-			new_key.linear = 0;
+			// Load the values into the KeyFrame
+			KeyFrame* newKey = new KeyFrame();
+			for (int i = 0; i < channels; i++) {
+				newKey->cv[i] = std::stof(valueList[i]);
+			}
 
-			key.push_back(new KeyFrame(new_key));
-			keys++;
-
+			key.push_back(newKey);
+			//Logger::info(LogLevel::high, "Line read: {}", line.c_str());
+			lineCnt++;
 		}
 
-		fclose(f);
 
 		// Calculate the steps of each key based in the duration
+		keys = static_cast<int32_t> (key.size());
 		steps = duration;
 		float motionStepTime = steps / (keys - 1);
 		for (int i = 0; i < keys; i++)

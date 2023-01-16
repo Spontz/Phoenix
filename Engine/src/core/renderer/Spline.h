@@ -22,10 +22,20 @@ namespace Phoenix {
 	// tension, continuity and bias spline controls, a linear flag and the
 	// frame at which the key is located (step).
 	struct KeyFrame final {
-		ChanVec cv;
-		float   tens, cont, bias;
-		int     linear;
-		float   step;
+		ChanVec	cv;
+		float	tens, cont, bias;
+		bool	linear;	// Linear interpolation
+		float	step;
+
+		KeyFrame() {
+			for (int i = 0; i < kszKeyFrameNumChannels; i++)
+				cv[i] = 0;
+			tens = 0;
+			cont = 0;
+			bias = 0;
+			linear = false;
+			step = 0;
+		}
 	};
 
 	// ******************************************************************
@@ -36,10 +46,10 @@ namespace Phoenix {
 	public:
 		~Spline();
 
-		std::vector<KeyFrame*>	key;		// todo: remove raw pointers
-		int						keys;		// KeyNumber
-		float					steps;		// total steps of the spline
-		int						channels;	// Columns
+		std::vector<KeyFrame*>	key;		// Keyframes
+		int32_t					keys;		// Number of Keyframes
+		float					steps;		// Total steps of the spline
+		int32_t					channels;	// Values of a keyframe
 
 		std::string				filename;	// Filename
 		float					duration;	// Spline duration in seconds
