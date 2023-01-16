@@ -182,24 +182,16 @@ namespace Phoenix {
 	{
 	}
 
-	bool SpoReader::readAsciiFromFile(std::string_view filepath)
+	void SpoReader::readFromFile(std::string_view filepath)
 	{
 		m_filepath = filepath;
-		std::ifstream file(m_filepath, std::ios::in | std::ios::binary);
-		if (file.good()) {
-			m_scriptData = { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
-			file.close();
-			return true;
-		}
-		else
-			return false;
+		m_scriptData = Utils::readASCIIFile(filepath);
 	}
 
-	bool SpoReader::readAsciiFromNetwork(std::string_view sScript)
+	void SpoReader::readFromNetwork(std::string_view sScript)
 	{
 		m_filepath = "Network";
 		m_scriptData = sScript;
-		return true;
 	}
 
 	int SpoReader::loadScriptData()

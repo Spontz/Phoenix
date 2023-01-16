@@ -603,7 +603,7 @@ namespace Phoenix {
 				Logger::info(LogLevel::low, "Reading file: {}", ScriptRelativePath);
 
 				Phoenix::SpoReader spo;
-				spo.readAsciiFromFile(ScriptRelativePath);
+				spo.readFromFile(ScriptRelativePath);
 				spo.loadScriptData();
 				Logger::info(LogLevel::low, "Finished loading file!");
 			} while (_findnext(hFile, &FindData) == 0);
@@ -644,7 +644,7 @@ namespace Phoenix {
 				ScriptRelativePath = m_dataFolder + "/" + FindData.name;
 				Logger::info(LogLevel::low, "Reading file: {}", ScriptRelativePath);
 				SpoReader spo;
-				spo.readAsciiFromFile(ScriptRelativePath);
+				spo.readFromFile(ScriptRelativePath);
 				spo.loadScriptData();
 				Logger::info(LogLevel::low, "Finished loading file!");
 			} while (_findnext(hFile, &FindData) == 0);
@@ -656,7 +656,7 @@ namespace Phoenix {
 	bool DemoKernel::loadScriptFromNetwork(std::string_view sScript)
 	{
 		SpoReader spoReader;
-		spoReader.readAsciiFromNetwork(sScript);
+		spoReader.readFromNetwork(sScript);
 
 		const auto sectionIndex = spoReader.loadScriptData();
 		if (sectionIndex < 0) {

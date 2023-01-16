@@ -49,8 +49,8 @@ namespace Phoenix {
 		~SpoReader();
 
 	public:
-		bool readAsciiFromFile(std::string_view filePath);
-		bool readAsciiFromNetwork(std::string_view script);
+		void readFromFile(std::string_view filePath);
+		void readFromNetwork(std::string_view script);
 		int	loadScriptData();
 
 	private:

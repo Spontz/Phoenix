@@ -213,3 +213,4 @@ namespace Phoenix {
 }
 
 #include "core/utils/Logger.h"
+#include "core/utils/Utils.h"

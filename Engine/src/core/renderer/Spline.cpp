@@ -134,28 +134,11 @@ namespace Phoenix {
 
 	bool Spline::load()
 	{
-
-		// Read the file
-		uint32_t fileSize;
-		char* fileData = nullptr;
-		std::ifstream f(filename.data(), std::ios::in | std::ios::binary);
-		if (f) {
-			fileSize = static_cast<uint32_t>(std::filesystem::file_size(filename.data()));
-
-			// Allocate storage for the buffer
-			fileData = new char[fileSize + 1];
-
-			// Read the whole file into the buffer.
-			f.read(fileData, fileSize);
-			fileData[fileSize] = '\0'; // add the terminator
-			f.close();
-		}
+		std::string fileData = Utils::readASCIIFile(filename);
 
 		// Convert the fileData to StringStream so it can be processed line by line
 		std::stringstream ssFileData;
-		if (fileData) {
-			ssFileData.str(fileData);
-		}
+		ssFileData.str(fileData);
 
 		std::string line;
 		uint32_t lineCnt = 0;
