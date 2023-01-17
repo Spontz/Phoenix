@@ -99,34 +99,27 @@ namespace Phoenix {
 
 	bool CameraProjectionFPS::capturePos()
 	{
-		std::string fileName = "camera_fps.cam";
-		std::string s = "\t"; // Separator
-		bool saved = false;
+		const std::string fileName = "camera_fps.cam";
+		const std::string s = "\t"; // Separator
+		std::string ss;
 
-		// Check if file exists
+		// Check if file exists, if not, adds the header
 		std::ifstream infile(fileName);
 		bool fileExists = infile.good();
+		infile.close();
 
-		// write into file
-		std::ofstream camFile;
-		std::stringstream ss;
-
-		camFile.open(fileName, std::ios::out | std::ios::app);
-		if (camFile.is_open())
-		{
-			// Check if we need to add header
-			if (!fileExists)
-				ss << ";cPosX\tcPosY\tcPosZ\tcUpX\tcUpY\tcUpZ\tcYaw\tcPitch\tcRoll\tcFov\tcNear\tcFar" << std::endl;
-		
-			ss << std::to_string(m_Position.x) + s + std::to_string(m_Position.y) + s + std::to_string(m_Position.z) + s + \
-				std::to_string(m_Up.x) + s + std::to_string(m_Up.y) + s + std::to_string(m_Up.z) + s + \
-				std::to_string(m_Yaw) + s + std::to_string(m_Pitch) + s + std::to_string(m_Roll) + s + std::to_string(m_Fov) + s + \
-				std::to_string(m_FrustumNear) + s + std::to_string(m_FrustumFar) << std::endl;
-			camFile << ss.str();
-			camFile.close();
-			saved = true;
+		if (!fileExists) {
+			ss = ";cPosX\tcPosY\tcPosZ\tcUpX\tcUpY\tcUpZ\tcYaw\tcPitch\tcRoll\tcFov\tcNear\tcFar\n"; 
+			Utils::appendIntoASCIIFile(fileName, ss);
 		}
-		return saved;
+		
+		// Adds the normal message
+		ss = std::to_string(m_Position.x) + s + std::to_string(m_Position.y) + s + std::to_string(m_Position.z) + s + \
+			std::to_string(m_Up.x) + s + std::to_string(m_Up.y) + s + std::to_string(m_Up.z) + s + \
+			std::to_string(m_Yaw) + s + std::to_string(m_Pitch) + s + std::to_string(m_Roll) + s + \
+			std::to_string(m_Fov) + s + std::to_string(m_FrustumNear) + s + std::to_string(m_FrustumFar) + "\n";
+
+		return Utils::appendIntoASCIIFile(fileName, ss);
 	}
 
 	void CameraProjectionFPS::reset()
@@ -281,34 +274,27 @@ namespace Phoenix {
 
 	bool CameraProjectionTarget::capturePos()
 	{
-		std::string fileName = "camera_target.cam";
-		std::string s = "\t"; // Separator
-		bool saved = false;
+		const std::string fileName = "camera_target.cam";
+		const std::string s = "\t"; // Separator
+		std::string ss;
 
-		// Check if file exists
+		// Check if file exists, if not, adds the header
 		std::ifstream infile(fileName);
 		bool fileExists = infile.good();
+		infile.close();
 
-		// write into file
-		std::ofstream camFile;
-		std::stringstream ss;
-
-		camFile.open(fileName, std::ios::out | std::ios::app);
-		if (camFile.is_open())
-		{
-			// Check if we need to add header
-			if (!fileExists)
-				ss << ";cPosX\tcPosY\tcPosZ\tcTargetX\tcTargetY\tcTargetZ\tcYaw\tcPitch\tcRoll\tcFov\tcNear\tcFar" << std::endl;
-
-			ss << std::to_string(m_Position.x) + s + std::to_string(m_Position.y) + s + std::to_string(m_Position.z) + s + \
-				std::to_string(m_Target.x) + s + std::to_string(m_Target.y) + s + std::to_string(m_Target.z) + s + \
-				std::to_string(m_Yaw) + s + std::to_string(m_Pitch) + s + std::to_string(m_Roll) + s + std::to_string(m_Fov) + s + \
-				std::to_string(m_FrustumNear) + s + std::to_string(m_FrustumFar) << std::endl;
-			camFile << ss.str();
-			camFile.close();
-			saved = true;
+		if (!fileExists) {
+			ss = ";cPosX\tcPosY\tcPosZ\tcTargetX\tcTargetY\tcTargetZ\tcYaw\tcPitch\tcRoll\tcFov\tcNear\tcFar\n";
+			Utils::appendIntoASCIIFile(fileName, ss);
 		}
-		return saved;
+
+		// Adds the normal message
+		ss = std::to_string(m_Position.x) + s + std::to_string(m_Position.y) + s + std::to_string(m_Position.z) + s + \
+			std::to_string(m_Target.x) + s + std::to_string(m_Target.y) + s + std::to_string(m_Target.z) + s + \
+			std::to_string(m_Yaw) + s + std::to_string(m_Pitch) + s + std::to_string(m_Roll) + s + \
+			std::to_string(m_Fov) + s + std::to_string(m_FrustumNear) + s + std::to_string(m_FrustumFar) + "\n";
+
+		return Utils::appendIntoASCIIFile(fileName, ss);
 	}
 
 	void CameraProjectionTarget::reset()
