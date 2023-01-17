@@ -4,8 +4,13 @@
 #include "main.h"
 #include "Utils.h"
 #include <iomanip>
+#include <filesystem>
 
 namespace Phoenix {
+
+	bool Utils::checkFileExists(std::string_view fileName) {
+		return std::filesystem::exists(fileName);
+	}
 
 	std::string Utils::readASCIIFile(std::string_view fileName) 
 	{

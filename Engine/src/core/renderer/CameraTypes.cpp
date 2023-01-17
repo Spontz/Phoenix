@@ -101,25 +101,20 @@ namespace Phoenix {
 	{
 		const std::string fileName = "camera_fps.cam";
 		const std::string s = "\t"; // Separator
-		std::string ss;
+		std::string dataRow;
 
 		// Check if file exists, if not, adds the header
-		std::ifstream infile(fileName);
-		bool fileExists = infile.good();
-		infile.close();
-
-		if (!fileExists) {
-			ss = ";cPosX\tcPosY\tcPosZ\tcUpX\tcUpY\tcUpZ\tcYaw\tcPitch\tcRoll\tcFov\tcNear\tcFar\n"; 
-			Utils::appendIntoASCIIFile(fileName, ss);
+		if (!Utils::checkFileExists(fileName)) {
+			Utils::appendIntoASCIIFile(fileName, ";cPosX\tcPosY\tcPosZ\tcUpX\tcUpY\tcUpZ\tcYaw\tcPitch\tcRoll\tcFov\tcNear\tcFar\n");
 		}
 		
-		// Adds the normal message
-		ss = std::to_string(m_Position.x) + s + std::to_string(m_Position.y) + s + std::to_string(m_Position.z) + s + \
+		// Adds the row data
+		dataRow = std::to_string(m_Position.x) + s + std::to_string(m_Position.y) + s + std::to_string(m_Position.z) + s + \
 			std::to_string(m_Up.x) + s + std::to_string(m_Up.y) + s + std::to_string(m_Up.z) + s + \
 			std::to_string(m_Yaw) + s + std::to_string(m_Pitch) + s + std::to_string(m_Roll) + s + \
 			std::to_string(m_Fov) + s + std::to_string(m_FrustumNear) + s + std::to_string(m_FrustumFar) + "\n";
 
-		return Utils::appendIntoASCIIFile(fileName, ss);
+		return Utils::appendIntoASCIIFile(fileName, dataRow);
 	}
 
 	void CameraProjectionFPS::reset()
@@ -276,25 +271,20 @@ namespace Phoenix {
 	{
 		const std::string fileName = "camera_target.cam";
 		const std::string s = "\t"; // Separator
-		std::string ss;
+		std::string dataRow;
 
 		// Check if file exists, if not, adds the header
-		std::ifstream infile(fileName);
-		bool fileExists = infile.good();
-		infile.close();
-
-		if (!fileExists) {
-			ss = ";cPosX\tcPosY\tcPosZ\tcTargetX\tcTargetY\tcTargetZ\tcYaw\tcPitch\tcRoll\tcFov\tcNear\tcFar\n";
-			Utils::appendIntoASCIIFile(fileName, ss);
+		if (!Utils::checkFileExists(fileName)) {
+			Utils::appendIntoASCIIFile(fileName, ";cPosX\tcPosY\tcPosZ\tcTargetX\tcTargetY\tcTargetZ\tcYaw\tcPitch\tcRoll\tcFov\tcNear\tcFar\n");
 		}
 
-		// Adds the normal message
-		ss = std::to_string(m_Position.x) + s + std::to_string(m_Position.y) + s + std::to_string(m_Position.z) + s + \
+		// Adds the row data
+		dataRow = std::to_string(m_Position.x) + s + std::to_string(m_Position.y) + s + std::to_string(m_Position.z) + s + \
 			std::to_string(m_Target.x) + s + std::to_string(m_Target.y) + s + std::to_string(m_Target.z) + s + \
 			std::to_string(m_Yaw) + s + std::to_string(m_Pitch) + s + std::to_string(m_Roll) + s + \
 			std::to_string(m_Fov) + s + std::to_string(m_FrustumNear) + s + std::to_string(m_FrustumFar) + "\n";
 
-		return Utils::appendIntoASCIIFile(fileName, ss);
+		return Utils::appendIntoASCIIFile(fileName, dataRow);
 	}
 
 	void CameraProjectionTarget::reset()

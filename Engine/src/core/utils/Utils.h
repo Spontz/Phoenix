@@ -9,8 +9,9 @@ namespace Phoenix {
 
 	public:
 
-		static std::string readASCIIFile(std::string_view filename);
-		static bool appendIntoASCIIFile(std::string_view filename, std::string_view message);
+		static bool checkFileExists(std::string_view filename);										// Check if file exists
+		static std::string readASCIIFile(std::string_view filename);								// Read an ASCII file contents
+		static bool appendIntoASCIIFile(std::string_view filename, std::string_view message);		// Append message to file
 	};
 
 }
