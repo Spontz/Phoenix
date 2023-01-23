@@ -72,7 +72,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size() != 2) || (strings.size() < 10)) {
-			Logger::error("Draw Emitter Scene [{}]: 3 param (Emission time & Particle Life Time) and 10 strings needed (2 shaders, model, 3 for positioning, part speed, velocity, force and color)", identifier);
+			Logger::error("Draw Emitter Scene [{}]: 2 param (Emission time & Particle Life Time) and 10 strings needed (2 shaders, model, 3 for positioning, part speed, velocity, force and color)", identifier);
 			return false;
 		}
 
