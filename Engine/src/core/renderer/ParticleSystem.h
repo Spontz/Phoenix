@@ -21,11 +21,11 @@ namespace Phoenix {
 
 		struct Particle
 		{
-			glm::vec3 Pos;		// Position:	loc 0 (vec3)
-			glm::vec3 Vel;		// Velocity:	loc 1 (vec3)
-			glm::vec3 Col;		// Color:		loc 2 (vec3)
-			float lifeTime;		// lifeTime:	loc 3 (float)
-			ParticleType Type;	// type:		loc 4 (int32)
+			ParticleType Type;	// type:		loc 0 (int32)
+			glm::vec3 Pos;		// Position:	loc 1 (vec3)
+			glm::vec3 Vel;		// Velocity:	loc 2 (vec3)
+			glm::vec3 Col;		// Color:		loc 3 (vec3)
+			float lifeTime;		// lifeTime:	loc 4 (float)
 		};
 
 
@@ -35,6 +35,7 @@ namespace Phoenix {
 		bool Init(Section* sec, const std::vector<Particle> emitters, float emissionTime, float particleLifeTime, std::vector<std::string> shaderVars);
 		void Render(float deltaTime, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 		void UpdateEmitters(float deltaTime);
+		void UpdateEmittersPosition(const std::vector<Particle> emitters);
 
 		int32_t getNumGenParticles() { return m_numGenParticles; };
 		int32_t getNumMaxParticles() { return m_numMaxParticles; };

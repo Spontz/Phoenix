@@ -34,6 +34,7 @@ namespace Phoenix {
 		{"drawParticlesScene",			SectionType::DrawParticlesScene, instance_drawParticlesScene},
 		{"drawEmitterScene",			SectionType::DrawEmitterScene, instance_drawEmitterScene},
 		{"drawEmitterSceneEx",			SectionType::DrawEmitterSceneEx, instance_drawEmitterSceneEx},
+		{"drawEmitterSpline",			SectionType::DrawEmitterSpline, instance_drawEmitterSpline},
 		{"sound",						SectionType::Sound, instance_sound},
 		{"setVariable",					SectionType::SetVariable, instance_setVariable},
 		{"fboBind",						SectionType::FboBind, instance_fboBind},

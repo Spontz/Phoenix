@@ -3,6 +3,7 @@
 
 #include "main.h"
 #include "core/renderer/ParticleSystem.h"
+#include <math.h>
 
 namespace Phoenix {
 
@@ -86,7 +87,7 @@ namespace Phoenix {
 		m_emissionTime = emissionTime; 
 		m_particleLifeTime = particleLifeTime;
 		
-		m_numParticlesPerEmitter = static_cast<unsigned int>(m_particleLifeTime * (1.0f / m_emissionTime));
+		m_numParticlesPerEmitter = static_cast<unsigned int>(ceil(m_particleLifeTime * (1.0f / m_emissionTime)));
 		m_numMaxParticles = m_numEmitters + m_numEmitters * m_numParticlesPerEmitter;
 
 		// Gen the Query
@@ -234,6 +235,24 @@ namespace Phoenix {
 		glUnmapBuffer(GL_ARRAY_BUFFER);
 	}
 
+	void ParticleSystem::UpdateEmittersPosition(const std::vector<Particle> emitters)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
+		uint32_t nParts = m_numMaxParticles;
+
+		m_emitterData = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle) * nParts, GL_MAP_WRITE_BIT);
+
+		// Update Emitter positions
+		for (uint32_t i = 0; i < nParts; i++) {
+			if (m_emitterData[i].Type == ParticleType::Emitter) {
+				m_emitterData[i].Pos = emitters[0].Pos;
+			}
+			Logger::info(LogLevel::low, "Particle {}, Type {}, Pos {},{},{}, Age {}", i, (int32_t)(m_emitterData[i].Type), m_emitterData[i].Pos.x, m_emitterData[i].Pos.y, m_emitterData[i].Pos.z, m_emitterData[i].lifeTime);
+				
+		}
+		glUnmapBuffer(GL_ARRAY_BUFFER);
+	}
+
 	void ParticleSystem::UpdateParticles(float deltaTime, const glm::mat4& model)
 	{
 		//UpdateEmitters(deltaTime); // For debugging only: Overwrittes the emitter position
@@ -310,7 +329,7 @@ namespace Phoenix {
 	bool ParticleSystem::initShaderParticleSystem()
 	{
 		m_particleSystemShader = DEMO->m_shaderManager.addShader(m_pathUpdate,
-			{ "o_Position", "o_Velocity", "o_Color", "o_Age", "o_Type"});
+			{ "o_Type", "o_Position", "o_Velocity", "o_Color", "o_Age"});
 
 		if (m_particleSystemShader)
 			return true;
