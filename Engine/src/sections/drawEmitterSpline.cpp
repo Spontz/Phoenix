@@ -1,7 +1,7 @@
 #include "main.h"
 
 #include "core/drivers/mathdriver.h"
-#include "core/renderer/ParticleSystem.h"
+#include "core/renderer/ParticleSystemCore.h"
 #include "core/renderer/ShaderVars.h"
 
 namespace Phoenix {
@@ -22,17 +22,16 @@ namespace Phoenix {
 		// Spline vector
 		ChanVec	SplineCurrentPos;
 		float	SplinePos = 0;
-		std::vector<ParticleSystem::Particle> Emitter;
+		// Emitter dara
+		ParticleSystemCore::Particle m_emitter;
 
 		// Particle engine variables
 		float			m_lastTime = 0;
-		unsigned int	m_uiNumEmitters = 0;
-		float			m_fCurrentEmitter = 0;
 		float			m_fEmissionTime = 0;
 		float			m_fParticleLifeTime = 0;
 		float			m_fParticleSpeed = 0;
 		float			m_fParticleRandomness = 0;
-		ParticleSystem* m_pPartSystem = nullptr;
+		ParticleSystemCore* m_pPartSystem = nullptr;
 
 		// Particles positioning (for all the model)
 		glm::vec3		m_vTranslation = { 0, 0, 0 };
@@ -41,7 +40,6 @@ namespace Phoenix {
 
 		glm::vec3		m_vVelocity = { 0, 0, 0 };
 		glm::vec3		m_vForce = { 0, 0, 0 };
-		glm::vec3		m_vColor = { 0, 0, 0 };
 		MathDriver*		m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
 
 	};
@@ -60,9 +58,6 @@ namespace Phoenix {
 
 	sDrawEmitterSpline::~sDrawEmitterSpline()
 	{
-		// Delete Emitters
-		Emitter.clear();
-
 		if (m_pExprPosition)
 			delete m_pExprPosition;
 		if (m_pPartSystem)
@@ -137,49 +132,20 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_variable("forceY", m_vForce.y);
 		m_pExprPosition->SymbolTable.add_variable("forceZ", m_vForce.z);
 
-		m_pExprPosition->SymbolTable.add_variable("colorR", m_vColor.r);
-		m_pExprPosition->SymbolTable.add_variable("colorG", m_vColor.g);
-		m_pExprPosition->SymbolTable.add_variable("colorB", m_vColor.b);
-
-		m_pExprPosition->SymbolTable.add_variable("nE", m_fCurrentEmitter);
-
-		// One Emitter, by now :) TBC
-		m_uiNumEmitters = 1;
-
-		if (m_uiNumEmitters <= 0) {
-			Logger::error("Draw Emitter Spline [{}]: No emitters defined", identifier);
-			return false;
-		}
-		m_pExprPosition->SymbolTable.add_constant("TnE", static_cast<float>(m_uiNumEmitters));
+		m_pExprPosition->SymbolTable.add_variable("colorR", m_emitter.Col.r);
+		m_pExprPosition->SymbolTable.add_variable("colorG", m_emitter.Col.g);
+		m_pExprPosition->SymbolTable.add_variable("colorB", m_emitter.Col.b);
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
 			return false;
 
-		
-
-		Emitter.resize(m_uiNumEmitters);
-
-		// Load the emitters, based in our spline
-		size_t numEmitter = 0;
-		m_fCurrentEmitter = 0;
-	
 		m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 		spline[0]->MotionCalcStep(SplineCurrentPos, 0); // Evaluate position
 
-		// Load emitters data
-
-		Emitter[numEmitter].Type = ParticleSystem::ParticleType::Emitter;
-		Emitter[numEmitter].Pos = glm::vec3(SplineCurrentPos[0], SplineCurrentPos[1], SplineCurrentPos[2]); 
-		Emitter[numEmitter].Vel = glm::vec3(0);
-		Emitter[numEmitter].Col = m_vColor;
-		Emitter[numEmitter].lifeTime = 0.0f;
-		numEmitter++;
-		m_fCurrentEmitter = static_cast<float>(numEmitter);
-		
 		// Create the particle system
-		m_pPartSystem = new ParticleSystem(pathParticleSystemShader, pathBillboardShader);
-		if (!m_pPartSystem->Init(this, Emitter, m_fEmissionTime, m_fParticleLifeTime, uniform))
+		m_pPartSystem = new ParticleSystemCore(pathParticleSystemShader, pathBillboardShader);
+		if (!m_pPartSystem->Init(this, m_fEmissionTime, m_fParticleLifeTime, uniform))
 			return false;
 
 		return !DEMO_checkGLError();
@@ -188,11 +154,11 @@ namespace Phoenix {
 	void sDrawEmitterSpline::init()
 	{
 		spline[0]->MotionCalcStep(SplineCurrentPos, 0);
-		Emitter[0].Pos.x = SplineCurrentPos[0];
-		Emitter[0].Pos.y = SplineCurrentPos[1];
-		Emitter[0].Pos.z = SplineCurrentPos[2];
-
-		m_pPartSystem->UpdateEmittersPosition(Emitter);
+		m_emitter.Pos = glm::vec3(SplineCurrentPos[0], SplineCurrentPos[1], SplineCurrentPos[2]);
+		m_emitter.InitVel = glm::vec3(0);
+		m_emitter.Vel = glm::vec3(0);
+		m_pPartSystem->UpdateEmitter(m_emitter);
+		m_pPartSystem->RestartParticles();
 	}
 
 	void sDrawEmitterSpline::exec()
@@ -226,18 +192,18 @@ namespace Phoenix {
 			deltaTime = -deltaTime;	// In case we rewind the demo
 		}
 
-		// Update Emitters position
+		// Update Emitter data
 		SplinePos = this->runTime/this->duration;
 		spline[0]->MotionCalcStep(SplineCurrentPos, runTime);
-		Emitter[0].Pos.x = SplineCurrentPos[0];
-		Emitter[0].Pos.y = SplineCurrentPos[1];
-		Emitter[0].Pos.z = SplineCurrentPos[2];
+		glm::vec3 oldPos = m_emitter.Pos;
+		glm::vec3 newPos = glm::vec3(SplineCurrentPos[0], SplineCurrentPos[1], SplineCurrentPos[2]);
+		m_emitter.InitVel = glm::normalize(oldPos - newPos)*10;
+		m_emitter.Pos = newPos;
+		m_pPartSystem->UpdateEmitter(m_emitter);
 
-		m_pPartSystem->UpdateEmittersPosition(Emitter);
 
 		// Update Force and Color values
 		m_pPartSystem->force = m_vForce;
-		m_pPartSystem->color = m_vColor;
 		m_pPartSystem->randomness = m_fParticleRandomness;
 
 		m_pPartSystem->Render(deltaTime, model, view, projection);
@@ -253,8 +219,6 @@ namespace Phoenix {
 		ss << "Spline used: " << spline[0]->filename << std::endl;
 		ss << "Emission Time: " << m_fEmissionTime << std::endl;
 		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
-		ss << "Emitters: " << m_uiNumEmitters << std::endl;
-		ss << "Particles per Emitter: " << m_pPartSystem->getNumParticlesPerEmitter() << std::endl;
 		ss << "Max Particles: " << m_pPartSystem->getNumMaxParticles() << std::endl;
 		ss << "Memory Used: " << std::format("{:.1f}", m_pPartSystem->getMemUsedInMb()) << " Mb" << std::endl;
 		debugStatic = ss.str();
@@ -265,7 +229,7 @@ namespace Phoenix {
 		ss << debugStatic;
 		ss << "System pos: " << std::format("{:.2f},{:.2f},{:.2f}", m_vTranslation.x, m_vTranslation.y, m_vTranslation.z) << std::endl;
 		ss << "Spline pos: " << std::format("{:.2f}", SplinePos) << std::endl;
-		ss << "Emitter pos: " << std::format("{:.2f},{:.2f},{:.2f}", Emitter[0].Pos.x, Emitter[0].Pos.y, Emitter[0].Pos.z) << std::endl;
+		ss << "Emitter pos: " << std::format("{:.2f},{:.2f},{:.2f}", m_emitter.Pos.x, m_emitter.Pos.y, m_emitter.Pos.z) << std::endl;
 		ss << "Particle Randomness: " << std::format("{:.2f}", m_fParticleRandomness) << std::endl;
 		ss << "Generated Particles: " << m_pPartSystem->getNumGenParticles() << std::endl;
 		return ss.str();
