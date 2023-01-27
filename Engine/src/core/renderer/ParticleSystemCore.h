@@ -17,12 +17,11 @@ namespace Phoenix {
 		{
 			glm::vec3	Pos;		// loc 0: Position
 			glm::vec3	Vel;		// loc 1: Velocity
-			float		StartTime;	// loc 2: StartTime
+			float		StartTime;	// loc 2: Time the particle is born
 			glm::vec3	InitVel;	// loc 3: Initial Veolicity
 			glm::vec3	Col;		// loc 4: Color
-			float		Life;		// loc 5: Life
 			Particle()
-				:Pos(0), Vel(0), StartTime(0), InitVel(0), Col(0), Life(0) {}
+				:Pos(0), Vel(0), StartTime(0), InitVel(0), Col(0) {}
 		};
 
 
@@ -35,7 +34,7 @@ namespace Phoenix {
 		void UpdateEmitter(ParticleSystemCore::Particle emitter);
 
 		int32_t getNumGenParticles() { return m_numGenParticles; };
-		int32_t getNumMaxParticles() { return m_numMaxParticles; };
+		int32_t getNumMaxParticles() { return m_amountParticles; };
 		float getMemUsedInMb() { return m_memUsed; };
 
 		Particle	m_emitter;	// Emitter of all the particles
@@ -50,23 +49,18 @@ namespace Phoenix {
 		bool initShaderBillboard();		// For drawing the quads using geometry shaders
 		bool initShaderParticleSystem();// For drawing the particles using geometry shaders
 
-		bool initRandomTexture(unsigned int Size); //TODO: Add it into the textureManager
-		void bindRandomTexture(GLuint TexUnit = 0);//TODO: this should be removed once is included in the textureManager
-
 		void debugLogBufferData();
 
 	private:
 
 		float					m_time;
-		unsigned int			m_textureRandID;			// TODO: This will be removed once is included in the textureManager
-
 		std::string				m_pathBillboard;
 		ShaderVars*				m_varsBillboard;			// Billboard Shader variables
 
 		std::string				m_pathUpdate;
 		ShaderVars*				m_varsParticleSystem;		// ParticleSystem Shader variables
 
-		unsigned int			m_numMaxParticles;			// Number of maximum particles
+		unsigned int			m_amountParticles;			// Particles number
 		
 		float					m_emissionTime;
 		float					m_particleLifeTime;

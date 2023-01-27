@@ -2,21 +2,31 @@
 #version 450 core
 
 layout (location = 0) in vec3 Position;
+layout (location = 2) in float StartTime;
 layout (location = 4) in vec3 Color;
 
-
+uniform float u_fTime;
+uniform float u_fParticleLifetime;
 uniform mat4 model;
 uniform mat4 view;
 
 out VS_OUT
 {
 	vec4		Position;
-	vec3		Color;
+	vec4		Color;
 } vs_out;
 
 void main()
 {
-	vs_out.Color = Color;
+	// Calculate the agen, and then the alpha channel of the particle
+	float age = u_fTime - StartTime;
+	float alpha;
+	if (age<0.0)
+		alpha = 0.0;
+	else
+		alpha = 1 - (age/u_fParticleLifetime);
+		
+	vs_out.Color = vec4(Color, alpha);
 	
 //	vs_out.Position = view * model * vec4(Position, 1.0);
 	vs_out.Position = view * vec4(Position, 1.0);
@@ -36,14 +46,14 @@ uniform float fParticleSize;
 in VS_OUT
 {
 	vec4		Position;
-	vec3		Color;
+	vec4		Color;
 } gs_in[];
 
 // Info sent to FS
 out GS_OUT
 {
 	vec2		TexCoord;
-	vec3		Color;
+	vec4		Color;
 } gs_out;
 
 void main()
@@ -87,12 +97,12 @@ uniform sampler2D partTexture;
 in GS_OUT
 {
 	vec2		TexCoord;
-	vec3		Color;
+	vec4		Color;
 } fs_in;
 
 out vec4 FragColor;
 
 void main()
 {
-	FragColor = texture(partTexture, fs_in.TexCoord) * vec4(fs_in.Color.rgb, 1.0f);
+	FragColor = texture(partTexture, fs_in.TexCoord) * fs_in.Color;
 }

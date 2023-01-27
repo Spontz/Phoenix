@@ -6,7 +6,6 @@ layout (location = 1) in vec3 Velocity;
 layout (location = 2) in float StartTime;
 layout (location = 3) in vec3 InitVelocity;
 layout (location = 4) in vec3 Color;
-layout (location = 5) in float Age;
 
 // Info sent to Transform Feedback Buffer
 out vec3	o_Position;
@@ -14,7 +13,6 @@ out vec3	o_Velocity;
 out float	o_StartTime;
 out vec3	o_InitVelocity;
 out vec3	o_Color;
-out float	o_Age;
 
 uniform mat4 u_m4Model;
 uniform float u_fDeltaTime;
@@ -24,10 +22,8 @@ uniform vec3 u_v3Color;		// Particle emitter color
 
 uniform vec3 u_v3Force;
 
-uniform sampler1D u_iRandomTexture;
 uniform float u_fEmissionTime;
 uniform float u_fParticleLifetime;
-uniform float u_fRamndomness;
 
 void main()
 {
@@ -40,7 +36,6 @@ void main()
     o_StartTime = StartTime;		// Init the output variable
     o_InitVelocity = InitVelocity;	// Init the output variable
     o_Color = Color;				// Init the output variable
-	o_Age = Age;					// Init the output variable
     if( u_fTime >= StartTime ) {   // Check if the particle is born
         float age = u_fTime - StartTime;   // Get the age of the particle
         if( age > u_fParticleLifetime ) {                 // Check if the particle is dead
@@ -55,7 +50,7 @@ void main()
          {
             // The particle is alive, update.
             o_Position += o_Velocity * u_fDeltaTime;   // Scale the translation by the time
-			o_Color -= vec3(1,1,1) * u_fDeltaTime/u_fParticleLifetime;
+			//o_Color -= vec3(1,1,1) * u_fDeltaTime/u_fParticleLifetime;
             //o_Velocity += u_v3Force * u_fDeltaTime;  // Amplify the velocity
          }
     }else{

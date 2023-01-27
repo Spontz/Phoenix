@@ -7,23 +7,12 @@
 
 namespace Phoenix {
 
-	constexpr int RANDOM_TEXTURE_UNIT = 0;
-
-
-	glm::vec3	Pos;		// loc 0: Position
-	glm::vec3	Vel;		// loc 1: Velocity
-	float		StartTime;	// loc 2: StartTime
-	glm::vec3	InitVel;	// loc 3: Initial Veolicity
-	glm::vec3	Col;		// loc 4: Color
-	float		Life;		// loc 5: Life
-
 	// TODO: QUITAR ESTO Y USAR LOS VB QUE TENEMOS EN EL ENGINE!!
 	constexpr int LOC_POSITION = 0;
 	constexpr int LOC_VELOCITY = 1;
 	constexpr int LOC_STARTTIME = 2;
 	constexpr int LOC_INITVEL = 3;
 	constexpr int LOC_COLOR = 4;
-	constexpr int LOC_LIFE = 5;
 	
 	constexpr int BINDING_UPDATE = 0;
 	constexpr int BINDING_BILLBOARD = 1;
@@ -60,7 +49,7 @@ namespace Phoenix {
 		m_pathBillboard = billboardShader;
 		m_pathUpdate = particleSystemShader;
 
-		m_numMaxParticles = 0;
+		m_amountParticles = 0;
 		
 		m_emissionTime = 0;
 		m_particleLifeTime = 0;
@@ -81,9 +70,6 @@ namespace Phoenix {
 		if (m_queryPrimitives != 0)
 			glDeleteQueries(1, &m_queryPrimitives);
 
-		if (m_textureRandID != 0)
-			glDeleteTextures(1, &m_textureRandID);
-
 		if (m_varsBillboard)
 			delete m_varsBillboard;
 
@@ -100,18 +86,18 @@ namespace Phoenix {
 		m_emissionTime = emissionTime; 
 		m_particleLifeTime = particleLifeTime;
 		
-		m_numMaxParticles = static_cast<unsigned int>(ceil(m_particleLifeTime * (1.0f / m_emissionTime)));
+		m_amountParticles = static_cast<unsigned int>(ceil(m_particleLifeTime * (1.0f / m_emissionTime)));
 
-		if (m_numMaxParticles <= 0)
+		if (m_amountParticles <= 0)
 			return false;
 		
 		// Init particles data
-		Particle* particles = new Particle[m_numMaxParticles];
-		for (uint32_t i=0; i < m_numMaxParticles; i++) {
+		Particle* particles = new Particle[m_amountParticles];
+		for (uint32_t i=0; i < m_amountParticles; i++) {
 			particles[i].InitVel = glm::vec3(0, 0, 0);// RandomVec3();
 			particles[i].Vel = particles[i].InitVel;
 			particles[i].Col = glm::vec3(1,1,1);
-			particles[i].StartTime = i * (m_particleLifeTime / (float)m_numMaxParticles);
+			particles[i].StartTime = i * (m_particleLifeTime / (float)m_amountParticles);
 		}
 
 		// Gen the Query
@@ -130,12 +116,12 @@ namespace Phoenix {
 		for (unsigned int i = 0; i < 2; i++) {
 			glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
 			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(Particle) * m_numMaxParticles, NULL, GL_DYNAMIC_DRAW);	// Allocate mem, uploading an empty buffer for all the particles
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_numMaxParticles, particles);		// Upload only the emitters to the Buffer
+			glBufferData(GL_ARRAY_BUFFER, sizeof(Particle) * m_amountParticles, NULL, GL_DYNAMIC_DRAW);	// Allocate mem, uploading an empty buffer for all the particles
+			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_amountParticles, particles);		// Upload only the emitters to the Buffer
 			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
 		}
 	
-		m_memUsed = (float)(2 * sizeof(Particle) * m_numMaxParticles) / 1024.0f / 1024.0f;
+		m_memUsed = (float)(2 * sizeof(Particle) * m_amountParticles) / 1024.0f / 1024.0f;
 
 		// Setup Vertex Attribute formats
 		// Definitions for Update shader Binding
@@ -161,16 +147,16 @@ namespace Phoenix {
 		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
 		glVertexAttribBinding(LOC_COLOR, BINDING_UPDATE);
 
-		glEnableVertexAttribArray(LOC_LIFE);
-		glVertexAttribFormat(LOC_LIFE, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, Life));	// Life (4 bytes)
-		glVertexAttribBinding(LOC_LIFE, BINDING_UPDATE);
-
 		// Definitions for Billboard shader Binding
 		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[0], 0, sizeof(Particle));
 
 		glEnableVertexAttribArray(LOC_POSITION);
 		glVertexAttribFormat(LOC_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Pos));	// Position (12 bytes)
 		glVertexAttribBinding(LOC_POSITION, BINDING_BILLBOARD);
+
+		glEnableVertexAttribArray(LOC_STARTTIME);
+		glVertexAttribFormat(LOC_STARTTIME, 1, GL_FLOAT, GL_FALSE, offsetof(Particle, StartTime));	// Start Time (4 bytes)
+		glVertexAttribBinding(LOC_STARTTIME, BINDING_BILLBOARD);
 
 		glEnableVertexAttribArray(LOC_COLOR);
 		glVertexAttribFormat(LOC_COLOR, 3, GL_FLOAT, GL_FALSE, offsetof(Particle, Col));	// Color (12 bytes)
@@ -186,15 +172,8 @@ namespace Phoenix {
 
 		// Send the variables to the Particle System shader
 		m_particleSystemShader->use();
-		m_particleSystemShader->setValue("gRandomTexture", RANDOM_TEXTURE_UNIT);
 		m_particleSystemShader->setValue("fEmissionTime", m_emissionTime); // Time between emissions
 		m_particleSystemShader->setValue("fParticleLifetime", m_particleLifeTime);
-
-		if (!initRandomTexture(m_numMaxParticles)) {
-			return false;
-		}
-
-		bindRandomTexture(RANDOM_TEXTURE_UNIT);
 
 		// BILLBOARD shader
 		if (!initShaderBillboard()) {
@@ -231,16 +210,19 @@ namespace Phoenix {
 	void ParticleSystemCore::RestartParticles()
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
-		Particle* particleData = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_numMaxParticles, GL_MAP_WRITE_BIT);
+		Particle* particleData = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_amountParticles, GL_MAP_WRITE_BIT);
 
 		// Update Emitter positions: TODO:FIX THIS
-		for (uint32_t i = 0; i < m_numMaxParticles; i++) {
+		for (uint32_t i = 0; i < m_amountParticles; i++) {
+			particleData[i].Pos = m_emitter.Pos;
 			particleData[i].InitVel = glm::vec3(0, 0, 0);// RandomVec3();
 			particleData[i].Vel = particleData[i].InitVel;
 			particleData[i].Col = glm::vec3(1, 1, 1);
-			particleData[i].StartTime = i * (m_particleLifeTime / (float)m_numMaxParticles);
+			particleData[i].StartTime = i * (m_particleLifeTime / (float)m_amountParticles);
 		}
 		glUnmapBuffer(GL_ARRAY_BUFFER);
+		m_time = 0;
+		m_isFirst = true;
 	}
 
 
@@ -272,14 +254,11 @@ namespace Phoenix {
 		m_particleSystemShader->setValue("u_m4Model", model);
 		m_particleSystemShader->setValue("u_fTime", m_time);
 		m_particleSystemShader->setValue("u_fDeltaTime", deltaTime);
-		m_particleSystemShader->setValue("u_iRandomTexture", RANDOM_TEXTURE_UNIT); // TODO: fix... where to store the random texture unit?
 		m_particleSystemShader->setValue("u_fEmissionTime", m_emissionTime);
 		m_particleSystemShader->setValue("u_fParticleLifetime", m_particleLifeTime);
 		m_particleSystemShader->setValue("u_fRamndomness", randomness);
 		m_particleSystemShader->setValue("u_v3Force", force);
 		m_varsParticleSystem->setValues();
-
-		bindRandomTexture(RANDOM_TEXTURE_UNIT);
 
 		glEnable(GL_RASTERIZER_DISCARD);	// Stop drawing on the screen
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
@@ -294,7 +273,7 @@ namespace Phoenix {
 		glBeginTransformFeedback(GL_POINTS);
 
 		if (m_isFirst) {
-			glDrawArrays(GL_POINTS, 0, m_numMaxParticles);
+			glDrawArrays(GL_POINTS, 0, m_amountParticles);
 			m_isFirst = false;
 		}
 		else {
@@ -316,6 +295,8 @@ namespace Phoenix {
 		m_billboardShader->setValue("model", model);						// Set Model Matrix
 		m_billboardShader->setValue("view", view);							// Set View Matrix
 		m_billboardShader->setValue("projection", projection);				// Set Projection Matrix
+		m_billboardShader->setValue("u_fTime", m_time);
+		m_billboardShader->setValue("u_fParticleLifetime", m_particleLifeTime);
 		m_varsBillboard->setValues();
 
 		glDisable(GL_RASTERIZER_DISCARD);	// Start drawing on the screen
@@ -340,35 +321,11 @@ namespace Phoenix {
 	bool ParticleSystemCore::initShaderParticleSystem()
 	{
 		m_particleSystemShader = DEMO->m_shaderManager.addShader(m_pathUpdate,
-			{ "o_Position", "o_Velocity", "o_StartTime", "o_InitVelocity", "o_Color", "o_Age"});
+			{ "o_Position", "o_Velocity", "o_StartTime", "o_InitVelocity", "o_Color"});
 
 		if (m_particleSystemShader)
 			return true;
 		return false;
-	}
-
-	bool ParticleSystemCore::initRandomTexture(unsigned int Size)
-	{
-		glm::vec3* pRandomData = new glm::vec3[Size];
-		for (unsigned int i = 0; i < Size; i++) {
-			pRandomData[i] = RandomVec3();
-		}
-
-		glGenTextures(1, &m_textureRandID);
-		glBindTexture(GL_TEXTURE_1D, m_textureRandID);
-		glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, Size, 0, GL_RGB, GL_FLOAT, pRandomData);
-		glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-
-		delete[] pRandomData;
-
-		return true;
-	}
-
-	void ParticleSystemCore::bindRandomTexture(GLuint TexUnit)
-	{
-		glBindTextureUnit(TexUnit, m_textureRandID);
 	}
 
 	void ParticleSystemCore::debugLogBufferData()
@@ -381,9 +338,9 @@ namespace Phoenix {
 			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
 			Particle* p = (Particle*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
 			Logger::info(l, "SETUP Buffer {}", i);
-			for (unsigned int i = 0; i < m_numMaxParticles; i++)
+			for (unsigned int i = 0; i < m_amountParticles; i++)
 			{
-				Logger::info(l, "Part {}: L:{:.2f}, P:({:.2f},{:.2f},{:.2f}), C:({:.2f},{:.2f},{:.2f})", i, p[i].Life, p[i].Pos.x, p[i].Pos.y, p[i].Pos.z, p[i].Col.x, p[i].Col.y, p[i].Col.z);
+				Logger::info(l, "Part {}: ST:{:.2f}, P:({:.2f},{:.2f},{:.2f}), C:({:.2f},{:.2f},{:.2f})", i, p[i].StartTime, p[i].Pos.x, p[i].Pos.y, p[i].Pos.z, p[i].Col.x, p[i].Col.y, p[i].Col.z);
 			}
 			Logger::info(l, "");
 			glUnmapBuffer(GL_ARRAY_BUFFER);
