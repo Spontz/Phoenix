@@ -153,12 +153,17 @@ namespace Phoenix {
 
 	void sDrawEmitterSpline::init()
 	{
-		spline[0]->MotionCalcStep(SplineCurrentPos, 0);
+		if (m_demo.m_status != DemoStatus::PLAY)
+			return;
+
+		m_lastTime = runTime;
+		spline[0]->MotionCalcStep(SplineCurrentPos, runTime);
 		m_emitter.Pos = glm::vec3(SplineCurrentPos[0], SplineCurrentPos[1], SplineCurrentPos[2]);
 		m_emitter.InitVel = glm::vec3(0);
 		m_emitter.Vel = glm::vec3(0);
 		m_pPartSystem->UpdateEmitter(m_emitter);
-		m_pPartSystem->RestartParticles();
+		m_pPartSystem->RestartParticles(runTime);
+		Logger::info(LogLevel::low, "Inited particles, runTime {}", runTime);
 	}
 
 	void sDrawEmitterSpline::exec()
@@ -188,16 +193,16 @@ namespace Phoenix {
 		float deltaTime = runTime - m_lastTime;
 		deltaTime = deltaTime * m_fParticleSpeed;
 		m_lastTime = runTime;
-		if (deltaTime < 0) {
-			deltaTime = -deltaTime;	// In case we rewind the demo
-		}
+		//if (deltaTime < 0) {
+		//	deltaTime = -deltaTime;	// In case we rewind the demo
+		//}
 
 		// Update Emitter data
 		SplinePos = this->runTime/this->duration;
 		spline[0]->MotionCalcStep(SplineCurrentPos, runTime);
 		glm::vec3 oldPos = m_emitter.Pos;
 		glm::vec3 newPos = glm::vec3(SplineCurrentPos[0], SplineCurrentPos[1], SplineCurrentPos[2]);
-		m_emitter.InitVel = glm::normalize(oldPos - newPos)*10;
+		m_emitter.InitVel = glm::normalize(oldPos - newPos);
 		m_emitter.Pos = newPos;
 		m_pPartSystem->UpdateEmitter(m_emitter);
 

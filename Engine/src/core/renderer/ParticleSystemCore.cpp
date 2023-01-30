@@ -207,22 +207,24 @@ namespace Phoenix {
 		return !DEMO_checkGLError();
 	}
 
-	void ParticleSystemCore::RestartParticles()
+	void ParticleSystemCore::RestartParticles(float runTime)
 	{
+		Logger::info(LogLevel::low,"Restarted particle System!");
+
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
 		Particle* particleData = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_amountParticles, GL_MAP_WRITE_BIT);
 
-		// Update Emitter positions: TODO:FIX THIS
 		for (uint32_t i = 0; i < m_amountParticles; i++) {
 			particleData[i].Pos = m_emitter.Pos;
 			particleData[i].InitVel = glm::vec3(0, 0, 0);// RandomVec3();
 			particleData[i].Vel = particleData[i].InitVel;
 			particleData[i].Col = glm::vec3(1, 1, 1);
-			particleData[i].StartTime = i * (m_particleLifeTime / (float)m_amountParticles);
+			particleData[i].StartTime = runTime + ((float)i * (m_particleLifeTime / (float)m_amountParticles));
 		}
 		glUnmapBuffer(GL_ARRAY_BUFFER);
 		m_time = 0;
 		m_isFirst = true;
+		//this->debugLogBufferData();
 	}
 
 
@@ -306,8 +308,6 @@ namespace Phoenix {
 		glBindVertexBuffer(BINDING_BILLBOARD, m_particleBuffer[m_currTFB], 0, sizeof(Particle));
 
 		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
-
-		//debugLogBufferData(); // For debugging only: Outputs to the log the content of the buffers
 	}
 
 	bool ParticleSystemCore::initShaderBillboard()
