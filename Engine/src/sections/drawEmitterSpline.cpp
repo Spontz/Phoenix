@@ -153,7 +153,8 @@ namespace Phoenix {
 
 	void sDrawEmitterSpline::init()
 	{
-		if (m_demo.m_status != DemoStatus::PLAY)
+		// If the demo is paused, there is no need to reset the particles
+		if (m_demo.m_status & DemoStatus::PAUSE)
 			return;
 
 		m_lastTime = runTime;
@@ -163,7 +164,6 @@ namespace Phoenix {
 		m_emitter.Vel = glm::vec3(0);
 		m_pPartSystem->UpdateEmitter(m_emitter);
 		m_pPartSystem->RestartParticles(runTime);
-		Logger::info(LogLevel::low, "Inited particles, runTime {}", runTime);
 	}
 
 	void sDrawEmitterSpline::exec()
@@ -174,10 +174,7 @@ namespace Phoenix {
 
 		// Evaluate the expression
 		m_pExprPosition->Expression.value();
-
-		
-
-		
+				
 		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
 		glm::mat4 view = m_demo.m_cameraManager.getActiveView();
 

@@ -209,8 +209,7 @@ namespace Phoenix {
 
 	void ParticleSystemCore::RestartParticles(float runTime)
 	{
-		Logger::info(LogLevel::low,"Restarted particle System!");
-
+		//Logger::info(LogLevel::low,"Restarted particle System!");
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
 		Particle* particleData = (Particle*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(Particle) * m_amountParticles, GL_MAP_WRITE_BIT);
 
@@ -222,7 +221,7 @@ namespace Phoenix {
 			particleData[i].StartTime = runTime + ((float)i * (m_particleLifeTime / (float)m_amountParticles));
 		}
 		glUnmapBuffer(GL_ARRAY_BUFFER);
-		m_time = 0;
+		m_time = runTime;
 		m_isFirst = true;
 		//this->debugLogBufferData();
 	}
