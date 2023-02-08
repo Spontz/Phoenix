@@ -28,13 +28,13 @@ namespace Phoenix {
 
 		FboManager();
 		void init();
-		void bind(int fbo_num, bool clearColor, bool clearDepth);
+		void bind(int32_t fbo_num, bool clearColor, bool clearDepth);
 		void bindCurrent();
-		void bind_tex(int fbo_num, GLuint texUnit = 0, GLuint attachment = 0);
+		void bind_tex(int32_t fbo_num, GLuint texUnit = 0, GLuint attachment = 0);
 		void unbind(bool clearColor, bool clearDepth);
 		int addFbo(const FboConfig& cfg);
 		void clearFbos();
-		int	getOpenGLTextureID(unsigned int index, unsigned int attachment = 0);
+		int	getOpenGLTextureID(uint32_t index, uint32_t attachment = 0);
 
 	private:
 		int		getFormat(std::string const& name);

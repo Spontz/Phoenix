@@ -327,7 +327,7 @@ namespace Phoenix {
 	}
 
 	// Draw a Quad with a FBO in full screen
-	void Resource::drawQuadEfxFboFS(int efxFboNum, GLuint attachment)
+	void Resource::drawQuadEfxFboFS(int32_t efxFboNum, GLuint attachment)
 	{
 		m_spShdrQuadTex->use();
 		m_spShdrQuadTex->setValue("screenTexture", 0);

@@ -21,7 +21,7 @@ namespace Phoenix {
 	{
 	}
 
-	void FboManager::bind(int fbo_num, bool clearColor, bool clearDepth)
+	void FboManager::bind(int32_t fbo_num, bool clearColor, bool clearDepth)
 	{
 		if (fbo_num < fbo.size()) {
 			currentFbo = fbo_num;
@@ -52,7 +52,7 @@ namespace Phoenix {
 		}
 	}
 
-	void FboManager::bind_tex(int fbo_num, GLuint texUnit, GLuint attachment)
+	void FboManager::bind_tex(int32_t fbo_num, GLuint texUnit, GLuint attachment)
 	{
 		if (fbo_num < fbo.size())
 			fbo[fbo_num]->bind_tex(texUnit, attachment);
@@ -105,7 +105,7 @@ namespace Phoenix {
 		mem = 0;
 	}
 
-	int FboManager::getOpenGLTextureID(unsigned int index, unsigned int attachment)
+	int FboManager::getOpenGLTextureID(uint32_t index, uint32_t attachment)
 	{
 		if (index < fbo.size()) {
 			if (attachment < fbo[index]->numAttachments) {
