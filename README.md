@@ -8,8 +8,9 @@ This demo engine is an old piece of software that has undergone several heavy up
 
 This engine would not exist without inspiration obtained from the following sources. Thanks!
 
-* Yan Chernikov / aka 'The Cherno': https://github.com/TheCherno.
-* jmorton06 / Lumos engine: https://github.com/jmorton06/Lumos.
+* Yan Chernikov / aka 'The Cherno': https://github.com/TheCherno
+* Etay Meiri / OGL Dev site: https://ogldev.org/
+* jmorton06 / Lumos engine: https://github.com/jmorton06/Lumos
 
 Phoenix uses the following libs:
 
