@@ -188,7 +188,7 @@ namespace Phoenix {
 			break;
 		case CameraMode::ONLY_SPLINE:		// Only spline: Do not use formulas
 			// Calculate the motion step of the first spline and set it to "new_pos"
-			spline[0]->MotionCalcStep(new_pos, runTime);
+			spline[0]->MotionCalcStep(new_pos, runTime, false);
 
 			m_vCamFinalPos = glm::vec3(new_pos[0], new_pos[1], new_pos[2]);
 			m_vCamFinalUp = glm::vec3(new_pos[3], new_pos[4], new_pos[5]);
@@ -205,7 +205,7 @@ namespace Phoenix {
 			break;
 		case CameraMode::SPLINE_AND_FORMULA:// Spline and formula: Combine both
 			// Calculate the motion step of the first spline and set it to "new_pos"
-			spline[0]->MotionCalcStep(new_pos, runTime);
+			spline[0]->MotionCalcStep(new_pos, runTime, false);
 
 			m_vCamPos = glm::vec3(new_pos[0], new_pos[1], new_pos[2]);
 			m_vCamUp = glm::vec3(new_pos[3], new_pos[4], new_pos[5]);

@@ -20,13 +20,16 @@ namespace Phoenix {
 	private:
 
 		// Spline vector
-		ChanVec	SplineCurrentPos;
-		float	SplinePos = 0;
+		ChanVec			m_splineCurrentPos;
+		float			m_splinePos = 0;
 		// Emitter dara
 		ParticleSystemCore::Particle m_emitter;
 
 		// Particle engine variables
+		float			m_runTime = 0;
 		float			m_lastTime = 0;
+		float			m_deltaTime = 0;  // DeltaTime = runTime - lastTime;
+		bool			m_loopSpline = true;
 		float			m_fEmissionTime = 0;
 		float			m_fParticleLifeTime = 0;
 		float			m_fParticleSpeed = 0;
@@ -73,8 +76,8 @@ namespace Phoenix {
 	bool sDrawEmitterSpline::load()
 	{
 		// script validation
-		if ((param.size() != 2) || (spline.size() < 1) || (strings.size() < 9)) {
-			Logger::error("Draw Emitter Spline [{}]: 2 param (Emission time & Particle Life Time) 1 spline and 9 strings needed (2 shaders, 3 for positioning, part speed, velocity, force and color)", identifier);
+		if ((param.size() != 3) || (spline.size() < 1) || (strings.size() < 9)) {
+			Logger::error("Draw Emitter Spline [{}]: 3 param (SplineLoop, Emission time & Particle Life Time) 1 spline and 9 strings needed (2 shaders, 3 for positioning, part speed, velocity, force and color)", identifier);
 			return false;
 		}
 
@@ -97,8 +100,12 @@ namespace Phoenix {
 		render_disableDepthMask = true;
 
 		// Load Emitters and Particles config
-		m_fEmissionTime = param[0];
-		m_fParticleLifeTime = param[1];
+		if (param[0] > 0)
+			m_loopSpline = true;
+		else
+			m_loopSpline = false;
+		m_fEmissionTime = param[1];
+		m_fParticleLifeTime = param[2];
 
 		if (m_fEmissionTime <= 0) {
 			Logger::error("Draw Emitter Spline [{}]: Emission time should be greater than 0", identifier);
@@ -141,7 +148,7 @@ namespace Phoenix {
 			return false;
 
 		m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
-		spline[0]->MotionCalcStep(SplineCurrentPos, 0); // Evaluate position
+		spline[0]->MotionCalcStep(m_splineCurrentPos, 0, m_loopSpline); // Evaluate position
 
 		// Create the particle system
 		m_pPartSystem = new ParticleSystemCore(pathParticleSystemShader, pathBillboardShader);
@@ -157,13 +164,15 @@ namespace Phoenix {
 		if (m_demo.m_status & DemoStatus::PAUSE)
 			return;
 
-		m_lastTime = runTime;
-		spline[0]->MotionCalcStep(SplineCurrentPos, runTime);
-		m_emitter.Pos = glm::vec3(SplineCurrentPos[0], SplineCurrentPos[1], SplineCurrentPos[2]);
+		m_runTime = runTime * m_fParticleSpeed;
+		m_lastTime = m_runTime;
+
+		spline[0]->MotionCalcStep(m_splineCurrentPos, m_runTime, m_loopSpline);
+		m_emitter.Pos = glm::vec3(m_splineCurrentPos[0], m_splineCurrentPos[1], m_splineCurrentPos[2]);
 		m_emitter.InitVel = glm::vec3(0);
 		m_emitter.Vel = glm::vec3(0);
 		m_pPartSystem->UpdateEmitter(m_emitter);
-		m_pPartSystem->RestartParticles(runTime);
+		m_pPartSystem->RestartParticles(m_runTime);
 	}
 
 	void sDrawEmitterSpline::exec()
@@ -187,18 +196,16 @@ namespace Phoenix {
 		model = glm::scale(model, m_vScale);
 
 		// Render particles
-		float deltaTime = runTime - m_lastTime;
-		deltaTime = deltaTime * m_fParticleSpeed;
-		m_lastTime = runTime;
-		//if (deltaTime < 0) {
-		//	deltaTime = -deltaTime;	// In case we rewind the demo
-		//}
+		// Calc	 timings
+		m_runTime = runTime * m_fParticleSpeed; // Increase the current Run Time depending on the particle speed
+		m_deltaTime = (m_runTime - m_lastTime) / m_fParticleSpeed;
+		m_lastTime = m_runTime;
 
 		// Update Emitter data
-		SplinePos = this->runTime/this->duration;
-		spline[0]->MotionCalcStep(SplineCurrentPos, runTime);
+		m_splinePos = fmod(this->m_runTime / this->duration, 1.0) * 100.0f;
+		spline[0]->MotionCalcStep(m_splineCurrentPos, m_runTime, m_loopSpline);
 		glm::vec3 oldPos = m_emitter.Pos;
-		glm::vec3 newPos = glm::vec3(SplineCurrentPos[0], SplineCurrentPos[1], SplineCurrentPos[2]);
+		glm::vec3 newPos = glm::vec3(m_splineCurrentPos[0], m_splineCurrentPos[1], m_splineCurrentPos[2]);
 		m_emitter.InitVel = glm::normalize(oldPos - newPos);
 		m_emitter.Pos = newPos;
 		m_pPartSystem->UpdateEmitter(m_emitter);
@@ -208,7 +215,7 @@ namespace Phoenix {
 		m_pPartSystem->force = m_vForce;
 		m_pPartSystem->randomness = m_fParticleRandomness;
 
-		m_pPartSystem->Render(deltaTime, model, view, projection);
+		m_pPartSystem->Render(m_deltaTime, model, view, projection);
 
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
@@ -230,7 +237,7 @@ namespace Phoenix {
 		std::stringstream ss;
 		ss << debugStatic;
 		ss << "System pos: " << std::format("{:.2f},{:.2f},{:.2f}", m_vTranslation.x, m_vTranslation.y, m_vTranslation.z) << std::endl;
-		ss << "Spline pos: " << std::format("{:.2f}", SplinePos) << std::endl;
+		ss << "Spline pos: " << std::format("{:.1f}%%", m_splinePos) << std::endl;
 		ss << "Emitter pos: " << std::format("{:.2f},{:.2f},{:.2f}", m_emitter.Pos.x, m_emitter.Pos.y, m_emitter.Pos.z) << std::endl;
 		ss << "Particle Randomness: " << std::format("{:.2f}", m_fParticleRandomness) << std::endl;
 		ss << "Generated Particles: " << m_pPartSystem->getNumGenParticles() << std::endl;

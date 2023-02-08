@@ -45,8 +45,18 @@ namespace Phoenix {
 
 	// Compute the motion channel vector for the given step. Step can be
 	// fractional but values correspond to frames.
-	void Spline::MotionCalcStep(ChanVec resVec, float step)
+	void Spline::MotionCalcStep(ChanVec resVec, float step, bool loop)
 	{
+		float currentStep = step;
+		// In case we want to loop
+		if (loop) {
+			currentStep = fmod(step, steps);
+		}
+		else {
+			if (step > steps)
+				currentStep = steps;
+		}
+
 		KeyFrame* key0, * key1;
 		float t, h1, h2, h3, h4, res, d10;
 		float dd0a = 0, dd0b = 0, ds1a = 0, ds1b = 0;
@@ -68,7 +78,7 @@ namespace Phoenix {
 		// of the motion or this will raise an illegal access (fixed).
 		int cnt = 0;
 		for (cnt = 0; cnt < keys; cnt++) {
-			if (key[cnt]->step >= step)
+			if (key[cnt]->step >= currentStep)
 				break;
 		}
 		// Prevent invalid access when step is 0
@@ -84,11 +94,11 @@ namespace Phoenix {
 		if (cnt + 2 >= keys)
 			have_next_key = false;
 
-		step -= key0->step;
+		currentStep -= key0->step;
 
 		// Get tween length and fractional tween position.
 		tlength = key1->step - key0->step;
-		t = step / tlength;
+		t = currentStep / tlength;
 
 		// Precompute spline coefficients.
 		if (key1->linear == false) {

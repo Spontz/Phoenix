@@ -57,7 +57,7 @@ namespace Phoenix {
 		Spline();
 
 		static void Hermite(float t, float* h1, float* h2, float* h3, float* h4);
-		void MotionCalcStep(ChanVec resVec, float step);
+		void MotionCalcStep(ChanVec resVec, float step, bool loop);
 		bool load();
 	};
 }
