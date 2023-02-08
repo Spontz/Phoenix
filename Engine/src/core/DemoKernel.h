@@ -150,7 +150,7 @@ namespace Phoenix {
 		// misc
 		bool m_loop;
 		bool m_sound;
-		bool m_debug_drawGrid;
+		bool m_debug_enableGrid;
 		bool m_debug_drawGridAxisX;
 		bool m_debug_drawGridAxisY;
 		bool m_debug_drawGridAxisZ;

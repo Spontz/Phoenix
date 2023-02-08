@@ -254,7 +254,7 @@ namespace Phoenix {
 		m_debug(false),
 		m_logLevel(LogLevel::high),
 #endif
-		m_debug_drawGrid(true),
+		m_debug_enableGrid(true),
 		m_debug_drawGridAxisX(true),
 		m_debug_drawGridAxisY(true),
 		m_debug_drawGridAxisZ(true),
@@ -815,7 +815,7 @@ namespace Phoenix {
 
 
 			// Show grid only if we are in Debug // TODO: Create a new layer for the Grid and other debug elements?
-			if (m_debug && m_debug_drawGrid) {
+			if (m_debug && m_debug_enableGrid) {
 				PX_PROFILE_SCOPE("SectionsLayer::DrawGrid (debug)");
 				m_pRes->draw3DGrid(m_debug_drawGridAxisX, m_debug_drawGridAxisY, m_debug_drawGridAxisZ);
 			}

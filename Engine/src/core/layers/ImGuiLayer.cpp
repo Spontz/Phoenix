@@ -480,7 +480,7 @@ namespace Phoenix {
 			ImGui::End();
 			return;
 		}
-		ImGui::Checkbox("Enable grid", &m_demo.m_debug_drawGrid);
+		ImGui::Checkbox("Enable grid", &m_demo.m_debug_enableGrid);
 		ImGui::NewLine();
 		ImGui::Checkbox("Draw X Axis", &m_demo.m_debug_drawGridAxisX); ImGui::SameLine();
 		ImGui::Checkbox("Draw Y Axis", &m_demo.m_debug_drawGridAxisY); ImGui::SameLine();

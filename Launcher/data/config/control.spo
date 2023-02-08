@@ -1,5 +1,6 @@
 demo_name Phoenix demo engine
 debug 1
+debugEnableGrid 1
 loop 1
 sound 1
 demo_start 0.0
