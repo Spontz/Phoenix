@@ -188,12 +188,11 @@ namespace Phoenix {
 				// Show video stream info
 				Logger::info(
 					LogLevel::low,
-					"{}: {} Video stream[CodecID:{}], {}, {} channels, {}x{}, {}hz, {}bps.",
+					"{}: {} Video stream[CodecID:{}], {}, {}x{}, {}hz, {}bps.",
 					__FILE__,
 					i,
 					avcodec_get_name(pAVCodec->id),
 					pAVCodec->name,
-					pAVCodecParameters->channels,
 					pAVCodecParameters->width,
 					pAVCodecParameters->height,
 					pAVCodecParameters->sample_rate,
@@ -225,13 +224,12 @@ namespace Phoenix {
 				// Show extra stream info
 				Logger::info(
 					LogLevel::low,
-					"{}: #{} {} stream[CodecID:{}], {}, {} channels, {}hz, {}, {}bps.",
+					"{}: #{} {} stream[CodecID:{}], {}, {}hz, {}, {}bps.",
 					__FILE__,
 					i,
 					pAVCodecParameters->codec_type == AVMEDIA_TYPE_AUDIO ? "Audio" : "Extra",
 					avcodec_get_name(pAVCodec->id),
 					pAVCodec->name,
-					pAVCodecParameters->channels,
 					pAVCodecParameters->sample_rate,
 					pAVCodecParameters->bit_rate
 				);

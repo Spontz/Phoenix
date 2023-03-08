@@ -202,7 +202,7 @@ namespace Phoenix {
 		m_lastTime = m_runTime;
 
 		// Update Emitter data
-		m_splinePos = fmod(this->m_runTime / this->duration, 1.0) * 100.0f;
+		m_splinePos = fmod(this->m_runTime / this->duration, 1.0f) * 100.0f;
 		spline[0]->MotionCalcStep(m_splineCurrentPos, m_runTime, m_loopSpline);
 		glm::vec3 oldPos = m_emitter.Pos;
 		glm::vec3 newPos = glm::vec3(m_splineCurrentPos[0], m_splineCurrentPos[1], m_splineCurrentPos[2]);
