@@ -22,6 +22,7 @@ namespace Phoenix {
 		// Spline vector
 		ChanVec			m_splineCurrentPos;
 		float			m_splinePos = 0;
+		float			m_splineTime = 0;
 		// Emitter dara
 		ParticleSystemCore::Particle m_emitter;
 
@@ -76,8 +77,8 @@ namespace Phoenix {
 	bool sDrawEmitterSpline::load()
 	{
 		// script validation
-		if ((param.size() != 3) || (spline.size() < 1) || (strings.size() < 9)) {
-			Logger::error("Draw Emitter Spline [{}]: 3 param (SplineLoop, Emission time & Particle Life Time) 1 spline and 9 strings needed (2 shaders, 3 for positioning, part speed, velocity, force and color)", identifier);
+		if ((param.size() != 4) || (spline.size() < 1) || (strings.size() < 9)) {
+			Logger::error("Draw Emitter Spline [{}]: 4 param (SplineTime, SplineLoop, Emission time & Particle Life Time) 1 spline and 9 strings needed (2 shaders, 3 for positioning, part speed, velocity, force and color)", identifier);
 			return false;
 		}
 
@@ -88,24 +89,31 @@ namespace Phoenix {
 		std::string pathBillboardShader;
 		pathBillboardShader = m_demo.m_dataFolder + strings[1];
 
+
+		// Load Emitters and Particles config
+		m_splineTime = param[0];
+
+		if (param[1] > 0)
+			m_loopSpline = true;
+		else
+			m_loopSpline = false;
+		m_fEmissionTime = param[2];
+		m_fParticleLifeTime = param[3];
+
 		// Load the spline
 		for (int i = 0; i < spline.size(); i++) {
+			if (m_splineTime!= 0)
+				spline[i]->duration = m_splineTime;
 			if (spline[i]->load() == false) {
 				Logger::error("Draw Emitter Spline [{}]: Spline not loaded", identifier);
 				return false;
 			}
 		}
-
+		
 		// Render states
 		render_disableDepthMask = true;
 
-		// Load Emitters and Particles config
-		if (param[0] > 0)
-			m_loopSpline = true;
-		else
-			m_loopSpline = false;
-		m_fEmissionTime = param[1];
-		m_fParticleLifeTime = param[2];
+		
 
 		if (m_fEmissionTime <= 0) {
 			Logger::error("Draw Emitter Spline [{}]: Emission time should be greater than 0", identifier);
@@ -202,7 +210,7 @@ namespace Phoenix {
 		m_lastTime = m_runTime;
 
 		// Update Emitter data
-		m_splinePos = fmod(this->m_runTime / this->duration, 1.0f) * 100.0f;
+		m_splinePos = fmod(this->m_runTime / spline[0]->duration, 1.0f) * 100.0f;
 		spline[0]->MotionCalcStep(m_splineCurrentPos, m_runTime, m_loopSpline);
 		glm::vec3 oldPos = m_emitter.Pos;
 		glm::vec3 newPos = glm::vec3(m_splineCurrentPos[0], m_splineCurrentPos[1], m_splineCurrentPos[2]);
@@ -226,6 +234,7 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Spline used: " << spline[0]->filename << std::endl;
+		ss << "Spline time: " << spline[0]->duration << std::endl;
 		ss << "Emission Time: " << m_fEmissionTime << std::endl;
 		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
 		ss << "Max Particles: " << m_pPartSystem->getNumMaxParticles() << std::endl;
