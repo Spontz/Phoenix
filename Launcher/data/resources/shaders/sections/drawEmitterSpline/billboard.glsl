@@ -28,8 +28,8 @@ void main()
 		
 	vs_out.Color = vec4(Color, alpha);
 	
-//	vs_out.Position = view * model * vec4(Position, 1.0);
-	vs_out.Position = view * vec4(Position, 1.0);
+	vs_out.Position = view * model * vec4(Position, 1.0);
+//	vs_out.Position = view * vec4(Position, 1.0);
 }
 
 

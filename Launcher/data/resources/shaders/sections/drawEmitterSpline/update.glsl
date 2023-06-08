@@ -40,8 +40,8 @@ void main()
         float age = u_fTime - StartTime;   // Get the age of the particle
         if( age > u_fParticleLifetime ) {                 // Check if the particle is dead
             // The particle is past its lifetime, recycle.
-            //o_Position = u_v3Position;    // Reset position
-			o_Position = vec3(u_m4Model*vec4(u_v3Position, 1.0));
+            o_Position = u_v3Position;    // Reset position
+			//o_Position = vec3(u_m4Model*vec4(u_v3Position, 1.0));
             o_Velocity = InitVelocity;    // Reset velocity
             o_StartTime = u_fTime;        // Reset start time to actual time
 			o_Color = u_v3Color;
@@ -50,12 +50,11 @@ void main()
          {
             // The particle is alive, update.
             o_Position += o_Velocity * u_fDeltaTime;   // Scale the translation by the time
-			//o_Color -= vec3(1,1,1) * u_fDeltaTime/u_fParticleLifetime;
-            //o_Velocity += u_v3Force * u_fDeltaTime;  // Amplify the velocity
+			//o_Velocity += u_v3Force * u_fDeltaTime;  // Amplify the velocity
          }
     }else{
-        //o_Position = u_v3Position;         // Set position (for world space)
-		o_Position = vec3(u_m4Model*vec4(u_v3Position, 1.0));
+        o_Position = u_v3Position;         // Set position (for world space)
+		//o_Position = vec3(u_m4Model*vec4(u_v3Position, 1.0));
     }
 }
 
