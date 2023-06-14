@@ -29,15 +29,16 @@ namespace Phoenix {
 		if (!DEMO->m_debug || !DEMO->m_slaveMode)
 			return;
 
-		const auto s = formatMsg("INFO::Info", vformat(msg, std::make_format_args(args...)));
-
-		// Output to editor
-		NetDriver::getInstance().sendMessage(s);
-
+		const auto s = formatMsg("Info", vformat(msg, std::make_format_args(args...)));
+		
 		// Output to Visual Studio
 #if defined(_DEBUG) && defined(WIN32)
 		OutputDebugStringA(s.c_str());
 #endif
+		// Output to editor, we remove first the spaces and indentation
+		std::string netString = s;
+		netString = netString.erase(0, netString.find_first_not_of(" "));
+		NetDriver::getInstance().sendMessage(netString);
 	}
 
 	template <class... _Types>
@@ -59,8 +60,10 @@ namespace Phoenix {
 		OutputDebugStringA(s.c_str());
 #endif
 
-		// Output to demo editor
-		NetDriver::getInstance().sendMessage("ERROR::" + s);
+		// Output to editor, we remove first the spaces and indentation
+		std::string netString = s;
+		netString = netString.erase(0, netString.find_first_not_of(" "));
+		NetDriver::getInstance().sendMessage(netString);
 	}
 
 }

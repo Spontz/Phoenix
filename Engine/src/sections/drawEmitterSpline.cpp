@@ -101,19 +101,36 @@ namespace Phoenix {
 		m_fParticleLifeTime = param[3];
 
 		// Load the spline
+		for (auto& spl : spline) {
+			if (m_splineTime > 0)
+				spl->durationFixedToSection = false;
+			else
+				spl->durationFixedToSection = true;
+			spl->setDuration(m_splineTime, this->duration);
+			if (!spl->load()) {
+				Logger::error("Draw Emitter Spline [{}]: Spline not loaded", identifier);
+				return false;
+			}
+
+		}
+		/*
 		for (int i = 0; i < spline.size(); i++) {
-			if (m_splineTime!= 0)
-				spline[i]->duration = m_splineTime;
+			if (m_splineTime > 0)
+				spline[i]->durationFixedToSection = false;
+			else
+				spline[i]->durationFixedToSection = true;
+
+			spline[i]->setDuration(m_splineTime, this->duration);
+
 			if (spline[i]->load() == false) {
 				Logger::error("Draw Emitter Spline [{}]: Spline not loaded", identifier);
 				return false;
 			}
 		}
-		
+		*/
 		// Render states
 		render_disableDepthMask = true;
-
-		
+				
 
 		if (m_fEmissionTime <= 0) {
 			Logger::error("Draw Emitter Spline [{}]: Emission time should be greater than 0", identifier);
@@ -210,7 +227,7 @@ namespace Phoenix {
 		m_lastTime = m_runTime;
 
 		// Update Emitter data
-		m_splinePos = fmod(this->m_runTime / spline[0]->duration, 1.0f) * 100.0f;
+		m_splinePos = fmod(this->m_runTime / spline[0]->getDuration(), 1.0f) * 100.0f;
 		spline[0]->MotionCalcStep(m_splineCurrentPos, m_runTime, m_loopSpline);
 		glm::vec3 oldPos = m_emitter.Pos;
 		glm::vec3 newPos = glm::vec3(m_splineCurrentPos[0], m_splineCurrentPos[1], m_splineCurrentPos[2]);
@@ -234,7 +251,6 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Spline used: " << spline[0]->filename << std::endl;
-		ss << "Spline time: " << spline[0]->duration << std::endl;
 		ss << "Emission Time: " << m_fEmissionTime << std::endl;
 		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
 		ss << "Max Particles: " << m_pPartSystem->getNumMaxParticles() << std::endl;
@@ -245,6 +261,8 @@ namespace Phoenix {
 	std::string sDrawEmitterSpline::debug() {
 		std::stringstream ss;
 		ss << debugStatic;
+		ss << "Spline time: " << spline[0]->getDuration() << std::endl;
+		ss << "Spline time fixed to section: " << spline[0]->durationFixedToSection << std::endl;
 		ss << "System pos: " << std::format("{:.2f},{:.2f},{:.2f}", m_vTranslation.x, m_vTranslation.y, m_vTranslation.z) << std::endl;
 		ss << "Spline pos: " << std::format("{:.1f}%%", m_splinePos) << std::endl;
 		ss << "Emitter pos: " << std::format("{:.2f},{:.2f},{:.2f}", m_emitter.Pos.x, m_emitter.Pos.y, m_emitter.Pos.z) << std::endl;

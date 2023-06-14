@@ -508,7 +508,7 @@ namespace Phoenix {
 					Logger::ScopedIndent _;
 					new_spl = new Spline();
 					new_spl->filename = DEMO->m_dataFolder + s_line.second;
-					new_spl->duration = new_sec->duration; // Spline duration is the same as the sectio duration
+					new_spl->setDuration(new_sec->duration, new_sec->duration);// Force the spline duration to be the same as the section duration, by default
 					new_sec->spline.push_back(new_spl);
 					Logger::info(LogLevel::low, "Loaded Spline: {}", new_spl->filename);
 					break;

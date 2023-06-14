@@ -171,6 +171,8 @@ namespace Phoenix {
 	{
 		Section* ds;
 		int32_t id_size = (int32_t)ids.size();
+		
+		Logger::ScopedIndent _;
 
 		for (int32_t i = 0; i < id_size; i++) {
 			ds = getSection(ids[i]);
@@ -179,8 +181,11 @@ namespace Phoenix {
 				ds->duration = ds->endTime - ds->startTime;
 				// Reload the splines. This way they are recalculated
 				for (size_t k = 0; k < ds->spline.size(); k++) {
-					ds->spline[k]->duration = ds->duration;
-					ds->spline[k]->load();
+					ds->spline[k]->updateDuration(ds->duration);
+					if (!ds->spline[k]->load()) {
+						Logger::error("Message from Editor: setSectionsStartTime error");
+						Logger::error("Section {} [id: {}, DataSource: {}] not loaded properly!", ids[i], ds->identifier, ds->DataSource);
+					}
 				}
 				//Logger::sendEditor("Section [%s] changed StartTime: %.3f", ds->identifier.c_str(), ds->startTime);
 			}
@@ -195,6 +200,8 @@ namespace Phoenix {
 		Section* ds;
 		int32_t id_size = (int32_t)ids.size();
 
+		Logger::ScopedIndent _;
+
 		for (int32_t i = 0; i < id_size; i++) {
 			ds = getSection(ids[i]);
 			if (ds) {
@@ -202,8 +209,11 @@ namespace Phoenix {
 				ds->duration = ds->endTime - ds->startTime;
 				// Reload the splines. This way they are recalculated
 				for (size_t k = 0; k < ds->spline.size(); k++) {
-					ds->spline[k]->duration = ds->duration;
-					ds->spline[k]->load();
+					ds->spline[k]->updateDuration(ds->duration);
+					if (!ds->spline[k]->load()) {
+						Logger::error("Message from Editor: setSectionsEndTime error");
+						Logger::error("Section {} [id: {}, DataSource: {}] not loaded properly!", ids[i], ds->identifier, ds->DataSource);
+					}
 				}
 				//Logger::sendEditor("Section [%s] changed EndTime: %.3f", ds->identifier.c_str(), ds->endTime);
 			}

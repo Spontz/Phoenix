@@ -14,7 +14,22 @@ namespace Phoenix {
 		steps = 0;
 		channels = 0;
 		filename = "";
-		duration = 0;
+		durationFixedToSection = true;	// By default, spline duration is the same as the section
+		m_duration = 0;
+	}
+
+	void Spline::setDuration(float Duration, float SectionDuration)
+	{
+		if (durationFixedToSection)
+			m_duration = SectionDuration;
+		else
+			m_duration = Duration;
+	}
+
+	void Spline::updateDuration(float SectionDuration)
+	{
+		if (durationFixedToSection)
+			m_duration = SectionDuration;
 	}
 
 	Spline::~Spline()
@@ -146,6 +161,9 @@ namespace Phoenix {
 	{
 		std::string fileData = Utils::readASCIIFile(filename);
 
+		if (fileData.empty())
+			return false;
+
 		// Convert the fileData to StringStream so it can be processed line by line
 		std::stringstream ssFileData;
 		ssFileData.str(fileData);
@@ -210,7 +228,7 @@ namespace Phoenix {
 
 		// Calculate the steps of each key based in the duration
 		keys = static_cast<int32_t> (key.size());
-		steps = duration;
+		steps = m_duration;
 		float motionStepTime = steps / (keys - 1);
 		for (int i = 0; i < keys; i++)
 			key[i]->step = motionStepTime * i;

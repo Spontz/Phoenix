@@ -44,6 +44,7 @@ namespace Phoenix {
 	// steps in the motion
 	class Spline final {
 	public:
+		Spline();
 		~Spline();
 
 		std::vector<KeyFrame*>	key;		// Keyframes
@@ -52,12 +53,17 @@ namespace Phoenix {
 		int32_t					channels;	// Values of a keyframe
 
 		std::string				filename;	// Filename
-		float					duration;	// Spline duration in seconds
+		bool					durationFixedToSection;	// Is duration fixed to section, or it is hardcoded?
 
-		Spline();
+		void	setDuration(float Duration, float SectionDuration);
+		void	updateDuration(float SectionDuration);
+		float	getDuration() { return m_duration; };
 
 		static void Hermite(float t, float* h1, float* h2, float* h3, float* h4);
 		void MotionCalcStep(ChanVec resVec, float step, bool loop);
 		bool load();
+
+	private:
+		float					m_duration;	// Spline duration in seconds
 	};
 }

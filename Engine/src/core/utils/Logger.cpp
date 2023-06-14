@@ -41,16 +41,13 @@ namespace Phoenix {
 
 	std::string Logger::formatMsg(const std::string_view src, const std::string_view Message)
 	{
-		const std::time_t t = std::time(nullptr);
-		auto timeinfo = localtime(&t);
-
-		// Indent
 		std::stringstream ss;
+		// Indent
 		for (uint32_t i = 0; i < kIndent; ++i)
 			ss << "  ";
 
-		ss << src << " [" << std::put_time(timeinfo, "%T") << " t: " << std::format("{:.3f}",DEMO->m_demoRunTime) << "] " << Message << std::endl;
-		return ss.str();
+		ss << src << " " << Message << std::endl;
+		return  ss.str();
 	}
 
 	void Logger::openLogFile()
