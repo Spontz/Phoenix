@@ -164,6 +164,7 @@ namespace Phoenix {
 				DEMO->m_sectionManager.deleteSections(splitIdentifiers(Message[3]));
 			} else if (sAction == "update") {
 				DEMO->m_sectionManager.updateSection(Message[3], Message[4]);
+//				Utils::appendIntoASCIIFile(DEMO->m_dataFolder + "debug/message.txt", sMessage);
 			} else if (sAction == "setStartTime") {
 				DEMO->m_sectionManager.setSectionsStartTime(
 					splitIdentifiers(Message[4]),

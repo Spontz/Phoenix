@@ -44,6 +44,7 @@ namespace Phoenix {
 		bool	show_version;
 		bool	show_grid;
 		bool	show_help;
+		bool	show_debugNet;
 
 		int32_t			m_numFboSetToDraw;
 		uint32_t		m_numFboAttachmentToDraw;
@@ -72,6 +73,7 @@ namespace Phoenix {
 		void drawGridConfig();
 		void drawHelp();
 		void drawCameraInfo(Camera* pCamera);
+		void drawDebugNet();
 
 		bool OnKeyPressed(KeyPressedEvent& e);
 
@@ -103,6 +105,8 @@ namespace Phoenix {
 		ImGuiTextBuffer		m_helpText;
 
 		ImGuiTextBuffer		m_log;
+
+		std::string			m_debugMsgFromEditor;
 
 		Viewport	m_vp;
 	};

@@ -20,6 +20,7 @@ namespace Phoenix {
 		"7 Show Grid\n" \
 		"9 Show this help :)\n" \
 		"0 Show engine and libraries versions\n" \
+		"F5 Show Debug pannel for networking analysis and simulation\n" \
 		"BACKSPACE Show error Log\n" \
 		"ENTER Print time on log file\n\n" \
 		"Playback control:\n" \
@@ -55,6 +56,7 @@ namespace Phoenix {
 		show_version(false),
 		show_grid(false),
 		show_help(false),
+		show_debugNet(false),
 		m_fontScale(1.0f),
 		m_numFboSetToDraw(0),
 		m_numFboAttachmentToDraw(0),
@@ -176,6 +178,8 @@ namespace Phoenix {
 			drawGridConfig();
 		if (show_help)
 			drawHelp();
+		if (show_debugNet)
+			drawDebugNet();
 	}
 
 	void ImGuiLayer::End()
@@ -285,7 +289,7 @@ namespace Phoenix {
 
 		if (ImGui::BeginMenuBar())
 		{
-			if (ImGui::BeginMenu("Panels"))
+			if (ImGui::BeginMenu("Info Panels"))
 			{
 				ImGui::MenuItem("Show Log", "BACKSPACE", &show_log);
 				ImGui::MenuItem("Show Info", "1", &show_info);
@@ -296,6 +300,11 @@ namespace Phoenix {
 				ImGui::MenuItem("Show grid panel", "7", &show_grid);
 				ImGui::MenuItem("Show help", "9", &show_help);
 				ImGui::MenuItem("Show versions", "0", &show_version);
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Debug"))
+			{
+				ImGui::MenuItem("Debug Network", "F5", &show_debugNet);
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
@@ -535,6 +544,35 @@ namespace Phoenix {
 		}
 	}
 
+	void ImGuiLayer::drawDebugNet()
+	{
+		ImVec2 pos = ImVec2(0, m_vp.y * 2.0f + 2.0f * (static_cast<float>(m_vp.height) / 3.0f));
+		ImVec2 size = ImVec2(static_cast<float>(m_vp.width + (m_vp.x * 2)), static_cast<float>(m_vp.height / 2.0f));
+
+
+		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
+
+
+		if (!ImGui::Begin("Network debugging", &show_log, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
+		{
+			ImGui::End();
+			return;
+		}
+
+		if (ImGui::Button("load message")) {
+			m_debugMsgFromEditor = Utils::readASCIIFile(m_demo.m_dataFolder + "debug/message.txt");
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Simulate receive message")) {
+			NetDriver::getInstance().processMessage(m_debugMsgFromEditor.c_str());
+		}
+		ImGui::InputTextMultiline(" ", &m_debugMsgFromEditor);
+		ImGui::SameLine();
+		
+		ImGui::End();
+	}
+
 	bool ImGuiLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
 		bool EventHandled = false;
@@ -580,6 +618,9 @@ namespace Phoenix {
 				break;
 			case Key::SHOWHELP:
 				show_help = !show_help;
+				break;
+			case Key::SHOWDEBUGNET:
+				show_debugNet = !show_debugNet;
 				break;
 			default:
 				EventHandled = false;
