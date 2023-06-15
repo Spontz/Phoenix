@@ -46,9 +46,13 @@ namespace Phoenix {
 	{
 		if (m_pWorkerThread) {
 			m_bStopWorkerThread = true;
-			m_pWorkerThread->join();
+			
+			if (m_pWorkerThread->joinable())
+				m_pWorkerThread->join();
 			delete m_pWorkerThread;
 			m_pWorkerThread = nullptr;
+
+			m_bStopWorkerThread = false;
 		}
 
 		if (m_uiTextureOGLName != 0) {
