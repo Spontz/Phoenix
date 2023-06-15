@@ -631,7 +631,7 @@ namespace Phoenix {
 
 	void ImGuiLayer::changeFontSize(float baseSize, int32_t width, int32_t height)
 	{
-		m_fontScale = static_cast<float>(width + height) / (1024.0f + 768.0f) * baseSize;
+		m_fontScale = static_cast<float>(height) / (768.0f) * baseSize;
 
 		if (m_fontScale < baseSize)
 			m_fontScale = baseSize;

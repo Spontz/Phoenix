@@ -170,10 +170,10 @@ namespace Phoenix {
 	{
 		if (!m_WindowResizing) {
 			m_WindowResizing = true;
-			if (m_ImGuiLayer)
-				m_ImGuiLayer->changeFontSize(m_debugFontSize, m_windowWidth, m_windowHeight);
 			m_windowWidth = static_cast<uint32_t>(std::max(e.GetWidth(), 1));
 			m_windowHeight = static_cast<uint32_t>(std::max(e.GetHeight(), 1));
+			if (m_ImGuiLayer)
+				m_ImGuiLayer->changeFontSize(m_debugFontSize, m_windowWidth, m_windowHeight);
 			m_Window->OnWindowResize(m_windowWidth, m_windowHeight);
 			m_WindowResizing = false;
 		}
