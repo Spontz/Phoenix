@@ -54,6 +54,15 @@ namespace Phoenix {
 
 			m_bStopWorkerThread = false;
 		}
+		// Once thread is stopped, we re-init variables
+		m_bLoaded = false;
+		m_dIntervalFrame = 0;
+		m_dNextFrameTime = 0;
+		m_dTime = 0;
+		m_dFramerate = 0;
+		m_iWidth = 0;
+		m_iHeight = 0;
+
 
 		if (m_uiTextureOGLName != 0) {
 			glDeleteTextures(1, &m_uiTextureOGLName);
