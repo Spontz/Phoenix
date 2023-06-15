@@ -56,12 +56,16 @@ namespace Phoenix {
 		}
 		// Once thread is stopped, we re-init variables
 		m_bLoaded = false;
+		m_bNewFrame = false;
 		m_dIntervalFrame = 0;
 		m_dNextFrameTime = 0;
 		m_dTime = 0;
 		m_dFramerate = 0;
 		m_iWidth = 0;
 		m_iHeight = 0;
+		// Isaac: This needs to be freed? how?
+		//m_pAVCodec = nullptr;
+		//m_pAVCodecParameters = nullptr;
 
 
 		if (m_uiTextureOGLName != 0) {
