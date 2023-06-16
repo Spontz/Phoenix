@@ -20,7 +20,7 @@ namespace Phoenix {
 		"7 Show Config\n" \
 		"9 Show this help :)\n" \
 		"0 Show engine and libraries versions\n" \
-		"F5 Show Debug pannel for networking analysis and simulation\n" \
+		"F5 Show Debug screen for networking analysis and simulation\n" \
 		"BACKSPACE Show error Log\n" \
 		"ENTER Print time on log file\n\n" \
 		"Playback control:\n" \
