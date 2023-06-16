@@ -17,8 +17,7 @@ namespace Phoenix {
 	constexpr int BINDING_UPDATE = 0;
 	constexpr int BINDING_BILLBOARD = 1;
 
-	// TODO: Investigate if we should move this "Random texture 1D generator" to the TextureManager class
-	static glm::vec3 RandomVec3() // Return a float between -0.5 and 0.5
+	glm::vec3 RandomVec3() // Return a float between -0.5 and 0.5
 	{
 		float Max = RAND_MAX;
 		glm::vec3 randNum((float)rand(), (float)rand(), (float)rand());
@@ -331,19 +330,30 @@ namespace Phoenix {
 	{
 		/// DEBUG ONLY
 		/// Output Buffer values
-		LogLevel l = LogLevel::low;
-		Logger::info(l, "Buffers Current VB:{}, current TFB:{}", m_currVB, m_currTFB);
-		for (unsigned int i = 0; i < 2; i++) {
+		constexpr LogLevel logLevel = LogLevel::low;
+		Logger::info(logLevel, "Buffers Current VB:{}, current TFB:{}", m_currVB, m_currTFB);
+		for (auto i = 0; i < 2; ++i) {
 			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
 			Particle* p = (Particle*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
-			Logger::info(l, "SETUP Buffer {}", i);
-			for (unsigned int i = 0; i < m_amountParticles; i++)
+			Logger::info(logLevel, "SETUP Buffer {}", i);
+			for (auto j = 0u; j < m_amountParticles; ++j)
 			{
-				Logger::info(l, "Part {}: ST:{:.2f}, P:({:.2f},{:.2f},{:.2f}), C:({:.2f},{:.2f},{:.2f})", i, p[i].StartTime, p[i].Pos.x, p[i].Pos.y, p[i].Pos.z, p[i].Col.x, p[i].Col.y, p[i].Col.z);
+				const auto& p_j = p[i];
+				Logger::info(
+					logLevel,
+					"Part {}: ST:{:.2f}, P:({:.2f},{:.2f},{:.2f}), C:({:.2f},{:.2f},{:.2f})",
+					i,
+					p_j.StartTime,
+					p_j.Pos.x,
+					p_j.Pos.y,
+					p_j.Pos.z,
+					p_j.Col.x,
+					p_j.Col.y,
+					p_j.Col.z
+				);
 			}
-			Logger::info(l, "");
+			Logger::info(logLevel, "");
 			glUnmapBuffer(GL_ARRAY_BUFFER);
-
 		}
 	}
 }

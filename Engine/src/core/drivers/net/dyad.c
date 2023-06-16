@@ -64,7 +64,7 @@
             struct sockaddr_in6 sai6; } addr;
     int res;
     memset(&addr, 0, sizeof(addr));
-    addr.sa.sa_family = af;
+    addr.sa.sa_family = (u_short)(af);
     if (af == AF_INET6) {
       memcpy(&addr.sai6.sin6_addr, src, sizeof(addr.sai6.sin6_addr));
     } else {
@@ -515,13 +515,12 @@ static int win32EnableFastLoopbackPath(dyad_Socket socket) {
   if (status == SOCKET_ERROR) {
     DWORD lastError = GetLastError();
 
-    if (lastError = WSAEOPNOTSUPP) {
+    if (lastError == WSAEOPNOTSUPP) {
       /* Not supported on current Windows version. */
       return -2;
     }
     else {
       return -1;
-
     }
   }
   return 0;
@@ -603,17 +602,17 @@ static void stream_handleReceivedData(dyad_Stream *stream) {
       buf = stream->lineBuffer.data;
       for (i = 0; i < stream->lineBuffer.length; i++) {
         if (buf[i] == '\n') {
-          dyad_Event e;
+          dyad_Event e2;
           buf[i] = '\0';
-          e = createEvent(DYAD_EVENT_LINE);
-          e.msg = "received line";
-          e.data = &buf[start];
-          e.size = i - start;
+          e2 = createEvent(DYAD_EVENT_LINE);
+          e2.msg = "received line";
+          e2.data = &buf[start];
+          e2.size = i - start;
           /* Check and strip carriage return */
-          if (e.size > 0 && e.data[e.size - 1] == '\r') {
-            e.data[--e.size] = '\0';
+          if (e2.size > 0 && e2.data[e2.size - 1] == '\r') {
+            e2.data[--e2.size] = '\0';
           }
-          stream_emitEvent(stream, &e);
+          stream_emitEvent(stream, &e2);
           start = i + 1;
           /* Check stream state in case it was closed during one of the line
            * event handlers. */
@@ -1118,11 +1117,11 @@ void dyad_vwritef(dyad_Stream *stream, const char *fmt, va_list args) {
             goto writeStr;
           }
           while ((c = fgetc(fp)) != EOF) {
-            vec_push(&stream->writeBuffer, c);
+            vec_push(&stream->writeBuffer, (char)c);
           }
           break;
         case 'c':
-          vec_push(&stream->writeBuffer, va_arg(args, int));
+          vec_push(&stream->writeBuffer, va_arg(args, char));
           break;
         case 's':
           str = va_arg(args, char*);

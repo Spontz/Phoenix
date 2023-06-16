@@ -74,7 +74,9 @@ namespace Phoenix {
 			case ShaderDataType::Mat3:
 			case ShaderDataType::Mat4:
 			{
-				uint8_t count = element.DataType.elementCount;
+				if (element.DataType.elementCount > 255)
+					throw std::exception();
+				const uint8_t count = static_cast<uint8_t>(element.DataType.elementCount);
 				for (uint8_t i = 0; i < count; i++)
 				{
 					glEnableVertexAttribArray(m_vertexBufferIndex);

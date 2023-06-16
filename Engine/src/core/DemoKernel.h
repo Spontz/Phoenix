@@ -155,7 +155,7 @@ namespace Phoenix {
 		bool m_debugDrawGridAxisY;
 		bool m_debugDrawGridAxisZ;
 
-		int32_t m_status;		// Demo status (play, pause, loading, etc.)
+		int8_t m_status;		// Demo status (play, pause, loading, etc.)
 		float m_demoStartTime;	// first demo second
 		float m_demoEndTime;	// last demo second (0 = unlimited)
 

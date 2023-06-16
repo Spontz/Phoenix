@@ -249,7 +249,7 @@ namespace Phoenix {
 		std::vector<uint32_t> indices;
 
 		float start = -0.5;
-		float end = 0.5;
+		//float end = 0.5;
 		float step = 1.0f / static_cast<float>(m_gridSlices);
 
 		for (int j = 0; j <= m_gridSlices; ++j) {

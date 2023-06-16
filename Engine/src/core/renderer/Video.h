@@ -63,6 +63,7 @@ namespace Phoenix {
 		double m_dFramerate; // In frames/sec
 		int32_t m_iWidth;
 		int32_t m_iHeight;
+		int64_t m_numFrames = -1;
 		GLuint m_uiTextureOGLName;  // OpenGL texture name storing video frames
 		bool m_bLoaded;
 		AVFormatContext* m_pFormatContext;  // Holds the format header information (Container)

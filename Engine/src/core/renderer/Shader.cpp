@@ -250,7 +250,6 @@ namespace Phoenix {
 		const std::vector<std::string>& feedbackVaryings
 	)
 	{
-		bool compiled = false;
 		if (shaderSources.size() < 2) {
 			return false;
 		}

@@ -81,7 +81,7 @@ namespace Phoenix {
 				Logger::info(LogLevel::high, "Demo time: {:.4f}", m_demoRunTime);
 				break;
 			case Key::PLAY_PAUSE:
-				if (m_status == DemoStatus::PLAY)
+				if (static_cast<DemoStatus>(m_status) == DemoStatus::PLAY)
 					pauseDemo();
 				else
 					playDemo();
@@ -116,8 +116,6 @@ namespace Phoenix {
 
 	bool DemoKernel::OnKeyReleased(KeyReleasedEvent& e)
 	{
-		uint16_t key = e.GetKeyCode();
-
 		if (m_debug) {
 			if (m_status & DemoStatus::PAUSE)
 				pauseDemo();
@@ -420,7 +418,7 @@ namespace Phoenix {
 #endif
 
 			// Evaluate the time of the demo
-			if (m_status == DemoStatus::PLAY) {
+			if (static_cast<DemoStatus>(m_status) == DemoStatus::PLAY) {
 				// If demo is playing: Update the timing information for the sections
 				processTimer();
 			}

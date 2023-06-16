@@ -20,7 +20,7 @@ namespace Phoenix {
 	private:
 
 		// Spline vector
-		ChanVec			m_splineCurrentPos;
+		ChanVec			m_splineCurrentPos = {};
 		float			m_splinePos = 0;
 		float			m_splineTime = 0;
 		// Emitter dara
@@ -68,7 +68,7 @@ namespace Phoenix {
 			delete m_pPartSystem;
 	}
 
-	static float RandomFloat()
+	float RandomFloat()
 	{
 		float Max = RAND_MAX;
 		return ((float)rand() / Max);

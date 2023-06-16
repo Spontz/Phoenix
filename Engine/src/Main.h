@@ -7,6 +7,8 @@
 
 //#define PROFILE_PHOENIX
 
+#pragma warning(disable: 4100)
+
 static constexpr uint32_t PHOENIX_MAJOR_VERSION = 2;
 static constexpr uint32_t PHOENIX_MINOR_VERSION = 2;
 static constexpr uint32_t PHOENIX_BUILD_VERSION = 6;

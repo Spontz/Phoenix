@@ -30,7 +30,6 @@ namespace Phoenix {
 	void SectionLayer::LoadSections()
 	{
 		Section* pSection = nullptr;
-		Section* pTmpSection = nullptr;
 		Section* pLoadingSection = nullptr;
 
 		int sec_id;

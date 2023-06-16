@@ -44,6 +44,6 @@ namespace Phoenix {
 		std::vector<std::pair<int32_t, int32_t>> m_execSection;
 
 		// loading information
-		int32_t m_LoadedSections;
+		int32_t m_LoadedSections=-1;
 	};
 }

@@ -21,12 +21,12 @@ namespace Phoenix {
 	{
 	}
 
-	void FboManager::bind(int32_t fbo_num, bool clearColor, bool clearDepth)
+	void FboManager::bind(const int32_t fbo_num, const bool newClearColor, const bool newClearDepth)
 	{
 		if (fbo_num < fbo.size()) {
 			currentFbo = fbo_num;
-			clearColor = clearColor;
-			clearDepth = clearDepth;
+			clearColor = newClearColor;
+			clearDepth = newClearDepth;
 			Fbo* my_fbo = fbo[fbo_num];
 			// Adjust the viewport to the fbo size
 			DEMO->m_Window->SetCurrentViewport({ 0,0,static_cast<unsigned int>(my_fbo->width),static_cast<unsigned int>(my_fbo->height) });
@@ -58,11 +58,11 @@ namespace Phoenix {
 			fbo[fbo_num]->bind_tex(texUnit, attachment);
 	}
 
-	void FboManager::unbind(bool clearColor, bool clearDepth)
+	void FboManager::unbind(const bool newClearColor, const bool newClearDepth)
 	{
 		currentFbo = -1;
-		clearColor = clearColor;
-		clearDepth = clearDepth;
+		clearColor = newClearColor;
+		clearDepth = newClearDepth;
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		// Restore the driver viewport
 		DEMO->m_Window->SetCurrentViewport(DEMO->m_Window->GetFramebufferViewport());

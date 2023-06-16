@@ -96,12 +96,13 @@ namespace Phoenix {
 			json << "\"ts\":" << result.Start.count();
 			json << "}";
 
-			std::lock_guard lock(m_Mutex);
 			if (m_CurrentSession)
 			{
+				std::scoped_lock lock(m_Mutex);
 				m_OutputStream << json.str();
 				m_OutputStream.flush();
 			}
+
 		}
 
 		static Instrumentor& Get()

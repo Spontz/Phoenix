@@ -178,7 +178,6 @@ namespace Phoenix
 			bloomFbo.width = static_cast<float>(m_Data.WindowProperties.Width) / static_cast<float>(bloomFbo.ratio);
 			bloomFbo.height = static_cast<float>(m_Data.WindowProperties.Height) / static_cast<float>(bloomFbo.ratio);
 
-			int res = 0;
 			for (int i = 0; i < EFXBLOOM_FBO_BUFFERS; i++) {
 				if (m_demo->m_efxBloomFbo.addFbo(bloomFbo) >= 0) {
 					Logger::info(LogLevel::low,	"EfxBloom Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}", i, bloomFbo.width, bloomFbo.height, bloomFbo.format);
@@ -208,7 +207,6 @@ namespace Phoenix
 			accumFbo.width = static_cast<float>(m_Data.WindowProperties.Width) / static_cast<float>(accumFbo.ratio);
 			accumFbo.height = static_cast<float>(m_Data.WindowProperties.Height) / static_cast<float>(accumFbo.ratio);
 
-			int res = 0;
 			for (int i = 0; i < EFXACCUM_FBO_BUFFERS; i++) {
 				if (m_demo->m_efxAccumFbo.addFbo(accumFbo) >= 0) {
 					Logger::info(LogLevel::low, "EfxAccum Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}", i, accumFbo.width, accumFbo.height, accumFbo.format);
@@ -530,13 +528,13 @@ namespace Phoenix
 		{
 			case GLFW_PRESS:
 			{
-				KeyPressedEvent event(key, 0);
+				KeyPressedEvent event(static_cast<KeyCode>(key), 0);
 				data.EventCallback(event);
 				break;
 			}
 			case GLFW_RELEASE:
 			{
-				KeyReleasedEvent event(key);
+				KeyReleasedEvent event(static_cast<KeyCode>(key));
 				data.EventCallback(event);
 				break;
 			}
@@ -547,7 +545,7 @@ namespace Phoenix
 	{
 		WindowData& data = *(WindowData*)glfwGetWindowUserPointer(p_glfw_window);
 
-		KeyTypedEvent event(keycode);
+		KeyTypedEvent event(static_cast<KeyCode>(keycode));
 		data.EventCallback(event);
 	}
 
@@ -559,13 +557,13 @@ namespace Phoenix
 		{
 			case GLFW_PRESS:
 			{
-				MouseButtonPressedEvent event(button);
+				MouseButtonPressedEvent event(static_cast<MouseCode>(button));
 				data.EventCallback(event);
 				break;
 			}
 			case GLFW_RELEASE:
 			{
-				MouseButtonReleasedEvent event(button);
+				MouseButtonReleasedEvent event(static_cast<MouseCode>(button));
 				data.EventCallback(event);
 				break;
 			}

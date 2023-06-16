@@ -107,9 +107,9 @@ namespace Phoenix {
 
 	// checks all material textures of a given type and loads the textures if they're not loaded yet.
 	// the required info is returned as a Texture struct.
-	std::vector<textureStack> Material::loadTextures(aiTextureType type, std::string_view typeName)
+	std::vector<textureStack> Material::loadTextures(const aiTextureType type, const std::string_view typeName)
 	{
-		std::vector<textureStack> textures;
+		std::vector<textureStack> ret;
 		const auto textureCount = m_pMaterial->GetTextureCount(type);
 
 		for (unsigned int i = 0; i < textureCount; ++i) {
@@ -139,7 +139,7 @@ namespace Phoenix {
 				tex.strength = blendFactor;
 				if (tex.tex) {
 					tex.shaderName = std::string(typeName) + std::to_string(i + 1);
-					textures.push_back(tex);
+					ret.push_back(tex);
 				}
 				break;
 			}
@@ -160,7 +160,7 @@ namespace Phoenix {
 				tex.strength = blendFactor;
 				if (tex.tex) {
 					tex.shaderName = std::string(typeName) + std::to_string(i + 1);
-					textures.push_back(tex);
+					ret.push_back(tex);
 				}
 				break;
 			}
@@ -189,7 +189,7 @@ namespace Phoenix {
 					tex.strength = blendFactor;
 					if (tex.tex) {
 						tex.shaderName = std::string(typeName) + std::to_string(i + 1);
-						textures.push_back(tex);
+						ret.push_back(tex);
 					}
 				}
 				break;
@@ -200,7 +200,7 @@ namespace Phoenix {
 			}
 
 		}
-		return textures;
+		return ret;
 	}
 
 	TextureStorageType Material::getTextureStorageType(aiTextureType textureType) const

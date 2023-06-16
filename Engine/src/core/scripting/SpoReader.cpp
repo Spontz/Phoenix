@@ -202,10 +202,6 @@ namespace Phoenix {
 		int lineNum = 0; // Line counter
 
 		int sec_id = -1;
-		Section* new_sec = NULL;
-		Spline* new_spl = NULL;
-		SectionCommand command = SectionCommand::INVALID;
-
 
 		while (std::getline(f, line)) {
 			lineNum++;

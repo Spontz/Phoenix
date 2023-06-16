@@ -9,8 +9,8 @@ namespace Phoenix {
 	float smoothing_kernel_double_cos(glm::vec3 const& p0, glm::vec3 const& p1) {
 		constexpr float h = 1.0f;
 		constexpr float k = 1.0f;
-		constexpr float pi = glm::pi<float>();
-		constexpr float a3 = pi / ((4.0f * pi * pi - 30.0f) * (k * h) * (k * h) * (k * h));
+		//constexpr float pi = glm::pi<float>();
+		//constexpr float a3 = pi / ((4.0f * pi * pi - 30.0f) * (k * h) * (k * h) * (k * h));
 
 		const float r = glm::length(p0 - p1);
 		const float s = r / h;
@@ -47,7 +47,7 @@ namespace Phoenix {
 
 
 	void SPH::Simulate() {
-		real elapsed = real(1) / real(kSimFreqHz); // hack: get from engine
+		//real elapsed = real(1) / real(kSimFreqHz); // hack: get from engine
 
 		grid_.clear();
 
@@ -99,8 +99,8 @@ namespace Phoenix {
 					for (auto i_x = -1; i_x < 1; i_x += 2)
 						for (auto i_y = -1; i_y < 1; i_y += 2)
 							for (auto i_z = -1; i_z < 1; i_z += 2)
-								for (auto& idx3 : grid_[std::tuple<int, int, int>{ x + i_x, y + i_y, z + i_z }])
-									couple(idx2, idx3);
+								for (auto& idx3_b : grid_[std::tuple<int, int, int>{ x + i_x, y + i_y, z + i_z }])
+									couple(idx2, idx3_b);
 				}
 
 				// update positions

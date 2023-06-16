@@ -227,7 +227,7 @@ namespace Phoenix {
 			updateMatrices(false);
 
 		// Draw Objects
-		int object = 0;
+		//int object = 0;
 		m_fCurrObjID = 0;
 		m_pShader->setValue("n_total", m_fNumObjects);	// Send total objects to draw to the shader
 

@@ -215,6 +215,7 @@ namespace Phoenix {
 		m_currTFB = (m_currTFB + 1) & 0x1;
 	}
 
+
 	void ParticleSystem::UpdateEmitters(float deltaTime)
 	{
 		// NOTE: This method is never used, only useful for debugging and modifying the emitters by hardcode
@@ -235,6 +236,7 @@ namespace Phoenix {
 		glUnmapBuffer(GL_ARRAY_BUFFER);
 	}
 
+
 	void ParticleSystem::UpdateEmittersPosition(const std::vector<Particle> emitters)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
@@ -252,6 +254,7 @@ namespace Phoenix {
 		}
 		glUnmapBuffer(GL_ARRAY_BUFFER);
 	}
+
 
 	void ParticleSystem::UpdateParticles(float deltaTime, const glm::mat4& model)
 	{
@@ -298,6 +301,7 @@ namespace Phoenix {
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 	}
 
+
 	void ParticleSystem::RenderParticles(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
 	{
 		//Use the billboard shader and send variables
@@ -318,6 +322,7 @@ namespace Phoenix {
 		//debugLogBufferData(); // For debugging only: Outputs to the log the content of the buffers
 	}
 
+
 	bool ParticleSystem::initShaderBillboard()
 	{
 		m_billboardShader = DEMO->m_shaderManager.addShader(m_pathBillboard);
@@ -325,6 +330,7 @@ namespace Phoenix {
 			return true;
 		return false;
 	}
+
 
 	bool ParticleSystem::initShaderParticleSystem()
 	{
@@ -335,6 +341,7 @@ namespace Phoenix {
 			return true;
 		return false;
 	}
+
 
 	// TODO: Investigate if we should move this "Random texture 1D generator" to the TextureManager class
 	static glm::vec3 RandomVec3() // Return a float between -0.5 and 0.5
@@ -367,28 +374,42 @@ namespace Phoenix {
 		return true;
 	}
 
+
 	void ParticleSystem::bindRandomTexture(GLuint TexUnit)
 	{
 		glBindTextureUnit(TexUnit, m_textureRandID);
 	}
 
+
 	void ParticleSystem::debugLogBufferData()
 	{
 		/// DEBUG ONLY
 		/// Output Buffer values
-		LogLevel l = LogLevel::low;
-		Logger::info(l, "Buffers Current VB:{}, current TFB:{}", m_currVB, m_currTFB);
-		for (unsigned int i = 0; i < 2; i++) {
+		constexpr LogLevel logLevel = LogLevel::low;
+		Logger::info(logLevel, "Buffers Current VB:{}, current TFB:{}", m_currVB, m_currTFB);
+		for (auto i = 0; i < 2; ++i) {
 			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-			Particle* p = (Particle*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
-			Logger::info(l, "SETUP Buffer {}", i);
-			for (unsigned int i = 0; i < m_numMaxParticles; i++)
+			const Particle* const p = (Particle*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
+			Logger::info(logLevel, "SETUP Buffer {}", i);
+			for (auto j = 0u; j < m_numMaxParticles; ++j)
 			{
-				Logger::info(l, "Part {}: Type: {}, L:{:.2f}, P:({:.2f},{:.2f},{:.2f}), C:({:.2f},{:.2f},{:.2f})", i, (int32_t)p[i].Type, p[i].lifeTime, p[i].Pos.x, p[i].Pos.y, p[i].Pos.z, p[i].Col.x, p[i].Col.y, p[i].Col.z);
+				const auto& p_i = p[j];
+				Logger::info(
+					logLevel,
+					"Part {}: Type: {}, L:{:.2f}, P:({:.2f},{:.2f},{:.2f}), C:({:.2f},{:.2f},{:.2f})",
+					j,
+					static_cast<int32_t>(p_i.Type),
+					p_i.lifeTime,
+					p_i.Pos.x,
+					p_i.Pos.y,
+					p_i.Pos.z,
+					p_i.Col.x,
+					p_i.Col.y,
+					p_i.Col.z
+				);
 			}
-			Logger::info(l, "");
+			Logger::info(logLevel, "");
 			glUnmapBuffer(GL_ARRAY_BUFFER);
-
 		}
 	}
 }

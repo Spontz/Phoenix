@@ -9,6 +9,8 @@
 
 #include <main.h>
 
+#include <algorithm>
+
 namespace Phoenix {
 
 	Video::Video(bool bDebug)
@@ -159,7 +161,18 @@ namespace Phoenix {
 			return false;
 		}
 
-		for (unsigned int i = 0; i < m_pFormatContext->nb_streams; ++i) {
+		for (int32_t i = 0; i < static_cast<int32_t>(m_pFormatContext->nb_streams); ++i) {
+			int64_t numFrames = 0;
+			AVPacket pkt;
+			while (av_read_frame(m_pFormatContext, &pkt) >= 0) {
+				if (pkt.stream_index == i)
+					++numFrames;
+				av_packet_unref(&pkt);
+			}
+			m_numFrames = std::max(m_numFrames, numFrames);
+		}
+
+		for (int32_t i = 0; i < static_cast<int32_t>(m_pFormatContext->nb_streams); ++i) {
 			const auto pAVStream = m_pFormatContext->streams[i];
 			const auto pAVCodecParameters = pAVStream->codecpar;
 
@@ -453,20 +466,40 @@ namespace Phoenix {
 		glBindTextureUnit(uiTexUnit, m_uiTextureOGLName);
 	}
 
+	int64_t Video::seekTime(const double dSeconds) const
+	{
+		const auto iTimeMs = static_cast<int64_t>(dSeconds * 100000.);
+		const auto s = m_pFormatContext->streams[m_VideoSource.m_iVideoStreamIndex];
+		auto iFrameNumber = av_rescale_q(iTimeMs, { 1, 100000 }, s->time_base) + s->start_time;
+
+		iFrameNumber = std::min(iFrameNumber, m_numFrames);
+
+		if (av_seek_frame(m_pFormatContext, m_VideoSource.m_iVideoStreamIndex, iFrameNumber, 0) < 0) {
+			Logger::info(LogLevel::low, "{}: Could not reach position: {:.4f}s, frame: {}. Using frame 0.", __FILE__, dSeconds, iFrameNumber);
+			return 0;
+		}
+
+		return iFrameNumber;
+	}
+
+	/*
 	int64_t Video::seekTime(double dSeconds) const
 	{
 		const auto iTimeMs = static_cast<int64_t>(dSeconds * 1000.);
-		const auto iFrameNumber = av_rescale(
+		auto iFrameNumber = av_rescale(
 			iTimeMs,
 			m_pFormatContext->streams[m_VideoSource.m_iVideoStreamIndex]->time_base.den,
 			m_pFormatContext->streams[m_VideoSource.m_iVideoStreamIndex]->time_base.num
 		) / 1000;
 
-		if (av_seek_frame(m_pFormatContext, m_VideoSource.m_iVideoStreamIndex, iFrameNumber, 0) < 0)
+		while (av_seek_frame(m_pFormatContext, m_VideoSource.m_iVideoStreamIndex, iFrameNumber, 0) < 0) {
 			Logger::error("{}: Could not reach position: {:.4f}s, frame: {}", __FILE__, dSeconds, iFrameNumber);
+			iFrameNumber/=2;
+		}
 
 		return iFrameNumber;
 	}
+	*/
 
 	int32_t Video::decodePacket()
 	{

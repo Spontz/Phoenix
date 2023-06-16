@@ -73,7 +73,7 @@ namespace Phoenix {
 		}
 
 		KeyFrame* key0, * key1;
-		float t, h1, h2, h3, h4, res, d10;
+		float t=0, h1 = 0, h2 = 0, h3 = 0, h4 = 0, res = 0, d10 = 0;
 		float dd0a = 0, dd0b = 0, ds1a = 0, ds1b = 0;
 		float adj0 = 0, adj1 = 0, dd0 = 0, ds1 = 0;
 		float tlength;

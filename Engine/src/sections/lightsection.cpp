@@ -86,7 +86,7 @@ namespace Phoenix {
 		m_bDrawLight = static_cast<bool>(param[6]);
 		m_fDrawLightSize = param[7];
 
-		Light* my_light = m_demo.m_lightManager.light[m_iLightNum];
+		//Light* my_light = m_demo.m_lightManager.light[m_iLightNum];
 
 		// Register the variables
 		m_pExprLight = new MathDriver(this);
