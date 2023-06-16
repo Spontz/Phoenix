@@ -29,7 +29,7 @@ namespace Phoenix {
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
 
-		void changeFontSize(float baseSize, int32_t width, int32_t height);
+		void changeFontSize();
 		void addLog(std::string_view message);
 		void clearLog();
 		void SetDarkThemeColors();
@@ -42,7 +42,7 @@ namespace Phoenix {
 		bool	show_fbo;
 		bool	show_sound;
 		bool	show_version;
-		bool	show_grid;
+		bool	show_config;
 		bool	show_help;
 		bool	show_debugNet;
 
@@ -70,7 +70,7 @@ namespace Phoenix {
 		void drawFPSHistogram();
 		void drawFbo();
 		void drawSound();
-		void drawGridConfig();
+		void drawConfig();
 		void drawHelp();
 		void drawCameraInfo(Camera* pCamera);
 		void drawDebugNet();
@@ -97,7 +97,6 @@ namespace Phoenix {
 		float		m_renderTimes[RENDERTIMES_SAMPLES];
 		int32_t		m_maxRenderFPSScale;
 		int32_t		m_currentRenderTime;
-		float		m_fontScale;
 
 		bool		m_expandAllSections;
 		bool		m_expandAllSectionsChanged;

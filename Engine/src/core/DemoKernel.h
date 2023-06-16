@@ -143,17 +143,17 @@ namespace Phoenix {
 
 		// private: (hack: create getters)
 		bool m_debug;
-		float m_debugFontSize;
 		LogLevel m_logLevel;
 		bool m_slaveMode;
 
 		// misc
 		bool m_loop;
 		bool m_sound;
-		bool m_debug_enableGrid;
-		bool m_debug_drawGridAxisX;
-		bool m_debug_drawGridAxisY;
-		bool m_debug_drawGridAxisZ;
+		float m_debugFontSize;
+		bool m_debugEnableGrid;
+		bool m_debugDrawGridAxisX;
+		bool m_debugDrawGridAxisY;
+		bool m_debugDrawGridAxisZ;
 
 		int32_t m_status;		// Demo status (play, pause, loading, etc.)
 		float m_demoStartTime;	// first demo second

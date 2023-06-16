@@ -17,7 +17,7 @@ namespace Phoenix {
 		"4 Change FBO attachments to see\n" \
 		"5 Show which sections that are being drawn, and some information related to them\n" \
 		"6 Show sound information(spectrum analyzer)\n" \
-		"7 Show Grid\n" \
+		"7 Show Config\n" \
 		"9 Show this help :)\n" \
 		"0 Show engine and libraries versions\n" \
 		"F5 Show Debug pannel for networking analysis and simulation\n" \
@@ -54,10 +54,9 @@ namespace Phoenix {
 		show_fbo(false),
 		show_sound(false),
 		show_version(false),
-		show_grid(false),
+		show_config(false),
 		show_help(false),
 		show_debugNet(false),
-		m_fontScale(1.0f),
 		m_numFboSetToDraw(0),
 		m_numFboAttachmentToDraw(0),
 		m_numFboPerPage(4),
@@ -174,8 +173,8 @@ namespace Phoenix {
 			drawFPSHistogram();
 		if (show_sound)
 			drawSound();
-		if (show_grid)
-			drawGridConfig();
+		if (show_config)
+			drawConfig();
 		if (show_help)
 			drawHelp();
 		if (show_debugNet)
@@ -297,7 +296,7 @@ namespace Phoenix {
 				ImGui::MenuItem("Show FBO's", "3", &show_fbo);
 				ImGui::MenuItem("Show section stack", "5", &show_sesctionInfo);
 				ImGui::MenuItem("Show sound information", "6", &show_sound);
-				ImGui::MenuItem("Show grid panel", "7", &show_grid);
+				ImGui::MenuItem("Show config", "7", &show_config);
 				ImGui::MenuItem("Show help", "9", &show_help);
 				ImGui::MenuItem("Show versions", "0", &show_version);
 				ImGui::EndMenu();
@@ -478,22 +477,29 @@ namespace Phoenix {
 		ImGui::End();
 	}
 
-	void ImGuiLayer::drawGridConfig()
+	void ImGuiLayer::drawConfig()
 	{
 		ImVec2 size = ImVec2(static_cast<float>(m_vp.width) / 1.75f, 160.0f);
 		ImVec2 pos = ImVec2(m_vp.width + m_vp.x - size.x, m_vp.height + m_vp.y - size.y);
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
 
-		if (!ImGui::Begin("Grid config", &show_grid)) {
+		if (!ImGui::Begin("Engine config", &show_config)) {
 			ImGui::End();
 			return;
 		}
-		ImGui::Checkbox("Enable grid", &m_demo.m_debug_enableGrid);
+		// Font config
+		if (ImGui::SliderFloat("Font size", &m_demo.m_debugFontSize, 1, 3, "%.1f")) {
+			changeFontSize();
+		}
 		ImGui::NewLine();
-		ImGui::Checkbox("Draw X Axis", &m_demo.m_debug_drawGridAxisX); ImGui::SameLine();
-		ImGui::Checkbox("Draw Y Axis", &m_demo.m_debug_drawGridAxisY); ImGui::SameLine();
-		ImGui::Checkbox("Draw Z Axis", &m_demo.m_debug_drawGridAxisZ);
+
+		
+		// Grid config
+		ImGui::Checkbox("Enable grid", &m_demo.m_debugEnableGrid);
+		ImGui::Checkbox("Draw X Axis", &m_demo.m_debugDrawGridAxisX); ImGui::SameLine();
+		ImGui::Checkbox("Draw Y Axis", &m_demo.m_debugDrawGridAxisY); ImGui::SameLine();
+		ImGui::Checkbox("Draw Z Axis", &m_demo.m_debugDrawGridAxisZ);
 		if (ImGui::SliderFloat("Size", &m_demo.m_pRes->m_gridSize, 0, 50, "%.1f")) {
 			if (m_demo.m_pRes->m_gridSize < 0)
 				m_demo.m_pRes->m_gridSize = 0;
@@ -554,7 +560,7 @@ namespace Phoenix {
 		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
 
 
-		if (!ImGui::Begin("Network debugging", &show_log, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
+		if (!ImGui::Begin("Network debugging", &show_debugNet, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
 		{
 			ImGui::End();
 			return;
@@ -567,8 +573,7 @@ namespace Phoenix {
 		if (ImGui::Button("Simulate receive message")) {
 			NetDriver::getInstance().processMessage(m_debugMsgFromEditor.c_str());
 		}
-		ImGui::InputTextMultiline(" ", &m_debugMsgFromEditor);
-		ImGui::SameLine();
+		ImGui::InputTextMultiline(" ", &m_debugMsgFromEditor, ImVec2(size.x-100, size.y-100));
 		
 		ImGui::End();
 	}
@@ -613,8 +618,8 @@ namespace Phoenix {
 			case Key::SHOWSOUND:
 				show_sound = !show_sound;
 				break;
-			case Key::SHOWGRIDPANEL:
-				show_grid = !show_grid;
+			case Key::SHOWCONFIG:
+				show_config = !show_config;
 				break;
 			case Key::SHOWHELP:
 				show_help = !show_help;
@@ -629,14 +634,9 @@ namespace Phoenix {
 		return EventHandled;
 	}
 
-	void ImGuiLayer::changeFontSize(float baseSize, int32_t width, int32_t height)
+	void ImGuiLayer::changeFontSize()
 	{
-		m_fontScale = static_cast<float>(height) / (768.0f) * baseSize;
-
-		if (m_fontScale < baseSize)
-			m_fontScale = baseSize;
-
-		ImGui::GetIO().FontGlobalScale = m_fontScale;
+		ImGui::GetIO().FontGlobalScale = m_demo.m_debugFontSize;
 	}
 
 	void ImGuiLayer::addLog(std::string_view message)
