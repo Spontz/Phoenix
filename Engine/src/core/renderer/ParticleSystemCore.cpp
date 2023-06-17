@@ -332,24 +332,24 @@ namespace Phoenix {
 		/// Output Buffer values
 		constexpr LogLevel logLevel = LogLevel::low;
 		Logger::info(logLevel, "Buffers Current VB:{}, current TFB:{}", m_currVB, m_currTFB);
-		for (auto i = 0; i < 2; ++i) {
+		for (unsigned int i = 0; i < 2; i++) {
 			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
 			Particle* p = (Particle*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
 			Logger::info(logLevel, "SETUP Buffer {}", i);
-			for (auto j = 0u; j < m_amountParticles; ++j)
+			for (unsigned int j = 0; j < m_amountParticles; j++)
 			{
-				const auto& p_j = p[i];
+				const auto& part = p[j];
 				Logger::info(
 					logLevel,
-					"Part {}: ST:{:.2f}, P:({:.2f},{:.2f},{:.2f}), C:({:.2f},{:.2f},{:.2f})",
-					i,
-					p_j.StartTime,
-					p_j.Pos.x,
-					p_j.Pos.y,
-					p_j.Pos.z,
-					p_j.Col.x,
-					p_j.Col.y,
-					p_j.Col.z
+					"Part {}: ST:{:.2f}, P:({:.2f},{:.2f},{:.2f}), C:({:.2f},{:.2f},{:.2f})", 
+					j,
+					part.StartTime,
+					part.Pos.x,
+					part.Pos.y,
+					part.Pos.z,
+					part.Col.x,
+					part.Col.y,
+					part.Col.z
 				);
 			}
 			Logger::info(logLevel, "");
