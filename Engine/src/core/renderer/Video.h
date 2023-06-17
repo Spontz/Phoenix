@@ -40,19 +40,41 @@ namespace Phoenix {
 		~Video();
 
 	public:
+		void resetData();
 		void bind(GLuint uiTexUnit) const;
 		std::string const& getFileName() const;
 		GLuint getTexID() const;
 		int32_t getWidth() const;
 		int32_t getHeight() const;
 		bool load(CVideoSource const& videoDesc);
+		void unload();
+
 		void renderVideo(double dTime);  // Render the video to the OpenGL texture at the specified time
+		// warning: there are videos with variable framerate
+		double avgFramePeriod() const
+		{
+			return 1.0 / avgFrameRate();
+		}
+
+		// warning: there are videos with variable framerate
+		double avgFrameRate() const
+		{
+			return av_q2d(m_pFormatContext->streams[m_VideoSource.m_iVideoStreamIndex]->avg_frame_rate);
+		}
+
+		bool loaded() const
+		{
+			return m_WorkerThread.joinable();
+		}
+
+		double videoDurationSecs() const
+		{
+			return static_cast<double>(m_pFormatContext->duration) / AV_TIME_BASE;
+		}
 
 	private:
-		void clearData();
 		void decode();
 		int32_t decodePacket();
-		double renderInterval() const;
 		int64_t seekTime(double dSeconds) const;  // Seek video and returns the frame number
 
 	private:
@@ -60,12 +82,10 @@ namespace Phoenix {
 
 	private:
 		CVideoSource m_VideoSource;
-		double m_dFramerate; // In frames/sec
 		int32_t m_iWidth;
 		int32_t m_iHeight;
-		int64_t m_numFrames = -1;
+		int64_t m_numFrames = -1;  // Video fame count
 		GLuint m_uiTextureOGLName;  // OpenGL texture name storing video frames
-		bool m_bLoaded;
 		AVFormatContext* m_pFormatContext;  // Holds the format header information (Container)
 		const AVCodec* m_pAVCodec;
 		AVCodecParameters* m_pAVCodecParameters;
@@ -75,11 +95,10 @@ namespace Phoenix {
 		const uint8_t* m_puiInternalBuffer;
 		SwsContext* m_pConvertContext;
 		AVPacket* m_pAVPacket;
-		double m_dIntervalFrame;  // Time in seconds between frames (1/frameRate)
-		double m_dNextFrameTime;  // Time to in seconds present the next frame
-		std::thread* m_pWorkerThread;
-		bool m_bNewFrame;
+		double m_dNextFrameTime;  // Time in seconds present the next frame
+		std::thread m_WorkerThread;
+		std::atomic_bool m_bNewFrame;
 		double m_dTime;
-		bool m_bStopWorkerThread;
+		std::atomic_bool m_bStopWorkerThread;
 	};
 }

@@ -15,74 +15,69 @@ namespace Phoenix {
 
 	Video::Video(bool bDebug)
 		:
-		m_dFramerate(0.),
-		m_iWidth(0),
-		m_iHeight(0),
-		m_uiTextureOGLName(0),
-		m_bLoaded(false),
-		m_pFormatContext(nullptr),
-		m_pAVCodec(nullptr),
-		m_pAVCodecParameters(nullptr),
-		m_pCodecContext(nullptr),
-		m_pFrame(nullptr),
-		m_pGLFrame(nullptr),
-		m_pConvertContext(nullptr),
-		m_pAVPacket(nullptr),
-		m_dIntervalFrame(0),
-		m_dNextFrameTime(0),
-		m_pWorkerThread(nullptr),
-		m_bNewFrame(false),
-		m_puiInternalBuffer(nullptr),
-		m_dTime(0.),
-		m_bStopWorkerThread(false),
 		m_bDebug(bDebug)
 	{
+		resetData();
+	}
+
+	void Video::resetData()
+	{
+		m_iWidth = 0;
+		m_iHeight = 0;
+		m_uiTextureOGLName = 0;
+		m_pFormatContext = nullptr;
+		m_pAVCodec = nullptr;
+		m_pAVCodecParameters = nullptr;
+		m_pCodecContext = nullptr;
+		m_pFrame = nullptr;
+		m_pGLFrame = nullptr;
+		m_pConvertContext = nullptr;
+		m_pAVPacket = nullptr;
+		m_dNextFrameTime = 0;
+		m_bNewFrame = false;
+		m_puiInternalBuffer = nullptr;
+		m_dTime = 0.;
+		m_bStopWorkerThread = false;
 	}
 
 	Video::~Video()
 	{
-		clearData();
+		unload();
 	}
 
-	void Video::clearData()
+	void Video::unload()
 	{
-		if (m_pWorkerThread) {
-			m_bStopWorkerThread = true;
-			
-			if (m_pWorkerThread->joinable())
-				m_pWorkerThread->join();
-			delete m_pWorkerThread;
-			m_pWorkerThread = nullptr;
+		Logger::info(LogLevel::high, "{} {} {}: Unloading video data...", __FILE__, __FUNCTION__, __LINE__);
 
-			m_bStopWorkerThread = false;
+		if (!loaded()) {
+			Logger::info(LogLevel::high, "{} {} {}: Video not loaded.", __FILE__, __FUNCTION__, __LINE__);
+			throw std::exception();
 		}
-		// Once thread is stopped, we re-init variables
-		m_bLoaded = false;
-		m_bNewFrame = false;
-		m_dIntervalFrame = 0;
-		m_dNextFrameTime = 0;
-		m_dTime = 0;
-		m_dFramerate = 0;
-		m_iWidth = 0;
-		m_iHeight = 0;
-		// Isaac: This needs to be freed? how?
-		//m_pAVCodec = nullptr;
-		//m_pAVCodecParameters = nullptr;
 
+		if (m_bStopWorkerThread) {
+			Logger::info(LogLevel::high, "{} {} {}: Worker thread stop already requested.", __FILE__, __FUNCTION__, __LINE__);
+			throw std::exception();
+		}
+
+		m_bStopWorkerThread = true;
+		m_WorkerThread.join();
+		m_bStopWorkerThread = false;
 
 		if (m_uiTextureOGLName != 0) {
 			glDeleteTextures(1, &m_uiTextureOGLName);
 			m_uiTextureOGLName = 0;
 		}
 
-		if (m_pFormatContext)
+		if (m_pFormatContext) {
 			avformat_close_input(&m_pFormatContext);
+			m_pFormatContext = nullptr;
+		}
 
 		if (m_pAVPacket) {
 			av_packet_unref(m_pAVPacket);
 			av_packet_free(&m_pAVPacket);
+			m_pAVPacket = nullptr;
 		}
-
 
 		if (m_puiInternalBuffer) {
 			av_free((void*)m_puiInternalBuffer);
@@ -92,34 +87,34 @@ namespace Phoenix {
 		if (m_pFrame) {
 			av_frame_unref(m_pFrame);
 			av_frame_free(&m_pFrame);
+			m_pFrame = nullptr;
 		}
 
 		if (m_pGLFrame) {
 			av_frame_unref(m_pGLFrame);
 			av_frame_free(&m_pGLFrame);
+			m_pGLFrame = nullptr;
 		}
-
 
 		if (m_pConvertContext) {
 			sws_freeContext(m_pConvertContext);
 			m_pConvertContext = nullptr;
 		}
 
-		if (m_pCodecContext)
+		if (m_pCodecContext) {
 			avcodec_free_context(&m_pCodecContext);
-	}
-
-	double Video::renderInterval() const
-	{
-		return m_dIntervalFrame / m_VideoSource.m_dPlaybackSpeed;
+			m_pCodecContext = nullptr;
+		}
 	}
 
 	bool Video::load(CVideoSource const& videoSource)
 	{
-		m_VideoSource = videoSource;
+		Logger::info(LogLevel::high, "{} {} {}: Loading video...", __FILE__, __FUNCTION__, __LINE__);
 
-		// Delete data, in case video has been already loaded
-		clearData();
+		if (loaded())
+			throw std::exception();
+
+		m_VideoSource = videoSource;
 
 		m_pFormatContext = avformat_alloc_context();
 		if (!m_pFormatContext) {
@@ -240,8 +235,6 @@ namespace Phoenix {
 						);
 
 						m_VideoSource.m_iVideoStreamIndex = i;
-						m_dFramerate = av_q2d(pAVStream->avg_frame_rate);
-						m_dIntervalFrame = 1.0 / m_dFramerate;
 						m_pAVCodec = pAVCodec;
 						m_pAVCodecParameters = pAVCodecParameters;
 						m_iWidth = pAVCodecParameters->width;
@@ -367,16 +360,9 @@ namespace Phoenix {
 			nullptr
 		);
 
-		m_bLoaded = true;
-
-		while (!m_bNewFrame)
-			decode();
-
-		m_pWorkerThread = new std::thread([&] {
-			while (!m_bStopWorkerThread) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(1)); // hack
+		m_WorkerThread = std::thread([&] {
+			while (!m_bStopWorkerThread)
 				decode();
-			}
 			});
 
 		return true;
@@ -384,10 +370,7 @@ namespace Phoenix {
 
 	void Video::decode()
 	{
-		if (
-			m_dTime < m_dNextFrameTime - renderInterval() ||
-			m_dTime > m_dNextFrameTime + renderInterval() * 2
-			) {
+		if (std::abs(m_dTime - m_dNextFrameTime) > avgFramePeriod() * 2.0) {
 			Logger::info(
 				LogLevel::high,
 				"{}: Seeking {}[stream {}] @ {:.4f}s [desynced by {:.4f}s]...",
@@ -437,28 +420,40 @@ namespace Phoenix {
 		}
 	}
 
-	void Video::renderVideo(double dTime)
+	void Video::renderVideo(const double dTime)
 	{
+		if (!loaded())
+		{
+			m_dTime = 0;
+			Logger::info(LogLevel::high, "{} {} {}: Video not loaded.", __FILE__, __FUNCTION__, __LINE__);
+			return;
+		}
+
+		if (m_pCodecContext == nullptr)
+		{
+			Logger::info(LogLevel::high, "{} {} {}: Null codec context.", __FILE__, __FUNCTION__, __LINE__);
+			return;
+		}
+
 		m_dTime = dTime;
 
-		if (!m_bLoaded)
+		if (!m_bNewFrame)
 			return;
 
-		if (m_pCodecContext && m_bNewFrame) {
-			glBindTextureUnit(0, m_uiTextureOGLName);
-			glTexSubImage2D(
-				GL_TEXTURE_2D,
-				0,
-				0,
-				0,
-				m_pCodecContext->width,
-				m_pCodecContext->height,
-				GL_RGB,
-				GL_UNSIGNED_BYTE,
-				m_pGLFrame->data[0]
-			);
-			m_bNewFrame = false;
-		}
+		glBindTextureUnit(0, m_uiTextureOGLName);
+		glTexSubImage2D(
+			GL_TEXTURE_2D,
+			0,
+			0,
+			0,
+			m_pCodecContext->width,
+			m_pCodecContext->height,
+			GL_RGB,
+			GL_UNSIGNED_BYTE,
+			m_pGLFrame->data[0]
+		);
+
+		m_bNewFrame = false;
 	}
 
 	void Video::bind(GLuint uiTexUnit) const
@@ -468,38 +463,38 @@ namespace Phoenix {
 
 	int64_t Video::seekTime(const double dSeconds) const
 	{
-		const auto iTimeMs = static_cast<int64_t>(dSeconds * 100000.);
-		const auto s = m_pFormatContext->streams[m_VideoSource.m_iVideoStreamIndex];
-		auto iFrameNumber = av_rescale_q(iTimeMs, { 1, 100000 }, s->time_base) + s->start_time;
+		const auto iTimeMicroSecs = static_cast<int64_t>(dSeconds * 100000.);
+		const auto AVStream = m_pFormatContext->streams[m_VideoSource.m_iVideoStreamIndex];
+		const auto iFrameNumber = std::min(m_numFrames, av_rescale_q(iTimeMicroSecs, { 1, 100000 }, av_inv_q(AVStream->avg_frame_rate)) + AVStream->start_time);
 
-		iFrameNumber = std::min(iFrameNumber, m_numFrames);
+		if (dSeconds > videoDurationSecs())
+		{
+			Logger::error("{} {} {}: Seek time out of range: {:.4f}s, frame: {}. Using frame 0.", __FILE__, __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
+			return -5;
+		}
 
-		if (av_seek_frame(m_pFormatContext, m_VideoSource.m_iVideoStreamIndex, iFrameNumber, 0) < 0) {
-			Logger::info(LogLevel::low, "{}: Could not reach position: {:.4f}s, frame: {}. Using frame 0.", __FILE__, dSeconds, iFrameNumber);
-			return 0;
+		const auto rc = av_seek_frame(m_pFormatContext, m_VideoSource.m_iVideoStreamIndex, iFrameNumber, 0);
+		switch (rc)
+		{
+		case -EINVAL:
+			Logger::info(LogLevel::high, "{} {} {}: Invalid Argument error: {:.4f}s, frame: {}. Using frame 0.", __FILE__, __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
+			return -1;
+		case -EIO:
+			Logger::info(LogLevel::high, "{} {} {}: Input/output error: {:.4f}s, frame: {}. Using frame 0.", __FILE__, __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
+			return -2;
+		case -ENOSYS:
+			Logger::info(LogLevel::high, "{} {} {}: Seek not supported on this stream: {:.4f}s, frame: {}. Using frame 0.", __FILE__, __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
+			return -3;
+		}
+
+		if (rc != 0)
+		{
+			Logger::error("{} {} {}: Unknown error: {:.4f}s, frame: {}. Using frame 0.", __FILE__, __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
+			return -4;
 		}
 
 		return iFrameNumber;
 	}
-
-	/*
-	int64_t Video::seekTime(double dSeconds) const
-	{
-		const auto iTimeMs = static_cast<int64_t>(dSeconds * 1000.);
-		auto iFrameNumber = av_rescale(
-			iTimeMs,
-			m_pFormatContext->streams[m_VideoSource.m_iVideoStreamIndex]->time_base.den,
-			m_pFormatContext->streams[m_VideoSource.m_iVideoStreamIndex]->time_base.num
-		) / 1000;
-
-		while (av_seek_frame(m_pFormatContext, m_VideoSource.m_iVideoStreamIndex, iFrameNumber, 0) < 0) {
-			Logger::error("{}: Could not reach position: {:.4f}s, frame: {}", __FILE__, dSeconds, iFrameNumber);
-			iFrameNumber/=2;
-		}
-
-		return iFrameNumber;
-	}
-	*/
 
 	int32_t Video::decodePacket()
 	{
@@ -549,8 +544,7 @@ namespace Phoenix {
 				);
 
 				m_bNewFrame = true;
-				//dNextFrameTime_ = static_cast<double>(pCodecContext_->frame_number) * renderInterval();
-				m_dNextFrameTime = m_dTime + renderInterval();
+				m_dNextFrameTime = m_dTime + avgFramePeriod();
 			}
 		}
 

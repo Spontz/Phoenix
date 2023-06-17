@@ -20,6 +20,9 @@ namespace Phoenix {
 		if (it != VideoMap_.end()) {
 			auto pVideo = it->second;
 			if (bForceReload) {
+				if (pVideo->loaded()) {
+					pVideo->unload();
+				}
 				// Reload video acording to m_bForceReload
 				if (!pVideo->load(VideoSource)) {
 					// Handle reload error
