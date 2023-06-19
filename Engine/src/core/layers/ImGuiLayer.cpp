@@ -121,6 +121,9 @@ namespace Phoenix {
 		// Setup Platform/Renderer bindings
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 410");
+
+		// Update font size
+		changeFontSize();
 	}
 
 	void ImGuiLayer::OnDetach()
