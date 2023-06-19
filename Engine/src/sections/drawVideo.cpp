@@ -125,7 +125,6 @@ namespace Phoenix {
 
 	void sDrawVideo::init()
 	{
-
 	}
 
 	void sDrawVideo::exec()
@@ -212,6 +211,9 @@ namespace Phoenix {
 
 	std::string sDrawVideo::debug()
 	{
-		return debugStatic;
+		std::stringstream ss;
+		ss << debugStatic;
+		ss << "Video Time: " << runTime << std::endl;
+		return ss.str();
 	}
 }

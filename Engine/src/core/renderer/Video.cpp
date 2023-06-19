@@ -247,7 +247,7 @@ namespace Phoenix {
 				// Show extra stream info
 				Logger::info(
 					LogLevel::low,
-					"{}: #{} {} stream[CodecID:{}], {}, {}hz, {}, {}bps.",
+					"{}: #{} {} stream[CodecID:{}], {}, {}hz, {}bps.",
 					__FILE__,
 					i,
 					pAVCodecParameters->codec_type == AVMEDIA_TYPE_AUDIO ? "Audio" : "Extra",
