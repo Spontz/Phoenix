@@ -43,7 +43,7 @@ namespace Phoenix {
 #define DEMO_checkGLError() DEMO->m_Window->checkError_(__FILE__, __LINE__) 
 
 	// Demo status
-	enum DemoStatus : char
+	enum DemoStatus : int8_t
 	{
 		LOADING = 0,
 		PLAY = 2,
@@ -52,6 +52,12 @@ namespace Phoenix {
 		FASTFORWARD = 16
 	};
 
+	// Demo special events
+	enum DemoSpecialEvent : int8_t
+	{
+		NORMAL = 0,
+		SEEKTIME = 2
+	};
 
 	class DemoKernel final
 	{
@@ -156,6 +162,7 @@ namespace Phoenix {
 		bool m_debugDrawGridAxisZ;
 
 		int8_t m_status;		// Demo status (play, pause, loading, etc.)
+		int8_t m_specialEvent;	// Demo special events (seek time)
 		float m_demoStartTime;	// first demo second
 		float m_demoEndTime;	// last demo second (0 = unlimited)
 

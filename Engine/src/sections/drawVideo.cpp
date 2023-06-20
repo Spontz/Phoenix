@@ -26,6 +26,8 @@ namespace Phoenix {
 
 		float		m_fVideoAspectRatio = 1.0f;
 		float		m_fRenderAspectRatio = 1.0f;
+		float		m_fvideoRunTime = 0.0f;
+		float		m_fvideoDuration = 0.0f;
 		SP_Video	m_pVideo;
 		SP_Shader	m_pShader;
 		MathDriver*	m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
@@ -81,6 +83,7 @@ namespace Phoenix {
 		if (!m_pVideo)
 			return false;
 		m_fVideoAspectRatio = static_cast<float>(m_pVideo->getWidth()) / static_cast<float>(m_pVideo->getHeight());
+		m_fvideoDuration = static_cast<float>(m_pVideo->videoDurationSecs());
 
 		// Load the Shader
 		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[1]);
@@ -134,7 +137,8 @@ namespace Phoenix {
 		EvalBlendingStart();
 
 		// Render the video frame if needed
-		m_pVideo->renderVideo(runTime);
+		m_fvideoRunTime = std::fmodf(runTime, m_fvideoDuration); // Recalculate video time
+		m_pVideo->renderVideo(m_fvideoRunTime);
 
 		// Evaluate the expression if we are not in fullscreen
 		if (!m_bFullscreen)
@@ -205,6 +209,7 @@ namespace Phoenix {
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		ss << "File: " << m_pVideo->getFileName() << std::endl;
 		ss << "Fullscreen: " << m_bFullscreen << ", Fit to content: " << m_bFitToContent << std::endl;
+		ss << "Video Duration: " << m_fvideoDuration << std::endl;
 		debugStatic = ss.str();
 
 	}
@@ -213,7 +218,7 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << debugStatic;
-		ss << "Video Time: " << runTime << std::endl;
+		ss << "Video run time: " << m_fvideoRunTime << std::endl;
 		return ss.str();
 	}
 }

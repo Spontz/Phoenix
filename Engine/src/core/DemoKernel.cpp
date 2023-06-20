@@ -240,6 +240,7 @@ namespace Phoenix {
 		:
 		m_pText(nullptr),
 		m_status(-1),
+		m_specialEvent(DemoSpecialEvent::NORMAL),
 		m_demoName("Phoenix Spontz Demoengine"),
 		m_dataFolder("./data/"),
 		m_debugFontSize(1.0f),
@@ -443,8 +444,13 @@ namespace Phoenix {
 				}
 				// reset section queues
 				m_SectionLayer->ReInitSections();
-			}			
+			}
 
+			// If we have a SeekTime special event, force the Reinit of the sections
+			if (static_cast<DemoSpecialEvent>(m_specialEvent) & DemoSpecialEvent::SEEKTIME) {
+				m_SectionLayer->ReInitSections();
+				m_specialEvent = m_specialEvent & ~DemoSpecialEvent::SEEKTIME;
+			}
 			// Check if demo should be ended or should be restarted
 			checkDemoEnd();
 
@@ -529,6 +535,7 @@ namespace Phoenix {
 
 		// Set the new time
 		m_demoRunTime = theTime;
+		m_specialEvent |= DemoSpecialEvent::SEEKTIME;
 	}
 
 	void DemoKernel::setEndTime(float theTime)
