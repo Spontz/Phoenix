@@ -101,11 +101,22 @@ namespace Phoenix {
 		std::string sInfo = "";			// Information message
 		std::string sResponse = "";		// Final response message
 
+		std::string sIdentifier;
+		std::string sType;
+		std::string sAction;
+
 		const std::vector<std::string> Message = splitMessage(sMessage);
 
-		const std::string sIdentifier = Message[0];
-		const std::string sType = Message[1];
-		const std::string sAction = Message[2];
+		if (Message.size() < 2) {
+			sIdentifier = "00";
+			sType = "unknown";
+			sAction = "unknown";
+		}
+		else {
+			sIdentifier = Message[0];
+			sType = Message[1];
+			sAction = Message[2];
+		}		
 
 		Logger::info(
 			LogLevel::low,
