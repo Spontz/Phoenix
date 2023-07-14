@@ -34,15 +34,22 @@ namespace Phoenix {
 		bool		isFBO;			// is the Sampler2D an FBO?
 	};
 
+	// SamplerCube (CUBEMAP) evaluation
+	struct varSamplerCube final : public varBase {
+		SP_Cubemap	cubemap;		// Cubemap
+		int32_t		cubemapUnitID;	// Texture unit ID
+	};
+
 	class ShaderVars final {
 	public:
-		std::vector<std::shared_ptr<varFloat>>		vfloat;
-		std::vector<std::shared_ptr<varVec2>>		vec2;
-		std::vector<std::shared_ptr<varVec3>>		vec3;
-		std::vector<std::shared_ptr<varVec4>>		vec4;
-		std::vector<std::shared_ptr<varMat3>>		mat3;
-		std::vector<std::shared_ptr<varMat4>>		mat4;
-		std::vector<std::shared_ptr<varSampler2D>>	sampler2D;
+		std::vector<std::shared_ptr<varFloat>>			vfloat;
+		std::vector<std::shared_ptr<varVec2>>			vec2;
+		std::vector<std::shared_ptr<varVec3>>			vec3;
+		std::vector<std::shared_ptr<varVec4>>			vec4;
+		std::vector<std::shared_ptr<varMat3>>			mat3;
+		std::vector<std::shared_ptr<varMat4>>			mat4;
+		std::vector<std::shared_ptr<varSampler2D>>		sampler2D;
+		std::vector<std::shared_ptr<varSamplerCube>>	samplerCube;
 
 		// constructor generates the shader on the fly
 		ShaderVars(Section* pSection, SP_Shader const& spShader);

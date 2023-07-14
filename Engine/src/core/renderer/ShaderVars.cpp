@@ -197,6 +197,41 @@ namespace Phoenix {
 					sampler2D.push_back(var);
 			}
 		}
+		else if (var_type == "samplerCube")	// Cubemao (samplerCube) detected
+		{
+			auto var = std::make_shared<varSamplerCube>();
+			var->name = var_name;
+			var->loc = my_shader->getUniformLocation(var->name.c_str());
+			var->cubemapUnitID = static_cast<int>(samplerCube.size());
+
+			Texture::Properties texProperties;
+			// Load texture properties
+			for (auto const& prop : var_properties) {
+				if (!loadTextureProperty(texProperties, prop))
+					Logger::error("Section {}: samplerCube has a non recognized property: {}", my_section->identifier, prop);
+			}
+
+			// Check if images exist
+			std::string samplerCubePath = DEMO->m_dataFolder + var_value + "/";
+			const std::vector<std::string> samplerCubeImages = { "right.jpg","left.jpg","top.jpg","bottom.jpg","front.jpg","back.jpg"};
+			std::vector<std::string> samplerCubePaths;
+			for (auto& s : samplerCubeImages) {
+				samplerCubePaths.push_back(samplerCubePath + s);
+			}
+
+			bool imagesOK = true;
+			for (auto& s : samplerCubePaths) {
+				if (!Utils::checkFileExists(s)) {
+					Logger::error("Section {}: samplerCube is missing the image: {}", my_section->identifier, s);
+					imagesOK = false;
+				}
+			}
+			if (imagesOK) {
+				var->cubemap = DEMO->m_textureManager.addCubemap(samplerCubePaths,texProperties.m_flip);
+				if (var->cubemap) // If texture is valid
+					samplerCube.push_back(var);
+			}
+		}
 		return true;
 	}
 
@@ -211,6 +246,7 @@ namespace Phoenix {
 		std::shared_ptr<varMat3> my_mat3;
 		std::shared_ptr<varMat4> my_mat4;
 		std::shared_ptr<varSampler2D> my_sampler2D;
+		std::shared_ptr<varSamplerCube> my_samplerCube;
 
 		for (i = 0; i < vfloat.size(); i++) {
 			my_vfloat = vfloat[i];
@@ -261,6 +297,12 @@ namespace Phoenix {
 			}
 			else
 				glBindTextureUnit(my_sampler2D->texUnitID, my_sampler2D->texture->m_textureID);
+		}
+
+		for (i = 0; i < samplerCube.size(); i++) {
+			my_samplerCube = samplerCube[i];
+			my_shader->setValue(my_samplerCube->name.c_str(), my_samplerCube->cubemapUnitID);
+			glBindTextureUnit(my_samplerCube->cubemapUnitID, my_samplerCube->cubemap->m_cubemapID);
 		}
 	}
 
