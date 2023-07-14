@@ -197,7 +197,7 @@ namespace Phoenix {
 					sampler2D.push_back(var);
 			}
 		}
-		else if (var_type == "samplerCube")	// Cubemao (samplerCube) detected
+		else if (var_type == "samplerCube")	// Cubemap (samplerCube) detected
 		{
 			auto var = std::make_shared<varSamplerCube>();
 			var->name = var_name;

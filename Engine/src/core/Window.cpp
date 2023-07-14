@@ -502,6 +502,9 @@ namespace Phoenix
 	
 	void Window::OnWindowResize(uint32_t width, uint32_t height)
 	{
+		if (width < 640 || height < 480)
+			return; // do nothing
+
 		m_Data.WindowProperties.Width = width;
 		m_Data.WindowProperties.Height = height;
 
