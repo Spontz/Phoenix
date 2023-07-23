@@ -302,7 +302,10 @@ namespace Phoenix {
 		for (i = 0; i < samplerCube.size(); i++) {
 			my_samplerCube = samplerCube[i];
 			my_shader->setValue(my_samplerCube->name.c_str(), my_samplerCube->cubemapUnitID);
-			glBindTextureUnit(my_samplerCube->cubemapUnitID, my_samplerCube->cubemap->m_cubemapID);
+			my_samplerCube->cubemap->bind();
+			//glBindTextureUnit(my_samplerCube->cubemapUnitID, my_samplerCube->cubemap->m_cubemapID);
+			//Logger::info(LogLevel::high, "Cubemap num. {} of {}", i, samplerCube.size());
+			//Logger::info(LogLevel::high, "Cubemap name, Texture Unit, cubeMapID: {},{},{}", my_samplerCube->name.c_str(), my_samplerCube->cubemapUnitID, my_samplerCube->cubemap->m_cubemapID);
 		}
 	}
 
