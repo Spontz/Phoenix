@@ -78,10 +78,6 @@ namespace Phoenix {
 		}
 
 		glTextureStorage2D(m_cubemapID, 1, internalFormat, Width, Height);
-
-		if (DEMO_checkGLError())
-			int kk = 0;
-		
 		for (unsigned int face = 0; face < faces_file_name.size(); ++face) {
 			data = stbi_load(faces_file_name[face].c_str(), &Width, &Height, &components, 0);
 			if (data) {
@@ -92,11 +88,7 @@ namespace Phoenix {
 				glTextureSubImage3D(m_cubemapID, 0, 0, 0,		// target, level , xOffset, yOffset
 					face, Width, Height, 1, dataFormat, 		// cube map face, width, height, 1 face a time, format
 					GL_UNSIGNED_BYTE, data);					// datatype, data pointer
-				if (DEMO_checkGLError()) {
-					Logger::error("Error uploading cubemap: {}, cubemap face: {}", faces_file_name[face], face);
-					Logger::error("cubemapID:{}, face:{}, width:{}, height:{}, dataFormat:{}", m_cubemapID,face,Width,Height,dataFormat);
-				}
-					m_mem += (float)(Width * Height * components) / 1048576.0f;		// Calculate the texture mem (in mb)
+				m_mem += (float)(Width * Height * components) / 1048576.0f;		// Calculate the texture mem (in mb)
 				stbi_image_free(data);
 				data = NULL;
 			} else {
