@@ -84,7 +84,6 @@ namespace Phoenix {
 				m_filename.push_back(faces_file_name[face]);
 				m_width.push_back(Width);
 				m_height.push_back(Height);
-				//glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, internalFormat, Width, Height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
 				glTextureSubImage3D(m_cubemapID, 0, 0, 0,		// target, level , xOffset, yOffset
 					face, Width, Height, 1, dataFormat, 		// cube map face, width, height, 1 face a time, format
 					GL_UNSIGNED_BYTE, data);					// datatype, data pointer
