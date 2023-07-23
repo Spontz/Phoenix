@@ -157,7 +157,7 @@ namespace Phoenix {
 				Particles[numParticle].Type = ParticleMesh::ParticleType::Emitter;
 				Particles[numParticle].ID = (int32_t)numEmitter;
 				Particles[numParticle].InitPosition = glm::vec3(i, j, 0);
-				Particles[numParticle].Randomness = glm::vec3(0, 0, 0);
+				Particles[numParticle].Randomness = RandomVec3();
 				Particles[numParticle].InitColor = m_pTexture->getColor(i, j);
 				Particles[numParticle].Life = 0;
 				emitterID = numParticle;
