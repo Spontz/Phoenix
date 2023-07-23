@@ -47,15 +47,15 @@ namespace Phoenix {
 
 	void Video::unload()
 	{
-		Logger::info(LogLevel::high, "{} {} {}: Unloading video data...", __FILE__, __FUNCTION__, __LINE__);
+		Logger::info(LogLevel::low, "{} {} {}: Unloading video data...", __FILE__, __FUNCTION__, __LINE__);
 
 		if (!loaded()) {
-			Logger::info(LogLevel::high, "{} {} {}: Video not loaded.", __FILE__, __FUNCTION__, __LINE__);
+			Logger::info(LogLevel::low, "{} {} {}: Video not loaded.", __FILE__, __FUNCTION__, __LINE__);
 			throw std::exception();
 		}
 
 		if (m_bStopWorkerThread) {
-			Logger::info(LogLevel::high, "{} {} {}: Worker thread stop already requested.", __FILE__, __FUNCTION__, __LINE__);
+			Logger::info(LogLevel::low, "{} {} {}: Worker thread stop already requested.", __FILE__, __FUNCTION__, __LINE__);
 			throw std::exception();
 		}
 
@@ -109,7 +109,7 @@ namespace Phoenix {
 
 	bool Video::load(CVideoSource const& videoSource)
 	{
-		Logger::info(LogLevel::high, "{} {} {}: Loading video...", __FILE__, __FUNCTION__, __LINE__);
+		Logger::info(LogLevel::low, "{} {} {}: Loading video...", __FILE__, __FUNCTION__, __LINE__);
 
 		if (loaded())
 			throw std::exception();
@@ -372,7 +372,7 @@ namespace Phoenix {
 	{
 		if (std::abs(m_dTime - m_dNextFrameTime) > avgFramePeriod() * 2.0) {
 			Logger::info(
-				LogLevel::high,
+				LogLevel::low,
 				"{}: Seeking {}[stream {}] @ {:.4f}s [desynced by {:.4f}s]...",
 				__FILE__,
 				m_VideoSource.m_sPath,
@@ -425,13 +425,13 @@ namespace Phoenix {
 		if (!loaded())
 		{
 			m_dTime = 0;
-			Logger::info(LogLevel::high, "{} {} {}: Video not loaded.", __FILE__, __FUNCTION__, __LINE__);
+			Logger::info(LogLevel::low, "{} {} {}: Video not loaded.", __FILE__, __FUNCTION__, __LINE__);
 			return;
 		}
 
 		if (m_pCodecContext == nullptr)
 		{
-			Logger::info(LogLevel::high, "{} {} {}: Null codec context.", __FILE__, __FUNCTION__, __LINE__);
+			Logger::info(LogLevel::low, "{} {} {}: Null codec context.", __FILE__, __FUNCTION__, __LINE__);
 			return;
 		}
 
@@ -477,13 +477,13 @@ namespace Phoenix {
 		switch (rc)
 		{
 		case -EINVAL:
-			Logger::info(LogLevel::high, "{} {} {}: Invalid Argument error: {:.4f}s, frame: {}. Using frame 0.", __FILE__, __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
+			Logger::info(LogLevel::low, "{} {} {}: Invalid Argument error: {:.4f}s, frame: {}. Using frame 0.", __FILE__, __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
 			return -1;
 		case -EIO:
-			Logger::info(LogLevel::high, "{} {} {}: Input/output error: {:.4f}s, frame: {}. Using frame 0.", __FILE__, __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
+			Logger::info(LogLevel::low, "{} {} {}: Input/output error: {:.4f}s, frame: {}. Using frame 0.", __FILE__, __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
 			return -2;
 		case -ENOSYS:
-			Logger::info(LogLevel::high, "{} {} {}: Seek not supported on this stream: {:.4f}s, frame: {}. Using frame 0.", __FILE__, __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
+			Logger::info(LogLevel::low, "{} {} {}: Seek not supported on this stream: {:.4f}s, frame: {}. Using frame 0.", __FILE__, __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
 			return -3;
 		}
 
