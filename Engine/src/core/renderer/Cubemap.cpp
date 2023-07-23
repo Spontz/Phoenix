@@ -28,7 +28,10 @@ namespace Phoenix {
 	{
 		// If we already have loaded this cubemap, we unload it first
 		if (m_cubemapID > 0) {
-			glGenTextures(1, &m_cubemapID);
+			glDeleteTextures(1, &m_cubemapID);
+			m_filename.clear();
+			m_width.clear();
+			m_height.clear();
 			m_cubemapID = 0;
 			m_mem = 0;
 		}
