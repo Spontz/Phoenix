@@ -130,7 +130,7 @@ namespace Phoenix {
 		{
 			// Hack: stb_image stores data flipped
 			int coord_x = x;// width - x;
-			int coord_y = m_height - y;
+			int coord_y = (m_height-1) - y;
 			unsigned bytePerPixel = m_components;
 			unsigned char* pixelOffset = m_textureData + (coord_x + m_width * coord_y) * bytePerPixel;
 			unsigned char r = pixelOffset[0];
