@@ -118,9 +118,6 @@ namespace Phoenix {
 
 	void Cubemap::bind(GLuint TexUnit) const
 	{
-		// TODO: Fix this code... beccause DSA seems not to work on all drivers...
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemapID);
 		glBindTextureUnit(TexUnit, m_cubemapID);
 	}
 }
