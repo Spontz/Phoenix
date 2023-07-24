@@ -13,6 +13,7 @@ namespace Phoenix {
 	public:
 		bool		load();
 		void		init();
+		void		warmExec();
 		void		exec();
 		void		loadDebugStatic();
 		std::string debug();
@@ -96,15 +97,21 @@ namespace Phoenix {
 		for (int i = 0; i < uniform.size(); i++) {
 			m_pVars->ReadString(uniform[i].c_str());
 		}
-		// Set shader variables values
-		m_pVars->setValues();
 
+		// Set shader variables
+		m_pVars->setValues();
+		
 		return !DEMO_checkGLError();
 	}
 
 	void sEfxAccum::init()
 	{
 
+	}
+
+	void sEfxAccum::warmExec()
+	{
+		exec();
 	}
 
 	void sEfxAccum::exec()

@@ -12,6 +12,7 @@ namespace Phoenix {
 	public:
 		bool		load();
 		void		init();
+		void		warmExec();
 		void		exec();
 		void		loadDebugStatic();
 		std::string debug();
@@ -176,7 +177,7 @@ namespace Phoenix {
 			m_pVars->ReadString(uniform[i].c_str());
 		}
 
-		// Set shader variables values
+		// Set shader variables
 		m_pVars->setValues();
 
 		// Update object matrices
@@ -188,6 +189,11 @@ namespace Phoenix {
 	void sDrawSceneMatrix::init()
 	{
 
+	}
+
+	void sDrawSceneMatrix::warmExec()
+	{
+		exec();
 	}
 
 	void sDrawSceneMatrix::exec()

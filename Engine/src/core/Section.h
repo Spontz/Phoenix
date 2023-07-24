@@ -64,6 +64,7 @@ namespace Phoenix {
 	private:
 		virtual bool load();			// load section data
 		virtual void init();			// set up local variables before execution
+		virtual void warmExec();		// warm execution (pre-execute) (for shader pre-catching) - This only impacts sections that uses shaders
 		virtual void exec();			// execute section (normally, render)
 		virtual void loadDebugStatic(); // load the debug static string
 
@@ -88,6 +89,7 @@ namespace Phoenix {
 		bool	                    enabled;		// 1: Section enabled; 0: Section disabled
 		int32_t                     inited;			// 1: Section inited; 0: Section needs to be inited
 		int32_t                     loaded;			// 1: Section loaded; 0: Section not loaded
+		bool						warmed;			// Section has been warmed?
 		float                       runTime;		// seconds elapsed since section start
 		int32_t                     hasBlend;		// has blending function parameters?
 		int32_t                     blendEquation;	// Blend Equation

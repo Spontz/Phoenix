@@ -13,6 +13,7 @@ namespace Phoenix {
 
 		bool		load();
 		void		init();
+		void		warmExec();
 		void		exec();
 		void		loadDebugStatic();
 		std::string debug();
@@ -198,6 +199,11 @@ namespace Phoenix {
 		m_emitter.Vel = glm::vec3(0);
 		m_pPartSystem->UpdateEmitter(m_emitter);
 		m_pPartSystem->RestartParticles(m_runTime);
+	}
+
+	void sDrawEmitterSpline::warmExec()
+	{
+		exec();
 	}
 
 	void sDrawEmitterSpline::exec()

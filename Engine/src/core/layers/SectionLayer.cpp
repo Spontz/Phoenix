@@ -115,6 +115,27 @@ namespace Phoenix {
 					exit(EXIT_SUCCESS);
 				}
 			}
+
+			// Warm sections (pixel shader warming), by forcing a fake execution
+			m_SectionManager->m_WarmedSections = 0;
+			for (size_t i = 0; i < m_SectionManager->m_loadSection.size(); i++) {
+				sec_id = m_SectionManager->m_loadSection[i];
+				pSection = m_SectionManager->m_section[sec_id];
+				if (pSection->loaded) {
+					pSection->warmExec();
+					pSection->warmed = true;
+					++m_SectionManager->m_WarmedSections;
+					Logger::info(LogLevel::low, "Section {} [id: {}, DataSource: {}] pre-Warmed OK!", sec_id, pSection->identifier, pSection->DataSource);
+				}
+				// Update loading
+				pLoadingSection->exec();
+				
+				if (DEMO->m_exitDemo) {
+					DEMO->Close();
+					exit(EXIT_SUCCESS);
+				}
+			}
+
 		}
 
 		Logger::info(LogLevel::med,	"Loading complete, {} sections have been loaded.", m_SectionManager->m_LoadedSections);

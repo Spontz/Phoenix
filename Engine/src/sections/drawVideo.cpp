@@ -12,6 +12,7 @@ namespace Phoenix {
 	public:
 		bool		load();
 		void		init();
+		void		warmExec();
 		void		exec();
 		void		loadDebugStatic();
 		std::string debug();
@@ -120,14 +121,19 @@ namespace Phoenix {
 		for (std::string const& s : uniform)
 			m_pVars->ReadString(s.c_str());
 
-		// Set shader variables values
+		// Set shader variables
 		m_pVars->setValues();
-
+		
 		return !DEMO_checkGLError();
 	}
 
 	void sDrawVideo::init()
 	{
+	}
+
+	void sDrawVideo::warmExec()
+	{
+		exec();
 	}
 
 	void sDrawVideo::exec()

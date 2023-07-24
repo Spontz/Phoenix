@@ -11,6 +11,7 @@ namespace Phoenix {
 	public:
 		bool		load();
 		void		init();
+		void		warmExec();
 		void		exec();
 		void		loadDebugStatic();
 		std::string debug();
@@ -71,9 +72,9 @@ namespace Phoenix {
 		for (int i = 0; i < uniform.size(); i++) {
 			m_pVars->ReadString(uniform[i].c_str());
 		}
-		// Set shader variables values
-		m_pVars->setValues();
 
+		// Set shader variables
+		m_pVars->setValues();
 		m_pShader->setValue("scene", 0);		// The scene is in the Tex unit 0
 		m_pShader->setValue("velocity", 1);		// The velocity is in the Tex unit 1
 
@@ -86,6 +87,11 @@ namespace Phoenix {
 
 	void sEfxMotionBlur::init()
 	{
+	}
+
+	void sEfxMotionBlur::warmExec()
+	{
+		exec();
 	}
 
 

@@ -13,6 +13,7 @@ namespace Phoenix {
 
 		bool		load();
 		void		init();
+		void		warmExec();
 		void		exec();
 		void		loadDebugStatic();
 		std::string debug();
@@ -215,6 +216,11 @@ namespace Phoenix {
 
 	void sDrawEmitterSceneEx::init()
 	{
+	}
+
+	void sDrawEmitterSceneEx::warmExec()
+	{
+		exec();
 	}
 
 	void sDrawEmitterSceneEx::exec()

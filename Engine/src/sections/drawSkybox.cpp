@@ -12,6 +12,7 @@ namespace Phoenix {
 	public:
 		bool		load();
 		void		init();
+		void		warmExec();
 		void		exec();
 		void		loadDebugStatic();
 		std::string debug();
@@ -90,6 +91,11 @@ namespace Phoenix {
 	void sDrawSkybox::init()
 	{
 
+	}
+
+	void sDrawSkybox::warmExec()
+	{
+		exec();
 	}
 
 	void sDrawSkybox::exec()

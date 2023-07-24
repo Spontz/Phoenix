@@ -13,6 +13,7 @@ namespace Phoenix {
 	public:
 		bool		load();
 		void		init();
+		void		warmExec();
 		void		exec();
 		void		loadDebugStatic();
 		std::string debug();
@@ -97,6 +98,11 @@ namespace Phoenix {
 	void sEfxBlur::init()
 	{
 
+	}
+
+	void sEfxBlur::warmExec()
+	{
+		exec();
 	}
 
 	void sEfxBlur::exec()

@@ -10,6 +10,7 @@ namespace Phoenix {
 	public:
 		bool		load();
 		void		init();
+		void		warmExec();
 		void		exec();
 		void		loadDebugStatic();
 		std::string debug();
@@ -73,6 +74,11 @@ namespace Phoenix {
 	void sDrawFbo::init()
 	{
 
+	}
+
+	void sDrawFbo::warmExec()
+	{
+		exec();
 	}
 
 	void sDrawFbo::exec()

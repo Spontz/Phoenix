@@ -88,9 +88,18 @@ namespace Phoenix {
 			return;
 		}
 
-		float zero2one = 0;
+		// Evaluate section loading
+		float zero2oneLoading = 0;
 		if (m_demo.m_sectionManager.m_loadSection.size() > 0)
-			zero2one = static_cast<float>(m_demo.m_sectionManager.m_LoadedSections) / static_cast<float>(m_demo.m_sectionManager.m_loadSection.size());
+			zero2oneLoading = static_cast<float>(m_demo.m_sectionManager.m_LoadedSections) / static_cast<float>(m_demo.m_sectionManager.m_loadSection.size());
+
+		// Evaluate section warming
+		float zero2oneWarming = 0;
+		if (m_demo.m_sectionManager.m_loadSection.size() > 0)
+			zero2oneWarming = static_cast<float>(m_demo.m_sectionManager.m_WarmedSections) / static_cast<float>(m_demo.m_sectionManager.m_loadSection.size());
+
+		// Final zero2one /(70% is section loading, 30% section warming)
+		float zero2one = 0.7f * zero2oneLoading + 0.3f * zero2oneWarming;
 
 		m_demo.m_Window->InitRender(true);
 		{

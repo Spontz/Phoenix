@@ -20,6 +20,7 @@ namespace Phoenix {
 		enabled(false),
 		inited(false),
 		loaded(false),
+		warmed(false),
 		runTime(0),
 		hasBlend(0),
 		blendEquation(0),
@@ -96,9 +97,10 @@ namespace Phoenix {
 	}
 
 
-	bool		Section::load() { return true; };
-	void		Section::init() {};
-	void		Section::exec() {};
-	void		Section::loadDebugStatic() {};
-	std::string	Section::debug() { return {}; };
+	bool		Section::load()				{ return true; };
+	void		Section::init()				{};
+	void		Section::warmExec()			{};
+	void		Section::exec()				{};
+	void		Section::loadDebugStatic()	{};
+	std::string	Section::debug()			{ return {}; };
 }

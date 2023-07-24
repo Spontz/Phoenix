@@ -11,6 +11,7 @@ namespace Phoenix {
 	public:
 		bool		load();
 		void		init();
+		void		warmExec();
 		void		exec();
 		void		loadDebugStatic();
 		std::string debug();
@@ -65,15 +66,20 @@ namespace Phoenix {
 			m_pVars->ReadString(uniform[i].c_str());
 		}
 
-		// Set shader variables values
+		// Set shader variables
 		m_pVars->setValues();
-
+		
 		return !DEMO_checkGLError();
 	}
 
 	void sDrawQuad::init()
 	{
 
+	}
+
+	void sDrawQuad::warmExec()
+	{
+		exec();
 	}
 
 	void sDrawQuad::exec()
