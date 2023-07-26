@@ -156,11 +156,27 @@ namespace Phoenix {
 				auto const fboNum = std::stoi(var_value.substr(3));
 
 				if (fboNum<0 || fboNum>(FBO_BUFFERS - 1)) {
-					Logger::error("Section {}: sampler2D fbo not correct, it should be 'fboX', where X=>0 and X<={}, you choose: {}", my_section->identifier, (FBO_BUFFERS - 1), var_value);
+					Logger::error("Section {}: sampler2D {} not correct, it should be 'fboX', where X=>0 and X<={}", my_section->identifier, var_value, (FBO_BUFFERS - 1));
 					return false;
 				}
+
+				// Read how many color attachments will send to the shader
+				int32_t colorAttachmentsToSend = -1; // -1 = All attachments
+				for (auto const& prop : var_properties) {
+					if (!loadFboProperty(colorAttachmentsToSend, prop))
+						Logger::error("Section {}: sampler2D {} has a non recognized property: {}", my_section->identifier, var_value, prop);
+				}
+
+				// Check if the attachments requested are available
 				int fboAttachments = DEMO->m_fboManager.fbo[fboNum]->numAttachments;
-				for (int i = 0; i < fboAttachments; i++)
+				if (colorAttachmentsToSend < 0 || colorAttachmentsToSend > fboAttachments) {
+					if (colorAttachmentsToSend > fboAttachments)
+						Logger::error("Section {}: sampler2D {} has less attachments ({}) than requested: {}", my_section->identifier, var_value, fboAttachments, colorAttachmentsToSend);
+					colorAttachmentsToSend = fboAttachments;
+				}
+
+				// Now we send the attachments requested
+				for (int i = 0; i<colorAttachmentsToSend; i++)
 				{
 					auto var = std::make_shared<varSampler2D>();
 
@@ -169,13 +185,14 @@ namespace Phoenix {
 					var->fboAttachment = i;
 					var->name = var_name;
 
-					if (fboAttachments > 1)
+					if (colorAttachmentsToSend > 1)
 						var->name += "[" + std::to_string(i) + "]";
 
 					var->loc = my_shader->getUniformLocation(var->name.c_str());
 					var->texUnitID = static_cast<int>(sampler2D.size());
 					sampler2D.push_back(var);
 				}
+				
 			}
 			else // If it's a normal texture....
 			{
@@ -350,5 +367,25 @@ namespace Phoenix {
 		}
 
 		return false; // Property was not recognized
+	}
+
+
+	bool ShaderVars::loadFboProperty(int32_t& colorAttachments, const std::string& property)
+	{
+		bool loaded = false;
+		if (property.rfind("ATTACHMENTS:", 0) == 0) {
+			size_t pos = property.find_first_of(":");
+			std::string attachmentsStr = property.substr(pos + 1);
+			try {
+				uint32_t att = static_cast<uint32_t>(std::stoi(attachmentsStr));
+				colorAttachments = att;
+				loaded = true;
+			}
+			catch (std::exception &e) {
+				Logger::error("Property value not recognized: found {}, expected a number. Error: {}", attachmentsStr, e.what());
+				loaded = false;
+			}
+		}
+		return loaded;
 	}
 }

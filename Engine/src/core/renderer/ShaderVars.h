@@ -42,7 +42,7 @@ namespace Phoenix {
 
 	class ShaderVars final {
 	public:
-		std::vector<std::shared_ptr<varFloat>>			vfloat;
+		std::vector<std::shared_ptr<varFloat>>				vfloat;
 		std::vector<std::shared_ptr<varVec2>>			vec2;
 		std::vector<std::shared_ptr<varVec3>>			vec3;
 		std::vector<std::shared_ptr<varVec4>>			vec4;
@@ -62,5 +62,6 @@ namespace Phoenix {
 
 		size_t splitString(const std::string& txt, std::vector<std::string>& strs, char ch);
 		bool loadTextureProperty(Texture::Properties& texProperty, const std::string& property);
+		bool loadFboProperty(int32_t& colorAttachments, const std::string& property);
 	};
 }
