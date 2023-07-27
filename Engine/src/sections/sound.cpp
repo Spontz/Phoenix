@@ -58,7 +58,8 @@ namespace Phoenix {
 
 	bool sSound::load() {
 		if (!m_demo.m_sound) {
-			return false;
+			Logger::info(LogLevel::med, "Sound disabled, skipping sound section {}", identifier);
+			return true;
 		}
 
 		if (param.size() != 4 || strings.size() != 1) {
@@ -130,6 +131,9 @@ namespace Phoenix {
 		float instant, avg;	// Instant energy
 		int i;
 		float fft[BUFFER_SAMPLES] = { 0.0f }; // 512 samples, because we have used "BASS_DATA_FFT1024"
+
+		if (!m_demo.m_sound)
+			return;
 
 		// Adjust volume if necessary
 		if (m_fVolume != m_fPrevVolume) {

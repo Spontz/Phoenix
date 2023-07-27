@@ -500,10 +500,11 @@ namespace Phoenix {
 		if (m_sound) {
 			BASSDRV->stop();
 		}
-
+		
 		InitControlVars();
-		m_SectionLayer->ReInitSections();
 		initTimer();
+		// Force an even SEEKTIME, so al sections will be re-inited
+		m_specialEvent |= DemoSpecialEvent::SEEKTIME;
 	}
 
 	void DemoKernel::rewindDemo()
@@ -530,7 +531,7 @@ namespace Phoenix {
 
 	void DemoKernel::setCurrentTime(float theTime)
 	{
-		// Correct the time if it has an invalud value
+		// Correct the time if it has an invalid value
 		if (theTime < 0) theTime = 0;
 
 		// Set the new time
