@@ -14,7 +14,9 @@ namespace Phoenix {
 		LEFT = 2,
 		RIGHT = 3,
 		ROLL_LEFT = 4,
-		ROLL_RIGHT = 5
+		ROLL_RIGHT = 5,
+		UP = 6,
+		DOWN = 7
 	};
 
 	enum class CameraType : int32_t {

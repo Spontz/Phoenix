@@ -53,6 +53,12 @@ namespace Phoenix {
 		case CameraMovement::ROLL_RIGHT:
 			m_Roll -= velocity_roll;
 			break;
+		case CameraMovement::UP:
+			m_Position += m_Up * velocity;
+			break;
+		case CameraMovement::DOWN:
+			m_Position -= m_Up * velocity;
+			break;
 		}
 		//updateCameraVectors();
 	}

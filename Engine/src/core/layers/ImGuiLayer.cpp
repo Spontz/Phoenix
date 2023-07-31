@@ -34,8 +34,10 @@ namespace Phoenix {
 		"Capture camera position: SPACE\n" \
 		"Move camera forward: W\n" \
 		"Move camera backwards: S\n" \
-		"Move camera left: A\n" \
-		"Move camera right: D\n" \
+		"Move camera left: A or LEFT arrow\n" \
+		"Move camera right: D or RIGHT arrow\n" \
+		"Move camera up: UP arrow\n" \
+		"Move camera down: DOWN arrow\n" \
 		"Roll camera left: Q\n" \
 		"Roll camera right: E\n" \
 		"Increase Camera Speed: PAGE UP\n" \

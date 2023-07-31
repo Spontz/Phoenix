@@ -201,7 +201,16 @@ namespace Phoenix {
 				m_cameraManager.processKeyInternalCamera(CameraMovement::ROLL_RIGHT, timeStep);
 			if (Input::IsKeyPressed(Key::CAM_ROLL_LEFT))
 				m_cameraManager.processKeyInternalCamera(CameraMovement::ROLL_LEFT, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_LEFT))
+				m_cameraManager.processKeyInternalCamera(CameraMovement::LEFT, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_RIGHT))
+				m_cameraManager.processKeyInternalCamera(CameraMovement::RIGHT, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_UP))
+				m_cameraManager.processKeyInternalCamera(CameraMovement::UP, timeStep);
+			if (Input::IsKeyPressed(Key::CAM_DOWN))
+				m_cameraManager.processKeyInternalCamera(CameraMovement::DOWN, timeStep);
 		}
+
 	}
 
 	DemoKernel& DemoKernel::getInstance() {
