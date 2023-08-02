@@ -56,11 +56,20 @@ namespace Phoenix {
 	enum DemoSpecialEvent : int8_t
 	{
 		NORMAL = 0,
-		SEEKTIME = 2
+		SEEKTIME = 2,		// Seek time of the demo
+		ONEFRAMEONLY = 4	// Rewind/FFW one frame only
 	};
 
 	class DemoKernel final
 	{
+
+		struct KeyStatus final {
+			bool leftCtrl = false;
+			bool leftShift = false;
+			bool rightCtrl = false;
+			bool rightShift = false;
+		};
+
 	private:
 		DemoKernel();
 		~DemoKernel();
@@ -214,6 +223,9 @@ namespace Phoenix {
 		SectionLayer* m_SectionLayer;
 		LayerStack m_LayerStack;
 		
+		// Keyboard status
+		KeyStatus keyStatus;
+
 		bool m_WindowResizing;
 	};
 

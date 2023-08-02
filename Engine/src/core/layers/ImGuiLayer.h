@@ -82,6 +82,7 @@ namespace Phoenix {
 		ImGuiIO* m_io;
 		DemoKernel& m_demo;
 
+		std::string m_demoStatus;
 		std::string m_VersionEngine;
 		std::string m_VersionOpenGL;
 		std::string m_VendorOpenGL;

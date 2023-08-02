@@ -81,7 +81,7 @@ namespace Phoenix {
 				Logger::info(LogLevel::high, "Demo time: {:.4f}", m_demoRunTime);
 				break;
 			case Key::PLAY_PAUSE:
-				if (static_cast<DemoStatus>(m_status) == DemoStatus::PLAY)
+				if (m_status & DemoStatus::PLAY)
 					pauseDemo();
 				else
 					playDemo();
@@ -106,6 +106,19 @@ namespace Phoenix {
 			case Key::CAM_DIVIDER:
 				m_cameraManager.decreaseInternalCameraSpeed(2.0f);
 				break;
+			case Key::KEY_LEFT_CTRL:
+				keyStatus.leftCtrl = true;
+				m_specialEvent |= DemoSpecialEvent::ONEFRAMEONLY; // Set the flag to only one Frame
+				break;
+			case Key::KEY_LEFT_SHIFT:
+				keyStatus.leftShift = true;
+				break;
+			case Key::KEY_RIGHT_CTRL:
+				keyStatus.rightCtrl = true;
+				break;
+			case Key::KEY_RIGHT_SHIFT:
+				keyStatus.rightShift = true;
+				break;
 			default:
 				EventHandled = false;
 				break;
@@ -116,14 +129,37 @@ namespace Phoenix {
 
 	bool DemoKernel::OnKeyReleased(KeyReleasedEvent& e)
 	{
+		uint16_t key = e.GetKeyCode();
+		bool EventHandled = false;
+
 		if (m_debug) {
+			EventHandled = true;
 			if (m_status & DemoStatus::PAUSE)
 				pauseDemo();
 			else
 				playDemo();
+
+			switch (key) {
+			case Key::KEY_LEFT_CTRL:
+				keyStatus.leftCtrl = false;
+				m_specialEvent &= ~DemoSpecialEvent::ONEFRAMEONLY; // UnSet the flag to only one Frame
+				break;
+			case Key::KEY_LEFT_SHIFT:
+				keyStatus.leftShift = false;
+				break;
+			case Key::KEY_RIGHT_CTRL:
+				keyStatus.rightCtrl = false;
+				break;
+			case Key::KEY_RIGHT_SHIFT:
+				keyStatus.rightShift = false;
+				break;
+			default:
+				EventHandled = false;
+				break;
+			}
 		}
 
-		return true;
+		return EventHandled;
 	}
 
 	bool DemoKernel::OnMouseButtonPressed(MouseButtonPressedEvent& e)
@@ -428,7 +464,7 @@ namespace Phoenix {
 #endif
 
 			// Evaluate the time of the demo
-			if (static_cast<DemoStatus>(m_status) == DemoStatus::PLAY) {
+			if (m_status & DemoStatus::PLAY) {
 				// If demo is playing: Update the timing information for the sections
 				processTimer();
 			}
@@ -437,7 +473,13 @@ namespace Phoenix {
 				pauseTimer();
 				if (m_status & DemoStatus::REWIND) {
 					// decrease demo runtime
-					m_demoRunTime -= 10.0f * m_realFrameTime;
+					if (m_specialEvent & DemoSpecialEvent::ONEFRAMEONLY) {
+						// If we only want to rewind 1 frame we move the timer back and unset the flag
+						m_demoRunTime -= 1.0f / 60.0f;
+						m_status = DemoStatus::PAUSE;		// Set the demo on Pause, and remove all other flags
+					}
+					else
+						m_demoRunTime -= 10.0f * m_realFrameTime;
 					if (m_demoRunTime < m_demoStartTime) {
 						m_demoRunTime = m_demoStartTime;
 						pauseDemo();
@@ -445,7 +487,13 @@ namespace Phoenix {
 				}
 				else if (m_status & DemoStatus::FASTFORWARD) {
 					// increase demo runtime
-					m_demoRunTime += 10.0f * m_realFrameTime;
+					if (m_specialEvent & DemoSpecialEvent::ONEFRAMEONLY) {
+						// If we only want to forward 1 frame we move the timer back and unset the flag
+						m_demoRunTime += 1.0f / 60.0f;
+						m_status = DemoStatus::PAUSE;		// Set the demo on Pause, and remove all other flags
+					}
+					else
+						m_demoRunTime += 10.0f * m_realFrameTime;
 					if (m_demoRunTime > m_demoEndTime) {
 						m_demoRunTime = m_demoEndTime;
 						pauseDemo();
@@ -458,7 +506,7 @@ namespace Phoenix {
 			// If we have a SeekTime special event, force the Reinit of the sections
 			if (static_cast<DemoSpecialEvent>(m_specialEvent) & DemoSpecialEvent::SEEKTIME) {
 				m_SectionLayer->ReInitSections();
-				m_specialEvent = m_specialEvent & ~DemoSpecialEvent::SEEKTIME;
+				m_specialEvent &= ~DemoSpecialEvent::SEEKTIME; // Unset the flag
 			}
 			// Check if demo should be ended or should be restarted
 			checkDemoEnd();

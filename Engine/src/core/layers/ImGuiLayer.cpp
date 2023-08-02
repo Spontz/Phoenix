@@ -11,39 +11,42 @@ namespace Phoenix {
 	static const std::string helpText = \
 		"Display information:\n" \
 		"--------------------\n" \
-		"1 Show Information (FPS, demo status, time, texture memory used, and other information)\n" \
-		"2 Show FPS Histogram\n" \
-		"3 Show FBO's\n" \
-		"4 Change FBO attachments to see\n" \
-		"5 Show which sections that are being drawn, and some information related to them\n" \
-		"6 Show sound information(spectrum analyzer)\n" \
-		"7 Show Config\n" \
-		"9 Show this help :)\n" \
-		"0 Show engine and libraries versions\n" \
-		"F5 Show Debug screen for networking analysis and simulation\n" \
-		"BACKSPACE Show error Log\n" \
-		"ENTER Print time on log file\n\n" \
+		"1         : Show Information (FPS, demo status, time, texture memory used, and other information)\n" \
+		"2         : Show FPS Histogram\n" \
+		"3         : Show FBO's\n" \
+		"4         : Change FBO attachments to see\n" \
+		"5         : Show which sections that are being drawn, and some information related to them\n" \
+		"6         : Show sound information(spectrum analyzer)\n" \
+		"7         : Show Config\n" \
+		"9         : Show this help :)\n" \
+		"0         : Show engine and libraries versions\n" \
+		"F5        : Show Debug screen for networking analysis and simulation\n" \
+		"BACKSPACE : Show error Log\n" \
+		"ENTER     : Print time on log file\n\n" \
 		"Playback control:\n" \
 		"-----------------\n" \
-		"F1 PLAY / PAUSE\n" \
-		"F2 REWIND\n" \
-		"F3 FASTFORWARD\n" \
-		"F4 RESTART\n\n" \
+		"F1             : PLAY / PAUSE\n" \
+		"F2             : REWIND\n" \
+		"Left Ctrl + F2 : 1 timeframe REWIND (1/60sec)\n" \
+		"F3             : FASTFORWARD\n" \
+		"Left Ctrl + F3 : 1 timeframe FAST FORWARD (1/60sec)\n" \
+		"F4             : RESTART\n\n" \
 		"Camera control:\n" \
 		"---------------\n" \
-		"Capture camera position: SPACE\n" \
-		"Move camera forward: W\n" \
-		"Move camera backwards: S\n" \
-		"Move camera left: A or LEFT arrow\n" \
-		"Move camera right: D or RIGHT arrow\n" \
-		"Move camera up: UP arrow\n" \
-		"Move camera down: DOWN arrow\n" \
-		"Roll camera left: Q\n" \
-		"Roll camera right: E\n" \
-		"Increase Camera Speed: PAGE UP\n" \
-		"Decrease Camera Speed: PAGE DOWN\n" \
-		"Change FOV: Mouse scroll wheel\n" \
-		"Reset camera position: R";
+		"Capture camera position : SPACE\n" \
+		"Move camera forward     : W\n" \
+		"Move camera backwards   : S\n" \
+		"Move camera left        : A or LEFT arrow\n" \
+		"Move camera right       : D or RIGHT arrow\n" \
+		"Move camera up          : UP arrow\n" \
+		"Move camera down        : DOWN arrow\n" \
+		"Roll camera left        : Q\n" \
+		"Roll camera right       : E\n" \
+		"Increase camera Speed   : PAGE UP\n" \
+		"Decrease camera Speed   : PAGE DOWN\n" \
+		"Move camera target      : Mouse movement\n" \
+		"Change FOV              : Mouse scroll wheel\n" \
+		"Reset camera position   : R";
 
 	ImGuiLayer::ImGuiLayer() :
 		Layer("ImGuiLayer"),
@@ -70,6 +73,7 @@ namespace Phoenix {
 	{
 		show_info = m_demo.m_debug;	// if we are on debug, we show the fps info by default
 		show_log = m_demo.m_debug; // if we are on debug, the log is opened by default
+		m_demoStatus = "";
 		m_VersionEngine = m_demo.getEngineVersion();
 		m_VersionOpenGL = m_demo.m_Window->getGLVersion();
 		m_VendorOpenGL = m_demo.m_Window->getGLVendor();
@@ -267,17 +271,16 @@ namespace Phoenix {
 	void ImGuiLayer::drawInfo()
 	{
 		// Get Demo status
-		std::string demoStatus;
 		if (m_demo.m_status & DemoStatus::PAUSE) {
-			if (m_demo.m_status & DemoStatus::REWIND) demoStatus = stateStr[4];
-			else if (m_demo.m_status & DemoStatus::FASTFORWARD) demoStatus = stateStr[5];
-			else demoStatus = stateStr[3];
+			if (m_demo.m_status & DemoStatus::REWIND) m_demoStatus = stateStr[4];
+			else if (m_demo.m_status & DemoStatus::FASTFORWARD) m_demoStatus = stateStr[5];
+			else m_demoStatus = stateStr[3];
 
 		}
 		else {
-			if (m_demo.m_status & DemoStatus::REWIND) demoStatus = stateStr[1];
-			else if (m_demo.m_status & DemoStatus::FASTFORWARD) demoStatus = stateStr[2];
-			else demoStatus = stateStr[0];
+			if (m_demo.m_status & DemoStatus::REWIND) m_demoStatus = stateStr[1];
+			else if (m_demo.m_status & DemoStatus::FASTFORWARD) m_demoStatus = stateStr[2];
+			else m_demoStatus = stateStr[0];
 		}
 
 		// Draw Menu Bar
@@ -317,7 +320,7 @@ namespace Phoenix {
 		// Draw Info
 		//ImGui::Text("Font: %.3f", m_fontScale);	// Show font size
 		ImGui::Text("Fps: %.0f", m_demo.m_fps);
-		ImGui::Text("Demo status: %s", demoStatus.c_str());
+		ImGui::Text("Demo status: %s", m_demoStatus.c_str());
 		ImGui::Text("Time: %.2f/%.2f", m_demo.m_demoRunTime, m_demo.m_demoEndTime);
 		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->getCPUload());
 		ImGui::Text("Texture mem used: %.2fmb", m_demo.m_textureManager.m_mem + m_demo.m_fboManager.mem + m_demo.m_efxBloomFbo.mem + m_demo.m_efxAccumFbo.mem);
