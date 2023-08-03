@@ -14,7 +14,7 @@ namespace Phoenix {
 		"1         : Show Information (FPS, demo status, time, texture memory used, and other information)\n" \
 		"2         : Show FPS Histogram\n" \
 		"3         : Show FBO's\n" \
-		"4         : Change FBO attachments to see\n" \
+		"4         : Show all FBO's\n" \
 		"5         : Show which sections that are being drawn, and some information related to them\n" \
 		"6         : Show sound information(spectrum analyzer)\n" \
 		"7         : Show Config\n" \
@@ -57,15 +57,12 @@ namespace Phoenix {
 		show_fpsHistogram(false),
 		show_sesctionInfo(false),
 		show_fbo(false),
+		show_fboGrid(false),
 		show_sound(false),
 		show_version(false),
 		show_config(false),
 		show_help(false),
 		show_debugNet(false),
-		m_numFboSetToDraw(0),
-		m_numFboAttachmentToDraw(0),
-		m_numFboPerPage(4),
-		m_selectedSection(-1),
 		m_maxRenderFPSScale(60),
 		m_currentRenderTime(0),
 		m_expandAllSections(true),
@@ -89,6 +86,21 @@ namespace Phoenix {
 
 		// Prepare the text
 		m_helpText.appendf(helpText.c_str());
+
+		// Set window properties
+		// Window: Fbo
+		m_fbo.fboNum = static_cast<int32_t>(m_demo.m_fboManager.fbo.size());
+		m_fbo.windowPos = ImVec2(100, 100);
+		m_fbo.windowSize = ImVec2(200, 300);
+
+		// Window: Fbo Grid
+		m_fboGrid.fboNum = static_cast<int32_t>(m_demo.m_fboManager.fbo.size());
+		m_fboGrid.fboColumns = 5;
+		m_fboGrid.fboRows = static_cast<int32_t>(ceil(static_cast<float>(m_fboGrid.fboNum) / static_cast<float>(m_fboGrid.fboColumns)));
+		m_fboGrid.windowPos = ImVec2(0, 0);
+		m_fboGrid.windowSize = ImVec2(200, 300);
+
+		
 	}
 
 	void ImGuiLayer::OnAttach()
@@ -178,6 +190,8 @@ namespace Phoenix {
 			drawVersion();
 		if (show_fbo)
 			drawFbo();
+		if (show_fboGrid)
+			drawFboGrid();
 		if (show_fpsHistogram)
 			drawFPSHistogram();
 		if (show_sound)
@@ -302,6 +316,7 @@ namespace Phoenix {
 				ImGui::MenuItem("Show Info", "1", &show_info);
 				ImGui::MenuItem("Show FPS Histogram", "2", &show_fpsHistogram);
 				ImGui::MenuItem("Show FBO's", "3", &show_fbo);
+				ImGui::MenuItem("Show all FBO's", "4", &show_fboGrid);
 				ImGui::MenuItem("Show section stack", "5", &show_sesctionInfo);
 				ImGui::MenuItem("Show sound information", "6", &show_sound);
 				ImGui::MenuItem("Show config", "7", &show_config);
@@ -430,38 +445,124 @@ namespace Phoenix {
 
 	void ImGuiLayer::drawFbo()
 	{
-		constexpr float offsetY = 10.0f; // small offset
+		m_fbo.windowPos = ImVec2(static_cast<float>(m_vp.width)  / 2.0f, static_cast<float>(m_vp.height) / 2.0f);
+		m_fbo.windowSize = ImVec2(static_cast<float>(m_vp.width) / 2.0f, static_cast<float>(m_vp.height) / 2.0f);
 
-		if (m_numFboSetToDraw == 0)
-			m_numFboSetToDraw = 1;
+		// This sets only when the window appears for the first time
+		ImGui::SetNextWindowPos(m_fbo.windowPos, ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(m_fbo.windowSize, ImGuiCond_Appearing);
 
-		const auto fboNumMin = ((m_numFboSetToDraw - 1) * m_numFboPerPage);
-		int32_t fboNumMax = (m_numFboPerPage - 1) + ((m_numFboSetToDraw - 1) * m_numFboPerPage);
-
-		if (fboNumMax >= static_cast<int>(m_demo.m_fboManager.fbo.size()))
-			fboNumMax = static_cast<int>(m_demo.m_fboManager.fbo.size()) - 1;
-
-		ImGui::SetNextWindowPos(ImVec2(0, (2.0f * static_cast<float>(m_vp.y) - offsetY + 2.0f * static_cast<float>(m_vp.height) / 3.0f)), ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height) / 3.0f + offsetY), ImGuiCond_Appearing);
-		const float fbo_w_size = static_cast<float>(m_vp.width) / 5.0f; // 4 fbo's per row
-		const float fbo_h_size = static_cast<float>(m_vp.height) / 5.0f; // height is 1/3 screensize
-
-		if (!ImGui::Begin("Fbo info (press '4' to change attachment)", &show_fbo)) {
+		if (!ImGui::Begin("Fbo detail", &show_fbo)) {
 			// Early out if the window is collapsed, as an optimization.
 			ImGui::End();
 			return;
 		}
 
-		ImGui::Text("Showing FBO's: %d to %d (Total: %d) - Attachment: %d", fboNumMin, fboNumMax, (m_demo.m_fboManager.fbo.size()-1), m_numFboAttachmentToDraw);
-		for (size_t i = fboNumMin; i <= fboNumMax; ++i) {
-			if (i < m_demo.m_fboManager.fbo.size()) {
-				Fbo* my_fbo = m_demo.m_fboManager.fbo[i];
-				if (m_numFboAttachmentToDraw < my_fbo->numAttachments)
-					ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[m_numFboAttachmentToDraw], ImVec2(fbo_w_size, fbo_h_size), ImVec2(0, 1), ImVec2(1, 0));
-				else
-					ImGui::Image((void*)(intptr_t)NULL, ImVec2(fbo_w_size, fbo_h_size));
+		// Get window size, in case it has been resized
+		m_fbo.windowSize = ImGui::GetWindowSize();
+
+		// Calc Fbo size, cosidering window Padding and space between items (itemSpacng)
+		ImGuiStyle& style = ImGui::GetStyle();
+		ImVec2 windowPadding = style.WindowPadding;
+		ImVec2 spaceForSpacing(windowPadding.x * 2, windowPadding.y * 2 + 50);
+		m_fbo.fboSize.x = m_fbo.windowSize.x - spaceForSpacing.x;
+		m_fbo.fboSize.y = m_fbo.windowSize.y - spaceForSpacing.y;
+
+		// Draw Fbo selctor
+		if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { decreaseFbo(); }
+		ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+		if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { increaseFbo(); }
+		ImGui::SameLine();
+		ImGui::Text("Fbo: %d", m_fbo.fbo);
+		ImGui::SameLine(0, 20);
+		
+		// Draw Attachment selctor
+		if (ImGui::ArrowButton("##left_", ImGuiDir_Left)) { decreaseFboAttachment(m_fbo.fbo); }
+		ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+		if (ImGui::ArrowButton("##right_", ImGuiDir_Right)) { increaseFboAttachment(m_fbo.fbo); }
+		ImGui::SameLine();
+		ImGui::Text("Color Attachment: %d", m_fbo.fboAttachment);
+		
+		// Draw Fbo
+		Fbo* my_fbo = m_demo.m_fboManager.fbo[m_fbo.fbo];
+		float aspectRatio = static_cast<float>(my_fbo->width) / static_cast<float>(my_fbo->height);
+		m_fbo.fboSize.y = m_fbo.fboSize.x / aspectRatio;
+		ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[m_fbo.fboAttachment], m_fbo.fboSize, ImVec2(0, 1), ImVec2(1, 0));
+		if (ImGui::IsItemHovered()) {
+			ImGui::BeginTooltip();
+			ImGui::Text("Size: %i, %i", my_fbo->width, my_fbo->height);
+			ImGui::Text("Format: %s", my_fbo->engineFormat.c_str());
+			ImGui::Text("Attachments: %i", my_fbo->numAttachments);
+			ImGui::EndTooltip();
+		}
+		ImGui::End();
+	}
+
+	void ImGuiLayer::drawFboGrid()
+	{
+		m_fboGrid.windowSize = ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height));
+
+		// This sets only when the window appears for the first time
+		ImGui::SetNextWindowPos(m_fboGrid.windowPos, ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(m_fboGrid.windowSize, ImGuiCond_Appearing);
+
+		if (!ImGui::Begin("Fbo grid", &show_fboGrid)) {
+			// Early out if the window is collapsed, as an optimization.
+			ImGui::End();
+			return;
+		}
+
+		// Get window size, in case it has been resized
+		m_fboGrid.windowSize = ImGui::GetWindowSize();
+
+		// Calc Fbo size, cosidering window Padding and space between items (itemSpacng)
+		ImGuiStyle& style = ImGui::GetStyle();
+		ImVec2 windowPadding = style.WindowPadding;
+		ImVec2 itemSpacing = style.ItemInnerSpacing;
+		ImVec2 spaceForSpacing(windowPadding.x * 2 + itemSpacing.x * (m_fboGrid.fboColumns - 1), windowPadding.y * 2 + itemSpacing.y * (m_fboGrid.fboRows - 1) + 50);
+		m_fboGrid.fboSize.x = (m_fboGrid.windowSize.x - spaceForSpacing.x) / static_cast<float>(m_fboGrid.fboColumns);
+		m_fboGrid.fboSize.y = (m_fboGrid.windowSize.y - spaceForSpacing.y) / static_cast<float>(m_fboGrid.fboRows);
+
+		// Draw Attachment selctor
+		if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { decreaseFboGridAttachment(); }
+		ImGui::SameLine(0.0f, itemSpacing.x);
+		if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { increaseFboGridAttachment(); }
+		ImGui::SameLine();
+		ImGui::Text("Color Attachment: %d", m_fboGrid.fboAttachment);
+		
+		// Draw Fbo Grid
+		int32_t column = 1;
+		for (int32_t i = 0; i < m_fboGrid.fboNum; i++) {
+			Fbo* my_fbo = m_demo.m_fboManager.fbo[i];
+			if (m_fboGrid.fboAttachment < static_cast<int32_t>(my_fbo->numAttachments)) {
+				ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[m_fboGrid.fboAttachment], m_fboGrid.fboSize, ImVec2(0, 1), ImVec2(1, 0));
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::BeginTooltip();
+					ImGui::Text("Fbo Number: %i", i);
+					ImGui::Text("Size: %i, %i", my_fbo->width, my_fbo->height);
+					ImGui::Text("Format: %s", my_fbo->engineFormat.c_str());
+					ImGui::Text("Attachments: %i", my_fbo->numAttachments);
+					ImGui::EndTooltip();
+				}
 			}
-			ImGui::SameLine();
+			else {
+				ImGui::Image((void*)(intptr_t)NULL, m_fboGrid.fboSize);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::BeginTooltip();
+					ImGui::Text("Attachment not available");
+					ImGui::EndTooltip();
+				}
+			}
+				
+			
+			if (column < m_fboGrid.fboColumns) {
+				ImGui::SameLine(0.0f, itemSpacing.x);
+				column++;
+			}
+			else
+				column = 1;
 		}
 		ImGui::End();
 	}
@@ -607,18 +708,10 @@ namespace Phoenix {
 				show_fpsHistogram = !show_fpsHistogram;
 				break;
 			case Key::SHOWFBO:
-				m_numFboSetToDraw++;
-				show_fbo = true;
-				if (m_numFboSetToDraw > (ceil((float)FBO_BUFFERS / (float)m_numFboPerPage)))
-				{
-					m_numFboSetToDraw = 0;
-					show_fbo = false;
-				}
+				show_fbo = !show_fbo;
 				break;
-			case Key::CHANGEATTACH:
-				m_numFboAttachmentToDraw++;
-				if (m_numFboAttachmentToDraw >= FBO_MAX_COLOR_ATTACHMENTS)
-					m_numFboAttachmentToDraw = 0;
+			case Key::SHOWALLFBO:
+				show_fboGrid = !show_fboGrid;
 				break;
 			case Key::SHOWSECTIONINFO:
 				show_sesctionInfo = !show_sesctionInfo;
@@ -640,6 +733,66 @@ namespace Phoenix {
 			}
 		}
 		return EventHandled;
+	}
+
+	void ImGuiLayer::increaseFboGridAttachment()
+	{
+		m_fboGrid.fboAttachment++;
+		if (m_fboGrid.fboAttachment >= FBO_MAX_COLOR_ATTACHMENTS)
+			m_fboGrid.fboAttachment = 0;
+	}
+
+	void ImGuiLayer::decreaseFboGridAttachment()
+	{
+		m_fboGrid.fboAttachment--;
+		if (m_fboGrid.fboAttachment < 0)
+			m_fboGrid.fboAttachment = FBO_MAX_COLOR_ATTACHMENTS-1;
+	}
+
+	void ImGuiLayer::increaseFbo()
+	{
+		m_fbo.fbo++;
+		if (m_fbo.fbo >= m_fbo.fboNum)
+			m_fbo.fbo = 0;
+		// Validate if the selected attachment is valid, if not, we reset to 0
+		Fbo* my_fbo = m_demo.m_fboManager.fbo[m_fbo.fbo];
+		if (m_fbo.fboAttachment >= my_fbo->numAttachments)
+			m_fbo.fboAttachment = 0;
+	}
+
+	void ImGuiLayer::decreaseFbo()
+	{
+		m_fbo.fbo--;
+		if (m_fbo.fbo < 0)
+			m_fbo.fbo = m_fbo.fboNum-1;
+		// Validate if the selected attachment is valid, if not, we reset to 0
+		Fbo* my_fbo = m_demo.m_fboManager.fbo[m_fbo.fbo];
+		if (m_fbo.fboAttachment >= my_fbo->numAttachments)
+			m_fbo.fboAttachment = 0;
+	}
+
+	void ImGuiLayer::increaseFboAttachment(int32_t fbo)
+	{
+		if ((fbo >= m_fbo.fboNum) || (fbo < 0))
+			return;
+
+		uint32_t maxAttach = m_demo.m_fboManager.fbo[fbo]->numAttachments;
+
+		m_fbo.fboAttachment++;
+		if (m_fbo.fboAttachment >= static_cast<int32_t>(maxAttach))
+			m_fbo.fboAttachment = 0;
+	}
+
+	void ImGuiLayer::decreaseFboAttachment(int32_t fbo)
+	{
+		if ((fbo >= m_fbo.fboNum) || (fbo < 0))
+			return;
+
+		uint32_t maxAttach = m_demo.m_fboManager.fbo[fbo]->numAttachments;
+
+		m_fbo.fboAttachment--;
+		if (m_fbo.fboAttachment < 0)
+			m_fbo.fboAttachment = maxAttach - 1;
 	}
 
 	void ImGuiLayer::changeFontSize()

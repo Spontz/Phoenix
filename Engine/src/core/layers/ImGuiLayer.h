@@ -15,6 +15,26 @@ namespace Phoenix {
 
 	class ImGuiLayer : public Layer
 	{
+		struct FboGridProperties final {
+			ImVec2 windowPos;
+			ImVec2 windowSize;
+			ImVec2 fboSize;
+			int32_t fboNum = 0;			// Number of FBO's to draw
+			int32_t fboColumns = 1;		// Columns to display
+			int32_t fboRows = 1;		// Rows to display
+			int32_t fboAttachment = 0;	// Attachmet to display
+		};
+
+		struct FboDetailProperties final {
+			ImVec2 windowPos;
+			ImVec2 windowSize;
+			ImVec2 fboSize;
+			int32_t fboNum = 0;			// Number of FBO's
+			int32_t fbo = 0;			// FBO to display
+			int32_t fboAttachment = 0;	// Fbo Attachment to display
+		};
+
+
 	public:
 		ImGuiLayer();
 		~ImGuiLayer() = default;
@@ -40,17 +60,12 @@ namespace Phoenix {
 		bool	show_fpsHistogram;
 		bool	show_sesctionInfo;
 		bool	show_fbo;
+		bool	show_fboGrid;
 		bool	show_sound;
 		bool	show_version;
 		bool	show_config;
 		bool	show_help;
 		bool	show_debugNet;
-
-		int32_t			m_numFboSetToDraw;
-		uint32_t		m_numFboAttachmentToDraw;
-		int32_t			m_numFboPerPage;
-
-		int32_t			m_selectedSection;
 
 	private:
 
@@ -69,6 +84,7 @@ namespace Phoenix {
 		void drawSesctionInfo();
 		void drawFPSHistogram();
 		void drawFbo();
+		void drawFboGrid();
 		void drawSound();
 		void drawConfig();
 		void drawHelp();
@@ -109,6 +125,20 @@ namespace Phoenix {
 		std::string			m_debugMsgFromEditor;
 
 		Viewport	m_vp;
+
+		// Window Properties
+		FboGridProperties		m_fboGrid;
+		FboDetailProperties		m_fbo;
+
+		// Fbo detail
+		void increaseFbo();
+		void decreaseFbo();
+		void increaseFboAttachment(int32_t fbo);
+		void decreaseFboAttachment(int32_t fbo);
+
+		// Fbo Grid
+		void increaseFboGridAttachment();
+		void decreaseFboGridAttachment();
 	};
 
 }
