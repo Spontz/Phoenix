@@ -756,7 +756,7 @@ namespace Phoenix {
 			m_fbo.fbo = 0;
 		// Validate if the selected attachment is valid, if not, we reset to 0
 		Fbo* my_fbo = m_demo.m_fboManager.fbo[m_fbo.fbo];
-		if (m_fbo.fboAttachment >= my_fbo->numAttachments)
+		if (m_fbo.fboAttachment >= static_cast<int32_t>(my_fbo->numAttachments))
 			m_fbo.fboAttachment = 0;
 	}
 
@@ -767,7 +767,7 @@ namespace Phoenix {
 			m_fbo.fbo = m_fbo.fboNum-1;
 		// Validate if the selected attachment is valid, if not, we reset to 0
 		Fbo* my_fbo = m_demo.m_fboManager.fbo[m_fbo.fbo];
-		if (m_fbo.fboAttachment >= my_fbo->numAttachments)
+		if (m_fbo.fboAttachment >= static_cast<int32_t>(my_fbo->numAttachments))
 			m_fbo.fboAttachment = 0;
 	}
 
