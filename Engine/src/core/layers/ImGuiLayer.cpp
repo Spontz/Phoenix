@@ -12,9 +12,9 @@ namespace Phoenix {
 		"Display information:\n" \
 		"--------------------\n" \
 		"1         : Show Information (FPS, demo status, time, texture memory used, and other information)\n" \
-		"2         : Show FPS Histogram\n" \
-		"3         : Show FBO's\n" \
-		"4         : Show all FBO's\n" \
+		"2         : Show render times\n" \
+		"3         : Show Framebuffer\n" \
+		"4         : Show all Framebuffers\n" \
 		"5         : Show which sections that are being drawn, and some information related to them\n" \
 		"6         : Show sound information(spectrum analyzer)\n" \
 		"7         : Show Config\n" \
@@ -422,19 +422,24 @@ namespace Phoenix {
 		m_renderTimes[m_currentRenderTime] = m_demo.m_realFrameTime * 1000.f; // Render times in ms
 
 		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 0), ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width / 2.0f), 140.0f), ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width / 2.f), 180.0f), ImGuiCond_Appearing);
 
-		if (!ImGui::Begin("Render time histogram", &show_fpsHistogram))
+		if (!ImGui::Begin("FPS and Render time histogram", &show_fpsHistogram))
 		{
 			ImGui::End();
 			return;
 		}
 		ImVec2 win = ImGui::GetWindowSize();
+		
+		ImGui::Text("Sections Execution time [Render] (ms): %.1f", m_demo.m_execTime * 1000.0f);
+		drawTooltip("Time consumed by all sections being rendered at this moment\n(it does not include initialization or wait times due to vsync)");
+		ImGui::Text("Fps: %.0f", m_demo.m_fps);
+		ImGui::SetNextItemWidth(80);
 		ImGui::DragInt("FPS Scale", &m_maxRenderFPSScale, 10, 10, 1000, "%d");
 		float max = 1000.0f / static_cast<float>(m_maxRenderFPSScale);
-		ImGui::SameLine();
-		ImGui::Text("max (ms): %.2f", max);
-		ImGui::PlotLines("", m_renderTimes, RENDERTIMES_SAMPLES, m_currentRenderTime, "render time", 0, max, ImVec2(win.x - 10, win.y - 60));
+		ImGui::SameLine(); 
+		ImGui::Text("Max scale (ms): %.2f", max);
+		ImGui::PlotLines("", m_renderTimes, RENDERTIMES_SAMPLES, m_currentRenderTime, "Frame time", 0, max, ImVec2(win.x - 10, win.y - 95));
 		ImGui::End();
 
 		m_currentRenderTime++;
@@ -747,6 +752,15 @@ namespace Phoenix {
 		m_fboGrid.fboAttachment--;
 		if (m_fboGrid.fboAttachment < 0)
 			m_fboGrid.fboAttachment = FBO_MAX_COLOR_ATTACHMENTS-1;
+	}
+
+	void ImGuiLayer::drawTooltip(const std::string_view tooltip)
+	{
+		if (ImGui::IsItemHovered()) {
+			ImGui::BeginTooltip();
+			ImGui::Text(tooltip.data());
+			ImGui::EndTooltip();
+		}
 	}
 
 	void ImGuiLayer::increaseFbo()

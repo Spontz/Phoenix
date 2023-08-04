@@ -839,6 +839,17 @@ namespace Phoenix {
 		}
 	}
 
+	void DemoKernel::initExecTimer()
+	{
+		m_beforeExecTime = glfwGetTime();
+	}
+
+	void DemoKernel::processExecTimer()
+	{
+		m_afterExecTime = glfwGetTime();
+		m_execTime = m_afterExecTime - m_beforeExecTime;
+	}
+
 	void DemoKernel::ProcessAndExecuteSectionsLayer()
 	{
 		PX_PROFILE_FUNCTION();
@@ -862,7 +873,9 @@ namespace Phoenix {
 				m_cameraManager.setInternalCameraAsActive();
 
 				// Execute the Secions
+				initExecTimer();
 				m_SectionLayer->ExecuteSections(m_demoRunTime);
+				processExecTimer();
 
 				// Set back to the frambuffer and restore the viewport
 				m_Window->SetFramebuffer();

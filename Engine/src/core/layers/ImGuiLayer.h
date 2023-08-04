@@ -130,6 +130,9 @@ namespace Phoenix {
 		FboGridProperties		m_fboGrid;
 		FboDetailProperties		m_fbo;
 
+		// Static tooltip
+		void drawTooltip(const std::string_view tooltip);
+
 		// Fbo detail
 		void increaseFbo();
 		void decreaseFbo();

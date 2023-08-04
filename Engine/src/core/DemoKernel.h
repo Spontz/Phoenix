@@ -144,6 +144,8 @@ namespace Phoenix {
 		void processTimer();
 		void pauseTimer();
 		void checkDemoEnd();	// Checks if demo has been finished and should be restarted (or not)
+		void initExecTimer();	// Init timer of execution time
+		void processExecTimer();// Process timer of execution time
 
 
 		void ProcessAndExecuteSectionsLayer();	// Process and Execute (render) the layer with all the sections
@@ -192,13 +194,18 @@ namespace Phoenix {
 		// Resources
 		Resource* m_pRes;
 
-		// realtime information
+		// Frame time stats
 		float m_demoRunTime;		// seconds ellapsed since 0.0 <- demo init
 		float m_beforeFrameTime;	// time before render the actual frame
 		float m_afterFrameTime;		// time after render the actual frame
 		float m_frameTime;			// last frame time (used by sections). If the demo is paused, this frameTime will be 0
 		float m_realFrameTime;		// last frame time (used by kernel). Even if the demo is paused, the frameTime will be calculated
 		uint32_t m_uiFrameCount;	// demo frame count since start
+		
+		// Execution time stats
+		double m_beforeExecTime;	// Time before execution of sections
+		double m_afterExecTime;		// Time after execution of sections
+		double m_execTime;			// Execution time of sections
 
 		// fps calculation
 		uint32_t m_accumFrameCount;	// frame count since last fps calculation
