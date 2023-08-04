@@ -57,7 +57,7 @@ namespace Phoenix {
 	public:
 		bool	show_log;
 		bool	show_info;
-		bool	show_fpsHistogram;
+		bool	show_renderTime;
 		bool	show_sesctionInfo;
 		bool	show_fbo;
 		bool	show_fboGrid;
@@ -82,7 +82,7 @@ namespace Phoenix {
 		void drawInfo();
 		void drawVersion();
 		void drawSesctionInfo();
-		void drawFPSHistogram();
+		void drawRenderTime();
 		void drawFbo();
 		void drawFboGrid();
 		void drawSound();

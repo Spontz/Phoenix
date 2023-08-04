@@ -12,7 +12,7 @@ namespace Phoenix {
 		"Display information:\n" \
 		"--------------------\n" \
 		"1         : Show Information (FPS, demo status, time, texture memory used, and other information)\n" \
-		"2         : Show render times\n" \
+		"2         : Show render time\n" \
 		"3         : Show Framebuffer\n" \
 		"4         : Show all Framebuffers\n" \
 		"5         : Show which sections that are being drawn, and some information related to them\n" \
@@ -54,7 +54,7 @@ namespace Phoenix {
 		m_io(nullptr),
 		show_log(false),
 		show_info(false),
-		show_fpsHistogram(false),
+		show_renderTime(false),
 		show_sesctionInfo(false),
 		show_fbo(false),
 		show_fboGrid(false),
@@ -192,8 +192,8 @@ namespace Phoenix {
 			drawFbo();
 		if (show_fboGrid)
 			drawFboGrid();
-		if (show_fpsHistogram)
-			drawFPSHistogram();
+		if (show_renderTime)
+			drawRenderTime();
 		if (show_sound)
 			drawSound();
 		if (show_config)
@@ -314,7 +314,7 @@ namespace Phoenix {
 			{
 				ImGui::MenuItem("Show Log", "BACKSPACE", &show_log);
 				ImGui::MenuItem("Show Info", "1", &show_info);
-				ImGui::MenuItem("Show FPS Histogram", "2", &show_fpsHistogram);
+				ImGui::MenuItem("Show render time", "2", &show_renderTime);
 				ImGui::MenuItem("Show FBO's", "3", &show_fbo);
 				ImGui::MenuItem("Show all FBO's", "4", &show_fboGrid);
 				ImGui::MenuItem("Show section stack", "5", &show_sesctionInfo);
@@ -417,14 +417,14 @@ namespace Phoenix {
 		ImGui::End();
 	}
 
-	void ImGuiLayer::drawFPSHistogram()
+	void ImGuiLayer::drawRenderTime()
 	{
 		m_renderTimes[m_currentRenderTime] = m_demo.m_realFrameTime * 1000.f; // Render times in ms
 
 		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 0), ImGuiCond_Appearing);
 		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width / 2.f), 180.0f), ImGuiCond_Appearing);
 
-		if (!ImGui::Begin("FPS and Render time histogram", &show_fpsHistogram))
+		if (!ImGui::Begin("Render time histogram", &show_renderTime))
 		{
 			ImGui::End();
 			return;
@@ -709,8 +709,8 @@ namespace Phoenix {
 			case Key::SHOWVERSION:
 				show_version = !show_version;
 				break;
-			case Key::SHOWFPSHIST:
-				show_fpsHistogram = !show_fpsHistogram;
+			case Key::SHOWRENDERTIME:
+				show_renderTime = !show_renderTime;
 				break;
 			case Key::SHOWFBO:
 				show_fbo = !show_fbo;
