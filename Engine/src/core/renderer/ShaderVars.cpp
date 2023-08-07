@@ -35,11 +35,21 @@ namespace Phoenix {
 		std::string var_value = vars[2];
 		std::vector<std::string> var_properties;
 		if (vars.size() > 3) {
-			has_properties = true;
-			// Load all properties
-			for (int i = 3; i < vars.size(); i++) {
-				var_properties.push_back(vars[i]);
+			// In case is a sampler, load the properties
+			if (var_type == "sampler2D" || var_type == "samplerCube") {
+				has_properties = true;
+				// Load all properties
+				for (int i = 3; i < vars.size(); i++) {
+					var_properties.push_back(vars[i]);
+				}
 			}
+			// In case is not a sampler, then we concatenate all the values
+			else {
+				for (int i = 3; i < vars.size(); i++) {
+					var_value += vars[i];
+				}
+			}
+			
 		}
 
 		if (has_properties) {
