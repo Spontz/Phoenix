@@ -63,31 +63,34 @@ namespace Phoenix {
 		show_config(false),
 		show_help(false),
 		show_debugNet(false),
-		m_maxRenderFPSScale(60),
-		m_currentRenderTime(0),
+		
 		m_expandAllSections(true),
 		m_expandAllSectionsChanged(true)
 	{
 		show_info = m_demo.m_debug;	// if we are on debug, we show the fps info by default
 		show_log = m_demo.m_debug; // if we are on debug, the log is opened by default
-		m_demoStatus = "";
-		m_VersionEngine = m_demo.getEngineVersion();
-		m_VersionOpenGL = m_demo.m_Window->getGLVersion();
-		m_VendorOpenGL = m_demo.m_Window->getGLVendor();
-		m_RendererOpenGL = m_demo.m_Window->getGLRenderer();
-		m_VersionGLFW = m_demo.m_Window->getGLFWVersion();
-		m_VersionBASS = BASSDRV->getVersion();
-		m_VersionDyad = m_demo.getLibDyadVersion();
-		m_VersionASSIMP = m_demo.getLibAssimpVersion();
-		m_VersionImGUI = IMGUI_VERSION;
+		
+		// Window: Info
+		m_info.demoStatus = "";
+		m_info.versionEngine = m_demo.getEngineVersion();
+		m_info.versionOpenGL = m_demo.m_Window->getGLVersion();
+		m_info.vendorOpenGL = m_demo.m_Window->getGLVendor();
+		m_info.rendererOpenGL = m_demo.m_Window->getGLRenderer();
+		m_info.versionGLFW = m_demo.m_Window->getGLFWVersion();
+		m_info.versionBASS = BASSDRV->getVersion();
+		m_info.versionDyad = m_demo.getLibDyadVersion();
+		m_info.versionASSIMP = m_demo.getLibAssimpVersion();
+		m_info.versionImGUI = IMGUI_VERSION;
 
-		for (int i = 0; i < RENDERTIMES_SAMPLES; i++)
-			m_renderTimes[i] = 0.0f;
+		// Window: Render
+		m_render.maxRenderFPSScale = 60;
+		m_render.currentRenderTime = 0;
+		for (int i = 0; i < m_render.RENDERTIMES_SAMPLES; i++)
+			m_render.renderTimes[i] = 0.0f;
 
 		// Prepare the text
 		m_helpText.appendf(helpText.c_str());
 
-		// Set window properties
 		// Window: Fbo
 		m_fbo.fboNum = static_cast<int32_t>(m_demo.m_fboManager.fbo.size());
 		m_fbo.windowPos = ImVec2(100, 100);
@@ -184,10 +187,10 @@ namespace Phoenix {
 			drawLog();
 		if (show_info)
 			drawInfo();
+		if (show_version)
+			drawInfoVersion();
 		if (show_sesctionInfo)
 			drawSesctionInfo();
-		if (show_version)
-			drawVersion();
 		if (show_fbo)
 			drawFbo();
 		if (show_fboGrid)
@@ -258,14 +261,15 @@ namespace Phoenix {
 		colors[ImGuiCol_TitleBgActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 		colors[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 	}
+
 	void ImGuiLayer::drawLog()
 	{
 		ImVec2 pos = ImVec2(0, m_vp.y * 2.0f + 2.0f * (static_cast<float>(m_vp.height) / 3.0f));
 		ImVec2 size = ImVec2(static_cast<float>(m_vp.width + (m_vp.x * 2)), static_cast<float>(m_vp.height / 3.0f));
 
 
-		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
+		ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 
 
 		if (!ImGui::Begin("Error Log", &show_log, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
@@ -286,24 +290,28 @@ namespace Phoenix {
 	{
 		// Get Demo status
 		if (m_demo.m_status & DemoStatus::PAUSE) {
-			if (m_demo.m_status & DemoStatus::REWIND) m_demoStatus = stateStr[4];
-			else if (m_demo.m_status & DemoStatus::FASTFORWARD) m_demoStatus = stateStr[5];
-			else m_demoStatus = stateStr[3];
+			if (m_demo.m_status & DemoStatus::REWIND)
+				m_info.demoStatus = "paused - RW";
+			else if (m_demo.m_status & DemoStatus::FASTFORWARD)
+				m_info.demoStatus = "paused - FF";
+			else
+				m_info.demoStatus = "paused";
 
 		}
 		else {
-			if (m_demo.m_status & DemoStatus::REWIND) m_demoStatus = stateStr[1];
-			else if (m_demo.m_status & DemoStatus::FASTFORWARD) m_demoStatus = stateStr[2];
-			else m_demoStatus = stateStr[0];
+			if (m_demo.m_status & DemoStatus::REWIND)
+				m_info.demoStatus = "play - RW";
+			else if (m_demo.m_status & DemoStatus::FASTFORWARD)
+				m_info.demoStatus = "play - FF";
+			else
+				m_info.demoStatus = "play";
 		}
 
 		// Draw Menu Bar
 		ImGuiWindowFlags window_flags = 0;
 		window_flags |= ImGuiWindowFlags_MenuBar;
 		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Appearing);
-		if (!ImGui::Begin("Demo Info", &show_info, window_flags))
-		{
-			// Early out if the window is collapsed, as an optimization.
+		if (!ImGui::Begin("Demo Info", &show_info, window_flags)) {
 			ImGui::End();
 			return;
 		}
@@ -333,9 +341,8 @@ namespace Phoenix {
 		}
 
 		// Draw Info
-		//ImGui::Text("Font: %.3f", m_fontScale);	// Show font size
 		ImGui::Text("Fps: %.0f", m_demo.m_fps);
-		ImGui::Text("Demo status: %s", m_demoStatus.c_str());
+		ImGui::Text("Demo status: %s", m_info.demoStatus.c_str());
 		ImGui::Text("Time: %.2f/%.2f", m_demo.m_demoRunTime, m_demo.m_demoEndTime);
 		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->getCPUload());
 		ImGui::Text("Texture mem used: %.2fmb", m_demo.m_textureManager.m_mem + m_demo.m_fboManager.mem + m_demo.m_efxBloomFbo.mem + m_demo.m_efxAccumFbo.mem);
@@ -359,22 +366,21 @@ namespace Phoenix {
 		ImGui::End();
 	}
 
-	void ImGuiLayer::drawVersion()
+	void ImGuiLayer::drawInfoVersion()
 	{
 		if (!ImGui::Begin("Demo Info")) {
-			// Early out if the window is collapsed, as an optimization.
 			ImGui::End();
 			return;
 		}
-		ImGui::Text("Phoenix engine version: %s", m_VersionEngine.c_str());
-		ImGui::Text("OpenGL driver version: %s", m_VersionOpenGL.c_str());
-		ImGui::Text("OpenGL driver vendor: %s", m_VendorOpenGL.c_str());
-		ImGui::Text("OpenGL driver renderer: %s", m_RendererOpenGL.c_str());
-		ImGui::Text("GLFW library version: %s", m_VersionGLFW.c_str());
-		ImGui::Text("Bass library version: %s", m_VersionBASS.c_str());
-		ImGui::Text("Network Dyad.c library version: %s", m_VersionDyad.c_str());
-		ImGui::Text("Assimp library version: %s", m_VersionASSIMP.c_str());
-		ImGui::Text("ImGUI library version: %s", m_VersionImGUI.c_str());
+		ImGui::Text("Phoenix engine version: %s", m_info.versionEngine.c_str());
+		ImGui::Text("OpenGL driver version: %s", m_info.versionOpenGL.c_str());
+		ImGui::Text("OpenGL driver vendor: %s", m_info.vendorOpenGL.c_str());
+		ImGui::Text("OpenGL driver renderer: %s", m_info.rendererOpenGL.c_str());
+		ImGui::Text("GLFW library version: %s", m_info.versionGLFW.c_str());
+		ImGui::Text("Bass library version: %s", m_info.versionBASS.c_str());
+		ImGui::Text("Network Dyad.c library version: %s", m_info.versionDyad.c_str());
+		ImGui::Text("Assimp library version: %s", m_info.versionASSIMP.c_str());
+		ImGui::Text("ImGUI library version: %s", m_info.versionImGUI.c_str());
 		ImGui::End();
 	}
 
@@ -383,15 +389,10 @@ namespace Phoenix {
 		const float windowWidth = static_cast<float>(m_vp.width + (m_vp.x * 2)) / 3.0f;
 		const float windowHeight = static_cast<float>(m_vp.height + (m_vp.y * 2));
 
-		ImGui::SetNextWindowPos(ImVec2(2.0f * windowWidth, 0.0f), ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Appearing);
+		ImGui::SetNextWindowPos(ImVec2(2.0f * windowWidth, 0.0f), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin(
-			"Section Stack",
-			&show_sesctionInfo,
-			ImGuiWindowFlags_AlwaysHorizontalScrollbar
-		)) {
-			// Early out if the window is collapsed, as an optimization.
+		if (!ImGui::Begin("Section Stack", &show_sesctionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
 			ImGui::End();
 			return;
 		}
@@ -419,32 +420,34 @@ namespace Phoenix {
 
 	void ImGuiLayer::drawRenderTime()
 	{
-		m_renderTimes[m_currentRenderTime] = m_demo.m_realFrameTime * 1000.f; // Render times in ms
+		m_render.windowSize = ImVec2(static_cast<float>(m_vp.width / 2.f), 180.0f);
+		
+		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 0), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(m_render.windowSize, ImGuiCond_FirstUseEver);
 
-		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 0), ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width / 2.f), 180.0f), ImGuiCond_Appearing);
 
-		if (!ImGui::Begin("Render time histogram", &show_renderTime))
-		{
+		m_render.renderTimes[m_render.currentRenderTime] = m_demo.m_realFrameTime * 1000.f; // Render times in ms
+
+		if (!ImGui::Begin("Render time histogram", &show_renderTime)) {
 			ImGui::End();
 			return;
 		}
-		ImVec2 win = ImGui::GetWindowSize();
+		m_render.windowSize = ImGui::GetWindowSize();
 		
 		ImGui::Text("Sections Execution time [Render] (ms): %.1f", m_demo.m_execTime * 1000.0f);
 		drawTooltip("Time consumed by all sections being rendered at this moment\n(it does not include initialization or wait times due to vsync)");
 		ImGui::Text("Fps: %.0f", m_demo.m_fps);
 		ImGui::SetNextItemWidth(80);
-		ImGui::DragInt("FPS Scale", &m_maxRenderFPSScale, 10, 10, 1000, "%d");
-		float max = 1000.0f / static_cast<float>(m_maxRenderFPSScale);
+		ImGui::DragInt("FPS Scale", &m_render.maxRenderFPSScale, 10, 10, 1000, "%d");
+		float max = 1000.0f / static_cast<float>(m_render.maxRenderFPSScale);
 		ImGui::SameLine(); 
 		ImGui::Text("Max scale (ms): %.2f", max);
-		ImGui::PlotLines("", m_renderTimes, RENDERTIMES_SAMPLES, m_currentRenderTime, "Frame time", 0, max, ImVec2(win.x - 10, win.y - 95));
+		ImGui::PlotLines("", m_render.renderTimes, m_render.RENDERTIMES_SAMPLES, m_render.currentRenderTime, "Frame time", 0, max, ImVec2(m_render.windowSize.x - 10, m_render.windowSize.y - 95));
 		ImGui::End();
 
-		m_currentRenderTime++;
-		if (m_currentRenderTime >= RENDERTIMES_SAMPLES) {
-			m_currentRenderTime = 0;
+		m_render.currentRenderTime++;
+		if (m_render.currentRenderTime >= m_render.RENDERTIMES_SAMPLES) {
+			m_render.currentRenderTime = 0;
 		}
 	}
 
@@ -454,11 +457,10 @@ namespace Phoenix {
 		m_fbo.windowSize = ImVec2(static_cast<float>(m_vp.width) / 2.0f, static_cast<float>(m_vp.height) / 2.0f);
 
 		// This sets only when the window appears for the first time
-		ImGui::SetNextWindowPos(m_fbo.windowPos, ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(m_fbo.windowSize, ImGuiCond_Appearing);
+		ImGui::SetNextWindowPos(m_fbo.windowPos, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(m_fbo.windowSize, ImGuiCond_FirstUseEver);
 
 		if (!ImGui::Begin("Fbo detail", &show_fbo)) {
-			// Early out if the window is collapsed, as an optimization.
 			ImGui::End();
 			return;
 		}
@@ -474,17 +476,17 @@ namespace Phoenix {
 		m_fbo.fboSize.y = m_fbo.windowSize.y - spaceForSpacing.y;
 
 		// Draw Fbo selctor
-		if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { decreaseFbo(); }
+		if (ImGui::ArrowButton("##leftFbo", ImGuiDir_Left)) { decreaseFbo(); }
 		ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-		if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { increaseFbo(); }
+		if (ImGui::ArrowButton("##rightFbo", ImGuiDir_Right)) { increaseFbo(); }
 		ImGui::SameLine();
 		ImGui::Text("Fbo: %d", m_fbo.fbo);
 		ImGui::SameLine(0, 20);
 		
 		// Draw Attachment selctor
-		if (ImGui::ArrowButton("##left_", ImGuiDir_Left)) { decreaseFboAttachment(m_fbo.fbo); }
+		if (ImGui::ArrowButton("##leftAtt", ImGuiDir_Left)) { decreaseFboAttachment(m_fbo.fbo); }
 		ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-		if (ImGui::ArrowButton("##right_", ImGuiDir_Right)) { increaseFboAttachment(m_fbo.fbo); }
+		if (ImGui::ArrowButton("##rightAtt", ImGuiDir_Right)) { increaseFboAttachment(m_fbo.fbo); }
 		ImGui::SameLine();
 		ImGui::Text("Color Attachment: %d", m_fbo.fboAttachment);
 		
@@ -508,11 +510,10 @@ namespace Phoenix {
 		m_fboGrid.windowSize = ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height));
 
 		// This sets only when the window appears for the first time
-		ImGui::SetNextWindowPos(m_fboGrid.windowPos, ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(m_fboGrid.windowSize, ImGuiCond_Appearing);
+		ImGui::SetNextWindowPos(m_fboGrid.windowPos, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(m_fboGrid.windowSize, ImGuiCond_FirstUseEver);
 
 		if (!ImGui::Begin("Fbo grid", &show_fboGrid)) {
-			// Early out if the window is collapsed, as an optimization.
 			ImGui::End();
 			return;
 		}
@@ -574,8 +575,8 @@ namespace Phoenix {
 
 	void ImGuiLayer::drawSound()
 	{
-		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 0), ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), 140.0f), ImGuiCond_Appearing);
+		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 0), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), 140.0f), ImGuiCond_FirstUseEver);
 
 		if (!ImGui::Begin("Sound analysis", &show_sound)) {
 			ImGui::End();
@@ -595,8 +596,8 @@ namespace Phoenix {
 	{
 		ImVec2 size = ImVec2(static_cast<float>(m_vp.width) / 1.75f, 160.0f);
 		ImVec2 pos = ImVec2(m_vp.width + m_vp.x - size.x, m_vp.height + m_vp.y - size.y);
-		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
+		ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 
 		if (!ImGui::Begin("Engine config", &show_config)) {
 			ImGui::End();
@@ -637,8 +638,8 @@ namespace Phoenix {
 	{
 		ImVec2 size = ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height));
 		ImVec2 pos = ImVec2(static_cast<float>(m_vp.x), static_cast<float>(m_vp.y));
-		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
+		ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 
 		if (!ImGui::Begin("Help commands", &show_help)) {
 			ImGui::End();
@@ -669,13 +670,10 @@ namespace Phoenix {
 		ImVec2 pos = ImVec2(0, m_vp.y * 2.0f + 2.0f * (static_cast<float>(m_vp.height) / 3.0f));
 		ImVec2 size = ImVec2(static_cast<float>(m_vp.width + (m_vp.x * 2)), static_cast<float>(m_vp.height / 2.0f));
 
+		ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 
-		ImGui::SetNextWindowPos(pos, ImGuiCond_Appearing);
-		ImGui::SetNextWindowSize(size, ImGuiCond_Appearing);
-
-
-		if (!ImGui::Begin("Network debugging", &show_debugNet, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
-		{
+		if (!ImGui::Begin("Network debugging", &show_debugNet, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
 			ImGui::End();
 			return;
 		}
