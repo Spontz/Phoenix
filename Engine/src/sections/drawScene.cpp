@@ -232,10 +232,10 @@ namespace Phoenix {
 			ss << " Faces: " << mesh->m_numFaces << ", vertices: " << mesh->m_numVertices << std::endl;
 			mat = mesh->getMaterial();
 			ss << " Material name: " << mat->name << std::endl;
-			ss << "  Material.Ka:" << glm::to_string(mat->colAmbient) << std::endl;
-			ss << "  Material.Kd:" << glm::to_string(mat->colDiffuse) << std::endl;
-			ss << "  Material.Ks:" << glm::to_string(mat->colSpecular) << std::endl;
-			ss << "  Material.KsStrenght:" << std::to_string(mat->strenghtSpecular) << std::endl;
+			ss << "  Mat_Ka:" << glm::to_string(mat->colAmbient) << std::endl;
+			ss << "  Mat_Kd:" << glm::to_string(mat->colDiffuse) << std::endl;
+			ss << "  Mat_Ks:" << glm::to_string(mat->colSpecular) << std::endl;
+			ss << "  Mat_KsStrenght:" << std::to_string(mat->strenghtSpecular) << std::endl;
 			for (auto& texture : mat->textures) {
 				ss << "  Texture shader name: " << texture.shaderName << std::endl;
 				ss << "  Texture file: " << texture.tex->m_filename << std::endl;

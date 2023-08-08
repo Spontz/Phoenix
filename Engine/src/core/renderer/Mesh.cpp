@@ -129,10 +129,10 @@ namespace Phoenix {
 	void Mesh::setMaterialShaderVars(GLuint shaderID, uint32_t startTexUnit)
 	{
 		// Send material properties
-		glUniform3fv(glGetUniformLocation(shaderID, "Material.Ka"), 1, &m_material.colAmbient[0]);
-		glUniform3fv(glGetUniformLocation(shaderID, "Material.Ks"), 1, &m_material.colSpecular[0]);
-		glUniform1f(glGetUniformLocation(shaderID, "Material.KsStrenght"), m_material.strenghtSpecular);
-		glUniform3fv(glGetUniformLocation(shaderID, "Material.Kd"), 1, &m_material.colDiffuse[0]);
+		glUniform3fv(glGetUniformLocation(shaderID, "Mat_Ka"), 1, &m_material.colAmbient[0]);
+		glUniform3fv(glGetUniformLocation(shaderID, "Mat_Ks"), 1, &m_material.colSpecular[0]);
+		glUniform1f(glGetUniformLocation(shaderID, "Mat_KsStrenght"), m_material.strenghtSpecular);
+		glUniform3fv(glGetUniformLocation(shaderID, "Mat_Kd"), 1, &m_material.colDiffuse[0]);
 
 		// Send textures
 		unsigned int numTextures = static_cast<unsigned int>(m_material.textures.size());
