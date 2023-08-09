@@ -105,6 +105,12 @@ namespace Phoenix {
 		mem = 0;
 	}
 
+	void FboManager::clearFbosColor()
+	{
+		for (auto& pFbo : fbo)
+			pFbo->clearColor();
+	}
+
 	int FboManager::getOpenGLTextureID(uint32_t index, uint32_t attachment)
 	{
 		if (index < fbo.size()) {

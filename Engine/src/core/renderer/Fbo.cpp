@@ -142,4 +142,28 @@ namespace Phoenix {
 			glBindTextureUnit(TexUnit, m_colorAttachment[attachment]);
 	}
 
+	void Fbo::clearColor() const
+	{
+		// Color to set
+		float zero[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+		// Bind our fbo
+		bind();
+				
+		// populate the buffer list to clear
+		GLenum bufferlist[FBO_MAX_COLOR_ATTACHMENTS];
+		for (int i = 0; i < FBO_MAX_COLOR_ATTACHMENTS; i++) {
+			bufferlist[i] = GL_COLOR_ATTACHMENT0 + i;
+		}
+		// Select the buffers to clear and.. clear! :D
+		glDrawBuffers(numAttachments, bufferlist);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		for (uint32_t i = 0; i < numAttachments; i++) {
+			glClearBufferfv(GL_COLOR, i, zero);
+		}
+
+		// Unbind fbo
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
 }

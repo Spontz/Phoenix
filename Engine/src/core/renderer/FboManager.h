@@ -34,6 +34,7 @@ namespace Phoenix {
 		void unbind(bool clearColor, bool clearDepth);
 		int addFbo(const FboConfig& cfg);
 		void clearFbos();
+		void clearFbosColor();
 		int	getOpenGLTextureID(uint32_t index, uint32_t attachment = 0);
 
 	private:

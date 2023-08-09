@@ -187,6 +187,9 @@ namespace Phoenix
 				}
 			}
 
+			// Init all fbo's color to black
+			m_demo->m_efxBloomFbo.clearFbosColor();
+
 		}
 
 		////////////// efxAccum FBO Manager: internal FBO's that are being used by the engine effects
@@ -216,6 +219,9 @@ namespace Phoenix
 				}
 			}
 
+			// Init all fbo's color to black
+			m_demo->m_efxAccumFbo.clearFbosColor();
+
 		}
 
 		////////////// FBO Manager: Generic FBO's that can be used by the user
@@ -241,6 +247,9 @@ namespace Phoenix
 					Logger::error("Error in FBO definition: FBO number {} has a non recongised format: '{}', please check 'graphics.spo' file.", i, fboConfig[i].format);
 				}
 			}
+
+			// Init all fbo's color to black
+			m_demo->m_fboManager.clearFbosColor();
 		}
 		Logger::info(LogLevel::low, "FBO regeneration complete.");
 	}
