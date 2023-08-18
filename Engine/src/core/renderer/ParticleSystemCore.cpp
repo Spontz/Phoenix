@@ -17,16 +17,6 @@ namespace Phoenix {
 	constexpr int BINDING_UPDATE = 0;
 	constexpr int BINDING_BILLBOARD = 1;
 
-	glm::vec3 RandomVec3() // Return a float between -0.5 and 0.5
-	{
-		float Max = RAND_MAX;
-		glm::vec3 randNum((float)rand(), (float)rand(), (float)rand());
-		randNum /= Max;	// Values between 0 and 1
-		randNum -= 0.5f;	// Values between 0.5 and -0.5
-
-		return randNum;
-	}
-
 	ParticleSystemCore::ParticleSystemCore(std::string particleSystemShader, std::string billboardShader)
 	{
 		m_varsParticleSystem = nullptr; 
@@ -93,7 +83,7 @@ namespace Phoenix {
 		// Init particles data
 		Particle* particles = new Particle[m_amountParticles];
 		for (uint32_t i=0; i < m_amountParticles; i++) {
-			particles[i].InitVel = glm::vec3(0, 0, 0);// RandomVec3();
+			particles[i].InitVel = glm::vec3(0, 0, 0);
 			particles[i].Vel = particles[i].InitVel;
 			particles[i].Col = glm::vec3(1,1,1);
 			particles[i].StartTime = i * (m_particleLifeTime / (float)m_amountParticles);

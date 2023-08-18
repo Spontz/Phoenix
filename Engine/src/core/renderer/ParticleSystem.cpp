@@ -342,24 +342,14 @@ namespace Phoenix {
 		return false;
 	}
 
-
 	// TODO: Investigate if we should move this "Random texture 1D generator" to the TextureManager class
-	static glm::vec3 RandomVec3() // Return a float between -0.5 and 0.5
-	{
-		float Max = RAND_MAX;
-		glm::vec3 randNum((float)rand(), (float)rand(), (float)rand());
-		randNum /= Max;	// Values between 0 and 1
-		randNum -= 0.5f;	// Values between 0.5 and -0.5
-
-		return randNum;
-	}
-
-
-	bool ParticleSystem::initRandomTexture(unsigned int Size)
+	bool ParticleSystem::initRandomTexture(uint32_t Size)
 	{
 		glm::vec3* pRandomData = new glm::vec3[Size];
-		for (unsigned int i = 0; i < Size; i++) {
-			pRandomData[i] = RandomVec3();
+		uint32_t randomSeed = 0;
+		for (uint32_t i = 0; i < Size; i++) {
+			randomSeed += i;
+			pRandomData[i] = Utils::randomVec3_05(randomSeed);
 		}
 
 		glGenTextures(1, &m_textureRandID);

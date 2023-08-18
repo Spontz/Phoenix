@@ -63,12 +63,6 @@ namespace Phoenix {
 			delete m_pPartSystem;
 	}
 
-	static float RandomFloat()
-	{
-		float Max = RAND_MAX;
-		return ((float)rand() / Max);
-	}
-
 	bool sDrawEmitterScene::load()
 	{
 		// script validation
@@ -159,17 +153,19 @@ namespace Phoenix {
 
 		// Load the emitters, based in our model vertexes
 		size_t numEmitter = 0;
+		uint32_t randomSeed = 0;
 		m_fCurrentEmitter = 0;
 		for (auto& mesh : m_pModel->meshes) {
 			for (auto& uniqueVertex : mesh->m_uniqueVertices) {
 				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 				Emitter[numEmitter].Type = ParticleSystem::ParticleType::Emitter;
 				Emitter[numEmitter].Pos = uniqueVertex.Position;
-				Emitter[numEmitter].Vel = uniqueVertex.Normal + (m_fParticleRandomness * glm::vec3(RandomFloat(), RandomFloat(), RandomFloat()));
+				Emitter[numEmitter].Vel = uniqueVertex.Normal + (m_fParticleRandomness * Utils::randomVec3(randomSeed));
 				Emitter[numEmitter].Col = m_vColor;
 				Emitter[numEmitter].lifeTime = 0.0f;
 				numEmitter++;
 				m_fCurrentEmitter = static_cast<float>(numEmitter);
+				randomSeed += static_cast<uint32_t>(numEmitter);
 			}
 		}
 

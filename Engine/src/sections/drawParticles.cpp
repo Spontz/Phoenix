@@ -62,16 +62,6 @@ namespace Phoenix {
 			
 	}
 
-	static glm::vec3 RandomVec3() // Return a float between -0.5 and 0.5
-	{
-		float Max = RAND_MAX;
-		glm::vec3 randNum((float)rand(), (float)rand(), (float)rand());
-		randNum /= Max;	// Values between 0 and 1
-		randNum -= 0.5f;	// Values between 0.5 and -0.5
-
-		return randNum;
-	}
-
 	bool sDrawParticles::load()
 	{
 		// script validation
@@ -138,15 +128,17 @@ namespace Phoenix {
 		Particles.resize(m_iNumParticles);
 		m_fCurrentParticle = 0;
 
+		uint32_t randomSeed = 0;
 		for (int32_t i = 0; i < m_iNumParticles; i++) {
 			m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 			Particles[i].Type = ParticleMesh::ParticleType::Emitter;
 			Particles[i].ID = i;
 			Particles[i].InitPosition = m_vInitialPosition;
-			Particles[i].Randomness = RandomVec3();
+			Particles[i].Randomness = Utils::randomVec3_05(randomSeed);
 			Particles[i].InitColor = m_vInitialColor;
 			Particles[i].Life = m_fParticleLife;
 			m_fCurrentParticle = static_cast<float>(i);
+			randomSeed += i;
 		}
 
 		// Create the particle system

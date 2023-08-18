@@ -69,12 +69,6 @@ namespace Phoenix {
 			delete m_pPartSystem;
 	}
 
-	float RandomFloat()
-	{
-		float Max = RAND_MAX;
-		return ((float)rand() / Max);
-	}
-
 	bool sDrawEmitterSpline::load()
 	{
 		// script validation

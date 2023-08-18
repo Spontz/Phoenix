@@ -62,16 +62,6 @@ namespace Phoenix {
 			delete m_pParticleMesh;
 	}
 
-	static glm::vec3 RandomVec3() // Return a float between -0.5 and 0.5
-	{
-		float Max = RAND_MAX;
-		glm::vec3 randNum((float)rand(), (float)rand(), (float)rand());
-		randNum /= Max;	// Values between 0 and 1
-		randNum -= 0.5f;	// Values between 0.5 and -0.5
-
-		return randNum;
-	}
-
 	bool sDrawParticlesImage::load()
 	{
 		// script validation
@@ -151,6 +141,7 @@ namespace Phoenix {
 		size_t numEmitter = 0;	// Number of Emitter
 		size_t emitterID = 0;	// Emitter number (inside the array)
 		size_t numParticle = 0;
+		uint32_t randomSeed = 0;
 
 		for (int i = 0; i < m_pTexture->m_width; i++) {
 			for (int j = 0; j < m_pTexture->m_height; j++) {
@@ -158,7 +149,7 @@ namespace Phoenix {
 				Particles[numParticle].Type = ParticleMesh::ParticleType::Emitter;
 				Particles[numParticle].ID = (int32_t)numEmitter;
 				Particles[numParticle].InitPosition = glm::vec3(i, j, 0);
-				Particles[numParticle].Randomness = RandomVec3();
+				Particles[numParticle].Randomness = Utils::randomVec3_05(randomSeed);
 				Particles[numParticle].InitColor = m_pTexture->getColor(i, j);
 				Particles[numParticle].Life = 0;
 				emitterID = numParticle;
@@ -169,13 +160,15 @@ namespace Phoenix {
 					Particles[numParticle].Type = ParticleMesh::ParticleType::Shell;
 					Particles[numParticle].ID = (int32_t)k;
 					Particles[numParticle].InitPosition = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
-					Particles[numParticle].Randomness = RandomVec3();
+					Particles[numParticle].Randomness = Utils::randomVec3_05(randomSeed);
 					Particles[numParticle].InitColor = Particles[emitterID].InitColor;// Inherit the color of the emitter
 					Particles[numParticle].Life = m_fParticleLifeTime;
 					numParticle++;
+					randomSeed += static_cast<uint32_t>(numParticle) + static_cast<uint32_t>(numEmitter); // modify te seed
 				}
 				numEmitter++;
 				m_fCurrentEmitter = static_cast<float>(numEmitter);
+				
 			}
 		}
 

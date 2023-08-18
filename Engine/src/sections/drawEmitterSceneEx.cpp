@@ -64,16 +64,6 @@ namespace Phoenix {
 			delete m_pPartSystem;
 	}
 
-	static glm::vec3 RandomVec3() // Return a float between -0.5 and 0.5
-	{
-		float Max = RAND_MAX;
-		glm::vec3 randNum((float)rand(), (float)rand(), (float)rand());
-		randNum /= Max;	// Values between 0 and 1
-		randNum -= 0.5f;	// Values between 0.5 and -0.5
-
-		return randNum;
-	}
-
 	bool sDrawEmitterSceneEx::load()
 	{
 		// script validation
@@ -166,8 +156,7 @@ namespace Phoenix {
 		size_t numParticle = 0;
 
 		m_fCurrentEmitter = 0;
-		// Set the seed
-		srand(static_cast<unsigned int>(time(0)));
+		uint32_t randomSeed = 0;
 
 		for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
 			for (size_t j = 0; j < m_pModel->meshes[i]->m_uniqueVertices.size(); j++) {
@@ -191,13 +180,14 @@ namespace Phoenix {
 					Particles[numParticle].ID = (int32_t)k;
 					Particles[numParticle].InitPosition = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
 					Particles[numParticle].Position = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
-					Particles[numParticle].Randomness = m_fParticleRandomness * RandomVec3();
+					Particles[numParticle].Randomness = m_fParticleRandomness * Utils::randomVec3_05(randomSeed);
 					Particles[numParticle].Rotation = glm::vec3(0,0,0);
 					Particles[numParticle].InitColor = Particles[emitterID].InitColor;// Inherit the color of the emitter
 					Particles[numParticle].Color = glm::vec3(0, 0, 0);
 					Particles[numParticle].Age = 0;
 					Particles[numParticle].Life = m_fParticleLifeTime;
 					numParticle++;
+					randomSeed += static_cast<uint32_t>(numParticle) + static_cast<uint32_t>(numEmitter); // modify te seed
 				}
 				numEmitter++;
 				m_fCurrentEmitter = static_cast<float>(numEmitter);
