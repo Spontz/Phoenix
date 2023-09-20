@@ -122,7 +122,10 @@ namespace Phoenix {
 				sec_id = m_SectionManager->m_loadSection[i];
 				pSection = m_SectionManager->m_section[sec_id];
 				if (pSection->loaded) {
+					float demoTime = DEMO->m_demoRunTime; // keep the demo time
+					DEMO->m_demoRunTime = (pSection->endTime - pSection->startTime) / 2.0f; // Fake the demo time
 					pSection->warmExec();
+					DEMO->m_demoRunTime = demoTime; // Restore the time
 					pSection->warmed = true;
 					++m_SectionManager->m_WarmedSections;
 					Logger::info(LogLevel::low, "Section {} [id: {}, DataSource: {}] pre-Warmed OK!", sec_id, pSection->identifier, pSection->DataSource);
