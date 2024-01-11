@@ -521,14 +521,10 @@ namespace Phoenix {
 				if (m_bDebug) {
 					Logger::info(
 						LogLevel::low,
-						"{}: Frame {} (type={}, size={} bytes) pts {} key_frame {} [DTS {}]",
+						"{}: Frame {} (type={})",
 						__FILE__,
-						m_pCodecContext->frame_number,
-						av_get_picture_type_char(m_pFrame->pict_type),
-						m_pFrame->pkt_size,
-						m_pFrame->pts,
-						m_pFrame->key_frame,
-						m_pFrame->coded_picture_number
+						m_pCodecContext->frame_num,
+						av_get_picture_type_char(m_pFrame->pict_type)
 					);
 				}
 
