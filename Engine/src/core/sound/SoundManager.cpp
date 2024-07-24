@@ -148,7 +148,6 @@ namespace Phoenix {
 			SP_Sound new_sound = std::make_shared<Sound>();
 			if (new_sound->loadSoundFile(filePath, m_channels, m_sampleRate)) {
 				sound.push_back(new_sound);
-				printf("\nSound %s loaded OK", filePath.data());
 				m_LoadedSounds++;
 				p_sound = new_sound;
 				Logger::info(LogLevel::med, "Song {} loaded OK", filePath);
@@ -203,6 +202,13 @@ namespace Phoenix {
 			ma_device_stop(m_pDevice);
 	}
 
+	void SoundManager::stopAllSounds()
+	{
+		for (auto const& m_sound : sound) {
+			m_sound->stopSound();
+		}
+	}
+
 	void SoundManager::enumerateDevices()
 	{
 		ma_result result;
@@ -214,13 +220,13 @@ namespace Phoenix {
 		ma_uint32 iDevice;
 
 		if (ma_context_init(NULL, 0, NULL, &context) != MA_SUCCESS) {
-			printf("Failed to initialize context.\n");
+			Logger::error("Failed to initialize context.");
 			return;
 		}
 
 		result = ma_context_get_devices(&context, &pPlaybackDeviceInfos, &playbackDeviceCount, &pCaptureDeviceInfos, &captureDeviceCount);
 		if (result != MA_SUCCESS) {
-			printf("Failed to retrieve device information.\n");
+			Logger::error("Failed to retrieve device information.");
 			return;
 		}
 

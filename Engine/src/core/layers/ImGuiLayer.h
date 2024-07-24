@@ -22,7 +22,7 @@ namespace Phoenix {
 			std::string vendorOpenGL;
 			std::string rendererOpenGL;
 			std::string versionGLFW;
-			std::string versionBASS;
+			std::string versionMiniAudio;
 			std::string versionDyad;
 			std::string versionASSIMP;
 			std::string versionImGUI;

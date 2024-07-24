@@ -12,6 +12,7 @@
 #include <kiss_fftr.h>
 
 #include "core/sound/Sound.h"
+#include "core/sound/Spectrogram.h"
 
 namespace Phoenix {
 
@@ -37,6 +38,8 @@ namespace Phoenix {
 
 		void playDevice();
 		void stopDevice();
+
+		void stopAllSounds();
 
 		void enumerateDevices();
 
@@ -89,6 +92,6 @@ namespace Phoenix {
 	public:
 		bool					m_forceLoad;	// Force sound loading each time we add a sound (should be enabled when working on slave mode)
 		std::vector<SP_Sound>	sound;			// Sound list
-
+		Spectogram				m_spectogram;	// Spectogram with the FFT values
 	};
 }

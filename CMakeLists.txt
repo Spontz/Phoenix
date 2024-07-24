@@ -29,13 +29,6 @@ endif()
 # HACK: Hide some warnings
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
-# BASS: Create library
-add_library(bass STATIC IMPORTED)
-set_target_properties(bass PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/third_party/bass24/bass24/c/x64/bass.lib")
-
-# BASS: include libs
-link_directories(${CMAKE_SOURCE_DIR}/third_party/bass24/bass24/c/x64)
-
 # Library Dependencies
 find_package(OpenGL REQUIRED)
 find_package(glad CONFIG REQUIRED)

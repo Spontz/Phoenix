@@ -41,8 +41,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include <bass.h>
-
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>

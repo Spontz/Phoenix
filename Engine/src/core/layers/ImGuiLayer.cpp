@@ -3,8 +3,6 @@
 
 #include "Main.h"
 #include "core/layers/ImGuiLayer.h"
-#include "core/drivers/BassDriver.h"
-
 
 namespace Phoenix {
 	
@@ -77,7 +75,7 @@ namespace Phoenix {
 		m_info.vendorOpenGL = m_demo.m_Window->getGLVendor();
 		m_info.rendererOpenGL = m_demo.m_Window->getGLRenderer();
 		m_info.versionGLFW = m_demo.m_Window->getGLFWVersion();
-		m_info.versionBASS = BASSDRV->getVersion();
+		m_info.versionMiniAudio = m_demo.m_soundManager.getVersion();
 		m_info.versionDyad = m_demo.getLibDyadVersion();
 		m_info.versionASSIMP = m_demo.getLibAssimpVersion();
 		m_info.versionImGUI = IMGUI_VERSION;
@@ -344,7 +342,6 @@ namespace Phoenix {
 		ImGui::Text("Fps: %.0f", m_demo.m_fps);
 		ImGui::Text("Demo status: %s", m_info.demoStatus.c_str());
 		ImGui::Text("Time: %.2f/%.2f", m_demo.m_demoRunTime, m_demo.m_demoEndTime);
-		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->getCPUload());
 		ImGui::Text("Texture mem used: %.2fmb", m_demo.m_textureManager.m_mem + m_demo.m_fboManager.mem + m_demo.m_efxBloomFbo.mem + m_demo.m_efxAccumFbo.mem);
 		if (m_demo.m_slaveMode)
 			ImGui::Text("Slave Mode ON");
@@ -377,7 +374,7 @@ namespace Phoenix {
 		ImGui::Text("OpenGL driver vendor: %s", m_info.vendorOpenGL.c_str());
 		ImGui::Text("OpenGL driver renderer: %s", m_info.rendererOpenGL.c_str());
 		ImGui::Text("GLFW library version: %s", m_info.versionGLFW.c_str());
-		ImGui::Text("Bass library version: %s", m_info.versionBASS.c_str());
+		ImGui::Text("MiniAudio library version: %s", m_info.versionMiniAudio.c_str());
 		ImGui::Text("Network Dyad.c library version: %s", m_info.versionDyad.c_str());
 		ImGui::Text("Assimp library version: %s", m_info.versionASSIMP.c_str());
 		ImGui::Text("ImGUI library version: %s", m_info.versionImGUI.c_str());
@@ -583,11 +580,9 @@ namespace Phoenix {
 			return;
 		}
 		ImVec2 win = ImGui::GetWindowSize();
-		int plotSamples = BASSDRV->getSpectrumSamples();
+		int plotSamples = m_demo.m_soundManager.m_spectogram.getSpectogramSamples();
 		ImGui::Text("Spectrum analyzer: %d samples", plotSamples);
-		ImGui::PlotHistogram("", BASSDRV->getSpectrumData(), plotSamples, 0, "Spectrum analyzer", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectrum display
-		//ImGui::Text("Waveform display, Displaying 2 channels:");
-		//ImGui::PlotHistogram("", BASSDRV->getFFTdata(), plotSamples, 0, "sound waveform", -0.5, 0.5, ImVec2(win.x - 10, win.y - 80)); // For Waveform display
+		ImGui::PlotHistogram("", m_demo.m_soundManager.m_spectogram.getSpectogramData(), plotSamples, 0, "Spectrum analyzer", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectogram display
 
 		ImGui::End();
 	}
