@@ -15,6 +15,13 @@
 #include <imgui.h>
 #include <imgui_stdlib.h>
 
+
+#ifdef PHOENIX_MAIN
+#define MINIAUDIO_IMPLEMENTATION
+#endif
+
+#include "miniaudio.h"
+
 #include <GLFW/glfw3.h>
 
 #include <glm/gtc/matrix_transform.hpp>

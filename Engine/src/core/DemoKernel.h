@@ -33,6 +33,9 @@ namespace Phoenix { class DemoKernel; }
 #include "core/renderer/Camera.h"
 #include "core/renderer/CameraTypes.h"
 #include "core/renderer/Light.h"
+
+#include "core/sound/SoundManager.h"
+
 #include "core/utils/LoggerDeclarations.h"
 #include "core/resource/Resource.h"
 
@@ -178,16 +181,17 @@ namespace Phoenix {
 		float m_demoEndTime;	// last demo second (0 = unlimited)
 
 		// Managers
-		SectionManager m_sectionManager;
-		TextureManager m_textureManager;
-		VideoManager m_videoManager;
-		FboManager m_fboManager;		// FBO Manager (FBO's free to be used by the demo maker)
-		FboManager m_efxBloomFbo;		// Bloom efx FBO Manager (internal FBO's used by the engine)
-		FboManager m_efxAccumFbo;		// Accumulation efx FBO Manager (internal engine FBO's)
-		ModelManager m_modelManager;
-		ShaderManager m_shaderManager;
-		LightManager m_lightManager;
-		CameraManager m_cameraManager;
+		SectionManager	m_sectionManager;
+		TextureManager	m_textureManager;
+		VideoManager	m_videoManager;
+		FboManager		m_fboManager;		// FBO Manager (FBO's free to be used by the demo maker)
+		FboManager		m_efxBloomFbo;		// Bloom efx FBO Manager (internal FBO's used by the engine)
+		FboManager		m_efxAccumFbo;		// Accumulation efx FBO Manager (internal engine FBO's)
+		ModelManager	m_modelManager;
+		ShaderManager	m_shaderManager;
+		LightManager	m_lightManager;
+		CameraManager	m_cameraManager;
+		SoundManager	m_soundManager;
 
 		Font* m_pText;
 

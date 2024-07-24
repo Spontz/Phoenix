@@ -27,6 +27,10 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/bass24/bass24/c")
 include_directories(${CMAKE_SOURCE_DIR}) # In order to be able to include files from Engine
 
+#miniaudio config
+find_path(MINIAUDIO_INCLUDE_DIRS "miniaudio.h")
+include_directories("${CMAKE_SOURCE_DIR}/src" "${MINIAUDIO_INCLUDE_DIRS}")
+
 # Set project debug working dir
 set(DEBUGGER_WD "${CMAKE_SOURCE_DIR}/${SubProject}_WD")
 set_target_properties(${SubProject} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${DEBUGGER_WD})
@@ -45,6 +49,7 @@ target_link_libraries(${SubProject} PRIVATE Freetype::Freetype)
 target_link_libraries(${SubProject} PRIVATE glfw)
 target_link_libraries(${SubProject} PRIVATE ws2_32)
 target_link_libraries(${SubProject} PRIVATE assimp::assimp)
+target_link_libraries(${SubProject} PRIVATE kissfft::kissfft-float)
 target_link_libraries(${SubProject} PRIVATE bass)
 
 # HACK: Workaround for broken Dear ImGui Vcpkg port

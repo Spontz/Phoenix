@@ -393,6 +393,13 @@ namespace Phoenix {
 				Logger::info(LogLevel::med, "BASS library inited");
 			else
 				Logger::error("Could not init BASS library");
+
+			if (m_soundManager.init()) {
+				Logger::info(LogLevel::med, "Sound Manager inited");
+				m_soundManager.enumerateDevices();
+			}
+			else
+				Logger::error("Could not init Sound Manager");
 		}
 
 		// Show versions
@@ -405,6 +412,7 @@ namespace Phoenix {
 		Logger::info(LogLevel::med, "Bass library version: {}", BASSDRV->getVersion());
 		Logger::info(LogLevel::med, "Network Dyad.c library version: {}", getLibDyadVersion());
 		Logger::info(LogLevel::med, "Assimp library version: {}", getLibAssimpVersion());
+		Logger::info(LogLevel::med, "MiniAudio library version: {}", m_soundManager.getVersion());
 
 		Logger::info(LogLevel::med, "List of supported OpenGL extensions:");
 		{
@@ -684,10 +692,11 @@ namespace Phoenix {
 		if (m_slaveMode) {
 			Logger::info(
 				LogLevel::med,
-				"Engine is in slave mode, therefore, enabling force loads for shaders and textures!"
+				"Engine is in slave mode, therefore, enabling force loads for assets (sounds, shaders and textures)!"
 			);
 			m_textureManager.m_forceLoad = true;
 			m_shaderManager.m_forceLoad = true;
+			m_soundManager.m_forceLoad = true;
 		}
 		return true;
 	}

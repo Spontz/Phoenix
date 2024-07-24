@@ -1,4 +1,4 @@
-# 2018-2021, Spontz
+# 2018-2024, Spontz
 
 cmake_minimum_required(VERSION 3.8)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
@@ -45,6 +45,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(FFMPEG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
+find_package(kissfft CONFIG REQUIRED)
 
 # Set Startup project
 if(MSVC)
