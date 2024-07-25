@@ -71,7 +71,8 @@ namespace Phoenix {
 	void sSound::exec() {
 		if (!m_demo.m_sound)
 			return;
-		if (m_demo.m_status & DemoStatus::PLAY)
+
+		if ((m_demo.m_status & DemoStatus::PLAY) && ((runTime >= 0) && (runTime <= duration)))
 			m_pSound->playSound();
 		else
 			m_pSound->stopSound();
@@ -81,17 +82,14 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "File: " << m_pSound->filePath << std::endl;
+		ss << "Volume: " << std::to_string(m_pSound->volume) << std::endl;
 		debugStatic = ss.str();
 	}
 
 	std::string sSound::debug() {
 		std::stringstream ss;
 		ss << debugStatic;
-		ss << "Sound Manager values"<< std::endl;
-		ss << "  Beat value: " << m_demo.m_soundManager.m_fBeat << std::endl;
-		ss << "  High Frequencies sum value: " << m_demo.m_soundManager.m_fHighFreqSum << std::endl;
-		ss << "  Medium Frequencies sum value: " << m_demo.m_soundManager.m_fMidFreqSum << std::endl;
-		ss << "  Low Frequencies sum value: " << m_demo.m_soundManager.m_fLowFreqSum << std::endl;
+		ss << "Status: " << m_pSound->getStatusStr() << std::endl;
 		return ss.str();
 	}
 }

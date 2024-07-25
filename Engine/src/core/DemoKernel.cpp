@@ -328,7 +328,6 @@ namespace Phoenix {
 		m_Window->m_demo = this; // Hack guarro
 
 		memset(m_fVar, 0, MULTIPURPOSE_VARS * sizeof(float));
-		memset(m_fBeat, 0, MAX_BEATS * sizeof(float));
 	}
 
 	DemoKernel::~DemoKernel()
@@ -524,14 +523,16 @@ namespace Phoenix {
 			// Process Input keys to control Internal Camera
 			OnProcessInput(m_realFrameTime);
 
-			// Generate FFT based on the sound output
-			if (m_sound)
+			// Generate FFT analysis, calculate beat and magnitures, based on the sound output
+			if (m_sound && (m_status & DemoStatus::PLAY)) {
 				m_soundManager.performFFT(m_realFrameTime);
-
+				if (m_debug)
+					m_soundManager.fillSpectrogram();
+			}
+			
 			// Update network driver
 			if (m_slaveMode)
 				NetDriver::getInstance().update();
-
 		}
 	}
 
@@ -555,8 +556,6 @@ namespace Phoenix {
 	{
 		m_status = DemoStatus::PLAY;
 		
-		if (m_sound) m_soundManager.stopAllSounds();
-		
 		InitControlVars();
 		initTimer();
 		// Force an even SEEKTIME, so al sections will be re-inited
@@ -566,15 +565,11 @@ namespace Phoenix {
 	void DemoKernel::rewindDemo()
 	{
 		m_status = (m_status & DemoStatus::PAUSE) | DemoStatus::REWIND;
-
-		if (m_sound) m_soundManager.stopAllSounds();
 	}
 
 	void DemoKernel::fastforwardDemo()
 	{
 		m_status = (m_status & DemoStatus::PAUSE) | DemoStatus::FASTFORWARD;
-
-		if (m_sound) m_soundManager.stopAllSounds();
 	}
 
 	void DemoKernel::setStartTime(float theTime)

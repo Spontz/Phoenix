@@ -103,4 +103,28 @@ namespace Phoenix {
 	{
 		return m_pDecoder;
 	}
+	std::string Sound::getStatusStr()
+	{
+		std::string s;
+
+		switch (status) {
+		case State::NotReady:
+			s = "Not Ready";
+			break;
+		case State::Playing:
+			s = "Playing";
+			break;
+		case State::Stopped:
+			s = "Stopped";
+			break;
+		case State::Finished:
+			s = "Finished";
+			break;
+		default:
+			s = "Unknown!";
+			break;
+		}
+
+		return s;
+	}
 }

@@ -12,19 +12,21 @@
 
 namespace Phoenix {
 
-	constexpr size_t SPECTOGRAM_SAMPLES = 32;
+	constexpr uint32_t SPECTROGRAM_SAMPLES = 32;
 
-	class Spectogram {
+	class Spectrogram {
 
 	public:
-		Spectogram();
-		virtual ~Spectogram();
+		Spectrogram();
+		virtual ~Spectrogram();
+
+		void fill(float* fftData, uint32_t samples); // Fill the spectrogram with the FFT data
 
 	public:
 
 
 	private:
-		float		m_value[SPECTOGRAM_SAMPLES];
+		float		m_value[SPECTROGRAM_SAMPLES];
 
 	public:
 		float*		getSpectogramData();

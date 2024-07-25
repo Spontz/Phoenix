@@ -50,6 +50,7 @@ namespace Phoenix {
 	
 	public:
 		bool performFFT(float currentTime);
+		void fillSpectrogram();	// Fill spectrum FFT analysis, we should fill this only if we are in debug mode
 
 	private:
 		ma_device*		m_pDevice;		// Internal miniaudio device for playback
@@ -92,6 +93,6 @@ namespace Phoenix {
 	public:
 		bool					m_forceLoad;	// Force sound loading each time we add a sound (should be enabled when working on slave mode)
 		std::vector<SP_Sound>	sound;			// Sound list
-		Spectogram				m_spectogram;	// Spectogram with the FFT values
+		Spectrogram				m_spectrogram;	// Spectrogram with the FFT values
 	};
 }

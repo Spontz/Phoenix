@@ -332,7 +332,7 @@ namespace Phoenix {
 		for (uint32_t i = 0; i < FFT_SIZE; i++)
 		{
 			// Calculate the FFT buffer
-			static const float scaling = 1.0f / (float)FFT_SIZE;
+			static const float scaling = 1.0f / static_cast<float>(FFT_SIZE);
 			m_pFFTBuffer[i] = 2.0f * sqrtf(out[i].r * out[i].r + out[i].i * out[i].i) * scaling;
 
 			// Calculate the maximum value of the Low, Medium and High frequencies
@@ -388,6 +388,11 @@ namespace Phoenix {
 		}
 
 		return true;
+	}
+
+	void SoundManager::fillSpectrogram()
+	{
+		m_spectrogram.fill(m_pFFTBuffer, FFT_SIZE);
 	}
 
 }

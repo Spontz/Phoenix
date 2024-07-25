@@ -32,11 +32,12 @@ namespace Phoenix {
 
 	public:
 		bool loadSoundFile(const std::string_view soundFile, uint32_t channels, uint32_t sampleRate); // Load sound from file
-		bool playSound(); // Play Sound
-		bool stopSound(); // Stop sound
-		bool restartSound(); // Restart sound
-		void seekSound(float second); // Seek sound
+		bool playSound();
+		bool stopSound();
+		bool restartSound();
+		void seekSound(float second);
 		ma_decoder* getDecoder();
+		std::string getStatusStr();		// Gets Status in string
 
 	private:
 		void unLoadSong();	// Unload song

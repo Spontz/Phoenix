@@ -246,7 +246,8 @@ namespace Phoenix {
 
 		m_section.clear();
 		m_loadSection.clear();
-		m_execSection.clear();
+		m_execRenderSection.clear();
+		m_execSoundSection.clear();
 	}
 
 	SectionType getSectionType(std::string_view key)
