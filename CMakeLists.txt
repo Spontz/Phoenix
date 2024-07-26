@@ -32,7 +32,6 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 # Library Dependencies
 find_package(OpenGL REQUIRED)
 find_package(glad CONFIG REQUIRED)
-find_package(Freetype REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
