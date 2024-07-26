@@ -1,4 +1,4 @@
-# 2018-2021, Spontz
+# 2018-2024, Spontz
 
 cmake_minimum_required(VERSION 3.8)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
@@ -29,13 +29,6 @@ endif()
 # HACK: Hide some warnings
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
-# BASS: Create library
-add_library(bass STATIC IMPORTED)
-set_target_properties(bass PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/third_party/bass24/bass24/c/x64/bass.lib")
-
-# BASS: include libs
-link_directories(${CMAKE_SOURCE_DIR}/third_party/bass24/bass24/c/x64)
-
 # Library Dependencies
 find_package(OpenGL REQUIRED)
 find_package(glad CONFIG REQUIRED)
@@ -45,6 +38,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(FFMPEG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
+find_package(kissfft CONFIG REQUIRED)
 
 # Set Startup project
 if(MSVC)

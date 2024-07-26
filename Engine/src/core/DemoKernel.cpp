@@ -3,7 +3,6 @@
 
 #include "main.h"
 #include "core/scripting/SpoReader.h"
-#include "core/drivers/BassDriver.h"
 #include "core/drivers/NetDriver.h"
 #include "core/resource/Resource.h"
 
@@ -329,7 +328,6 @@ namespace Phoenix {
 		m_Window->m_demo = this; // Hack guarro
 
 		memset(m_fVar, 0, MULTIPURPOSE_VARS * sizeof(float));
-		memset(m_fBeat, 0, MAX_BEATS * sizeof(float));
 	}
 
 	DemoKernel::~DemoKernel()
@@ -389,10 +387,13 @@ namespace Phoenix {
 
 		// initialize sound driver
 		if (m_sound) {
-			if (BASSDRV->init())
-				Logger::info(LogLevel::med, "BASS library inited");
+			if (m_soundManager.init()) {
+				m_soundManager.playDevice();
+				Logger::info(LogLevel::med, "Sound Manager inited");
+				m_soundManager.enumerateDevices();
+			}
 			else
-				Logger::error("Could not init BASS library");
+				Logger::error("Could not init Sound Manager");
 		}
 
 		// Show versions
@@ -402,9 +403,9 @@ namespace Phoenix {
 		Logger::info(LogLevel::med, "OpenGL driver vendor: {}", m_Window->getGLVendor());
 		Logger::info(LogLevel::med, "OpenGL driver renderer: {}", m_Window->getGLRenderer());
 		Logger::info(LogLevel::med, "GLFW library version: {}", m_Window->getGLFWVersion());
-		Logger::info(LogLevel::med, "Bass library version: {}", BASSDRV->getVersion());
 		Logger::info(LogLevel::med, "Network Dyad.c library version: {}", getLibDyadVersion());
 		Logger::info(LogLevel::med, "Assimp library version: {}", getLibAssimpVersion());
+		Logger::info(LogLevel::med, "MiniAudio library version: {}", m_soundManager.getVersion());
 
 		Logger::info(LogLevel::med, "List of supported OpenGL extensions:");
 		{
@@ -522,14 +523,16 @@ namespace Phoenix {
 			// Process Input keys to control Internal Camera
 			OnProcessInput(m_realFrameTime);
 
-			// update sound driver once a frame
-			if (m_sound)
-				BASSDRV->update();
-
+			// Generate FFT analysis, calculate beat and magnitures, based on the sound output
+			if (m_sound && (m_status & DemoStatus::PLAY)) {
+				m_soundManager.performFFT(m_realFrameTime);
+				if (m_debug)
+					m_soundManager.fillSpectrogram();
+			}
+			
 			// Update network driver
 			if (m_slaveMode)
 				NetDriver::getInstance().update();
-
 		}
 	}
 
@@ -538,7 +541,6 @@ namespace Phoenix {
 		if (m_status != DemoStatus::PLAY) {
 			m_status = DemoStatus::PLAY;
 
-			if (m_sound) BASSDRV->play();
 			// reinit section queues
 			m_SectionLayer->ReInitSections();
 		}
@@ -548,15 +550,11 @@ namespace Phoenix {
 	{
 		m_status = DemoStatus::PAUSE;
 		m_frameTime = 0;
-		if (m_sound) BASSDRV->pause();
 	}
 
 	void DemoKernel::restartDemo()
 	{
 		m_status = DemoStatus::PLAY;
-		if (m_sound) {
-			BASSDRV->stop();
-		}
 		
 		InitControlVars();
 		initTimer();
@@ -567,13 +565,11 @@ namespace Phoenix {
 	void DemoKernel::rewindDemo()
 	{
 		m_status = (m_status & DemoStatus::PAUSE) | DemoStatus::REWIND;
-		if (m_sound) BASSDRV->stop();
 	}
 
 	void DemoKernel::fastforwardDemo()
 	{
 		m_status = (m_status & DemoStatus::PAUSE) | DemoStatus::FASTFORWARD;
-		if (m_sound) BASSDRV->stop();
 	}
 
 	void DemoKernel::setStartTime(float theTime)
@@ -624,9 +620,11 @@ namespace Phoenix {
 		delete m_pRes;
 		m_pRes = nullptr;
 
-		Logger::info(LogLevel::low, "Closing Bass driver...");
-		BASSDRV->stop();
-		BASSDRV->end();
+		if (m_sound) {
+			Logger::info(LogLevel::low, "Stopping sound playback...");
+			m_soundManager.stopDevice();	// Stop device playback
+			m_soundManager.clearSounds();	// Clear all sounds
+		}
 
 		m_shaderManager.clear();	// Clear shaders
 	}
@@ -684,10 +682,11 @@ namespace Phoenix {
 		if (m_slaveMode) {
 			Logger::info(
 				LogLevel::med,
-				"Engine is in slave mode, therefore, enabling force loads for shaders and textures!"
+				"Engine is in slave mode, therefore, enabling force loads for assets (sounds, shaders and textures)!"
 			);
 			m_textureManager.m_forceLoad = true;
 			m_shaderManager.m_forceLoad = true;
+			m_soundManager.m_forceLoad = true;
 		}
 		return true;
 	}

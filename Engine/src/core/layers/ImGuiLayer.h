@@ -22,7 +22,7 @@ namespace Phoenix {
 			std::string vendorOpenGL;
 			std::string rendererOpenGL;
 			std::string versionGLFW;
-			std::string versionBASS;
+			std::string versionMiniAudio;
 			std::string versionDyad;
 			std::string versionASSIMP;
 			std::string versionImGUI;
@@ -80,7 +80,8 @@ namespace Phoenix {
 		bool	show_log;
 		bool	show_info;
 		bool	show_renderTime;
-		bool	show_sesctionInfo;
+		bool	show_renderSectionInfo;
+		bool	show_soundSectionInfo;
 		bool	show_fbo;
 		bool	show_fboGrid;
 		bool	show_sound;
@@ -94,7 +95,8 @@ namespace Phoenix {
 		void drawLog();
 		void drawInfo();
 		void drawInfoVersion();
-		void drawSesctionInfo();
+		void drawRenderSectionInfo();
+		void drawSoundSectionInfo();
 		void drawRenderTime();
 		void drawFbo();
 		void drawFboGrid();
@@ -111,8 +113,10 @@ namespace Phoenix {
 		ImGuiIO* m_io;
 		DemoKernel& m_demo;
 		
-		bool		m_expandAllSections;
-		bool		m_expandAllSectionsChanged;
+		bool		m_expandAllRenderSections;
+		bool		m_expandAllRenderSectionsChanged;
+		bool		m_expandAllSoundSections;
+		bool		m_expandAllSoundSectionsChanged;
 
 		ImGuiTextBuffer		m_helpText;
 

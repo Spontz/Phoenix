@@ -26,10 +26,11 @@ namespace Phoenix {
 		}
 
 		// Track beats
-		for (int i = 0; i < MAX_BEATS; i++) {
-			std::string beatNum = "beat" + std::to_string(i);
-			SymbolTable.add_variable(beatNum, DEMO->m_fBeat[i]);
-		}
+		SymbolTable.add_variable("beat", DEMO->m_soundManager.m_fBeat);
+		SymbolTable.add_variable("high_freq_sum", DEMO->m_soundManager.m_fHighFreqSum);
+		SymbolTable.add_variable("mid_freq_sum", DEMO->m_soundManager.m_fMidFreqSum);
+		SymbolTable.add_variable("low_freq_sum", DEMO->m_soundManager.m_fLowFreqSum);
+
 
 		// Camera values
 		if (DEMO->m_cameraManager.m_pActiveCameraExprTk != nullptr) {

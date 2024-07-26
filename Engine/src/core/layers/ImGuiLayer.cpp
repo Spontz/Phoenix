@@ -3,8 +3,6 @@
 
 #include "Main.h"
 #include "core/layers/ImGuiLayer.h"
-#include "core/drivers/BassDriver.h"
-
 
 namespace Phoenix {
 	
@@ -15,9 +13,10 @@ namespace Phoenix {
 		"2         : Show render time\n" \
 		"3         : Show Framebuffer\n" \
 		"4         : Show all Framebuffers\n" \
-		"5         : Show which sections that are being drawn, and some information related to them\n" \
-		"6         : Show sound information(spectrum analyzer)\n" \
-		"7         : Show Config\n" \
+		"5         : Show the render sections being drawns\n" \
+		"6         : Show the sound sections being processed\n" \
+		"7         : Show sound information(spectrum analyzer)\n" \
+		"8         : Show Config\n" \
 		"9         : Show this help :)\n" \
 		"0         : Show engine and libraries versions\n" \
 		"F5        : Show Debug screen for networking analysis and simulation\n" \
@@ -55,7 +54,8 @@ namespace Phoenix {
 		show_log(false),
 		show_info(false),
 		show_renderTime(false),
-		show_sesctionInfo(false),
+		show_renderSectionInfo(false),
+		show_soundSectionInfo(false),
 		show_fbo(false),
 		show_fboGrid(false),
 		show_sound(false),
@@ -64,8 +64,10 @@ namespace Phoenix {
 		show_help(false),
 		show_debugNet(false),
 		
-		m_expandAllSections(true),
-		m_expandAllSectionsChanged(true)
+		m_expandAllRenderSections(true),
+		m_expandAllRenderSectionsChanged(true),
+		m_expandAllSoundSections(true),
+		m_expandAllSoundSectionsChanged(true)
 	{
 		show_info = m_demo.m_debug;	// if we are on debug, we show the fps info by default
 		show_log = m_demo.m_debug; // if we are on debug, the log is opened by default
@@ -77,7 +79,7 @@ namespace Phoenix {
 		m_info.vendorOpenGL = m_demo.m_Window->getGLVendor();
 		m_info.rendererOpenGL = m_demo.m_Window->getGLRenderer();
 		m_info.versionGLFW = m_demo.m_Window->getGLFWVersion();
-		m_info.versionBASS = BASSDRV->getVersion();
+		m_info.versionMiniAudio = m_demo.m_soundManager.getVersion();
 		m_info.versionDyad = m_demo.getLibDyadVersion();
 		m_info.versionASSIMP = m_demo.getLibAssimpVersion();
 		m_info.versionImGUI = IMGUI_VERSION;
@@ -189,8 +191,10 @@ namespace Phoenix {
 			drawInfo();
 		if (show_version)
 			drawInfoVersion();
-		if (show_sesctionInfo)
-			drawSesctionInfo();
+		if (show_renderSectionInfo)
+			drawRenderSectionInfo();
+		if (show_soundSectionInfo)
+			drawSoundSectionInfo();
 		if (show_fbo)
 			drawFbo();
 		if (show_fboGrid)
@@ -325,9 +329,10 @@ namespace Phoenix {
 				ImGui::MenuItem("Show render time", "2", &show_renderTime);
 				ImGui::MenuItem("Show FBO's", "3", &show_fbo);
 				ImGui::MenuItem("Show all FBO's", "4", &show_fboGrid);
-				ImGui::MenuItem("Show section stack", "5", &show_sesctionInfo);
-				ImGui::MenuItem("Show sound information", "6", &show_sound);
-				ImGui::MenuItem("Show config", "7", &show_config);
+				ImGui::MenuItem("Show render section stack", "5", &show_renderSectionInfo);
+				ImGui::MenuItem("Show sound section stack", "6", &show_soundSectionInfo);
+				ImGui::MenuItem("Show sound information", "7", &show_sound);
+				ImGui::MenuItem("Show config", "8", &show_config);
 				ImGui::MenuItem("Show help", "9", &show_help);
 				ImGui::MenuItem("Show versions", "0", &show_version);
 				ImGui::EndMenu();
@@ -344,7 +349,6 @@ namespace Phoenix {
 		ImGui::Text("Fps: %.0f", m_demo.m_fps);
 		ImGui::Text("Demo status: %s", m_info.demoStatus.c_str());
 		ImGui::Text("Time: %.2f/%.2f", m_demo.m_demoRunTime, m_demo.m_demoEndTime);
-		ImGui::Text("Sound CPU usage: %0.1f%", BASSDRV->getCPUload());
 		ImGui::Text("Texture mem used: %.2fmb", m_demo.m_textureManager.m_mem + m_demo.m_fboManager.mem + m_demo.m_efxBloomFbo.mem + m_demo.m_efxAccumFbo.mem);
 		if (m_demo.m_slaveMode)
 			ImGui::Text("Slave Mode ON");
@@ -377,14 +381,14 @@ namespace Phoenix {
 		ImGui::Text("OpenGL driver vendor: %s", m_info.vendorOpenGL.c_str());
 		ImGui::Text("OpenGL driver renderer: %s", m_info.rendererOpenGL.c_str());
 		ImGui::Text("GLFW library version: %s", m_info.versionGLFW.c_str());
-		ImGui::Text("Bass library version: %s", m_info.versionBASS.c_str());
+		ImGui::Text("MiniAudio library version: %s", m_info.versionMiniAudio.c_str());
 		ImGui::Text("Network Dyad.c library version: %s", m_info.versionDyad.c_str());
 		ImGui::Text("Assimp library version: %s", m_info.versionASSIMP.c_str());
 		ImGui::Text("ImGUI library version: %s", m_info.versionImGUI.c_str());
 		ImGui::End();
 	}
 
-	void ImGuiLayer::drawSesctionInfo()
+	void ImGuiLayer::drawRenderSectionInfo()
 	{
 		const float windowWidth = static_cast<float>(m_vp.width + (m_vp.x * 2)) / 3.0f;
 		const float windowHeight = static_cast<float>(m_vp.height + (m_vp.y * 2));
@@ -392,21 +396,22 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(ImVec2(2.0f * windowWidth, 0.0f), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Section Stack", &show_sesctionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
+		if (!ImGui::Begin("Render Section Stack", &show_renderSectionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
 			ImGui::End();
 			return;
 		}
 
-		if (ImGui::Checkbox("Expand All", &m_expandAllSections))
-			m_expandAllSectionsChanged = true;
+		if (ImGui::Checkbox("Expand All", &m_expandAllRenderSections))
+			m_expandAllRenderSectionsChanged = true;
 
-		for (size_t i = 0; i < m_demo.m_sectionManager.m_execSection.size(); i++) {
-			const auto sec_id = m_demo.m_sectionManager.m_execSection[i].second;	// The second value is the ID of the section
+		// Render sections
+		for (size_t i = 0; i < m_demo.m_sectionManager.m_execRenderSection.size(); i++) {
+			const auto sec_id = m_demo.m_sectionManager.m_execRenderSection[i].second;	// The second value is the ID of the section
 			const auto ds = m_demo.m_sectionManager.m_section[sec_id];
 			std::stringstream ss;
 			ss << ds->type_str << " id/layer[" << ds->identifier << "/" + std::to_string(ds->layer) << "]";
-			if (m_expandAllSectionsChanged)
-				ImGui::SetNextItemOpen(m_expandAllSections);
+			if (m_expandAllRenderSectionsChanged)
+				ImGui::SetNextItemOpen(m_expandAllRenderSections);
 			if (ImGui::CollapsingHeader(ss.str().c_str())) {
 				ImGuiTextBuffer sectionInfoText;
 				sectionInfoText.appendf(ds->debug().c_str());
@@ -414,7 +419,42 @@ namespace Phoenix {
 			}
 		}
 
-		m_expandAllSectionsChanged = false;
+		m_expandAllRenderSectionsChanged = false;
+		ImGui::End();
+	}
+
+	void ImGuiLayer::drawSoundSectionInfo()
+	{
+		const float windowWidth = static_cast<float>(m_vp.width + (m_vp.x * 2)) / 3.0f;
+		const float windowHeight = static_cast<float>(m_vp.height + (m_vp.y * 2));
+
+		ImGui::SetNextWindowPos(ImVec2(2.0f * windowWidth, 0.0f), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_FirstUseEver);
+
+		if (!ImGui::Begin("Sound Section Stack", &show_soundSectionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
+			ImGui::End();
+			return;
+		}
+
+		if (ImGui::Checkbox("Expand All", &m_expandAllSoundSections))
+			m_expandAllSoundSectionsChanged = true;
+
+		// Sound sections
+		for (size_t i = 0; i < m_demo.m_sectionManager.m_execSoundSection.size(); i++) {
+			const auto sec_id = m_demo.m_sectionManager.m_execSoundSection[i].second;	// The second value is the ID of the section
+			const auto ds = m_demo.m_sectionManager.m_section[sec_id];
+			std::stringstream ss;
+			ss << ds->type_str << " id/layer[" << ds->identifier << "/" + std::to_string(ds->layer) << "]";
+			if (m_expandAllSoundSectionsChanged)
+				ImGui::SetNextItemOpen(m_expandAllSoundSections);
+			if (ImGui::CollapsingHeader(ss.str().c_str())) {
+				ImGuiTextBuffer sectionInfoText;
+				sectionInfoText.appendf(ds->debug().c_str());
+				ImGui::TextUnformatted(sectionInfoText.begin(), sectionInfoText.end());
+			}
+		}
+
+		m_expandAllSoundSectionsChanged = false;
 		ImGui::End();
 	}
 
@@ -583,11 +623,12 @@ namespace Phoenix {
 			return;
 		}
 		ImVec2 win = ImGui::GetWindowSize();
-		int plotSamples = BASSDRV->getSpectrumSamples();
+		int plotSamples = m_demo.m_soundManager.m_spectrogram.getSpectogramSamples();
 		ImGui::Text("Spectrum analyzer: %d samples", plotSamples);
-		ImGui::PlotHistogram("", BASSDRV->getSpectrumData(), plotSamples, 0, "Spectrum analyzer", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectrum display
-		//ImGui::Text("Waveform display, Displaying 2 channels:");
-		//ImGui::PlotHistogram("", BASSDRV->getFFTdata(), plotSamples, 0, "sound waveform", -0.5, 0.5, ImVec2(win.x - 10, win.y - 80)); // For Waveform display
+		ImGui::PlotHistogram("", m_demo.m_soundManager.m_spectrogram.getSpectogramData(), plotSamples, 0, "Spectrum analyzer", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectogram display
+
+		ImGui::Text("Beat: %.3f", m_demo.m_soundManager.m_fBeat);
+		ImGui::Text("Frequencies Magnitudes: Low (%.3f), Mid (%.3f), High (%.3f)", m_demo.m_soundManager.m_fLowFreqSum, m_demo.m_soundManager.m_fMidFreqSum, m_demo.m_soundManager.m_fHighFreqSum);
 
 		ImGui::End();
 	}
@@ -716,8 +757,11 @@ namespace Phoenix {
 			case Key::SHOWALLFBO:
 				show_fboGrid = !show_fboGrid;
 				break;
-			case Key::SHOWSECTIONINFO:
-				show_sesctionInfo = !show_sesctionInfo;
+			case Key::SHOWRENDERSECTIONINFO:
+				show_renderSectionInfo = !show_renderSectionInfo;
+				break;
+			case Key::SHOWSOUNDSECTIONINFO:
+				show_soundSectionInfo = !show_soundSectionInfo;
 				break;
 			case Key::SHOWSOUND:
 				show_sound = !show_sound;

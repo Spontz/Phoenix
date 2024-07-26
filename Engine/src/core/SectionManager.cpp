@@ -124,6 +124,9 @@ namespace Phoenix {
 			const auto pSection = getSection(id);
 			if (pSection) {
 				pSection->enabled = !pSection->enabled;
+				// In case we are dealing with a sound section and we are enabing it, we must force an init, so it will be re-positioned to the correct time
+				if (pSection->enabled && pSection->type == SectionType::Sound)
+					pSection->inited = false;
 				//Logger::sendEditor("Section toggled: %s", ids[i].c_str());
 			}
 			else {
@@ -179,6 +182,9 @@ namespace Phoenix {
 			if (ds) {
 				ds->startTime = startTime;
 				ds->duration = ds->endTime - ds->startTime;
+				// In case we are dealing with a sound section and we are enabing it, we must force an init, so it will be re-positioned to the correct time
+				if (ds->enabled && ds->type == SectionType::Sound)
+					ds->inited = false;
 				// Reload the splines. This way they are recalculated
 				for (size_t k = 0; k < ds->spline.size(); k++) {
 					ds->spline[k]->updateDuration(ds->duration);
@@ -207,6 +213,9 @@ namespace Phoenix {
 			if (ds) {
 				ds->endTime = endTime;
 				ds->duration = ds->endTime - ds->startTime;
+				// In case we are dealing with a sound section and we are enabing it, we must force an init, so it will be re-positioned to the correct time
+				if (ds->enabled && ds->type == SectionType::Sound)
+					ds->inited = false;
 				// Reload the splines. This way they are recalculated
 				for (size_t k = 0; k < ds->spline.size(); k++) {
 					ds->spline[k]->updateDuration(ds->duration);
@@ -246,7 +255,8 @@ namespace Phoenix {
 
 		m_section.clear();
 		m_loadSection.clear();
-		m_execSection.clear();
+		m_execRenderSection.clear();
+		m_execSoundSection.clear();
 	}
 
 	SectionType getSectionType(std::string_view key)

@@ -1,4 +1,4 @@
-# 2018-2021, Spontz
+# 2018-2024, Spontz
 
 set(SubProject "Engine")
 set(SubProject_SOURCE_DIR ${PROJECT_SOURCE_DIR}/${SubProject})
@@ -25,7 +25,10 @@ add_library(${SubProject} STATIC ${HEADER_FILES} ${SOURCE_FILES} ${RESOURCE_FILE
 
 # Extra include folders
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
-include_directories("${CMAKE_SOURCE_DIR}/third_party/bass24/bass24/c")
+
+#miniaudio config
+find_path(MINIAUDIO_INCLUDE_DIRS "miniaudio.h")
+include_directories("${CMAKE_SOURCE_DIR}/src" "${MINIAUDIO_INCLUDE_DIRS}")
 
 # Set project debug working dir
 set(DEBUGGER_WD "${CMAKE_SOURCE_DIR}/${SubProject}_WD")
@@ -41,7 +44,8 @@ target_link_libraries(${SubProject} PRIVATE Freetype::Freetype)
 target_link_libraries(${SubProject} PRIVATE glfw)
 target_link_libraries(${SubProject} PRIVATE ws2_32)
 target_link_libraries(${SubProject} PRIVATE assimp::assimp)
-target_link_libraries(${SubProject} PRIVATE bass)
+target_link_libraries(${SubProject} PRIVATE imgui::imgui)
+target_link_libraries(${SubProject} PRIVATE kissfft::kissfft-float)
 
 install(
 	TARGETS ${SubProject}
@@ -50,11 +54,3 @@ install(
 	)
 
 create_msvc_groups()
-
-# BASS: Copy library after build
-add_custom_command(
-	TARGET ${SubProject} POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy
-	"${PROJECT_SOURCE_DIR}/third_party/bass24/bass24/x64/bass.dll"
-	$<TARGET_FILE_DIR:${SubProject}>
-)

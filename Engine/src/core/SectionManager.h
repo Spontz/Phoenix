@@ -39,9 +39,13 @@ namespace Phoenix {
 		// Ready section list: Sections to be loaded (ascendent order by start time)
 		std::vector<int32_t> m_loadSection;
 
-		// Exec section list: Sections to be executed this frame (first element is the layer, and second
-		// the ID of the section)
-		std::vector<std::pair<int32_t, int32_t>> m_execSection;
+		// Exec Render section list: Sections with Render capabilities to be executed this
+		// frame (first element is the layer, and second the ID of the section)
+		std::vector<std::pair<int32_t, int32_t>> m_execRenderSection;
+
+		// Exec Sound section list: Sections with Sound capabilities to be executed this
+		// frame (first element is the layer, and second the ID of the section)
+		std::vector<std::pair<int32_t, int32_t>> m_execSoundSection; // Sound sections must be evaluated constantly, in order to be able to stop audio if not being executed
 
 		// loading information
 		int32_t m_LoadedSections	= 0;

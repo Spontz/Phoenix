@@ -71,7 +71,8 @@ namespace Phoenix {
 
 			// Clear the load and run section lists
 			m_SectionManager->m_loadSection.clear();
-			m_SectionManager->m_execSection.clear();
+			m_SectionManager->m_execSoundSection.clear();
+			m_SectionManager->m_execRenderSection.clear();
 
 			// Populate Load Section: The sections that need to be loaded
 			for (size_t i = 0; i < m_SectionManager->m_section.size(); i++) {
@@ -148,9 +149,19 @@ namespace Phoenix {
 	{
 		Logger::ScopedIndent _;
 		Logger::info(LogLevel::low, "Analysing sections that must be re-inited...");
-		for (auto i = 0; i < m_SectionManager->m_execSection.size(); i++) {
+		for (auto i = 0; i < m_SectionManager->m_execSoundSection.size(); i++) {
 			// The second value is the ID of the section
-			const auto sec_id = m_SectionManager->m_execSection[i].second;
+			const auto sec_id = m_SectionManager->m_execSoundSection[i].second;
+			const auto ds = m_SectionManager->m_section[sec_id];
+			if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
+				ds->inited = FALSE; // Mark the section as not inited
+				Logger::info(LogLevel::low, "Section {} [layer: {} id: {}] marked to be inited", sec_id, ds->layer, ds->identifier);
+			}
+		}
+
+		for (auto i = 0; i < m_SectionManager->m_execRenderSection.size(); i++) {
+			// The second value is the ID of the section
+			const auto sec_id = m_SectionManager->m_execRenderSection[i].second;
 			const auto ds = m_SectionManager->m_section[sec_id];
 			if ((ds->enabled) && (ds->loaded) && (ds->type != SectionType::Loading)) {
 				ds->inited = FALSE; // Mark the section as not inited
@@ -164,28 +175,65 @@ namespace Phoenix {
 		// Check the sections that need to be executed
 		Logger::ScopedIndent _;
 		Logger::info(LogLevel::low, "Processing sections that must be executed...");
-		m_SectionManager->m_execSection.clear();
+		m_SectionManager->m_execSoundSection.clear();
+		m_SectionManager->m_execRenderSection.clear();
 		for (auto i = 0; i < m_SectionManager->m_section.size(); ++i) {
 			const auto pSection = m_SectionManager->m_section[i];
-			// If time is OK
-			if (pSection->startTime <= DemoRunTime && pSection->endTime >= DemoRunTime) {
-				// If its enabled, loaded and is not hte Loading section
-				if (pSection->enabled && pSection->loaded && pSection->type != SectionType::Loading) {
-					// Load the section: first the layer and then the ID
-					m_SectionManager->m_execSection.push_back(std::make_pair(pSection->layer, i));
-				}
+			
+			switch (pSection->type) {
+				// If is the Loading Section, we skip
+				case SectionType::Loading:
+					break;
+
+				// If is a Sound section, then we add it to the stack of sounds, regardless if it's over ot not or if it's enabled or disabled (everything is controlled in the exec function)
+				case SectionType::Sound:
+					if (pSection->loaded) {
+						// Load the section: first the layer and then the ID
+						m_SectionManager->m_execSoundSection.push_back(std::make_pair(pSection->layer, i));
+					}
+					break;
+
+				// If it's not a sound, it should be a"normal" section
+				default:
+					// Validate if time is correct
+					if (pSection->startTime <= DemoRunTime && pSection->endTime >= DemoRunTime) {
+						// If its enabled, loaded and is not the Loading section
+						if (pSection->enabled && pSection->loaded) {
+							// Load the section: first the layer and then the ID
+							m_SectionManager->m_execRenderSection.push_back(std::make_pair(pSection->layer, i));
+						}
+					}
+					break;
 			}
 		}
 
 		// Sort sections by Layer
-		sort(m_SectionManager->m_execSection.begin(), m_SectionManager->m_execSection.end());
+		sort(m_SectionManager->m_execSoundSection.begin(), m_SectionManager->m_execSoundSection.end());
+		sort(m_SectionManager->m_execRenderSection.begin(), m_SectionManager->m_execRenderSection.end());
 
-		Logger::info(LogLevel::low, "Section queue process complete: {} sections to be executed", m_SectionManager->m_execSection.size());
+		Logger::info(LogLevel::low, "Section queue process complete: {} sound sections to be executed", m_SectionManager->m_execSoundSection.size());
+		Logger::info(LogLevel::low, "Section queue process complete: {} render sections to be executed", m_SectionManager->m_execRenderSection.size());
+		
 		// Run Init sections
 		Logger::info(LogLevel::low, "Running Init Sections...");
-		for (auto i = 0; i < m_SectionManager->m_execSection.size(); ++i) {
+		for (auto i = 0; i < m_SectionManager->m_execSoundSection.size(); ++i) {
 			// The second value is the ID of the section
-			const auto sec_id = m_SectionManager->m_execSection[i].second;
+			const auto sec_id = m_SectionManager->m_execSoundSection[i].second;
+			const auto ds = m_SectionManager->m_section[sec_id];
+			if (ds->inited == FALSE) {
+				if (ds->startTime <= DemoRunTime && ds->endTime >= DemoRunTime) { // Init the section only of it's the right time to init it
+					ds->runTime = DemoRunTime - ds->startTime;
+					ds->init();			// Init the Section
+					ds->inited = TRUE;
+					Logger::info(LogLevel::low, "Section {} [layer: {} id: {} type: {}] inited", sec_id, ds->layer, ds->identifier, ds->type_str);
+				}
+				
+			}
+		}
+
+		for (auto i = 0; i < m_SectionManager->m_execRenderSection.size(); ++i) {
+			// The second value is the ID of the section
+			const auto sec_id = m_SectionManager->m_execRenderSection[i].second;
 			const auto ds = m_SectionManager->m_section[sec_id];
 			if (ds->inited == FALSE) {
 				ds->runTime = DemoRunTime - ds->startTime;
@@ -201,9 +249,18 @@ namespace Phoenix {
 		// Run Exec sections
 		Logger::ScopedIndent _;
 		Logger::info(LogLevel::low, "Running Exec Sections...");
-		for (auto i = 0; i < m_SectionManager->m_execSection.size(); ++i) {
+		for (auto i = 0; i < m_SectionManager->m_execSoundSection.size(); ++i) {
 			// The second value is the ID of the section
-			const auto sec_id = m_SectionManager->m_execSection[i].second;
+			const auto sec_id = m_SectionManager->m_execSoundSection[i].second;
+			const auto ds = m_SectionManager->m_section[sec_id];
+			ds->runTime = DemoRunTime - ds->startTime;
+			ds->exec();			// Exec the Section
+			Logger::info(LogLevel::low, "Section {} [layer: {} id: {} type: {}] executed", sec_id, ds->layer, ds->identifier, ds->type_str);
+		}
+		
+		for (auto i = 0; i < m_SectionManager->m_execRenderSection.size(); ++i) {
+			// The second value is the ID of the section
+			const auto sec_id = m_SectionManager->m_execRenderSection[i].second;
 			const auto ds = m_SectionManager->m_section[sec_id];
 			ds->runTime = DemoRunTime - ds->startTime;
 			ds->exec();			// Exec the Section
