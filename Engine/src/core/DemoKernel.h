@@ -29,7 +29,6 @@ namespace Phoenix { class DemoKernel; }
 #include "core/renderer/ShaderManager.h"
 #include "core/renderer/LightManager.h"
 #include "core/renderer/CameraManager.h"
-#include "core/renderer/Font.h"
 #include "core/renderer/Camera.h"
 #include "core/renderer/CameraTypes.h"
 #include "core/renderer/Light.h"
@@ -192,8 +191,6 @@ namespace Phoenix {
 		LightManager	m_lightManager;
 		CameraManager	m_cameraManager;
 		SoundManager	m_soundManager;
-
-		Font* m_pText;
 
 		// Resources
 		Resource* m_pRes;

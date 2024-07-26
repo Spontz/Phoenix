@@ -282,7 +282,6 @@ namespace Phoenix {
 
 	DemoKernel::DemoKernel()
 		:
-		m_pText(nullptr),
 		m_status(-1),
 		m_specialEvent(DemoSpecialEvent::NORMAL),
 		m_demoName("Phoenix Spontz Demoengine"),
