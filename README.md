@@ -17,14 +17,14 @@ Phoenix uses the following libs:
 * GLFW: OpenGL multiplatform library - https://github.com/glfw/glfw
 * GLAD: OpenGL Extension manager - https://glad.dav1d.de
 * GLM: OpenGL mathematics - https://github.com/g-truc/glm
-* Bass: sound support - http://www.un4seen.com
+* MiniAudio: Audio playback - https://miniaud.io
+* KissFFT: FFT Analysis - https://github.com/mborgerding/kissfft
 * Assimp: 3d asset loading - https://github.com/assimp/assimp
 * STB: bitmap loading - https://github.com/nothings/stb
 * Exprtk: mathematical expression evaluator - https://github.com/ArashPartow/exprtk
 * FFMpeg: Video decoder - https://github.com/FFmpeg/FFmpeg
 * Dear ImGUI: graphical user interface - https://github.com/ocornut/imgui
 * dyad.c: networking - https://github.com/rxi/dyad
-* FreeType: font rendering - https://github.com/freetype
 
 ## Instructions (Windows)
 
