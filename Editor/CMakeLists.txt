@@ -1,9 +1,8 @@
-# 2018-2021, Spontz
+# 2018-2024, Spontz
 
 set(SubProject "Editor")
 set(SubProject_OutputName "Editor")
 set(SubProject_SOURCE_DIR ${PROJECT_SOURCE_DIR}/${SubProject})
-
 
 # Show some debug info
 message("\n-- Building ${SubProject}")
@@ -20,11 +19,17 @@ file(GLOB_RECURSE SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c ${CMAKE_CURRE
 file(GLOB_RECURSE HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*.ipp ${CMAKE_CURRENT_SOURCE_DIR}/src/*.inl)
 file(GLOB_RECURSE RESOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/res/*.rc)
 
+if(MSVC)
+  add_compile_options(/W4)
+else()
+  add_compile_options(-Wall -Wextra -pedantic)
+endif()
+
 # Create executable
 add_executable(${SubProject} ${HEADER_FILES} ${SOURCE_FILES} ${RESOURCE_FILES})
+
 # Extra include folders
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
-include_directories("${CMAKE_SOURCE_DIR}/third_party/bass24/bass24/c")
 include_directories(${CMAKE_SOURCE_DIR}) # In order to be able to include files from Engine
 
 #miniaudio config
@@ -49,20 +54,8 @@ target_link_libraries(${SubProject} PRIVATE Freetype::Freetype)
 target_link_libraries(${SubProject} PRIVATE glfw)
 target_link_libraries(${SubProject} PRIVATE ws2_32)
 target_link_libraries(${SubProject} PRIVATE assimp::assimp)
+target_link_libraries(${SubProject} PRIVATE imgui::imgui)
 target_link_libraries(${SubProject} PRIVATE kissfft::kissfft-float)
-target_link_libraries(${SubProject} PRIVATE bass)
-
-# HACK: Workaround for broken Dear ImGui Vcpkg port
-if(MSVC)
-	target_link_libraries(
-		${SubProject}
-		PRIVATE
-		../../vcpkg/installed/x64-windows-static/$<$<CONFIG:Debug>:debug/lib/imguid>$<$<CONFIG:Release>:lib/imgui>
-	)
-else()
-	target_link_libraries(${SubProject} PRIVATE imgui)
-endif()
-
 
 install(TARGETS ${SubProject} RUNTIME DESTINATION bin)
 
@@ -86,11 +79,3 @@ if(MSVC_IDE)
 	# Run macro
 	GroupSources(src)
 endif()
-
-# BASS: Copy library after build
-add_custom_command(
-	TARGET ${SubProject} POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy
-	"${PROJECT_SOURCE_DIR}/third_party/bass24/bass24/x64/bass.dll"
-	$<TARGET_FILE_DIR:${SubProject}>
-)
