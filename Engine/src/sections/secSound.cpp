@@ -72,7 +72,7 @@ namespace Phoenix {
 		if (!m_demo.m_sound)
 			return;
 
-		if ((m_demo.m_status & DemoStatus::PLAY) && ((runTime >= 0) && (runTime <= duration)))
+		if ((m_demo.m_status & DemoStatus::PLAY) && ((runTime >= 0) && (runTime <= duration)) && (enabled == true))
 			m_pSound->playSound();
 		else
 			m_pSound->stopSound();

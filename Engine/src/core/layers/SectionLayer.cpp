@@ -185,9 +185,9 @@ namespace Phoenix {
 				case SectionType::Loading:
 					break;
 
-				// If is a Sound section, then we add it to the stack of sounds, regardless if it's over ot not
+				// If is a Sound section, then we add it to the stack of sounds, regardless if it's over ot not or if it's enabled or disabled (everything is controlled in the exec function)
 				case SectionType::Sound:
-					if (pSection->enabled && pSection->loaded) {
+					if (pSection->loaded) {
 						// Load the section: first the layer and then the ID
 						m_SectionManager->m_execSoundSection.push_back(std::make_pair(pSection->layer, i));
 					}
