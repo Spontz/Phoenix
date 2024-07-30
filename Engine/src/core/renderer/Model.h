@@ -48,7 +48,9 @@ namespace Phoenix {
 		void setMeshesModelTransform();
 
 		// Bones Calculations
-		void setBoneTransformations(GLuint shaderProgram, float currentTime);
+	public:
+		void setBoneTransformations(GLuint shaderProgram, float currentTime); // Hack for ModelInstance:: TODO: Make it private again
+	private:
 		void boneTransform(float timeInSeconds);
 		// Bones Transformations
 		void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);

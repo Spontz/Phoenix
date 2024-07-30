@@ -9,9 +9,10 @@ namespace Phoenix {
 
 	public:
 
-		static bool checkFileExists(std::string_view filename);										// Check if file exists
-		static std::string readASCIIFile(std::string_view filename);								// Read an ASCII file contents
-		static bool appendIntoASCIIFile(std::string_view filename, std::string_view message);		// Append message to file
+		static bool						checkFileExists(std::string_view filename);									// Check if file exists
+		static std::string				readASCIIFile(std::string_view filename);									// Read an ASCII file contents
+		static bool						appendIntoASCIIFile(std::string_view filename, std::string_view message);	// Append message to file
+		static std::vector<std::string>	getFilepathsFromFolder(std::string folderPath, std::string extension);		// Get filePaths for a given folder and extension
 
 		// Random number generation
 	private:

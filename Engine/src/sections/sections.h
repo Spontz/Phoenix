@@ -20,7 +20,9 @@ namespace Phoenix {
 	Section* instance_drawQuad();
 	Section* instance_drawScene();
 	Section* instance_drawSceneMatrix();
+	Section* instance_drawSceneMatrixFolder(); 
 	Section* instance_drawSceneMatrixInstanced();
+	Section* instance_drawSceneMatrixInstancedFolder();
 	Section* instance_drawParticles();
 	Section* instance_drawParticlesImage();
 	Section* instance_drawParticlesScene();

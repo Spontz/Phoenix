@@ -61,8 +61,11 @@ namespace Phoenix {
 			delete[] m_pPrevModelMatrix;
 	}
 
-	void ModelInstance::drawInstanced(GLuint shaderID, uint32_t startTexUnit)
+	void ModelInstance::drawInstanced(float currentTime, GLuint shaderID, uint32_t startTexUnit)
 	{
+		if (m_pModel->playAnimation)
+			m_pModel->setBoneTransformations(shaderID, currentTime);
+
 		for (const auto& spMesh : m_pModel->meshes) {
 			spMesh->setMaterialShaderVars(shaderID, startTexUnit);
 

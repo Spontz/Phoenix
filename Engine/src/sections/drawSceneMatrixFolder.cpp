@@ -5,10 +5,10 @@
 
 namespace Phoenix {
 
-	class sDrawSceneMatrixInstanced final : public Section {
+	class sDrawSceneMatrixFolder final : public Section {
 	public:
-		sDrawSceneMatrixInstanced();
-		~sDrawSceneMatrixInstanced();
+		sDrawSceneMatrixFolder();
+		~sDrawSceneMatrixFolder();
 
 	public:
 		bool		load();
@@ -23,14 +23,17 @@ namespace Phoenix {
 
 		bool		m_bUpdateFormulas = true;	// Update positions on each frame?
 		bool		m_bPlayAnimation = false;// Do we want to play the animation?
-		int			m_iAnimationNumber = 0;	// Number of animation to play
+		int32_t		m_iAnimationNumber = 0;	// Number of animation to play
 		float		m_fAnimationTime = 0;	// Animation time (in seconds)
-		float		m_fNumObjects = 0;	// Total number of object to draw
+		int32_t		m_iNumCopiesPerObject = 1; // Number of copies to draw per each object
+		float		m_fNumCopiesPerObject = 1.0f; // Number of copies to draw per each object (in float, for formulas)
+		float		m_fNumTotalObjects = 0;	// Total number of object to draw
 
 		// Matrix object positioning
 		glm::vec3	m_vMatrixObjTranslation = { 0, 0, 0 };	// Matrix object translation
 		glm::vec3	m_vMatrixObjRotation = { 0, 0, 0 };	// Matrix object rotation
 		glm::vec3	m_vMatrixObjScale = { 1, 1, 1 };	// Matrix object scale
+		glm::mat4*	m_pMatrixObjModel = nullptr;			// Model matrix for each object
 
 		// Current object positioning
 		float		m_fCurrObjID = 0;			// Current object to draw
@@ -42,14 +45,16 @@ namespace Phoenix {
 
 
 		// Previous model, projection and view matrix, for being used in effects like motion blur
+		glm::mat4* m_pmPrevModel = nullptr;			// The model needs to be stored on a vector because we need to store the previous model matrix of each object
 		glm::mat4	m_mPrevProjection = glm::mat4(1.0f);
 		glm::mat4	m_mPrevView = glm::mat4(1.0f);
 
-		SP_Model		m_pModelRef;		// Reference model to be use to store positions
-		ModelInstance*	m_pModel = nullptr;	// Model to draw instanced
-		SP_Shader		m_pShader;
-		MathDriver*		m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
-		ShaderVars*		m_pVars = nullptr;			// For storing any other shader variables
+		std::string						m_pFolder;				// Folder to scan
+		std::vector<std::string>		m_pModelFilePaths;		// Models filePath to load
+		std::vector<SP_Model>			m_pModel;				// Models to load
+		SP_Shader						m_pShader;
+		MathDriver*						m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
+		ShaderVars*						m_pVars = nullptr;			// For storing any other shader variables
 	};
 
 	// TODO:
@@ -58,79 +63,96 @@ namespace Phoenix {
 
 	// ******************************************************************
 
-	Section* instance_drawSceneMatrixInstanced()
+	Section* instance_drawSceneMatrixFolder()
 	{
-		return new sDrawSceneMatrixInstanced();
+		return new sDrawSceneMatrixFolder();
 	}
 
-	sDrawSceneMatrixInstanced::sDrawSceneMatrixInstanced()
+	sDrawSceneMatrixFolder::sDrawSceneMatrixFolder()
 	{
-		type = SectionType::DrawSceneMatrixInstanced;
+		type = SectionType::DrawSceneMatrixFolder;
 	}
 
-	sDrawSceneMatrixInstanced::~sDrawSceneMatrixInstanced()
+	sDrawSceneMatrixFolder::~sDrawSceneMatrixFolder()
 	{
+		// Delete matrices
+		if (m_pmPrevModel)
+			delete[] m_pmPrevModel;
+		if (m_pMatrixObjModel)
+			delete[] m_pMatrixObjModel;
+
 		if (m_pExprPosition)
 			delete m_pExprPosition;
 		if (m_pVars)
 			delete m_pVars;
-		if (m_pModel)
-			delete m_pModel;	// TODO: Cambiar a Shared pointer??
 	}
 
-	bool sDrawSceneMatrixInstanced::load()
+	bool sDrawSceneMatrixFolder::load()
 	{
-		if ((param.size() != 6) || (strings.size() < 7)) {
-			Logger::error("DrawSceneMatrixInstanced [{}]: 6 param (do depth buffer clearing, disbale depth test, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier);
+		if ((param.size() != 7) || (strings.size() < 7)) {
+			Logger::error("DrawSceneMatrixFolder [{}]: 7 param (number of copies per object, do depth buffer clearing, disbale depth test, enable wireframe, update formulas on each frame, enable animation and animation number) and 6 strings needed", identifier);
 			return false;
 		}
 
-		Logger::info(LogLevel::high, "[sDrawSceneMatrixInstanced] Warning! you are using an experimental section, probably will not behave correctly!!");
+		// Copies per object
+		m_iNumCopiesPerObject = static_cast<int32_t>(param[0]);
+		m_fNumCopiesPerObject = param[0];
+		if (m_iNumCopiesPerObject == 0) {
+			Logger::error("DrawSceneMatrixFolder: Number of object copies cannot be 0");
+			return false;
+		}
 
 		// Render Flags
-		render_clearDepth = static_cast<bool>(param[0]);
-		render_disableDepthTest = static_cast<bool>(param[1]);
-		render_drawWireframe = static_cast<bool>(param[2]);
+		render_clearDepth = static_cast<bool>(param[1]);
+		render_disableDepthTest = static_cast<bool>(param[2]);
+		render_drawWireframe = static_cast<bool>(param[3]);
 
 		// Update formulas on each frame
-		m_bUpdateFormulas = static_cast<bool>(param[3]);
+		m_bUpdateFormulas = static_cast<bool>(param[4]);
 
 		// Animation parameters
-		m_bPlayAnimation = static_cast<bool>(param[4]);
-		m_iAnimationNumber = static_cast<int>(param[5]);
+		m_bPlayAnimation = static_cast<bool>(param[5]);
+		m_iAnimationNumber = static_cast<int32_t>(param[6]);
 
-		// Load ref. model, model and shader
-		m_pModelRef = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[0]);
-		auto model_to_draw = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[1]);
-		if (!m_pModelRef || !model_to_draw)
+		// Load model folder and the models contained in it
+		m_pFolder = m_demo.m_dataFolder + strings[0];
+		m_pModelFilePaths = Utils::getFilepathsFromFolder(m_pFolder, strings[1]);
+		for (const auto& filePath : m_pModelFilePaths) {
+			SP_Model model = m_demo.m_modelManager.addModel(filePath);
+			if (model)
+				m_pModel.push_back(model);
+		}
+
+		if (m_pModel.empty()) {
+			Logger::error("DrawSceneMatrixFolder: No objects loaded");
 			return false;
+		}
 
-		// Load unique vertices for the reference model (it can take a while)
-		m_pModelRef->loadUniqueVertices();
+		if (m_pModel.size() != m_pModelFilePaths.size()) {
+			Logger::error("DrawSceneMatrixFolder: Not all objects loaded!");
+			return false;
+		}
 
+		// Load shader
 		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[2]);
 		if (!m_pShader)
 			return false;
 
-		// Calculate the amount of objects to draw
-		uint32_t num_obj_instances = 0;
-		for (auto& meshRef : m_pModelRef->meshes) {
-			num_obj_instances += static_cast<uint32_t>(meshRef->m_uniqueVertices.size());
-		}
-
-		if (num_obj_instances == 0) {
-			Logger::error("DrawSceneMatrixInstanced: No vertex found in the reference model");
-			return false;
-		}
-
-		m_fNumObjects = (float)num_obj_instances; // Number of objects to draw is the total amount of unique_vertices to draw
+		// Calculate the number of matrices that we need to store
+		uint32_t num_obj_copies = m_iNumCopiesPerObject * static_cast<int32_t>(m_pModel.size());
+		// Object Model Matrix
+		m_pMatrixObjModel = new glm::mat4[num_obj_copies];
+		// Previous Object model Matrix
+		m_pmPrevModel = new glm::mat4[num_obj_copies];
+		
+		m_fNumTotalObjects = static_cast<float>(num_obj_copies);
 
 		// Load model properties
-		m_pModel = new ModelInstance(model_to_draw, num_obj_instances);
-		m_pModel->m_pModel->playAnimation = m_bPlayAnimation;
-		if (m_pModel->m_pModel->playAnimation)
-			m_pModel->m_pModel->setAnimation(m_iAnimationNumber);
-
+		for (const auto& model : m_pModel) {
+			model->playAnimation = m_bPlayAnimation;
+			if (model->playAnimation)
+				model->setAnimation(m_iAnimationNumber);
+		}
 
 		m_pExprPosition = new MathDriver(this);
 		// Load all the other strings
@@ -139,7 +161,8 @@ namespace Phoenix {
 
 		m_pExprPosition->SymbolTable.add_variable("aTime", m_fAnimationTime);
 		m_pExprPosition->SymbolTable.add_variable("n", m_fCurrObjID);
-		m_pExprPosition->SymbolTable.add_variable("n_total", m_fNumObjects);
+		m_pExprPosition->SymbolTable.add_variable("copies", m_fNumCopiesPerObject);
+		m_pExprPosition->SymbolTable.add_variable("n_total", m_fNumTotalObjects);
 		m_pExprPosition->SymbolTable.add_variable("x", m_vCurrObjPos.x);
 		m_pExprPosition->SymbolTable.add_variable("y", m_vCurrObjPos.y);
 		m_pExprPosition->SymbolTable.add_variable("z", m_vCurrObjPos.z);
@@ -187,26 +210,21 @@ namespace Phoenix {
 		return !DEMO_checkGLError();
 	}
 
-	void sDrawSceneMatrixInstanced::init()
+	void sDrawSceneMatrixFolder::init()
 	{
 
 	}
 
-	void sDrawSceneMatrixInstanced::warmExec()
+	void sDrawSceneMatrixFolder::warmExec()
 	{
 		exec();
 	}
 
-	void sDrawSceneMatrixInstanced::exec()
+	void sDrawSceneMatrixFolder::exec()
 	{
 		// Start set render states and evaluating blending
 		setRenderStatesStart();
 		EvalBlendingStart();
-
-		// Set model properties
-		m_pModel->m_pModel->playAnimation = m_bPlayAnimation;
-		if (m_pModel->m_pModel->playAnimation)
-			m_pModel->m_pModel->setAnimation(m_iAnimationNumber);
 
 		// Load shader
 		m_pShader->use();
@@ -218,8 +236,9 @@ namespace Phoenix {
 		// view/projection transformations
 		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
 		glm::mat4 view = m_demo.m_cameraManager.getActiveView();
-		m_pShader->setValue("projection", projection);
+		m_pShader->setValue("projection", projection);	// TODO: Should we send the projection/view matrices here?
 		m_pShader->setValue("view", view);
+
 		// For MotionBlur: send the previous matrix
 		m_pShader->setValue("prev_projection", m_mPrevProjection);
 		m_pShader->setValue("prev_view", m_mPrevView);
@@ -235,31 +254,40 @@ namespace Phoenix {
 			updateMatrices(false);
 
 		// Draw Objects
-		//int object = 0;
+		int object = 0;
 		m_fCurrObjID = 0;
-		m_pShader->setValue("n_total", m_fNumObjects);	// Send total objects to draw to the shader
+		m_pShader->setValue("n_total", m_fNumTotalObjects);	// Send total objects to draw to the shader
 
-		// TODO: We should send the Position of each object (in Cartesian ad Polar coordinates) to the shader, as we do in "drawSceneMatrix"
-		// Does it makes sense to do this? we never used...
-		/*
-		for (int i = 0; i < model_ref->meshes.size(); i++)
-		{
-			for (int j = 0; j < model_ref->meshes[i].unique_vertices_pos.size(); j++)
-			{
-				m_cObjPos = model_ref->meshes[i].unique_vertices_pos[j];
-				m_cObjPosPolar = model_ref->meshes[i].unique_vertices_polar[j];
-				// Evaluate the expression
-				exprPosition->Expression.value();
-				shader->setValue("n", m_cObjID);				// Send the number of object to the shader
-				shader->setValue("n_pos", m_cObjPos);			// Send the object relative position to the shader
-				shader->setValue("n_polar", m_cObjPosPolar);	// Send the object relative position to the shader (in polar format: x=alpha, y=beta, z=distance)
+		for (const auto& model : m_pModel) {
+			model->playAnimation = m_bPlayAnimation;
+			if (model->playAnimation)
+				model->setAnimation(m_iAnimationNumber);
+
+			// TODO: is this required?
+			model->m_matProjection = projection;
+			model->m_matView = view;
+			// end TODO
+
+			for (int32_t i = 0; i < m_iNumCopiesPerObject; i++) {
+				m_vCurrObjPos = glm::vec3(0);// By default are objects are in pos 0
+				m_vCurrObjPosPolar = glm::vec3(0);
+				m_pShader->setValue("n", m_fCurrObjID);				// Send the number of object to the shader
+				m_pShader->setValue("n_pos", m_vCurrObjPos);			// Send the object relative position to the shader
+				m_pShader->setValue("n_polar", m_vCurrObjPosPolar);	// Send the object relative position to the shader (in polar format: x=alpha, y=beta, z=distance)
+
+				model->m_matBaseModel = m_pMatrixObjModel[object];
+
+				// For MotionBlur, we send the previous model matrix
+				m_pShader->setValue("prev_model", m_pmPrevModel[object]);
+
+				model->Draw(m_pShader->getId(), m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
 
 				object++;
-				m_cObjID = (float)object;
+				m_fCurrObjID = (float)object;
 			}
+			
+
 		}
-		*/
-		m_pModel->drawInstanced(m_fAnimationTime, m_pShader->getId(), static_cast<uint32_t>(m_pVars->sampler2D.size()));
 
 		// For MotionBlur: store the previous matrix
 		m_mPrevProjection = projection;
@@ -272,26 +300,25 @@ namespace Phoenix {
 		setRenderStatesEnd();
 	}
 
-	void sDrawSceneMatrixInstanced::loadDebugStatic()
+	void sDrawSceneMatrixFolder::loadDebugStatic()
 	{
 		std::stringstream ss;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
-		ss << "Matrix file: " << m_pModelRef->filename << std::endl;
-		ss << "Objects in matrix to be drawn: " << m_fNumObjects << std::endl;
-		ss << "Model file: " << m_pModel->m_pModel->filename << std::endl;
-		ss << "Meshes in each model: " << m_pModel->m_pModel->m_statNumMeshes << std::endl;
-		ss << "Faces: " << m_pModel->m_pModel->m_statNumFaces << ", vertices: " << m_pModel->m_pModel->m_statNumVertices << std::endl;
+		ss << "Folder scanned: " << m_pFolder << std::endl;
+		ss << "Objects found: " << m_pModel.size() << std::endl;
+		ss << "Copies per object: " << m_iNumCopiesPerObject << std::endl;
+		ss << "Total objects drawn: " << m_fNumTotalObjects << std::endl;
 		debugStatic = ss.str();
 	}
 
-	std::string sDrawSceneMatrixInstanced::debug()
+	std::string sDrawSceneMatrixFolder::debug()
 	{
 		std::stringstream ss;
 		ss << debugStatic;
 		return ss.str();
 	}
 
-	void sDrawSceneMatrixInstanced::updateMatrices(bool initPrevMatrix)
+	void sDrawSceneMatrixFolder::updateMatrices(bool initPrevMatrix)
 	{
 		glm::mat4 matrixModel; // Model matrix to be used on matrix object
 
@@ -311,21 +338,20 @@ namespace Phoenix {
 
 		glm::mat4* my_obj_model;
 
-		for (int i = 0; i < m_pModelRef->meshes.size(); i++)
-		{
-			for (int j = 0; j < m_pModelRef->meshes[i]->m_uniqueVertices.size(); j++)
+		for (int32_t i = 0; i < m_pModel.size(); i++) {
+			for (int32_t j = 0; j < m_iNumCopiesPerObject; j++)
 			{
-				m_vCurrObjPos = m_pModelRef->meshes[i]->m_uniqueVertices[j].Position;
-				m_vCurrObjPosPolar = m_pModelRef->meshes[i]->m_uniqueVertices[j].PositionPolar;
+				m_vCurrObjPos = glm::vec3(0); // All objects are located in pos 0 by default
+				m_vCurrObjPosPolar = glm::vec3(0);
 				// Evaluate the expression
 				m_pExprPosition->Expression.value();
 
 				// Copy previous model object matrix, before model matrix changes
-				m_pModel->copyMatrices(object);
+				m_pmPrevModel[object] = m_pMatrixObjModel[object];
 
-				my_obj_model = &(m_pModel->m_pModelMatrix[object]);
+				my_obj_model = &(m_pMatrixObjModel[object]);
 				*my_obj_model = matrixModel;
-				*my_obj_model = glm::translate(*my_obj_model, m_pModelRef->meshes[i]->m_uniqueVertices[j].Position);
+				*my_obj_model = glm::translate(*my_obj_model, m_vCurrObjPos);
 
 				// Now render the object using the "model_ref" as a model matrix start position
 				*my_obj_model = glm::translate(*my_obj_model, m_vCurrObjTranslation);
@@ -337,13 +363,11 @@ namespace Phoenix {
 				// In case we set this flag, the previous matrix is loaded again
 				// This is required on the first call of this function, where the prev_model and obj_model matrix are not initilized
 				if (initPrevMatrix)
-					m_pModel->copyMatrices(object);
+					m_pmPrevModel[object] = m_pMatrixObjModel[object];
 
 				object++;
 				m_fCurrObjID = (float)object;
 			}
 		}
-
-		m_pModel->updateMatrices(); // Update Matrices to GPU
 	}
 }

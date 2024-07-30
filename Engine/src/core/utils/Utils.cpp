@@ -5,6 +5,7 @@
 #include "Utils.h"
 #include <iomanip>
 #include <filesystem>
+#include <io.h>
 
 namespace Phoenix {
 
@@ -63,6 +64,36 @@ namespace Phoenix {
 			saved = true;
 		}
 		return saved;
+	}
+
+	std::vector<std::string> Utils::getFilepathsFromFolder(std::string folderPath, std::string extension)
+	{
+		std::vector<std::string> fileName;
+
+		struct _finddata_t FindData;
+		intptr_t hFile;
+		std::string fullpath;
+		std::string ScriptRelativePath;
+
+		fullpath = folderPath + "/*." + extension;
+		Logger::info(LogLevel::med, "Scanning folder: {}", fullpath);
+		if ((hFile = _findfirst(fullpath.c_str(), &FindData)) != -1L) {
+			do {
+				ScriptRelativePath = folderPath + "/" + FindData.name;
+				fileName.push_back(ScriptRelativePath);
+			} while (_findnext(hFile, &FindData) == 0);
+			_findclose(hFile);
+		}
+		else {
+			Logger::error("No files not found in {} folder", fullpath);
+		}
+
+		for (const auto& file : fileName) {
+			Logger::info(LogLevel::low, "File found: {}", file.c_str());
+		}
+
+
+		return fileName;
 	}
 
 	// Random number generation: Credits: TheCherno (https://www.youtube.com/watch?v=5_RAHZQCPjE)
