@@ -13,7 +13,7 @@ namespace Phoenix {
 		"2         : Show render time\n" \
 		"3         : Show Framebuffer\n" \
 		"4         : Show all Framebuffers\n" \
-		"5         : Show the render sections being drawns\n" \
+		"5         : Show the render sections being drawn\n" \
 		"6         : Show the sound sections being processed\n" \
 		"7         : Show sound information(spectrum analyzer)\n" \
 		"8         : Show Config\n" \
