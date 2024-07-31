@@ -27,7 +27,7 @@ namespace Phoenix {
 	class ModelInstance
 	{
 	public:
-		ModelInstance(SP_Model spModel, uint32_t amount);
+		ModelInstance(SP_Model const& spModel, uint32_t amount);
 		~ModelInstance();
 
 	public:

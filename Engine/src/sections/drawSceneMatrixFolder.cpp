@@ -21,31 +21,31 @@ namespace Phoenix {
 	private:
 		void		updateMatrices(bool initPrevMatrix);
 
-		bool		m_bUpdateFormulas = true;	// Update positions on each frame?
-		bool		m_bPlayAnimation = false;// Do we want to play the animation?
-		int32_t		m_iAnimationNumber = 0;	// Number of animation to play
-		float		m_fAnimationTime = 0;	// Animation time (in seconds)
-		int32_t		m_iNumCopiesPerObject = 1; // Number of copies to draw per each object
-		float		m_fNumCopiesPerObject = 1.0f; // Number of copies to draw per each object (in float, for formulas)
-		float		m_fNumTotalObjects = 0;	// Total number of object to draw
+		bool		m_bUpdateFormulas = true;		// Update positions on each frame?
+		bool		m_bPlayAnimation = false;		// Do we want to play the animation?
+		int32_t		m_iAnimationNumber = 0;			// Number of animation to play
+		float		m_fAnimationTime = 0;			// Animation time (in seconds)
+		int32_t		m_iNumCopiesPerObject = 1;		// Number of copies to draw per each object
+		float		m_fNumCopiesPerObject = 1.0f;	// Number of copies to draw per each object (in float, for formulas)
+		float		m_fNumTotalObjects = 0;			// Total number of object to draw
 
 		// Matrix object positioning
 		glm::vec3	m_vMatrixObjTranslation = { 0, 0, 0 };	// Matrix object translation
-		glm::vec3	m_vMatrixObjRotation = { 0, 0, 0 };	// Matrix object rotation
-		glm::vec3	m_vMatrixObjScale = { 1, 1, 1 };	// Matrix object scale
+		glm::vec3	m_vMatrixObjRotation = { 0, 0, 0 };		// Matrix object rotation
+		glm::vec3	m_vMatrixObjScale = { 1, 1, 1 };		// Matrix object scale
 		glm::mat4*	m_pMatrixObjModel = nullptr;			// Model matrix for each object
 
 		// Current object positioning
-		float		m_fCurrObjID = 0;			// Current object to draw
-		glm::vec3	m_vCurrObjPos = { 0, 0, 0 };	// Current position of our object
-		glm::vec3	m_vCurrObjPosPolar = { 0, 0, 0 };	// Current position of our object (in polar coordinates)
+		float		m_fCurrObjID = 0;						// Current object to draw
+		glm::vec3	m_vCurrObjPos = { 0, 0, 0 };			// Current position of our object
+		glm::vec3	m_vCurrObjPosPolar = { 0, 0, 0 };		// Current position of our object (in polar coordinates)
 		glm::vec3	m_vCurrObjTranslation = { 0, 0, 0 };	// Current object translation
-		glm::vec3	m_vCurrObjRotation = { 0, 0, 0 };	// Current object rotation
-		glm::vec3	m_vCurrObjScale = { 1, 1, 1 };	// Current object scale
+		glm::vec3	m_vCurrObjRotation = { 0, 0, 0 };		// Current object rotation
+		glm::vec3	m_vCurrObjScale = { 1, 1, 1 };			// Current object scale
 
 
 		// Previous model, projection and view matrix, for being used in effects like motion blur
-		glm::mat4* m_pmPrevModel = nullptr;			// The model needs to be stored on a vector because we need to store the previous model matrix of each object
+		glm::mat4*	m_pmPrevModel = nullptr;			// The model needs to be stored on a vector because we need to store the previous model matrix of each object
 		glm::mat4	m_mPrevProjection = glm::mat4(1.0f);
 		glm::mat4	m_mPrevView = glm::mat4(1.0f);
 

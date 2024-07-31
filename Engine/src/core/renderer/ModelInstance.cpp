@@ -18,7 +18,7 @@
 
 namespace Phoenix {
 
-	ModelInstance::ModelInstance(SP_Model spModel, uint32_t amount)
+	ModelInstance::ModelInstance(SP_Model const& spModel, uint32_t amount)
 		:
 		m_pModel(spModel),
 		m_amount(amount),
@@ -59,6 +59,8 @@ namespace Phoenix {
 			delete[] m_pModelMatrix;
 		if (m_pPrevModelMatrix)
 			delete[] m_pPrevModelMatrix;
+		
+		m_amount = 0;
 	}
 
 	void ModelInstance::drawInstanced(float currentTime, GLuint shaderID, uint32_t startTexUnit)

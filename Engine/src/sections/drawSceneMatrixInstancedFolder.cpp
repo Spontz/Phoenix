@@ -78,6 +78,12 @@ namespace Phoenix {
 			delete m_pExprPosition;
 		if (m_pVars)
 			delete m_pVars;
+		
+		// Deltes all model instances
+		for (auto const& pModelInstance : m_pModelInstance) {
+			delete pModelInstance;
+		}
+		m_pModelInstance.clear();
 	}
 
 	bool sDrawSceneMatrixInstancedFolder::load()
@@ -130,24 +136,26 @@ namespace Phoenix {
 		}
 
 		// Load shader
-		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[2]);
+		std::string shaderPath = m_demo.m_dataFolder + strings[2];
+		m_pShader = m_demo.m_shaderManager.addShader(shaderPath);
 		if (!m_pShader)
 			return false;
 
 		// Load instanced objects
 		m_fNumTotalObjects = (float)m_iNumInstancesPerObject * (float)m_pModel.size(); // Total number of objects to draw
 
-		for (const auto& model : m_pModel) {
-			m_pModelInstance.push_back(new ModelInstance(model, m_iNumInstancesPerObject));
-			int32_t i = static_cast<int32_t>(m_pModelInstance.size()) - 1;
-			if (i >= 0) {
-				SP_Model m = m_pModelInstance[i]->m_pModel;
-				m->playAnimation = m_bPlayAnimation;
-				if (m->playAnimation)
-					m->setAnimation(m_iAnimationNumber);
+		for (int32_t i=0; i < m_pModel.size(); i++) {
+			const auto pNewModelInstance = new ModelInstance(m_pModel[i], m_iNumInstancesPerObject);
+
+			if (pNewModelInstance) {
+				pNewModelInstance->m_pModel->playAnimation = m_bPlayAnimation;
+				if (pNewModelInstance->m_pModel->playAnimation)
+					pNewModelInstance->m_pModel->setAnimation(m_iAnimationNumber);
+
+				m_pModelInstance.push_back(pNewModelInstance);
 			}
 		}
-
+		
 		m_pExprPosition = new MathDriver(this);
 		// Load all the other strings
 		for (int i = 3; i < strings.size(); i++)
