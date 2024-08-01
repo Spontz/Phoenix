@@ -9,6 +9,33 @@
 namespace Phoenix {
 
 	class Fbo final {
+
+		// TODO: Crear una estructura con las carecteristicas de la fbo, como con la textura:
+		// 
+		// Especificar el Tipo de FBO: FRAMEBUFFER / DEPTH BUFFER / RENDERBUFFER --
+		// Despu,es crear otro elemento que sea el FORMATO del buffer: RGB, RGBA, 8bits, etc...
+		// Type of FBO Format Type supported
+		enum class FboType {
+			UNDEFINED,
+			FRAMEBUFFER,
+			DEPTHBUFFER,
+			RENDERBUFFER
+		};
+
+		// TODO, USE MAPS?
+		const std::map<std::string, FboType> fboBufferType = {
+			{"undefined",		FboType::UNDEFINED},
+			{"COLOR",			FboType::FRAMEBUFFER},
+			{"DEPTH",			FboType::DEPTHBUFFER},
+			{"RENDER",			FboType::RENDERBUFFER},
+		};
+
+	public:
+		struct Properties final {
+			FboType				m_bufferType;		// buffer type: FRAMEBUFFER, DEPTH, RENDER, etc.
+			std::string_view	m_bufferFormat;		// buffer format: RGB, RGBA, RGB_8, etc.
+		};
+
 	public:
 
 		int				width, height;
