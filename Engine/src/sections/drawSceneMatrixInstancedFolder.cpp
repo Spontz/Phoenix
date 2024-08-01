@@ -276,9 +276,9 @@ namespace Phoenix {
 
 		// Draw Objects
 		for (const auto& modelInstance : m_pModelInstance) {
-			//model->m_pModel->playAnimation = m_bPlayAnimation;
-			//if (model->m_pModel->playAnimation)
-			//	model->m_pModel->setAnimation(m_iAnimationNumber);
+			modelInstance->m_pModel->playAnimation = m_bPlayAnimation;
+			if (modelInstance->m_pModel->playAnimation)
+				modelInstance->m_pModel->setAnimation(m_iAnimationNumber);
 
 			modelInstance->drawInstanced(m_fAnimationTime, m_pShader->getId(), static_cast<uint32_t>(m_pVars->sampler2D.size()));
 		}

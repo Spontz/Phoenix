@@ -27,18 +27,16 @@ namespace Phoenix {
 	class ModelInstance
 	{
 	public:
-		ModelInstance(SP_Model const& spModel, uint32_t amount);
+		ModelInstance(SP_Model spModel, uint32_t amount);
 		~ModelInstance();
 
 	public:
-		SP_Model		m_pModel;				// Model to draw
-		uint32_t		m_amount;				// Amount of instances to draw
-		glm::mat4*		m_pModelMatrix;			// Model matrice of each instance
-		glm::mat4*		m_pPrevModelMatrix;		// Previous model matrice of each instance (useful for effects like motion blur)
-		unsigned int	m_matricesBuffer;
+		SP_Model						m_pModel;				// Model to draw
+		uint32_t						m_amount;				// Amount of instances to draw
+		std::unique_ptr<glm::mat4[]>	m_pModelMatrix;			// Model matrice of each instance
+		std::unique_ptr<glm::mat4[]>	m_pPrevModelMatrix;		// Previous model matrice of each instance (useful for effects like motion blur)
 
 		void updateMatrices();
-
 		void drawInstanced(float currentTime, GLuint shaderID, uint32_t startTexUnit = 0);
 		void copyMatrices(int instance);
 	};

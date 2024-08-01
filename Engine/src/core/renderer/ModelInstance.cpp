@@ -18,48 +18,50 @@
 
 namespace Phoenix {
 
-	ModelInstance::ModelInstance(SP_Model const& spModel, uint32_t amount)
+	ModelInstance::ModelInstance(SP_Model spModel, uint32_t amount)
 		:
 		m_pModel(spModel),
 		m_amount(amount),
 		m_pModelMatrix(nullptr),
-		m_pPrevModelMatrix(nullptr),
-		m_matricesBuffer(0)
+		m_pPrevModelMatrix(nullptr)
 	{
-		if (!spModel)
+		if (amount == 0)
 			return;
-
-		// Init model matrices
-		if (m_pModelMatrix)
-			delete[] m_pModelMatrix;
-
-		if (m_pPrevModelMatrix)
-			delete[] m_pPrevModelMatrix;
-
-		m_pModelMatrix = new glm::mat4[m_amount];
-		m_pPrevModelMatrix = new glm::mat4[m_amount];
-		for (unsigned int i = 0; i < m_amount; i++) {
+		m_pModelMatrix = std::make_unique<glm::mat4[]>(m_amount);
+		m_pPrevModelMatrix = std::make_unique<glm::mat4[]>(m_amount);
+		for (uint32_t i = 0; i < m_amount; i++) {
 			m_pModelMatrix[i] = glm::mat4(1.0f);
 			m_pPrevModelMatrix[i] = glm::mat4(1.0f);
 		}
 
+		// Check if each of the meshes of the Model has already the Vertex buffer, in case is already there, skip the new VB creation
+		for (auto const& spMesh : m_pModel->meshes) {
+			bool vertexBufferFound = false;
+			// Search if the matrix is already in the Vertex Buffer
+			const auto& VBs = spMesh->m_VertexArray->getVertexBuffers();
+						
+			for (int32_t i = 0; i < VBs.size(); i++) {
+				const auto& BLayout = VBs[i]->GetLayout();
+				const auto& elements = BLayout.GetElements();
+				for (auto const& element : elements) {
+					if (element.Name == "aInstancePos")
+						vertexBufferFound = true;
+				}
+			}
+			
+			// If it's not found, add the vertex buffer
+			if (vertexBufferFound == false) {
+				auto spVB = std::make_shared<VertexBuffer>(m_amount * sizeof(glm::mat4));
+				spVB->SetLayout({ {ShaderDataType::Mat4, "aInstancePos"} });
 
-		// Create the new Vertex Buffer to apply to the meshes
-		auto pVB = std::make_shared<VertexBuffer>(m_amount * sizeof(glm::mat4));
-		pVB->SetLayout({{ShaderDataType::Mat4, "aInstancePos"}});
+				spMesh->m_VertexArray->AddVertexBuffer(spVB);
+			}
+		}
 
-		// Add the new vertex buffer to mesh vertex array
-		for (auto const& spMesh : m_pModel->meshes)
-			spMesh->m_VertexArray->AddVertexBuffer(pVB);
 	}
 
 	ModelInstance::~ModelInstance()
 	{
-		if (m_pModelMatrix)
-			delete[] m_pModelMatrix;
-		if (m_pPrevModelMatrix)
-			delete[] m_pPrevModelMatrix;
-		
 		m_amount = 0;
 	}
 
