@@ -50,7 +50,7 @@ namespace Phoenix {
 		std::string						m_pFolder;				// Folder to scan
 		std::vector<std::string>		m_pModelFilePaths;		// Models filePath to load
 		std::vector<SP_Model>			m_pModel;				// Models to load
-		std::vector<ModelInstance*>		m_pModelInstance;		// Instanced models to draw
+		std::vector<SP_ModelInstance>	m_pModelInstance;		// Instanced models to draw
 		SP_Shader						m_pShader;
 		MathDriver*						m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
 		ShaderVars*						m_pVars = nullptr;			// For storing any other shader variables
@@ -78,12 +78,17 @@ namespace Phoenix {
 			delete m_pExprPosition;
 		if (m_pVars)
 			delete m_pVars;
-		
+
+		//m_pModel.clear();
+		//m_pModelInstance.clear();
+
+		/*
 		// Deltes all model instances
 		for (auto const& pModelInstance : m_pModelInstance) {
 			delete pModelInstance;
 		}
 		m_pModelInstance.clear();
+		*/
 	}
 
 	bool sDrawSceneMatrixInstancedFolder::load()
@@ -131,7 +136,7 @@ namespace Phoenix {
 		}
 
 		if (m_pModel.size() != m_pModelFilePaths.size()) {
-			Logger::error("DrawSceneMatrixInstancedFolder: Not all objects loaded!");
+			Logger::error("DrawSceneMatrixInstancedFolder: Not all objects loaded");
 			return false;
 		}
 
@@ -144,6 +149,7 @@ namespace Phoenix {
 		// Load instanced objects
 		m_fNumTotalObjects = (float)m_iNumInstancesPerObject * (float)m_pModel.size(); // Total number of objects to draw
 
+		/*
 		for (int32_t i=0; i < m_pModel.size(); i++) {
 			const auto pNewModelInstance = new ModelInstance(m_pModel[i], m_iNumInstancesPerObject);
 
@@ -155,7 +161,19 @@ namespace Phoenix {
 				m_pModelInstance.push_back(pNewModelInstance);
 			}
 		}
-		
+		*/
+		for (int32_t i = 0; i < m_pModel.size(); i++) {
+			SP_ModelInstance pNewModelInstance = std::make_shared<ModelInstance>(m_pModel[i], m_iNumInstancesPerObject);
+
+			if (pNewModelInstance) {
+				pNewModelInstance->m_pModel->playAnimation = m_bPlayAnimation;
+				if (pNewModelInstance->m_pModel->playAnimation)
+					pNewModelInstance->m_pModel->setAnimation(m_iAnimationNumber);
+
+				m_pModelInstance.push_back(pNewModelInstance);
+			}
+		}
+
 		m_pExprPosition = new MathDriver(this);
 		// Load all the other strings
 		for (int i = 3; i < strings.size(); i++)
@@ -254,15 +272,15 @@ namespace Phoenix {
 		if (m_bUpdateFormulas)
 			updateMatrices(false);
 
+		m_pShader->setValue("n_total", m_fNumTotalObjects);	// Send total objects to draw to the shader
+
 		// Draw Objects
-		for (const auto& model : m_pModelInstance) {
-			model->m_pModel->playAnimation = m_bPlayAnimation;
-			if (model->m_pModel->playAnimation)
-				model->m_pModel->setAnimation(m_iAnimationNumber);
+		for (const auto& modelInstance : m_pModelInstance) {
+			//model->m_pModel->playAnimation = m_bPlayAnimation;
+			//if (model->m_pModel->playAnimation)
+			//	model->m_pModel->setAnimation(m_iAnimationNumber);
 
-			m_fCurrObjID = 0;
-			model->drawInstanced(m_fAnimationTime, m_pShader->getId(), static_cast<uint32_t>(m_pVars->sampler2D.size()));
-
+			modelInstance->drawInstanced(m_fAnimationTime, m_pShader->getId(), static_cast<uint32_t>(m_pVars->sampler2D.size()));
 		}
 
 		// For MotionBlur: store the previous matrix
@@ -316,7 +334,7 @@ namespace Phoenix {
 
 		for (int32_t i = 0; i < m_pModelInstance.size(); i++)
 		{
-			ModelInstance* mi = m_pModelInstance[i];
+			SP_ModelInstance mi = m_pModelInstance[i];
 
 			for (int32_t j = 0; j < m_iNumInstancesPerObject; j++)
 			{
