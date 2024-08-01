@@ -15,6 +15,7 @@ namespace Phoenix {
 		// Especificar el Tipo de FBO: FRAMEBUFFER / DEPTH BUFFER / RENDERBUFFER --
 		// Despu,es crear otro elemento que sea el FORMATO del buffer: RGB, RGBA, 8bits, etc...
 		// Type of FBO Format Type supported
+		/*
 		enum class FboType {
 			UNDEFINED,
 			FRAMEBUFFER,
@@ -35,7 +36,7 @@ namespace Phoenix {
 			FboType				m_bufferType;		// buffer type: FRAMEBUFFER, DEPTH, RENDER, etc.
 			std::string_view	m_bufferFormat;		// buffer format: RGB, RGBA, RGB_8, etc.
 		};
-
+		*/
 	public:
 
 		int				width, height;
