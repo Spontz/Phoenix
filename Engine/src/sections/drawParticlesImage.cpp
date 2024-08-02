@@ -22,6 +22,9 @@ namespace Phoenix {
 		// Image
 		SP_Texture m_pTexture;
 
+		// Image drawing properties
+		bool			m_bFitToContent = false;	// Fit to content: true:respect image aspect ratio, false:stretch to viewport/quad
+
 		// Particle engine variables
 		int				m_iNumParticles = 0;
 		int				m_iNumEmitters = 0;
@@ -65,17 +68,20 @@ namespace Phoenix {
 	bool sDrawParticlesImage::load()
 	{
 		// script validation
-		if ((param.size() != 2) || (strings.size() != 5)) {
-			Logger::error("Draw Particles Image [{}]: 2 param (Particles per Emitter & Particle Life Time) + 5 strings needed (shader file, image, 3 for positioning)", identifier);
+		if ((param.size() != 3) || (strings.size() != 5)) {
+			Logger::error("Draw Particles Image [{}]: 3 param (Fit to content, particles per Emitter & particle Life Time) + 5 strings needed (shader file, image, 3 for positioning)", identifier);
 			return false;
 		}
 
 		// Set States
 		render_disableDepthMask = true;
 
+		// Load image properties
+		m_bFitToContent = static_cast<bool>(param[0]);
+
 		// Load Emitters and Particles config
-		m_iParticlesPerEmitter = static_cast<int>(param[0]);
-		m_fParticleLifeTime = param[1];
+		m_iParticlesPerEmitter = static_cast<int>(param[1]);
+		m_fParticleLifeTime = param[2];
 
 		// Section checks
 		if (m_iParticlesPerEmitter < 0) {
@@ -143,12 +149,45 @@ namespace Phoenix {
 		size_t numParticle = 0;
 		uint32_t randomSeed = 0;
 
+		// Calculate particle position increment, based on the Image size
+		float texAspectRatio = static_cast<float>(m_pTexture->m_width) / static_cast<float>(m_pTexture->m_height);
+
+		// Calculate Scales
+		float fXScale = 1;
+		float fYScale = 1;
+		if (m_bFitToContent) {
+			if (texAspectRatio > 1.0)
+				fYScale = 1 / texAspectRatio;
+			else
+				fXScale = texAspectRatio;
+		}
+		// Calculate increments
+		float partPosIncrementX = 2.0f / static_cast<float>(m_pTexture->m_width) * fXScale;
+		float partPosIncrementY = 2.0f / static_cast<float>(m_pTexture->m_height) * fYScale;
+
+		// Calculate offsets
+		float fXOffset = 0;
+		float fYOffset = 0;
+
+		if (m_bFitToContent) {
+			if (texAspectRatio > 1.0) {
+				fYOffset = (2.0f - partPosIncrementY * static_cast<float>(m_pTexture->m_height))/2.0f;
+			}
+			else {
+				fXOffset = 0; // TODO: Test iwth images with multiple sizes
+			}
+
+		}
+
 		for (int i = 0; i < m_pTexture->m_width; i++) {
 			for (int j = 0; j < m_pTexture->m_height; j++) {
+				// Calculate particle position, should go from -1 to 1
+				glm::vec3 ParticlePos = glm::vec3(-1 + fXOffset +  partPosIncrementX * i, -1 + fYOffset + partPosIncrementY * j, 0);
+				
 				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
 				Particles[numParticle].Type = ParticleMesh::ParticleType::Emitter;
 				Particles[numParticle].ID = (int32_t)numEmitter;
-				Particles[numParticle].InitPosition = glm::vec3(i, j, 0);
+				Particles[numParticle].InitPosition = ParticlePos;
 				Particles[numParticle].Randomness = Utils::randomVec3_05(randomSeed);
 				Particles[numParticle].InitColor = m_pTexture->getColor(i, j);
 				Particles[numParticle].Life = 0;
