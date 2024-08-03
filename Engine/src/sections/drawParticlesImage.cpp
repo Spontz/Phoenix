@@ -168,15 +168,11 @@ namespace Phoenix {
 		// Calculate offsets
 		float fXOffset = 0;
 		float fYOffset = 0;
-
 		if (m_bFitToContent) {
-			if (texAspectRatio > 1.0) {
-				fYOffset = (2.0f - partPosIncrementY * static_cast<float>(m_pTexture->m_height))/2.0f;
-			}
-			else {
-				fXOffset = 0; // TODO: Test iwth images with multiple sizes
-			}
-
+			if (texAspectRatio > 1.0)
+				fYOffset = (2.0f - partPosIncrementY * static_cast<float>(m_pTexture->m_height)) / 2.0f;
+			else
+				fXOffset = (2.0f - partPosIncrementX * static_cast<float>(m_pTexture->m_width)) / 2.0f;
 		}
 
 		for (int i = 0; i < m_pTexture->m_width; i++) {
