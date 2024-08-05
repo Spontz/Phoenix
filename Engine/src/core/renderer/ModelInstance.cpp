@@ -23,7 +23,8 @@ namespace Phoenix {
 		m_pModel(spModel),
 		m_amount(amount),
 		m_pModelMatrix(nullptr),
-		m_pPrevModelMatrix(nullptr)
+		m_pPrevModelMatrix(nullptr),
+		m_vBufferMM_ID(0)
 	{
 		if (amount == 0)
 			return;
@@ -36,28 +37,27 @@ namespace Phoenix {
 
 		// Check if each of the meshes of the Model has already the Vertex buffer, in case is already there, skip the new VB creation
 		for (auto const& spMesh : m_pModel->meshes) {
-			bool vertexBufferFound = false;
-			// Search if the matrix is already in the Vertex Buffer
-			const auto& VBs = spMesh->m_VertexArray->getVertexBuffers();
-						
-			for (int32_t i = 0; i < VBs.size(); i++) {
-				const auto& BLayout = VBs[i]->GetLayout();
-				const auto& elements = BLayout.GetElements();
-				for (auto const& element : elements) {
-					if (element.Name == "aInstancePos")
-						vertexBufferFound = true;
-				}
-			}
+			// Search if the Vertex Buffer is already present
+			int32_t vbID = spMesh->m_VertexArray->getVertexBufferIDByName("aInstanceMatrix"); 
 			
-			// If it's not found, add the vertex buffer
-			if (vertexBufferFound == false) {
+			// If is not present, we create the new VB and add it
+			if (vbID == -1) {
 				auto spVB = std::make_shared<VertexBuffer>(m_amount * sizeof(glm::mat4));
-				spVB->SetLayout({ {ShaderDataType::Mat4, "aInstancePos"} });
+				spVB->SetLayout({ {ShaderDataType::Mat4, "aInstanceMatrix"} });
 
 				spMesh->m_VertexArray->AddVertexBuffer(spVB);
+				m_vBufferMM_ID = spMesh->m_VertexArray->getVertexBufferIDByName("aInstanceMatrix");
+			}
+			else {
+				m_vBufferMM_ID = vbID; // If we already know the buffer ID
+			}
+
+			// Prevent index to get out of bounds
+			if (m_vBufferMM_ID > (spMesh->m_VertexArray->getVertexBufferSize() - 1)) {
+				Logger::error("ModelInstance constructor error, detected m_vBufferMM_ID greater than VertexBuffer size, instance model will not display correctly!");
+				m_vBufferMM_ID = 0;
 			}
 		}
-
 	}
 
 	ModelInstance::~ModelInstance()
@@ -98,8 +98,8 @@ namespace Phoenix {
 		{
 			// Update matrices buffers to GPU
 			const auto& VBs = spMesh->m_VertexArray->getVertexBuffers();
-			VBs[1]->SetData(&m_pModelMatrix[0], m_amount * sizeof(glm::mat4)); // Be careful with "vb[1]"!! -> TODO: Get rid of this hardcode!!
-			VBs[1]->Unbind();
+			VBs[m_vBufferMM_ID]->SetData(&m_pModelMatrix[0], m_amount * sizeof(glm::mat4));
+			VBs[m_vBufferMM_ID]->Unbind();
 		}
 	}
 

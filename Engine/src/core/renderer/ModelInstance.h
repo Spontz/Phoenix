@@ -35,7 +35,10 @@ namespace Phoenix {
 		uint32_t						m_amount;				// Amount of instances to draw
 		std::unique_ptr<glm::mat4[]>	m_pModelMatrix;			// Model matrice of each instance
 		std::unique_ptr<glm::mat4[]>	m_pPrevModelMatrix;		// Previous model matrice of each instance (useful for effects like motion blur)
+	private:
+		uint32_t						m_vBufferMM_ID;			// Vertex buffer ID where the InstanceModelMatrix are stored, all meshes of the model will store the InstanceModelMatrix in the same Id, so only one ID neds to be stored
 
+	public:
 		void updateMatrices();
 		void drawInstanced(float currentTime, GLuint shaderID, uint32_t startTexUnit = 0);
 		void copyMatrices(int instance);

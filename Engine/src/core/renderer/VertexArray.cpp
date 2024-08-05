@@ -176,7 +176,8 @@ namespace Phoenix {
 	}
 #endif
 
-	const std::vector<SP_VertexBuffer>& VertexArray::getVertexBuffers() const {
+	const std::vector<SP_VertexBuffer>& VertexArray::getVertexBuffers() const
+	{
 		return m_vertexBuffers;
 	}
 
@@ -191,6 +192,25 @@ namespace Phoenix {
 		spIndexBuffer->Bind();
 		//glVertexArrayElementBuffer(m_RendererID, indexBuffer->GetBufferID());	// In case we want to use DSA, we can remove glBindVertexArray and indexBufferBind and use this
 		m_indexBuffer = spIndexBuffer;
+	}
+
+	const uint32_t VertexArray::getVertexBufferSize() const 
+	{
+		return static_cast<uint32_t>(m_vertexBuffers.size());
+	}
+
+	const int32_t VertexArray::getVertexBufferIDByName(std::string_view vbName) const
+	{
+		for (int32_t i = 0; i < m_vertexBuffers.size(); i++) {
+			const auto& BLayout = m_vertexBuffers[i]->GetLayout();
+			const auto& elements = BLayout.GetElements();
+			for (auto const& element : elements) {
+				if (element.Name == vbName) {
+					return i; // Element found
+				}
+			}
+		}
+		return -1; // Element not found
 	}
 
 }

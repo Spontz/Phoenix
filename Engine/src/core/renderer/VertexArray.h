@@ -19,8 +19,10 @@ namespace Phoenix {
 
 		void AddVertexBuffer(SP_VertexBuffer const& spVertexBuffer);
 		void SetIndexBuffer(SP_IndexBuffer const& spIndexBuffer);
-
+		
 		const std::vector<SP_VertexBuffer>& getVertexBuffers() const;
+		const uint32_t getVertexBufferSize() const;
+		const int32_t getVertexBufferIDByName(std::string_view vbName) const;
 		SP_IndexBuffer getIndexBuffer() const;
 
 	private:
