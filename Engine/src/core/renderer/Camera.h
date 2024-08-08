@@ -84,7 +84,7 @@ namespace Phoenix {
 		virtual void processMouseScroll(float yoffset) {};
 		virtual void multiplyMovementSpeed(float speed) {};
 		virtual void divideMovementSpeed(float speed) {};
-		virtual bool capturePos() { return false; };
+		virtual bool capturePos(const std::string ID) { return false; };
 		virtual void reset() {};
 
 		virtual void setViewMatrix(glm::mat4 const& matrix) {};

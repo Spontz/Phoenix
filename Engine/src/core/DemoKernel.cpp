@@ -89,12 +89,7 @@ namespace Phoenix {
 				restartDemo();
 				break;
 			case Key::CAM_CAPTURE:
-				if (m_cameraManager.captureActiveCameraPosition()) {
-					Logger::sendEditor("Camera position saved!");
-				}
-				else {
-					Logger::error("Camera file was not saved");
-				}
+				m_cameraManager.m_bCapturePosition = true; // Engine will set the value to false when the pipeline is over
 				break;
 			case Key::CAM_RESET:
 				m_cameraManager.resetInternalCamera();
@@ -515,6 +510,11 @@ namespace Phoenix {
 			ProcessAndExecuteLayers();
 			ProcessAndExecuteImGUILayer();
 
+			// Save the camera, if needed
+			if (m_cameraManager.m_bCapturePosition) {
+				m_cameraManager.captureActiveCameraPosition("Default");
+				m_cameraManager.m_bCapturePosition = false;
+			}
 
 			// Poll events and do SwapBuffers
 			m_Window->OnUpdate();

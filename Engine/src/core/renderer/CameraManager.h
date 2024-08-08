@@ -21,7 +21,7 @@ namespace Phoenix {
 		void resetInternalCamera();
 		void increaseInternalCameraSpeed(float value);
 		void decreaseInternalCameraSpeed(float value);
-		bool captureActiveCameraPosition();
+		bool captureActiveCameraPosition(const std::string ID);
 		void processKeyInternalCamera(CameraMovement direction, float deltaTime);
 		void processMouseMovementInternalCamera(float xOffset, float yOffset);
 		void processMouseScrollInternalCamera(float yOffset);
@@ -31,11 +31,12 @@ namespace Phoenix {
 		const glm::mat4 getActiveProjection() { return m_pActiveCamera->getProjection(); }
 		const glm::mat4 getActiveView() { return m_pActiveCamera->getView(); }
 
+		bool	m_bCapturePosition;		// Fag: Capture camera position
+
 	private:
 		Camera* m_pActiveCamera;		// Current Active Camera
 		Camera* m_pActiveCameraExprTk;	// Current Active Camera, used in the Math driver
 		Camera* m_pInternalCamera;		// Internal engine Camera, used when no camera is defined
-
 
 	};
 }

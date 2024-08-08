@@ -103,9 +103,9 @@ namespace Phoenix {
 		m_MovementSpeed /= speed;
 	}
 
-	bool CameraProjectionFPS::capturePos()
+	bool CameraProjectionFPS::capturePos(const std::string ID)
 	{
-		const std::string fileName = "camera_fps.cam";
+		const std::string fileName = ID + "-" + "camera_fps.cam";
 		const std::string s = "\t"; // Separator
 		std::string dataRow;
 
@@ -273,9 +273,9 @@ namespace Phoenix {
 		m_MovementSpeed /= speed;
 	}
 
-	bool CameraProjectionTarget::capturePos()
+	bool CameraProjectionTarget::capturePos(const std::string ID)
 	{
-		const std::string fileName = "camera_target.cam";
+		const std::string fileName = ID + "-" + "camera_target.cam";
 		const std::string s = "\t"; // Separator
 		std::string dataRow;
 

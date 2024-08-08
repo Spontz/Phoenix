@@ -11,7 +11,8 @@ namespace Phoenix {
 		:
 		m_pActiveCamera(nullptr),
 		m_pActiveCameraExprTk(nullptr),
-		m_pInternalCamera(nullptr)
+		m_pInternalCamera(nullptr),
+		m_bCapturePosition(false)
 	{		
 	}
 
@@ -60,9 +61,9 @@ namespace Phoenix {
 		m_pInternalCamera->divideMovementSpeed(value);
 	}
 
-	bool CameraManager::captureActiveCameraPosition()
+	bool CameraManager::captureActiveCameraPosition(const std::string ID)
 	{
-		return m_pActiveCamera->capturePos();
+		return m_pActiveCamera->capturePos(ID);
 	}
 
 	void CameraManager::processKeyInternalCamera(CameraMovement direction, float deltaTime)

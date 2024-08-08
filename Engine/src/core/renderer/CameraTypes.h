@@ -34,7 +34,7 @@ namespace Phoenix {
 		void processMouseScroll(float yoffset) override;
 		void multiplyMovementSpeed(float speed) override;
 		void divideMovementSpeed(float speed) override;
-		bool capturePos() override;
+		bool capturePos(const std::string ID) override;
 		void reset() override;
 
 	private:
@@ -70,7 +70,7 @@ namespace Phoenix {
 		void processMouseScroll(float yoffset) override;
 		void multiplyMovementSpeed(float speed) override;
 		void divideMovementSpeed(float speed) override;
-		bool capturePos() override;
+		bool capturePos(const std::string ID) override;
 		void reset() override;
 	};
 
