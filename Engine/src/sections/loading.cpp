@@ -17,9 +17,9 @@ namespace Phoenix {
 		SP_Texture m_pTexBack;
 		SP_Texture m_pTexBar;
 
-		float	m_fTX = 0;		// Bar Translation
-		float	m_fTY = 0;
-		float	m_fSY = 1;		// Bar Scale
+		glm::vec2	startPoint;
+		glm::vec2	endPoint;
+		float		size;
 
 		bool	m_bDefaultLoader = false;	// Use the default loader?
 	};
@@ -43,8 +43,8 @@ namespace Phoenix {
 	bool sLoading::load()
 	{
 		// script validation
-		if ((param.size() != 3) || (strings.size() != 3)) {
-			Logger::error("Loading [{}]: 3 strings and 3 params needed. Using default values.", identifier);
+		if ((param.size() != 5) || (strings.size() != 3)) {
+			Logger::error("Loading [{}]: 3 strings and 5 params needed. Using default values.", identifier);
 			m_bDefaultLoader = true;
 		}
 		else {
@@ -55,18 +55,22 @@ namespace Phoenix {
 			m_pTexBack = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + strings[0]);
 			m_pTexFront = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + strings[1]);
 			m_pTexBar = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + strings[2]);
-			m_fTX = param[0];
-			m_fTY = param[1];
-			m_fSY = param[2];
+			startPoint.x = param[0];
+			startPoint.y = param[1];
+			endPoint.x = param[2];
+			endPoint.y = param[3];
+			size = param[4];
 		}
 		else {
 			// Deault values
 			m_pTexBack = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + "/resources/loading/loadingback.jpg");
 			m_pTexFront = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + "/resources/loading/loadingfront.jpg");
 			m_pTexBar = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + "/resources/loading/loadingbar.jpg");
-			m_fTX = 0.0f;
-			m_fTY = -0.4f;
-			m_fSY = 0.1f;
+			startPoint.x = -0.5f;
+			startPoint.y = -0.5f;
+			endPoint.x = 0.5f;
+			endPoint.y = -0.5f;
+			size = 0.1f;
 		}
 
 		if (m_pTexBar == nullptr || m_pTexBack == nullptr || m_pTexFront == nullptr) {
@@ -80,6 +84,36 @@ namespace Phoenix {
 	{
 
 	}
+
+	// Get the Model Matrix of the bar for given 2 points
+	// barStartPoint - point where the bar should be started
+	// barEndPoint - point where the bar should finish
+	// barHeight - Height of the bar
+	// zero2one - variable form 0.0 to 1.0 that tells us how the bar should be drawn (0 means that the bar is at
+	// the start point, and 1.0 means that the bar is complete (from start to end)
+	glm::mat4 getModelMatrixForBar(glm::vec2 barStartPoint, glm::vec2 barEndPoint, float barHeight, float zero2one)
+	{
+		// Draw the Loading bar
+		glm::vec2 direction = barEndPoint - barStartPoint;
+		float length = glm::length(direction);
+		glm::vec2 directionNormalized = glm::normalize(direction);
+		float angle = atan2(directionNormalized.y, directionNormalized.x);
+		float scaledLength = length * zero2one;
+		glm::mat4 model = glm::mat4(1.0f);
+
+		model = glm::translate(model, glm::vec3(barStartPoint, 0.0f));									// Translate to the startPoint
+		model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));								// Rotate to align with the direction vector
+		model = glm::scale(model, glm::vec3(scaledLength * 0.5, barHeight, 1.0f));					// Scale the bar to the correct length (in the x-direction)
+
+		// Correct the effect of the scale and angle
+		float newX = (scaledLength * 0.5f) * cos(angle);
+		float newY = (scaledLength * 0.5f) * sin(angle);
+
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(newX, newY, 0)) * model;// Correct the effect of the scale
+
+		return model;
+	}
+
 
 	void sLoading::exec()
 	{
@@ -118,11 +152,10 @@ namespace Phoenix {
 
 
 			// Draw the Loading bar
-			glm::mat4 model = glm::mat4(1.0f);
-
-			model = glm::translate(model, glm::vec3(m_fTX, m_fTY, 0));  // Move the bar
-			model = glm::scale(model, glm::vec3(zero2one, m_fSY, 0));		// Scale the bar
+			glm::mat4 model = getModelMatrixForBar(startPoint, endPoint, size, zero2one);
+			
 			m_demo.m_pRes->drawObjQuadTex(m_pTexBar, &model);
+
 		}
 		m_demo.m_Window->OnUpdate();
 	}
