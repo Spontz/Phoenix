@@ -458,7 +458,8 @@ namespace Phoenix {
 		const auto iTimeMicroSecs = static_cast<int64_t>(dSeconds * 100000.);
 		const auto AVStream = m_pFormatContext->streams[m_VideoSource.m_iVideoStreamIndex];
 		const auto iFrameNumber = std::min(m_numFrames, av_rescale_q(iTimeMicroSecs, { 1, 100000 }, av_inv_q(AVStream->avg_frame_rate)) + AVStream->start_time);
-
+		//Logger::info(LogLevel::low, "Seeking {:.4f}s, FrameNumber: {}, NumFrames: {}", dSeconds, iFrameNumber, m_numFrames);
+		
 		if (dSeconds > videoDurationSecs())
 		{
 			Logger::error("{} {} {}: Seek time out of range: {:.4f}s, frame: {}. Using frame 0.", __FILE__, __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
@@ -485,6 +486,37 @@ namespace Phoenix {
 			return -4;
 		}
 
+		// av_seek_frame takes effect after one frame, so I'm decoding one here
+		// so that the next call to decode() will give the correct
+		// frame
+		/*
+		int response;
+		while (av_read_frame(m_pFormatContext, m_pAVPacket) >= 0) {
+			if (m_pAVPacket->stream_index != m_VideoSource.m_iVideoStreamIndex) {
+				av_packet_unref(m_pAVPacket);
+				continue;
+			}
+
+			response = avcodec_send_packet(m_pCodecContext, m_pAVPacket);
+			if (response < 0) {
+				//printf("Failed to decode packet: %s\n", av_make_error(response));
+				return false;
+			}
+
+			response = avcodec_receive_frame(m_pCodecContext, m_pFrame);
+			if (response == AVERROR(EAGAIN) || response == AVERROR_EOF) {
+				av_packet_unref(m_pAVPacket);
+				continue;
+			}
+			else if (response < 0) {
+				//printf("Failed to decode packet: %s\n", av_make_error(response));
+				return false;
+			}
+
+			av_packet_unref(m_pAVPacket);
+			break;
+		}
+		*/
 		return iFrameNumber;
 	}
 
