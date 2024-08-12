@@ -375,12 +375,16 @@ namespace Phoenix {
 		if (std::abs(m_dTime - m_dNextFrameTime) > avgFramePeriod() * 2.0) {
 			Logger::info(LogLevel::low, "Seeking {} @ {:.4f}s [desynced by {:.4f}s]...", m_VideoSource.m_sPath, m_dTime, m_dTime - m_dNextFrameTime);
 			seekTime(m_dTime);
-			m_dNextFrameTime = m_dTime + avgFramePeriod();
+			m_dNextFrameTime = av_q2d(m_pFormatContext->streams[m_VideoSource.m_iVideoStreamIndex]->time_base) * m_pFrame->pts;
 			forceDecode = true;
 		}
 		else if (m_dTime < m_dNextFrameTime)
 		{
-			return;
+			// Calculate the time difference in milliseconds
+			auto timeToSleepMs = static_cast<int>((m_dNextFrameTime - m_dTime) * 1000);
+
+			// Sleep for the required duration
+			std::this_thread::sleep_for(std::chrono::milliseconds(timeToSleepMs));
 		}
 
 		if (m_bDebug) {
