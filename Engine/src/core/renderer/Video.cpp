@@ -370,19 +370,13 @@ namespace Phoenix {
 
 	void Video::decode()
 	{
-		if (std::abs(m_dTime - m_dNextFrameTime) > avgFramePeriod() * 2.0) {
-			Logger::info(
-				LogLevel::low,
-				"{}: Seeking {}[stream {}] @ {:.4f}s [desynced by {:.4f}s]...",
-				__FILE__,
-				m_VideoSource.m_sPath,
-				m_VideoSource.m_iVideoStreamIndex,
-				m_dTime,
-				m_dTime - m_dNextFrameTime
-			);
+		bool forceDecode = false;
 
+		if (std::abs(m_dTime - m_dNextFrameTime) > avgFramePeriod() * 2.0) {
+			Logger::info(LogLevel::low, "Seeking {} @ {:.4f}s [desynced by {:.4f}s]...", m_VideoSource.m_sPath, m_dTime, m_dTime - m_dNextFrameTime);
 			seekTime(m_dTime);
-			m_dNextFrameTime = 0.0f;
+			m_dNextFrameTime = m_dTime + avgFramePeriod();
+			forceDecode = true;
 		}
 		else if (m_dTime < m_dNextFrameTime)
 		{
@@ -390,20 +384,15 @@ namespace Phoenix {
 		}
 
 		if (m_bDebug) {
-			Logger::info(
-				LogLevel::low,
-				"{}: Time: {:.4f}s, Next Frame time: {.4f}s",
-				__FILE__,
-				m_dTime,
-				m_dNextFrameTime
-			);
+			Logger::info(LogLevel::low,	"Time: {:.4f}s, Next Frame time: {.4f}s", m_dTime, m_dNextFrameTime);
 		}
 
 		// Retrieve new frame
-		while (m_dNextFrameTime <= m_dTime)
+		while ((m_dNextFrameTime <= m_dTime) || (forceDecode == true))
 		{
 			// fill the Packet with data from the Stream
 			if (av_read_frame(m_pFormatContext, m_pAVPacket) >= 0) {
+				forceDecode = false;
 				// if it's the video stream
 				if (m_pAVPacket->stream_index == m_VideoSource.m_iVideoStreamIndex) {
 					if (decodePacket() < 0)
@@ -413,10 +402,13 @@ namespace Phoenix {
 			else {
 				// Loop: Start the video again
 				seekTime(0);
+				m_dNextFrameTime = avgFramePeriod();
+				forceDecode = true;
 				// av_seek_frame(pFormatContext, video_streaindex, 0, 0);
 			}
 
 			av_packet_unref(m_pAVPacket);
+
 		}
 	}
 
