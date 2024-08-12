@@ -466,7 +466,13 @@ namespace Phoenix {
 			return -5;
 		}
 
-		const auto rc = av_seek_frame(m_pFormatContext, m_VideoSource.m_iVideoStreamIndex, iFrameNumber, 0);
+		/*
+		#define AVSEEK_FLAG_BACKWARD 1 ///< seek backward
+		#define AVSEEK_FLAG_BYTE     2 ///< seeking based on position in bytes
+		#define AVSEEK_FLAG_ANY      4 ///< seek to any frame, even non-keyframes
+		#define AVSEEK_FLAG_FRAME    8 ///< seeking based on frame number
+		 */
+		const auto rc = av_seek_frame(m_pFormatContext, m_VideoSource.m_iVideoStreamIndex, iFrameNumber, AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY | AVSEEK_FLAG_FRAME);
 		switch (rc)
 		{
 		case -EINVAL:
@@ -486,37 +492,6 @@ namespace Phoenix {
 			return -4;
 		}
 
-		// av_seek_frame takes effect after one frame, so I'm decoding one here
-		// so that the next call to decode() will give the correct
-		// frame
-		/*
-		int response;
-		while (av_read_frame(m_pFormatContext, m_pAVPacket) >= 0) {
-			if (m_pAVPacket->stream_index != m_VideoSource.m_iVideoStreamIndex) {
-				av_packet_unref(m_pAVPacket);
-				continue;
-			}
-
-			response = avcodec_send_packet(m_pCodecContext, m_pAVPacket);
-			if (response < 0) {
-				//printf("Failed to decode packet: %s\n", av_make_error(response));
-				return false;
-			}
-
-			response = avcodec_receive_frame(m_pCodecContext, m_pFrame);
-			if (response == AVERROR(EAGAIN) || response == AVERROR_EOF) {
-				av_packet_unref(m_pAVPacket);
-				continue;
-			}
-			else if (response < 0) {
-				//printf("Failed to decode packet: %s\n", av_make_error(response));
-				return false;
-			}
-
-			av_packet_unref(m_pAVPacket);
-			break;
-		}
-		*/
 		return iFrameNumber;
 	}
 
@@ -564,7 +539,17 @@ namespace Phoenix {
 				);
 
 				m_bNewFrame = true;
-				m_dNextFrameTime = m_dTime + avgFramePeriod();
+				// Calculate the exact display time based on PTS
+				if (m_pFrame->pts != AV_NOPTS_VALUE)
+				{
+					// Convert the PTS (presentation timestamp) to seconds
+					m_dNextFrameTime = av_q2d(m_pFormatContext->streams[m_VideoSource.m_iVideoStreamIndex]->time_base) * m_pFrame->pts;
+				}
+				else
+				{
+					//Logger::warning("{}: PTS is invalid or unavailable, using avgFramePeriod.", __FILE__);
+					m_dNextFrameTime = m_dTime + avgFramePeriod(); // Fallback if no PTS is available
+				}
 			}
 		}
 
