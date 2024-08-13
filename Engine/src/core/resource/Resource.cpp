@@ -51,8 +51,8 @@ namespace Phoenix {
 	Resource::Resource()
 		:
 		m_demo(*DEMO),
-		m_gridSize(1.0f),
-		m_gridSlices(11)
+		m_gridSize(10.0f),
+		m_gridSlices(10)
 	{
 	}
 
@@ -248,7 +248,7 @@ namespace Phoenix {
 		std::vector<glm::vec3> vertices;
 		std::vector<uint32_t> indices;
 
-		float start = -0.5;
+		float start = 0.0f;
 		float step = 1.0f / static_cast<float>(m_gridSlices);
 
 		for (int j = 0; j <= m_gridSlices; ++j) {

@@ -70,7 +70,6 @@ namespace Phoenix {
 		m_expandAllSoundSectionsChanged(true)
 	{
 		show_info = m_demo.m_debug;	// if we are on debug, we show the fps info by default
-		show_log = m_demo.m_debug; // if we are on debug, the log is opened by default
 		
 		// Window: Info
 		m_info.demoStatus = "";
@@ -656,19 +655,11 @@ namespace Phoenix {
 		ImGui::Checkbox("Draw X Axis", &m_demo.m_debugDrawGridAxisX); ImGui::SameLine();
 		ImGui::Checkbox("Draw Y Axis", &m_demo.m_debugDrawGridAxisY); ImGui::SameLine();
 		ImGui::Checkbox("Draw Z Axis", &m_demo.m_debugDrawGridAxisZ);
-		if (ImGui::SliderFloat("Size", &m_demo.m_pRes->m_gridSize, 0, 50, "%.1f")) {
-			if (m_demo.m_pRes->m_gridSize < 0)
-				m_demo.m_pRes->m_gridSize = 0;
-			if (m_demo.m_pRes->m_gridSize > 50)
-				m_demo.m_pRes->m_gridSize = 50;
+		if (ImGui::SliderFloat("Size", &m_demo.m_pRes->m_gridSize, 1, 50)) {
 			m_demo.m_pRes->loadGrid();
 		}
 
 		if (ImGui::SliderInt("Slices", &m_demo.m_pRes->m_gridSlices, 1, 100)) {
-			if (m_demo.m_pRes->m_gridSlices < 1)
-				m_demo.m_pRes->m_gridSlices = 1;
-			if (m_demo.m_pRes->m_gridSlices > 100)
-				m_demo.m_pRes->m_gridSlices = 100;
 			m_demo.m_pRes->loadGrid();
 		}
 

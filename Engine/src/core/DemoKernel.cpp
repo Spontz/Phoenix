@@ -289,7 +289,7 @@ namespace Phoenix {
 		m_debug(false),
 		m_logLevel(LogLevel::high),
 #endif
-		m_debugEnableGrid(true),
+		m_debugEnableGrid(false),
 		m_debugDrawGridAxisX(true),
 		m_debugDrawGridAxisY(true),
 		m_debugDrawGridAxisZ(true),
