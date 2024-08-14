@@ -28,6 +28,7 @@ namespace Phoenix {
 		DrawSceneMatrixInstanced,
 		DrawSceneMatrixInstancedFolder,
 		DrawParticles,
+		DrawParticlesFbo,
 		DrawParticlesImage,
 		DrawParticlesScene,
 		DrawEmitterScene,

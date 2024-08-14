@@ -32,6 +32,7 @@ namespace Phoenix {
 		{"drawQuad",						SectionType::DrawQuad, instance_drawQuad},
 		{"drawFbo",							SectionType::DrawFbo, instance_drawFbo},
 		{"drawParticles",					SectionType::DrawParticles, instance_drawParticles},
+		{"drawParticlesFbo",				SectionType::DrawParticlesFbo, instance_drawParticlesFbo},
 		{"drawParticlesImage",				SectionType::DrawParticlesImage, instance_drawParticlesImage},
 		{"drawParticlesScene",				SectionType::DrawParticlesScene, instance_drawParticlesScene},
 		{"drawEmitterScene",				SectionType::DrawEmitterScene, instance_drawEmitterScene},
