@@ -25,6 +25,7 @@ namespace Phoenix {
 		Fbo* m_pFbo = nullptr;
 		uint32_t		m_uFboNum = 0;
 		uint32_t		m_uFboAttachment = 0;
+		int32_t			m_iFboTexUnitID = 0;
 
 		bool		m_bFullscreen = true;		// Draw image at fullscreen?
 		bool		m_bFitToContent = false;	// Fit to content: true:respect image aspect ratio, false:stretch to viewport/quad
@@ -132,6 +133,9 @@ namespace Phoenix {
 
 		// Set shader variables
 		m_pVars->setValues();
+
+		// Set FBO Texture unit ID, which will be the last of all the sampler2D that we have in all the shader variables
+		m_iFboTexUnitID = static_cast<int32_t>(m_pVars->sampler2D.size());
 		
 		return !DEMO_checkGLError();
 	}
@@ -199,12 +203,13 @@ namespace Phoenix {
 
 			mModel = glm::scale(mModel, glm::vec3(fXScale, fYScale, 0.0f));
 			m_pShader->setValue("model", mModel);
-			m_pShader->setValue("screenTexture", 0);
+			// Send the "screenTexture".. TODO: Maybe we should get rid of this hardcode and send it in the m_pVars shader vars
+			m_pShader->setValue("screenTexture", m_iFboTexUnitID);
+			m_pFbo->bind_tex(m_iFboTexUnitID, m_uFboAttachment);
+
 			// Set other shader variables values
 			m_pVars->setValues();
-			// Set the FBO texture ID
-			m_pFbo->bind_tex(0, m_uFboAttachment);
-
+			
 			m_demo.m_pRes->drawQuadFS(); // Draw a quad with the video
 		}
 		// End evaluating blending and set render states back

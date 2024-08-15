@@ -11,7 +11,7 @@
 
 static constexpr uint32_t PHOENIX_MAJOR_VERSION = 2;
 static constexpr uint32_t PHOENIX_MINOR_VERSION = 6;
-static constexpr uint32_t PHOENIX_BUILD_VERSION = 7;
+static constexpr uint32_t PHOENIX_BUILD_VERSION = 8;
 
 static constexpr uint32_t FBO_BUFFERS = 25;
 static constexpr uint32_t FBO_MAX_COLOR_ATTACHMENTS = 4;

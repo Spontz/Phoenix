@@ -30,6 +30,7 @@ namespace Phoenix {
 		float		m_fvideoRunTime = 0.0f;
 		float		m_fvideoDuration = 0.0f;
 		SP_Video	m_pVideo;
+		int32_t		m_iVideoTexUnitID = 0;
 		SP_Shader	m_pShader;
 		MathDriver*	m_pExprPosition = nullptr;	// A equation containing the calculations to position the object
 		ShaderVars* m_pVars = nullptr;	// Shader variables
@@ -123,6 +124,10 @@ namespace Phoenix {
 
 		// Set shader variables
 		m_pVars->setValues();
+
+		// Set Video Texture unit ID, which will be the last of all the sampler2D that we have in all the shader variables
+		m_iVideoTexUnitID = static_cast<int32_t>(m_pVars->sampler2D.size());
+
 		
 		return !DEMO_checkGLError();
 	}
@@ -196,12 +201,12 @@ namespace Phoenix {
 
 			mModel = glm::scale(mModel, glm::vec3(fXScale, fYScale, 0.0f));
 			m_pShader->setValue("model", mModel);
-			m_pShader->setValue("screenTexture", 0);
+			m_pShader->setValue("screenTexture", m_iVideoTexUnitID);
+			m_pVideo->bind(m_iVideoTexUnitID);
+
 			// Set other shader variables values
 			m_pVars->setValues();
-			m_pVideo->bind(0); // todo: from SPO maybe?
 			m_demo.m_pRes->drawQuadFS(); // Draw a quad with the video
-
 		}
 
 		// End evaluating blending and set render states back

@@ -24,6 +24,7 @@ namespace Phoenix {
 		Fbo*			m_pFbo = nullptr;
 		uint32_t		m_uFboNum = 0;
 		uint32_t		m_uFboAttachment = 0;
+		int32_t			m_iFboTexUnitID = 0;
 
 		// Fbo drawing properties
 		bool			m_bFitToContent = false;	// Fit to content: true:respect image aspect ratio, false:stretch to viewport/quad
@@ -247,6 +248,9 @@ namespace Phoenix {
 		// Set shader variables
 		m_pVars->setValues();
 
+		// Set FBO Texture unit ID, which will be the last of all the sampler2D that we have in all the shader variables
+		m_iFboTexUnitID = static_cast<int32_t>(m_pVars->sampler2D.size());
+
 		return !DEMO_checkGLError();
 	}
 
@@ -290,15 +294,11 @@ namespace Phoenix {
 		m_pShader->use();
 		m_pShader->setValue("m4ViewModel", view * model);	// Set View x Model matrix
 		m_pShader->setValue("m4Projection", projection);
-				 
+		m_pShader->setValue("screenTexture", m_iFboTexUnitID);	// Send the fbo to the shader, so we can read the color value inside the shader
+		m_pFbo->bind_tex(m_iFboTexUnitID, m_uFboAttachment);
+
 		// Set the other shader variable values
 		m_pVars->setValues();
-
-		// Send the screenTexture.. TODO: Maybe we should get rid of this hardcode and send it in the m_pVars shader vars
-		m_pShader->setValue("screenTexture", static_cast<int32_t>(m_pVars->sampler2D.size()));	// Send the fbo to the shader, so we can read the color value inside the shader
-		// Set the FBO texture ID
-		m_pFbo->bind_tex(static_cast<int32_t>(m_pVars->sampler2D.size()), m_uFboAttachment);
-
 
 		// Render particles
 		m_pParticleMesh->render();
