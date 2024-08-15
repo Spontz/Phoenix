@@ -134,7 +134,7 @@ namespace Phoenix {
 		// Load particle positioning
 		m_pExprPosition = new MathDriver(this);
 		// Load all the other strings
-		for (int i = 2; i < strings.size(); i++)
+		for (int i = 1; i < strings.size(); i++)
 			m_pExprPosition->expression += strings[i];
 
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
