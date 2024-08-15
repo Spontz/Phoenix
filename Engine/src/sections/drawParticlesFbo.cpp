@@ -290,13 +290,15 @@ namespace Phoenix {
 		m_pShader->use();
 		m_pShader->setValue("m4ViewModel", view * model);	// Set View x Model matrix
 		m_pShader->setValue("m4Projection", projection);
-		m_pShader->setValue("screenTexture", 0);	// Send the fbo to the shader, so we can read the color value inside the shader
-
+				 
 		// Set the other shader variable values
 		m_pVars->setValues();
 
+		// Send the screenTexture.. TODO: Maybe we should get rid of this hardcode and send it in the m_pVars shader vars
+		m_pShader->setValue("screenTexture", static_cast<int32_t>(m_pVars->sampler2D.size()));	// Send the fbo to the shader, so we can read the color value inside the shader
 		// Set the FBO texture ID
-		m_pFbo->bind_tex(0, m_uFboAttachment);
+		m_pFbo->bind_tex(static_cast<int32_t>(m_pVars->sampler2D.size()), m_uFboAttachment);
+
 
 		// Render particles
 		m_pParticleMesh->render();

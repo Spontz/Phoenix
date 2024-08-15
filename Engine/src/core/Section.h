@@ -18,6 +18,7 @@ namespace Phoenix {
 		ObjectShader,
 		ObjectAnimShader,
 		DrawImage,
+		DrawImageFbo,
 		DrawSkybox,
 		DrawVideo,
 		DrawQuad,

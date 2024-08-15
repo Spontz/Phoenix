@@ -27,6 +27,7 @@ namespace Phoenix {
 		{"drawSceneMatrixInstanced",		SectionType::DrawSceneMatrixInstanced, instance_drawSceneMatrixInstanced},
 		{"drawSceneMatrixInstancedFolder",	SectionType::DrawSceneMatrixInstancedFolder, instance_drawSceneMatrixInstancedFolder},
 		{"drawImage",						SectionType::DrawImage, instance_drawImage},
+		//{"drawImageFbo",					SectionType::DrawImageFbo, instance_drawImageFbo},
 		{"drawSkybox",						SectionType::DrawSkybox, instance_drawSkybox},
 		{"drawVideo",						SectionType::DrawVideo, instance_drawVideo},
 		{"drawQuad",						SectionType::DrawQuad, instance_drawQuad},

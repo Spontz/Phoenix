@@ -2,12 +2,15 @@
 #include "core/drivers/mathdriver.h"
 #include "core/renderer/ShaderVars.h"
 
+
+// TODO: Pintar una FBO pudiendo elegir el shader y posicionandola en la pantalla como hacemos con el drawImage
+
 namespace Phoenix {
 
-	class sDrawImage final : public Section {
+	class sDrawImageFbo final : public Section {
 	public:
-		sDrawImage();
-		~sDrawImage();
+		sDrawImageFbo();
+		~sDrawImageFbo();
 
 	public:
 		bool		load();
@@ -18,6 +21,11 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
+		// Fbo to draw
+		Fbo* m_pFbo = nullptr;
+		uint32_t		m_uFboNum = 0;
+		uint32_t		m_uFboAttachment = 0;
+
 		bool		m_bFullscreen = true;		// Draw image at fullscreen?
 		bool		m_bFitToContent = false;	// Fit to content: true:respect image aspect ratio, false:stretch to viewport/quad
 		bool		m_bFilter = true;			// Use Bilinear filter?
@@ -28,7 +36,6 @@ namespace Phoenix {
 
 		float		m_fTexAspectRatio = 1.0f;
 		float		m_fRenderAspectRatio = 1.0f;
-		SP_Texture	m_pTexture;
 		SP_Shader	m_pShader;
 		MathDriver* m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
 		ShaderVars* m_pVars = nullptr;			// For storing any other shader variables
@@ -36,17 +43,17 @@ namespace Phoenix {
 
 	// ******************************************************************
 
-	Section* instance_drawImage()
+	Section* instance_drawImageFbo()
 	{
-		return new sDrawImage();
+		return new sDrawImageFbo();
 	}
 
-	sDrawImage::sDrawImage()
+	sDrawImageFbo::sDrawImageFbo()
 	{
-		type = SectionType::DrawImage;
+		type = SectionType::DrawImageFbo;
 	}
 
-	sDrawImage::~sDrawImage()
+	sDrawImageFbo::~sDrawImageFbo()
 	{
 		if (m_pExprPosition)
 			delete m_pExprPosition;
@@ -54,41 +61,49 @@ namespace Phoenix {
 			delete m_pVars;
 	}
 
-	bool sDrawImage::load()
+	bool sDrawImageFbo::load()
 	{
-		if ((param.size() != 5) || (strings.size() < 5)) {
+		if ((param.size() != 7) || (strings.size() < 4)) {
 			Logger::error(
-				"DrawImage [{}]: 5 param needed (Clear screen buffer, clear depth buffer, fullscreen, "
-				"fit to content & filter) and 5 strings needed (Image, shader and 3 for position)",
+				"DrawImageFbo [{}]: 7 param needed (Fbo Number, Fbo Attachment, Clear screen buffer, clear depth buffer, fullscreen, "
+				"fit to content & filter) and 4 strings needed (shader and 3 for position)",
 				identifier
 			);
 			return false;
 		}
 
 		render_disableDepthTest = true;
-		render_clearColor = static_cast<bool>(param[0]);
-		render_clearDepth = static_cast<bool>(param[1]);
-		m_bFullscreen = static_cast<bool>(param[2]);
-		m_bFitToContent = static_cast<bool>(param[3]);
-		m_bFilter = static_cast<bool>(param[4]);
 
-		// Load the Image
-		Texture::Properties texProps;
-		texProps.m_useLinearFilter = m_bFilter;
-		m_pTexture = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + strings[0], texProps);
-		if (!m_pTexture)
+		// Load Fbo number
+		m_uFboNum = static_cast<uint32_t>(param[0]);
+		m_uFboAttachment = static_cast<uint32_t>(param[1]);
+
+
+		render_clearColor = static_cast<bool>(param[2]);
+		render_clearDepth = static_cast<bool>(param[3]);
+		m_bFullscreen = static_cast<bool>(param[4]);
+		m_bFitToContent = static_cast<bool>(param[5]);
+		m_bFilter = static_cast<bool>(param[6]);
+
+		// Check for the right parameter values
+		if (m_uFboNum >= FBO_BUFFERS) {
+			Logger::error("Draw Image Fbo [{}]: Invalid fbo number: {}", identifier, m_uFboNum);
 			return false;
-		m_fTexAspectRatio = static_cast<float>(m_pTexture->m_width) / static_cast<float>(m_pTexture->m_height);
+		}
+
+		m_pFbo = m_demo.m_fboManager.fbo[m_uFboNum];
+
+		m_fTexAspectRatio = static_cast<float>(m_pFbo->width) / static_cast<float>(m_pFbo->height);
 
 		// Load the Shader
-		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[1]);
+		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
 		if (!m_pShader)
 			return false;
 
 		// Load the formmula containing the Image position and scale
 		m_pExprPosition = new MathDriver(this);
 		// Load positions, process constants and compile expression
-		for (size_t i = 2; i < strings.size(); i++)
+		for (size_t i = 1; i < strings.size(); i++)
 			m_pExprPosition->expression += strings[i];
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
 		m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
@@ -100,8 +115,8 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
 		m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
 		// Add constants
-		m_pExprPosition->SymbolTable.add_constant("texWidth", static_cast<float>(m_pTexture->m_width));
-		m_pExprPosition->SymbolTable.add_constant("texHeight", static_cast<float>(m_pTexture->m_height));
+		m_pExprPosition->SymbolTable.add_constant("fboWidth", static_cast<float>(m_pFbo->width));
+		m_pExprPosition->SymbolTable.add_constant("fboHeight", static_cast<float>(m_pFbo->height));
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
@@ -121,16 +136,16 @@ namespace Phoenix {
 		return !DEMO_checkGLError();
 	}
 
-	void sDrawImage::init()
+	void sDrawImageFbo::init()
 	{
 	}
 
-	void sDrawImage::warmExec()
+	void sDrawImageFbo::warmExec()
 	{
 		exec();
 	}
 
-	void sDrawImage::exec()
+	void sDrawImageFbo::exec()
 	{
 		// Start set render states and evaluating blending
 		setRenderStatesStart();
@@ -187,7 +202,9 @@ namespace Phoenix {
 			m_pShader->setValue("screenTexture", 0);
 			// Set other shader variables values
 			m_pVars->setValues();
-			m_pTexture->bind();
+			// Set the FBO texture ID
+			m_pFbo->bind_tex(0, m_uFboAttachment);
+
 			m_demo.m_pRes->drawQuadFS(); // Draw a quad with the video
 		}
 		// End evaluating blending and set render states back
@@ -195,18 +212,21 @@ namespace Phoenix {
 		setRenderStatesEnd();
 	}
 
-	void sDrawImage::loadDebugStatic()
+	void sDrawImageFbo::loadDebugStatic()
 	{
 		std::stringstream ss;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
-		ss << "File: " << m_pTexture->m_filename << std::endl;
+		ss << "Fbo num: " << m_uFboNum << std::endl;
+		ss << "Fbo attachment: " << m_uFboAttachment << std::endl;
+		ss << "Width: " << m_pFbo->width << std::endl;
+		ss << "Height: " << m_pFbo->height << std::endl;
 		ss << "Fullscreen: " << (m_bFullscreen ? "Yes":"No") << std::endl;
 		ss << "Fit To Content: " << (m_bFitToContent ? "Yes":"No") << std::endl;
 		ss << "Bilinear filter: " << (m_bFilter ? "Yes":"No") << std::endl;
 		debugStatic = ss.str();
 	}
 
-	std::string sDrawImage::debug()
+	std::string sDrawImageFbo::debug()
 	{
 		std::stringstream ss;
 		ss << debugStatic;
