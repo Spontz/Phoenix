@@ -184,6 +184,10 @@ namespace Phoenix {
 		{
 		case CameraMode::FREE:				// FREE camera: Do nothing
 			m_demo.m_cameraManager.setInternalCameraAsActive();
+			// Capture camera position if needed
+			if (m_demo.m_cameraManager.m_bCapturePosition) {
+				m_demo.m_cameraManager.captureActiveCameraPosition(identifier);
+			}
 			return;
 			break;
 		case CameraMode::ONLY_SPLINE:		// Only spline: Do not use formulas
@@ -227,11 +231,6 @@ namespace Phoenix {
 		m_pCam->setFrustum(m_fCamFinalFrustumNear, m_fCamFinalFrustumFar);
 
 		m_demo.m_cameraManager.setActiveCamera(m_pCam);
-
-		// Capture camera position if needed
-		if (m_demo.m_cameraManager.m_bCapturePosition) {
-			m_demo.m_cameraManager.captureActiveCameraPosition(identifier);
-		}
 	}
 
 	void sCameraFPS::loadDebugStatic()
