@@ -65,7 +65,9 @@ namespace Phoenix {
 	}
 
 	void sSound::init() {
+		m_pSound->stopSound();
 		m_pSound->seekSound(runTime);
+		m_pSound->playSound();
 	}
 
 	void sSound::exec() {
