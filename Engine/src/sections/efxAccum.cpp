@@ -106,7 +106,7 @@ namespace Phoenix {
 
 	void sEfxAccum::init()
 	{
-
+		m_demo.m_efxAccumFbo.clearFbosColor();
 	}
 
 	void sEfxAccum::warmExec()
@@ -116,6 +116,10 @@ namespace Phoenix {
 
 	void sEfxAccum::exec()
 	{
+		// Check if ne need to clear buffers first
+		if (m_lastTime >= runTime)
+			m_demo.m_efxAccumFbo.clearFbosColor();
+
 		// Start set render states and evaluating blending
 		setRenderStatesStart();
 		EvalBlendingStart();

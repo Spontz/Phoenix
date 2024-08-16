@@ -14,8 +14,8 @@ namespace Phoenix {
 	Section* instance_fboBind();
 	Section* instance_fboUnbind();
 	Section* instance_drawImage();
-	Section* instance_drawImageFbo();
 	Section* instance_drawFbo();
+	Section* instance_drawFbo2();
 	Section* instance_drawSkybox();
 	Section* instance_drawVideo();
 	Section* instance_drawQuad();

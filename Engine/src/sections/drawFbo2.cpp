@@ -7,10 +7,10 @@
 
 namespace Phoenix {
 
-	class sDrawImageFbo final : public Section {
+	class sDrawFbo2 final : public Section {
 	public:
-		sDrawImageFbo();
-		~sDrawImageFbo();
+		sDrawFbo2();
+		~sDrawFbo2();
 
 	public:
 		bool		load();
@@ -27,8 +27,8 @@ namespace Phoenix {
 		uint32_t		m_uFboAttachment = 0;
 		int32_t			m_iFboTexUnitID = 0;
 
-		bool		m_bFullscreen = true;		// Draw image at fullscreen?
-		bool		m_bFitToContent = false;	// Fit to content: true:respect image aspect ratio, false:stretch to viewport/quad
+		bool		m_bFullscreen = true;		// Draw Fbo at fullscreen?
+		bool		m_bFitToContent = false;	// Fit to content: true:respect fbo aspect ratio, false:stretch to viewport/quad
 		bool		m_bFilter = true;			// Use Bilinear filter?
 
 		glm::vec3	m_vTranslation = { 0, 0, 0 };
@@ -44,17 +44,17 @@ namespace Phoenix {
 
 	// ******************************************************************
 
-	Section* instance_drawImageFbo()
+	Section* instance_drawFbo2()
 	{
-		return new sDrawImageFbo();
+		return new sDrawFbo2();
 	}
 
-	sDrawImageFbo::sDrawImageFbo()
+	sDrawFbo2::sDrawFbo2()
 	{
-		type = SectionType::DrawImageFbo;
+		type = SectionType::DrawFbo2;
 	}
 
-	sDrawImageFbo::~sDrawImageFbo()
+	sDrawFbo2::~sDrawFbo2()
 	{
 		if (m_pExprPosition)
 			delete m_pExprPosition;
@@ -62,11 +62,11 @@ namespace Phoenix {
 			delete m_pVars;
 	}
 
-	bool sDrawImageFbo::load()
+	bool sDrawFbo2::load()
 	{
 		if ((param.size() != 7) || (strings.size() < 4)) {
 			Logger::error(
-				"DrawImageFbo [{}]: 7 param needed (Fbo Number, Fbo Attachment, Clear screen buffer, clear depth buffer, fullscreen, "
+				"DrawFbo2 [{}]: 7 param needed (Fbo Number, Fbo Attachment, Clear screen buffer, clear depth buffer, fullscreen, "
 				"fit to content & filter) and 4 strings needed (shader and 3 for position)",
 				identifier
 			);
@@ -88,7 +88,7 @@ namespace Phoenix {
 
 		// Check for the right parameter values
 		if (m_uFboNum >= FBO_BUFFERS) {
-			Logger::error("Draw Image Fbo [{}]: Invalid fbo number: {}", identifier, m_uFboNum);
+			Logger::error("DrawFbo2 [{}]: Invalid fbo number: {}", identifier, m_uFboNum);
 			return false;
 		}
 
@@ -140,17 +140,23 @@ namespace Phoenix {
 		return !DEMO_checkGLError();
 	}
 
-	void sDrawImageFbo::init()
+	void sDrawFbo2::init()
 	{
 	}
 
-	void sDrawImageFbo::warmExec()
+	void sDrawFbo2::warmExec()
 	{
 		exec();
 	}
 
-	void sDrawImageFbo::exec()
+	void sDrawFbo2::exec()
 	{
+		// We add this to prevent an error if the screen is resized during execution time
+		if (m_pFbo != m_demo.m_fboManager.fbo[m_uFboNum]) {
+			this->load(); // Reload the section, and recalculate the particles position, color, etc... based on the new FBO created after FBO resize
+			this->loadDebugStatic();
+		}
+
 		// Start set render states and evaluating blending
 		setRenderStatesStart();
 		EvalBlendingStart();
@@ -203,7 +209,6 @@ namespace Phoenix {
 
 			mModel = glm::scale(mModel, glm::vec3(fXScale, fYScale, 0.0f));
 			m_pShader->setValue("model", mModel);
-			// Send the "screenTexture".. TODO: Maybe we should get rid of this hardcode and send it in the m_pVars shader vars
 			m_pShader->setValue("screenTexture", m_iFboTexUnitID);
 			m_pFbo->bind_tex(m_iFboTexUnitID, m_uFboAttachment);
 
@@ -217,7 +222,7 @@ namespace Phoenix {
 		setRenderStatesEnd();
 	}
 
-	void sDrawImageFbo::loadDebugStatic()
+	void sDrawFbo2::loadDebugStatic()
 	{
 		std::stringstream ss;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
@@ -231,7 +236,7 @@ namespace Phoenix {
 		debugStatic = ss.str();
 	}
 
-	std::string sDrawImageFbo::debug()
+	std::string sDrawFbo2::debug()
 	{
 		std::stringstream ss;
 		ss << debugStatic;
