@@ -35,9 +35,12 @@ namespace Phoenix {
 		);
 		void drawSkybox(SP_Cubemap spCubemap); // Draws a skybox for a given cubemap texture
 		void drawCube(); // Draws a cube
-		void drawOneGrid(glm::vec3 const& color, glm::mat4 const* pWVP);
-		void draw3DGrid(bool drawAxisX, bool drawAxisY, bool drawAxisZ);
-		void loadGrid();
+		void loadAxisLine();
+		void drawAxis(bool drawAxisX, bool drawAxisY, bool drawAxisZ);
+		void drawLine(glm::vec3 const& color, glm::mat4 const* MVP);
+		void drawFloor();
+		void drawGrid(glm::vec3 const& color, glm::mat4 const* pWVP);
+		void loadFloor();
 
 	private:
 		void loadObjQuadFullscreen();
@@ -71,5 +74,6 @@ namespace Phoenix {
 		SP_VertexArray m_spQuadFullScreen;
 		SP_VertexArray m_spCube;
 		SP_VertexArray m_spGrid;
+		SP_VertexArray m_spAxisLine;
 	};
 }

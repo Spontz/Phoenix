@@ -14,8 +14,10 @@ namespace Phoenix {
 		loadObjQuadFullscreen();
 		loadObjSkybox();
 		loadObjCube();
-		// Load grid
-		loadGrid();
+		// Load floor
+		loadFloor();
+		// Load Axis Line
+		loadAxisLine();
 		// Load Shaders
 		loadShaders();
 		// Load Textures
@@ -32,6 +34,7 @@ namespace Phoenix {
 		m_spSkybox.reset();
 		m_spCube.reset();
 		m_spGrid.reset();
+		m_spAxisLine.reset();
 
 		// Textures
 		m_spTVImage.reset();
@@ -243,12 +246,12 @@ namespace Phoenix {
 		m_demo.m_lightManager.addLight(LightType::PointLight);
 	}
 
-	void Resource::loadGrid()
+	void Resource::loadFloor()
 	{
 		std::vector<glm::vec3> vertices;
 		std::vector<uint32_t> indices;
 
-		float start = 0.0f;
+		float start = 0;
 		float step = 1.0f / static_cast<float>(m_gridSlices);
 
 		for (int j = 0; j <= m_gridSlices; ++j) {
@@ -296,6 +299,37 @@ namespace Phoenix {
 		m_spGrid->SetIndexBuffer(spIB);
 
 		m_spGrid->unbind();
+	}
+
+	void Resource::loadAxisLine()
+	{
+		std::vector<glm::vec3> vertices;
+		std::vector<uint32_t> indices;
+	
+		vertices.push_back(glm::vec3(0, 0, 0));
+		vertices.push_back(glm::vec3(1, 0, 0));
+
+
+		indices.push_back(0);
+		indices.push_back(1);
+
+		// Creatr the Vertex Array
+		m_spAxisLine = std::make_shared<VertexArray>();
+
+		// Create & Load the Vertex Buffer
+		auto spVB = std::make_shared<VertexBuffer>(
+			&vertices[0],
+			static_cast<uint32_t>(sizeof(glm::vec3)) * static_cast<uint32_t>(vertices.size())
+		);
+
+		spVB->SetLayout({ {ShaderDataType::Float3, "aPos"} });
+		m_spAxisLine->AddVertexBuffer(spVB);
+
+		// Create & Load the Index Buffer :: Not really needed since the vertice are already sorted
+		auto spIB = std::make_shared<IndexBuffer>(indices.data(), static_cast<uint32_t>(indices.size()));
+		m_spAxisLine->SetIndexBuffer(spIB);
+
+		m_spAxisLine->unbind();
 	}
 
 	// Draw a Quad with texture in full screen with alpha
@@ -382,7 +416,7 @@ namespace Phoenix {
 		m_spCube->unbind();
 	}
 
-	void Resource::drawOneGrid(glm::vec3 const& color, glm::mat4 const* MVP)
+	void Resource::drawGrid(glm::vec3 const& color, glm::mat4 const* MVP)
 	{
 		if (!m_spShdrGrid)
 			return;
@@ -398,7 +432,24 @@ namespace Phoenix {
 		m_spGrid->unbind();
 	}
 
-	void Resource::draw3DGrid(bool drawAxisX, bool drawAxisY, bool drawAxisZ)
+	void Resource::drawFloor()
+	{
+		glm::mat4 MVP;
+		glm::mat4 VP;
+
+		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
+		glm::mat4 view = m_demo.m_cameraManager.getActiveView();
+
+		VP = projection * view;
+
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-m_gridSize / 2.0f, -0.01f, -m_gridSize / 2.0f));
+		MVP = VP * model;
+
+		drawGrid(glm::vec3(0.2, 0.2, 0.2), &MVP);
+	}
+
+	void Resource::drawAxis(bool drawAxisX, bool drawAxisY, bool drawAxisZ)
 	{
 		glm::mat4 MVP;
 		glm::mat4 VP;
@@ -414,26 +465,43 @@ namespace Phoenix {
 		if (drawAxisX)
 		{
 			MVP = VP * model;
-			drawOneGrid(glm::vec3(1, 0, 0), &MVP);
+			drawLine(glm::vec3(1, 0, 0), &MVP);
 		}
 
 		// Y Axis
 		if (drawAxisY)
 		{
 			model = glm::mat4(1.0f);
-			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 0, 1));
 			MVP = VP * model;
-			drawOneGrid(glm::vec3(0, 1, 0), &MVP);
+			drawLine(glm::vec3(0, 1, 0), &MVP);
 		}
 
 		// Z Axis
 		if (drawAxisZ)
 		{
 			model = glm::mat4(1.0f);
-			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 0, 1));
+			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0, 1, 0));
 			MVP = VP * model;
-			drawOneGrid(glm::vec3(0, 0, 1), &MVP);
+			drawLine(glm::vec3(0, 0, 1), &MVP);
 		}
+	}
+
+
+	void Resource::drawLine(glm::vec3 const& color, glm::mat4 const* MVP)
+	{
+		if (!m_spShdrGrid)
+			return;
+
+		glEnable(GL_DEPTH_TEST);
+		m_spShdrGrid->use();
+		m_spShdrGrid->setValue("MVP", *MVP);
+		m_spShdrGrid->setValue("color", color);
+
+		m_spAxisLine->bind();
+
+		glDrawElements(GL_LINES, m_spAxisLine->getIndexBuffer()->GetCount(), GL_UNSIGNED_INT, NULL);
+		m_spAxisLine->unbind();
 	}
 
 }

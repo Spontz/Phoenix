@@ -169,10 +169,12 @@ namespace Phoenix {
 		bool m_loop;
 		bool m_sound;
 		float m_debugFontSize;
-		bool m_debugEnableGrid;
-		bool m_debugDrawGridAxisX;
-		bool m_debugDrawGridAxisY;
-		bool m_debugDrawGridAxisZ;
+		bool m_debugEnableAxis;
+		bool m_debugEnableFloor;
+
+		bool m_debugDrawAxisX;
+		bool m_debugDrawAxisY;
+		bool m_debugDrawAxisZ;
 
 		int8_t m_status;		// Demo status (play, pause, loading, etc.)
 		int8_t m_specialEvent;	// Demo special events (seek time)

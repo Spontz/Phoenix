@@ -634,7 +634,7 @@ namespace Phoenix {
 
 	void ImGuiLayer::drawConfig()
 	{
-		ImVec2 size = ImVec2(static_cast<float>(m_vp.width) / 1.75f, 160.0f);
+		ImVec2 size = ImVec2(static_cast<float>(m_vp.width) / 1.75f, 190.0f);
 		ImVec2 pos = ImVec2(m_vp.width + m_vp.x - size.x, m_vp.height + m_vp.y - size.y);
 		ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
@@ -651,16 +651,17 @@ namespace Phoenix {
 
 		
 		// Grid config
-		ImGui::Checkbox("Enable grid", &m_demo.m_debugEnableGrid);
-		ImGui::Checkbox("Draw X Axis", &m_demo.m_debugDrawGridAxisX); ImGui::SameLine();
-		ImGui::Checkbox("Draw Y Axis", &m_demo.m_debugDrawGridAxisY); ImGui::SameLine();
-		ImGui::Checkbox("Draw Z Axis", &m_demo.m_debugDrawGridAxisZ);
-		if (ImGui::SliderFloat("Size", &m_demo.m_pRes->m_gridSize, 1, 50)) {
-			m_demo.m_pRes->loadGrid();
+		ImGui::Checkbox("Enable Axis", &m_demo.m_debugEnableAxis);
+		ImGui::Checkbox("Draw X Axis", &m_demo.m_debugDrawAxisX); ImGui::SameLine();
+		ImGui::Checkbox("Draw Y Axis", &m_demo.m_debugDrawAxisY); ImGui::SameLine();
+		ImGui::Checkbox("Draw Z Axis", &m_demo.m_debugDrawAxisZ);
+		ImGui::Checkbox("Enable floor", &m_demo.m_debugEnableFloor);
+		if (ImGui::SliderFloat("Floor size", &m_demo.m_pRes->m_gridSize, 1, 50)) {
+			m_demo.m_pRes->loadFloor();
 		}
 
-		if (ImGui::SliderInt("Slices", &m_demo.m_pRes->m_gridSlices, 1, 100)) {
-			m_demo.m_pRes->loadGrid();
+		if (ImGui::SliderInt("Floor slices", &m_demo.m_pRes->m_gridSlices, 1, 100)) {
+			m_demo.m_pRes->loadFloor();
 		}
 
 		ImGui::End();
