@@ -113,11 +113,13 @@ namespace Phoenix {
 			break;
 		}
 
-		// Load the camera splines (if any)
-		for (int i = 0; i < spline.size(); i++) {
-			if (spline[i]->load() == false) {
-				Logger::error("Camera Target [{}]: Spline not loaded", identifier);
-				return false;
+		// Load the camera splines (if any), only if we are going to use the spline formula
+		if ((m_iCameraMode == CameraMode::ONLY_SPLINE) || (m_iCameraMode == CameraMode::SPLINE_AND_FORMULA)) {
+			for (int i = 0; i < spline.size(); i++) {
+				if (spline[i]->load() == false) {
+					Logger::error("Camera Target [{}]: Spline not loaded", identifier);
+					return false;
+				}
 			}
 		}
 		

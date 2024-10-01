@@ -890,11 +890,13 @@ namespace Phoenix {
 			// Show axis only if we are in Debug
 			if (m_debug && m_debugEnableAxis) {
 				PX_PROFILE_SCOPE("SectionsLayer::DrawAxis (debug)");
+				m_cameraManager.setInternalCameraAsActive();
 				m_pRes->drawAxis(m_debugDrawAxisX, m_debugDrawAxisY, m_debugDrawAxisZ);
 			}
 			// Show floor grid only if we are in Debug
 			if (m_debug && m_debugEnableFloor) {
 				PX_PROFILE_SCOPE("SectionsLayer::DrawFloor (debug)");
+				m_cameraManager.setInternalCameraAsActive();
 				m_pRes->drawFloor();
 			}
 
