@@ -49,26 +49,26 @@ namespace Phoenix {
 		stbi_uc *data;
 
 		// Use the first texture to get Width, Height, components, internalFormat and dataFormat
-		// TODO1: remove this to another function
-		// TODO2: Refactorizar el if por switch como en: https://github.com/BaronVerde/orf_n/blob/master/src/renderer/TextureCube.cpp
-		// TODO3: Aplicarlo despues a Texture.cpp
+		// TODO: remove this to another function
 		data = stbi_load(faces_file_name[0].c_str(), &Width, &Height, &components, 0);
 		if (data) {
-			if (components == 1) {
+			switch (components) {
+			case 1:
 				internalFormat = GL_R8;
 				dataFormat = GL_RED;
-			}
-			else if (components == 2) {
+				break;
+			case 2:
 				internalFormat = GL_RG8;
 				dataFormat = GL_RG;
-			}
-			else if (components == 3) {
+				break;
+			case 3:
 				internalFormat = GL_RGB8;
 				dataFormat = GL_RGB;
-			}
-			else if (components == 4) {
+				break;
+			case 4:
 				internalFormat = GL_RGBA8;
 				dataFormat = GL_RGBA;
+				break;
 			}
 			stbi_image_free(data);
 		}

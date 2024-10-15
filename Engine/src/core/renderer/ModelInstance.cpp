@@ -58,6 +58,11 @@ namespace Phoenix {
 				m_vBufferMM_ID = 0;
 			}
 		}
+
+		// Fill the stats
+		m_stats.numTotalFaces = amount * m_pModel->m_statNumFaces;
+		m_stats.numTotalVertices = amount * m_pModel->m_statNumVertices;
+
 	}
 
 	ModelInstance::~ModelInstance()

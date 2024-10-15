@@ -25,20 +25,20 @@ namespace Phoenix {
 		bool		m_bPlayAnimation = false;// Do we want to play the animation?
 		int			m_iAnimationNumber = 0;	// Number of animation to play
 		float		m_fAnimationTime = 0;	// Animation time (in seconds)
-		float		m_fNumObjects = 0;	// Total number of object to draw
+		float		m_fNumInstances = 0;	// Total number of instances to draw
 
-		// Matrix object positioning
-		glm::vec3	m_vMatrixObjTranslation = { 0, 0, 0 };	// Matrix object translation
-		glm::vec3	m_vMatrixObjRotation = { 0, 0, 0 };	// Matrix object rotation
-		glm::vec3	m_vMatrixObjScale = { 1, 1, 1 };	// Matrix object scale
+		// Matrix instance positioning
+		glm::vec3	m_vInsTranslation = { 0, 0, 0 };
+		glm::vec3	m_vInsRotation = { 0, 0, 0 };
+		glm::vec3	m_vInsScale = { 1, 1, 1 };
 
-		// Current object positioning
-		float		m_fCurrObjID = 0;			// Current object to draw
-		glm::vec3	m_vCurrObjPos = { 0, 0, 0 };	// Current position of our object
-		glm::vec3	m_vCurrObjPosPolar = { 0, 0, 0 };	// Current position of our object (in polar coordinates)
-		glm::vec3	m_vCurrObjTranslation = { 0, 0, 0 };	// Current object translation
-		glm::vec3	m_vCurrObjRotation = { 0, 0, 0 };	// Current object rotation
-		glm::vec3	m_vCurrObjScale = { 1, 1, 1 };	// Current object scale
+		// Current instance positioning
+		float		m_fCurrInsID = 0;			// Current instance to draw
+		glm::vec3	m_vCurrInsPos = { 0, 0, 0 };
+		glm::vec3	m_vCurrInsPosPolar = { 0, 0, 0 };
+		glm::vec3	m_vCurrInsTranslation = { 0, 0, 0 };
+		glm::vec3	m_vCurrInsRotation = { 0, 0, 0 };
+		glm::vec3	m_vCurrInsScale = { 1, 1, 1 };
 
 
 		// Previous model, projection and view matrix, for being used in effects like motion blur
@@ -48,7 +48,7 @@ namespace Phoenix {
 		SP_Model		m_pModelRef;		// Reference model to be use to store positions
 		ModelInstance*	m_pModel = nullptr;	// Model to draw instanced
 		SP_Shader		m_pShader;
-		MathDriver*		m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
+		MathDriver*		m_pExprPosition = nullptr;	// An equation containing the calculations to position the instance
 		ShaderVars*		m_pVars = nullptr;			// For storing any other shader variables
 	};
 
@@ -112,21 +112,21 @@ namespace Phoenix {
 		if (!m_pShader)
 			return false;
 
-		// Calculate the amount of objects to draw
-		uint32_t num_obj_instances = 0;
+		// Calculate the amount of instances to draw
+		uint32_t numInstances = 0;
 		for (auto& meshRef : m_pModelRef->meshes) {
-			num_obj_instances += static_cast<uint32_t>(meshRef->m_uniqueVertices.size());
+			numInstances += static_cast<uint32_t>(meshRef->m_uniqueVertices.size());
 		}
 
-		if (num_obj_instances == 0) {
+		if (numInstances == 0) {
 			Logger::error("DrawSceneMatrixInstanced: No vertex found in the reference model");
 			return false;
 		}
 
-		m_fNumObjects = (float)num_obj_instances; // Number of objects to draw is the total amount of unique_vertices to draw
+		m_fNumInstances = (float)numInstances; // Number of instances to draw is the total amount of unique_vertices to draw
 
 		// Load model properties
-		m_pModel = new ModelInstance(model_to_draw, num_obj_instances);
+		m_pModel = new ModelInstance(model_to_draw, numInstances);
 		m_pModel->m_pModel->playAnimation = m_bPlayAnimation;
 		if (m_pModel->m_pModel->playAnimation)
 			m_pModel->m_pModel->setAnimation(m_iAnimationNumber);
@@ -138,32 +138,32 @@ namespace Phoenix {
 			m_pExprPosition->expression += strings[i];
 
 		m_pExprPosition->SymbolTable.add_variable("aTime", m_fAnimationTime);
-		m_pExprPosition->SymbolTable.add_variable("n", m_fCurrObjID);
-		m_pExprPosition->SymbolTable.add_variable("n_total", m_fNumObjects);
-		m_pExprPosition->SymbolTable.add_variable("x", m_vCurrObjPos.x);
-		m_pExprPosition->SymbolTable.add_variable("y", m_vCurrObjPos.y);
-		m_pExprPosition->SymbolTable.add_variable("z", m_vCurrObjPos.z);
-		m_pExprPosition->SymbolTable.add_variable("a", m_vCurrObjPosPolar.x);
-		m_pExprPosition->SymbolTable.add_variable("b", m_vCurrObjPosPolar.y);
-		m_pExprPosition->SymbolTable.add_variable("r", m_vCurrObjPosPolar.z);
-		m_pExprPosition->SymbolTable.add_variable("tx", m_vCurrObjTranslation.x);
-		m_pExprPosition->SymbolTable.add_variable("ty", m_vCurrObjTranslation.y);
-		m_pExprPosition->SymbolTable.add_variable("tz", m_vCurrObjTranslation.z);
-		m_pExprPosition->SymbolTable.add_variable("rx", m_vCurrObjRotation.x);
-		m_pExprPosition->SymbolTable.add_variable("ry", m_vCurrObjRotation.y);
-		m_pExprPosition->SymbolTable.add_variable("rz", m_vCurrObjRotation.z);
-		m_pExprPosition->SymbolTable.add_variable("sx", m_vCurrObjScale.x);
-		m_pExprPosition->SymbolTable.add_variable("sy", m_vCurrObjScale.y);
-		m_pExprPosition->SymbolTable.add_variable("sz", m_vCurrObjScale.z);
-		m_pExprPosition->SymbolTable.add_variable("m_tx", m_vMatrixObjTranslation.x);
-		m_pExprPosition->SymbolTable.add_variable("m_ty", m_vMatrixObjTranslation.y);
-		m_pExprPosition->SymbolTable.add_variable("m_tz", m_vMatrixObjTranslation.z);
-		m_pExprPosition->SymbolTable.add_variable("m_rx", m_vMatrixObjRotation.x);
-		m_pExprPosition->SymbolTable.add_variable("m_ry", m_vMatrixObjRotation.y);
-		m_pExprPosition->SymbolTable.add_variable("m_rz", m_vMatrixObjRotation.z);
-		m_pExprPosition->SymbolTable.add_variable("m_sx", m_vMatrixObjScale.x);
-		m_pExprPosition->SymbolTable.add_variable("m_sy", m_vMatrixObjScale.y);
-		m_pExprPosition->SymbolTable.add_variable("m_sz", m_vMatrixObjScale.z);
+		m_pExprPosition->SymbolTable.add_variable("n", m_fCurrInsID);
+		m_pExprPosition->SymbolTable.add_variable("n_total", m_fNumInstances);
+		m_pExprPosition->SymbolTable.add_variable("x", m_vCurrInsPos.x);
+		m_pExprPosition->SymbolTable.add_variable("y", m_vCurrInsPos.y);
+		m_pExprPosition->SymbolTable.add_variable("z", m_vCurrInsPos.z);
+		m_pExprPosition->SymbolTable.add_variable("a", m_vCurrInsPosPolar.x);
+		m_pExprPosition->SymbolTable.add_variable("b", m_vCurrInsPosPolar.y);
+		m_pExprPosition->SymbolTable.add_variable("r", m_vCurrInsPosPolar.z);
+		m_pExprPosition->SymbolTable.add_variable("tx", m_vCurrInsTranslation.x);
+		m_pExprPosition->SymbolTable.add_variable("ty", m_vCurrInsTranslation.y);
+		m_pExprPosition->SymbolTable.add_variable("tz", m_vCurrInsTranslation.z);
+		m_pExprPosition->SymbolTable.add_variable("rx", m_vCurrInsRotation.x);
+		m_pExprPosition->SymbolTable.add_variable("ry", m_vCurrInsRotation.y);
+		m_pExprPosition->SymbolTable.add_variable("rz", m_vCurrInsRotation.z);
+		m_pExprPosition->SymbolTable.add_variable("sx", m_vCurrInsScale.x);
+		m_pExprPosition->SymbolTable.add_variable("sy", m_vCurrInsScale.y);
+		m_pExprPosition->SymbolTable.add_variable("sz", m_vCurrInsScale.z);
+		m_pExprPosition->SymbolTable.add_variable("m_tx", m_vInsTranslation.x);
+		m_pExprPosition->SymbolTable.add_variable("m_ty", m_vInsTranslation.y);
+		m_pExprPosition->SymbolTable.add_variable("m_tz", m_vInsTranslation.z);
+		m_pExprPosition->SymbolTable.add_variable("m_rx", m_vInsRotation.x);
+		m_pExprPosition->SymbolTable.add_variable("m_ry", m_vInsRotation.y);
+		m_pExprPosition->SymbolTable.add_variable("m_rz", m_vInsRotation.z);
+		m_pExprPosition->SymbolTable.add_variable("m_sx", m_vInsScale.x);
+		m_pExprPosition->SymbolTable.add_variable("m_sy", m_vInsScale.y);
+		m_pExprPosition->SymbolTable.add_variable("m_sz", m_vInsScale.z);
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
@@ -181,7 +181,7 @@ namespace Phoenix {
 		// Set shader variables
 		m_pVars->setValues();
 
-		// Update object matrices
+		// Update instance matrices
 		updateMatrices(true);
 
 		return !DEMO_checkGLError();
@@ -230,16 +230,16 @@ namespace Phoenix {
 		// Evaluate the expression
 		m_pExprPosition->Expression.value();
 
-		// Update Matrices with objects positions, if required
+		// Update Matrices with instance positions, if required
 		if (m_bUpdateFormulas)
 			updateMatrices(false);
 
-		// Draw Objects
-		//int object = 0;
-		m_fCurrObjID = 0;
-		m_pShader->setValue("n_total", m_fNumObjects);	// Send total objects to draw to the shader
+		// Draw instances
+		//int instance = 0;
+		m_fCurrInsID = 0;
+		m_pShader->setValue("n_total", m_fNumInstances);	// Send total instances to draw to the shader
 
-		// TODO: We should send the Position of each object (in Cartesian ad Polar coordinates) to the shader, as we do in "drawSceneMatrix"
+		// TODO: We should send the Position of each instance (in Cartesian ad Polar coordinates) to the shader, as we do in "drawSceneMatrix"
 		// Does it makes sense to do this? we never used...
 		/*
 		for (int i = 0; i < model_ref->meshes.size(); i++)
@@ -250,12 +250,12 @@ namespace Phoenix {
 				m_cObjPosPolar = model_ref->meshes[i].unique_vertices_polar[j];
 				// Evaluate the expression
 				exprPosition->Expression.value();
-				shader->setValue("n", m_cObjID);				// Send the number of object to the shader
-				shader->setValue("n_pos", m_cObjPos);			// Send the object relative position to the shader
-				shader->setValue("n_polar", m_cObjPosPolar);	// Send the object relative position to the shader (in polar format: x=alpha, y=beta, z=distance)
+				shader->setValue("n", m_cObjID);				// Send the number of instance to the shader
+				shader->setValue("n_pos", m_cObjPos);			// Send the instance relative position to the shader
+				shader->setValue("n_polar", m_cObjPosPolar);	// Send the instance relative position to the shader (in polar format: x=alpha, y=beta, z=distance)
 
-				object++;
-				m_cObjID = (float)object;
+				instance++;
+				m_cObjID = (float)instance;
 			}
 		}
 		*/
@@ -277,10 +277,11 @@ namespace Phoenix {
 		std::stringstream ss;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		ss << "Matrix file: " << m_pModelRef->filename << std::endl;
-		ss << "Objects in matrix to be drawn: " << m_fNumObjects << std::endl;
+		ss << "Model instances drawn: " << m_fNumInstances << std::endl;
 		ss << "Model file: " << m_pModel->m_pModel->filename << std::endl;
-		ss << "Meshes in each model: " << m_pModel->m_pModel->m_statNumMeshes << std::endl;
-		ss << "Faces: " << m_pModel->m_pModel->m_statNumFaces << ", vertices: " << m_pModel->m_pModel->m_statNumVertices << std::endl;
+		ss << " Meshes in each model: " << m_pModel->m_pModel->m_statNumMeshes << std::endl;
+		ss << " Model faces: " << m_pModel->m_pModel->m_statNumFaces << ", vertices: " << m_pModel->m_pModel->m_statNumVertices << std::endl;
+		ss << "Total scene faces: " << m_pModel->m_stats.numTotalFaces << ", vertices: " << m_pModel->m_stats.numTotalVertices << std::endl;
 		debugStatic = ss.str();
 	}
 
@@ -293,20 +294,20 @@ namespace Phoenix {
 
 	void sDrawSceneMatrixInstanced::updateMatrices(bool initPrevMatrix)
 	{
-		glm::mat4 matrixModel; // Model matrix to be used on matrix object
+		glm::mat4 matrixModel; // Model matrix to be used on matrix instance
 
-		m_fCurrObjID = 0;
-		int object = 0;
+		m_fCurrInsID = 0;
+		int instance = 0;
 
 		// Evaluate the expression
 		m_pExprPosition->Expression.value();
 
 		matrixModel = glm::mat4(1.0f);
-		matrixModel = glm::translate(matrixModel, m_vMatrixObjTranslation);
-		matrixModel = glm::rotate(matrixModel, glm::radians(m_vMatrixObjRotation.x), glm::vec3(1, 0, 0));
-		matrixModel = glm::rotate(matrixModel, glm::radians(m_vMatrixObjRotation.y), glm::vec3(0, 1, 0));
-		matrixModel = glm::rotate(matrixModel, glm::radians(m_vMatrixObjRotation.z), glm::vec3(0, 0, 1));
-		matrixModel = glm::scale(matrixModel, m_vMatrixObjScale);
+		matrixModel = glm::translate(matrixModel, m_vInsTranslation);
+		matrixModel = glm::rotate(matrixModel, glm::radians(m_vInsRotation.x), glm::vec3(1, 0, 0));
+		matrixModel = glm::rotate(matrixModel, glm::radians(m_vInsRotation.y), glm::vec3(0, 1, 0));
+		matrixModel = glm::rotate(matrixModel, glm::radians(m_vInsRotation.z), glm::vec3(0, 0, 1));
+		matrixModel = glm::scale(matrixModel, m_vInsScale);
 
 
 		glm::mat4* my_obj_model;
@@ -315,32 +316,32 @@ namespace Phoenix {
 		{
 			for (int j = 0; j < m_pModelRef->meshes[i]->m_uniqueVertices.size(); j++)
 			{
-				m_vCurrObjPos = m_pModelRef->meshes[i]->m_uniqueVertices[j].Position;
-				m_vCurrObjPosPolar = m_pModelRef->meshes[i]->m_uniqueVertices[j].PositionPolar;
+				m_vCurrInsPos = m_pModelRef->meshes[i]->m_uniqueVertices[j].Position;
+				m_vCurrInsPosPolar = m_pModelRef->meshes[i]->m_uniqueVertices[j].PositionPolar;
 				// Evaluate the expression
 				m_pExprPosition->Expression.value();
 
-				// Copy previous model object matrix, before model matrix changes
-				m_pModel->copyMatrices(object);
+				// Copy previous model instance matrix, before model matrix changes
+				m_pModel->copyMatrices(instance);
 
-				my_obj_model = &(m_pModel->m_pModelMatrix[object]);
+				my_obj_model = &(m_pModel->m_pModelMatrix[instance]);
 				*my_obj_model = matrixModel;
 				*my_obj_model = glm::translate(*my_obj_model, m_pModelRef->meshes[i]->m_uniqueVertices[j].Position);
 
-				// Now render the object using the "model_ref" as a model matrix start position
-				*my_obj_model = glm::translate(*my_obj_model, m_vCurrObjTranslation);
-				*my_obj_model = glm::rotate(*my_obj_model, glm::radians(m_vCurrObjRotation.x), glm::vec3(1, 0, 0));
-				*my_obj_model = glm::rotate(*my_obj_model, glm::radians(m_vCurrObjRotation.y), glm::vec3(0, 1, 0));
-				*my_obj_model = glm::rotate(*my_obj_model, glm::radians(m_vCurrObjRotation.z), glm::vec3(0, 0, 1));
-				*my_obj_model = glm::scale(*my_obj_model, m_vCurrObjScale);
+				// Now render the instance using the "model_ref" as a model matrix start position
+				*my_obj_model = glm::translate(*my_obj_model, m_vCurrInsTranslation);
+				*my_obj_model = glm::rotate(*my_obj_model, glm::radians(m_vCurrInsRotation.x), glm::vec3(1, 0, 0));
+				*my_obj_model = glm::rotate(*my_obj_model, glm::radians(m_vCurrInsRotation.y), glm::vec3(0, 1, 0));
+				*my_obj_model = glm::rotate(*my_obj_model, glm::radians(m_vCurrInsRotation.z), glm::vec3(0, 0, 1));
+				*my_obj_model = glm::scale(*my_obj_model, m_vCurrInsScale);
 
 				// In case we set this flag, the previous matrix is loaded again
 				// This is required on the first call of this function, where the prev_model and obj_model matrix are not initilized
 				if (initPrevMatrix)
-					m_pModel->copyMatrices(object);
+					m_pModel->copyMatrices(instance);
 
-				object++;
-				m_fCurrObjID = (float)object;
+				instance++;
+				m_fCurrInsID = (float)instance;
 			}
 		}
 
