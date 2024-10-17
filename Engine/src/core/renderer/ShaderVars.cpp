@@ -265,74 +265,53 @@ namespace Phoenix {
 	// Set all the shader values. Please note that the shader must be used before!!
 	void ShaderVars::setValues()
 	{
-		unsigned int i = 0;
-		std::shared_ptr<varFloat> my_vfloat;
-		std::shared_ptr<varVec2> my_vec2;
-		std::shared_ptr<varVec3> my_vec3;
-		std::shared_ptr<varVec4> my_vec4;
-		std::shared_ptr<varMat3> my_mat3;
-		std::shared_ptr<varMat4> my_mat4;
-		std::shared_ptr<varSampler2D> my_sampler2D;
-		std::shared_ptr<varSamplerCube> my_samplerCube;
-
-		for (i = 0; i < vfloat.size(); i++) {
-			my_vfloat = vfloat[i];
-			my_vfloat->eva->Expression.value();
-			my_shader->setValue(my_vfloat->name.c_str(), my_vfloat->value);
+		for (auto& var : vfloat) {
+			var->eva->Expression.value();
+			my_shader->setValue(var->name.c_str(), var->value);
+		}
+		
+		for (auto& var : vec2) {
+			var->eva->Expression.value();
+			my_shader->setValue(var->name.c_str(), var->value);
 		}
 
-		for (i = 0; i < vec2.size(); i++) {
-			my_vec2 = vec2[i];
-			my_vec2->eva->Expression.value();
-			my_shader->setValue(my_vec2->name.c_str(), my_vec2->value);
+		for (auto& var : vec3) {
+			var->eva->Expression.value();
+			my_shader->setValue(var->name.c_str(), var->value);
+		}
+		for (auto& var : vec4) {
+			var->eva->Expression.value();
+			my_shader->setValue(var->name.c_str(), var->value);
 		}
 
-		for (i = 0; i < vec3.size(); i++) {
-			my_vec3 = vec3[i];
-			my_vec3->eva->Expression.value();
-			my_shader->setValue(my_vec3->name.c_str(), my_vec3->value);
-		}
-		for (i = 0; i < vec4.size(); i++) {
-			my_vec4 = vec4[i];
-			my_vec4->eva->Expression.value();
-			my_shader->setValue(my_vec4->name.c_str(), my_vec4->value);
+		for (auto& var : mat3) {
+			var->eva->Expression.value();
+			my_shader->setValue(var->name.c_str(), var->value);
 		}
 
-		for (i = 0; i < mat3.size(); i++) {
-			my_mat3 = mat3[i];
-			my_mat3->eva->Expression.value();
-			my_shader->setValue(my_mat3->name.c_str(), my_mat3->value);
+		for (auto& var : mat4) {
+			var->eva->Expression.value();
+			my_shader->setValue(var->name.c_str(), var->value);
 		}
 
-		for (i = 0; i < mat4.size(); i++) {
-			my_mat4 = mat4[i];
-			my_mat4->eva->Expression.value();
-			my_shader->setValue(my_mat4->name.c_str(), my_mat4->value);
-		}
-
-		for (i = 0; i < sampler2D.size(); i++) {
-			my_sampler2D = sampler2D[i];
-			my_shader->setValue(my_sampler2D->name.c_str(), my_sampler2D->texUnitID);
+		for (auto& var : sampler2D) {
+			my_shader->setValue(var->name.c_str(), var->texUnitID);
 			// This ugly and dirty. This is needed because when we rezise the screen, the FBO's are
 			// recalculated (therefore texGLid is changed), therefoere we need to look everytime if
 			// the 'texture GL id' has changed
-			if (my_sampler2D->isFBO) {
-				glBindTextureUnit(my_sampler2D->texUnitID, DEMO->m_fboManager.getOpenGLTextureID(
-					my_sampler2D->fboNum,
-					my_sampler2D->fboAttachment)
-				);
+			if (var->isFBO) {
+				glBindTextureUnit(var->texUnitID, DEMO->m_fboManager.getOpenGLTextureID(var->fboNum,var->fboAttachment));
 			}
 			else
-				glBindTextureUnit(my_sampler2D->texUnitID, my_sampler2D->texture->m_textureID);
+				glBindTextureUnit(var->texUnitID, var->texture->m_textureID);
 		}
 
-		for (i = 0; i < samplerCube.size(); i++) {
-			my_samplerCube = samplerCube[i];
-			my_shader->setValue(my_samplerCube->name.c_str(), my_samplerCube->cubemapUnitID);
-			my_samplerCube->cubemap->bind();
-			//glBindTextureUnit(my_samplerCube->cubemapUnitID, my_samplerCube->cubemap->m_cubemapID);
+		for (auto& var : samplerCube) {
+			my_shader->setValue(var->name.c_str(), var->cubemapUnitID);
+			var->cubemap->bind();
+			//glBindTextureUnit(var->cubemapUnitID, var->cubemap->m_cubemapID);
 			//Logger::info(LogLevel::high, "Cubemap num. {} of {}", i, samplerCube.size());
-			//Logger::info(LogLevel::high, "Cubemap name, Texture Unit, cubeMapID: {},{},{}", my_samplerCube->name.c_str(), my_samplerCube->cubemapUnitID, my_samplerCube->cubemap->m_cubemapID);
+			//Logger::info(LogLevel::high, "Cubemap name, Texture Unit, cubeMapID: {},{},{}", var->name.c_str(), var->cubemapUnitID, var->cubemap->m_cubemapID);
 		}
 	}
 

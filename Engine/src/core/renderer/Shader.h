@@ -5,6 +5,7 @@
 #include "main.h"
 
 #include <unordered_set>
+#include <unordered_map>
 
 namespace Phoenix{
 
@@ -23,27 +24,28 @@ namespace Phoenix{
 		bool load(std::string_view path, std::vector<std::string> const& feedbackVaryings);
 		void use(); // activate the shader
 
+		// Get uniform location
+		GLint getUniformLocation(std::string_view name) const;
+
 		// set uniform scalar
-		void setValue(std::string_view id, GLint value) const;
-		void setValue(std::string_view id, GLuint value) const;
-		void setValue(std::string_view id, GLfloat value) const;
+		void setValue(std::string_view name, GLint value) const;
+		void setValue(std::string_view name, GLuint value) const;
+		void setValue(std::string_view name, GLfloat value) const;
 
 		// set uniform vector from components
-		void setValue(std::string_view id, GLfloat x, GLfloat y) const;
-		void setValue(std::string_view id, GLfloat x, GLfloat y, GLfloat z) const;
-		void setValue(std::string_view id, GLfloat x, GLfloat y, GLfloat z, GLfloat w) const;
+		void setValue(std::string_view name, GLfloat x, GLfloat y) const;
+		void setValue(std::string_view name, GLfloat x, GLfloat y, GLfloat z) const;
+		void setValue(std::string_view name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) const;
 
 		// set uniform vector from glm vector
-		void setValue(std::string_view id, const glm::vec2& value) const;
-		void setValue(std::string_view id, const glm::vec3& value) const;
-		void setValue(std::string_view id, const glm::vec4& value) const;
+		void setValue(std::string_view name, const glm::vec2& value) const;
+		void setValue(std::string_view name, const glm::vec3& value) const;
+		void setValue(std::string_view name, const glm::vec4& value) const;
 
 		// set uniform matrix from glm matrix
-		void setValue(std::string_view id, const glm::mat2& mat) const;
-		void setValue(std::string_view id, const glm::mat3& mat) const;
-		void setValue(std::string_view id, const glm::mat4& mat) const;
-
-		GLint getUniformLocation(std::string_view id) const;
+		void setValue(std::string_view name, const glm::mat2& mat) const;
+		void setValue(std::string_view name, const glm::mat3& mat) const;
+		void setValue(std::string_view name, const glm::mat4& mat) const;
 
 		std::string_view getURI() const;
 		uint32_t getId() const;
@@ -57,6 +59,7 @@ namespace Phoenix{
 	private:
 		uint32_t m_id = 0;
 		std::string m_URI;
+		mutable std::unordered_map<std::string_view, GLint> m_UniformLocationCache;
 	};
 
 }

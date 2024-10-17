@@ -9,8 +9,8 @@
 namespace Phoenix {
 
 	struct varBase {
-		std::string	name;
-		GLint		loc = -1;
+		std::string					name;
+		GLint						loc = -1; // TODO: We can delete this, it is cached in Shader class
 		std::shared_ptr<MathDriver> eva;
 	};
 
@@ -42,7 +42,7 @@ namespace Phoenix {
 
 	class ShaderVars final {
 	public:
-		std::vector<std::shared_ptr<varFloat>>				vfloat;
+		std::vector<std::shared_ptr<varFloat>>			vfloat;
 		std::vector<std::shared_ptr<varVec2>>			vec2;
 		std::vector<std::shared_ptr<varVec3>>			vec3;
 		std::vector<std::shared_ptr<varVec4>>			vec4;

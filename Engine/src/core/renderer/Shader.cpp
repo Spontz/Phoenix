@@ -158,65 +158,79 @@ namespace Phoenix {
 		glUseProgram(m_id);
 	}
 
+	GLint Shader::getUniformLocation(std::string_view name) const
+	{
+		if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
+			return m_UniformLocationCache[name];
+
+		GLint location = glGetUniformLocation(m_id, name.data());
+		if (location != -1)
+			m_UniformLocationCache[name] = location;
+		else
+			Logger::error("Shader uniform variable '{}' not found in shader '{}'", name, m_URI);
+
+		return location;
+	}
+
 	// Set utility uniform value functions
 	void Shader::setValue(std::string_view name, GLint value) const
 	{
-		glUniform1i(glGetUniformLocation(m_id, name.data()), value);
+		glUniform1i(getUniformLocation(name), value);
 	}
 
 	void Shader::setValue(std::string_view name, GLuint value) const
 	{
-		glUniform1ui(glGetUniformLocation(m_id, name.data()), value);
+		glUniform1ui(getUniformLocation(name), value);
 	}
 
 	void Shader::setValue(std::string_view name, GLfloat value) const
 	{
-		glUniform1f(glGetUniformLocation(m_id, name.data()), value);
+		glUniform1f(getUniformLocation(name), value);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::vec2& value) const
 	{
-		glUniform2fv(glGetUniformLocation(m_id, name.data()), 1, &value[0]);
+		glUniform2fv(getUniformLocation(name), 1, &value[0]);
 	}
 
 	void Shader::setValue(std::string_view name, GLfloat x, GLfloat y) const
 	{
-		glUniform2f(glGetUniformLocation(m_id, name.data()), x, y);
+		glUniform2f(getUniformLocation(name), x, y);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::vec3& value) const
 	{
-		glUniform3fv(glGetUniformLocation(m_id, name.data()), 1, &value[0]);
+		glUniform3fv(getUniformLocation(name), 1, &value[0]);
 	}
 
 	void Shader::setValue(std::string_view name, GLfloat x, GLfloat y, GLfloat z) const
 	{
-		glUniform3f(glGetUniformLocation(m_id, name.data()), x, y, z);
+		glUniform3f(getUniformLocation(name), x, y, z);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::vec4& value) const
 	{
-		glUniform4fv(glGetUniformLocation(m_id, name.data()), 1, &value[0]);
+		glUniform4fv(getUniformLocation(name), 1, &value[0]);
 	}
 
 	void Shader::setValue(std::string_view name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) const
 	{
-		glUniform4f(glGetUniformLocation(m_id, name.data()), x, y, z, w);
+		glUniform4f(getUniformLocation(name), x, y, z, w);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::mat2& mat) const
 	{
-		glUniformMatrix2fv(glGetUniformLocation(m_id, name.data()), 1, GL_FALSE, &mat[0][0]);
+		glUniformMatrix2fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::mat3& mat) const
 	{
-		glUniformMatrix3fv(glGetUniformLocation(m_id, name.data()), 1, GL_FALSE, &mat[0][0]);
+		glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::mat4& mat) const
 	{
-		glUniformMatrix4fv(glGetUniformLocation(m_id, name.data()), 1, GL_FALSE, &mat[0][0]);
+		glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 	}
 
 	std::string_view Shader::getURI() const
@@ -227,19 +241,6 @@ namespace Phoenix {
 	uint32_t Shader::getId() const
 	{
 		return m_id;
-	}
-
-	GLint Shader::getUniformLocation(std::string_view name) const
-	{
-		const auto val = glGetUniformLocation(m_id, name.data());
-		if (val == -1)
-			Logger::info(
-				LogLevel::med,
-				"Warning: Shader uniform variable '{}' not found in shader '{}'",
-				name,
-				m_URI
-			);
-		return val;
 	}
 
 	// Compile shader
