@@ -63,7 +63,10 @@ namespace Phoenix {
 		else
 			Logger::info(LogLevel::med, "Shader Variable read [section: {}, shader gl_id: {}]: type [{}], name [{}], value [{}]", my_section->type_str, my_shader->getId(), var_type, var_name, var_value);
 
-		if (var_type == "float")	// FLOAT detected
+		VarType varTypeValue = getVarType(var_type);
+		switch (varTypeValue) {
+
+		case VarType::FLOAT:
 		{
 			auto var = std::make_shared<varFloat>();
 			var->name = var_name;
@@ -74,7 +77,9 @@ namespace Phoenix {
 			var->eva->compileFormula();
 			vfloat.push_back(var);
 		}
-		else if (var_type == "vec2")	// VEC2 detected
+		break;
+
+		case VarType::VEC2:
 		{
 			auto var = std::make_shared<varVec2>();
 			var->name = var_name;
@@ -86,7 +91,9 @@ namespace Phoenix {
 			var->eva->compileFormula();
 			vec2.push_back(var);
 		}
-		else if (var_type == "vec3")	// VEC3 detected
+		break;
+
+		case VarType::VEC3:
 		{
 			auto var = std::make_shared<varVec3>();
 			var->name = var_name;
@@ -99,7 +106,9 @@ namespace Phoenix {
 			var->eva->compileFormula();
 			vec3.push_back(var);
 		}
-		else if (var_type == "vec4")	// VEC4 detected
+		break;
+
+		case VarType::VEC4:
 		{
 			auto var = std::make_shared<varVec4>();
 			var->name = var_name;
@@ -113,7 +122,9 @@ namespace Phoenix {
 			var->eva->compileFormula();
 			vec4.push_back(var);
 		}
-		else if (var_type == "mat3")	// MAT3 detected
+		break;
+		
+		case VarType::MAT3:
 		{
 			auto var = std::make_shared<varMat3>();
 			var->name = var_name;
@@ -132,7 +143,9 @@ namespace Phoenix {
 			var->eva->compileFormula();
 			mat3.push_back(var);
 		}
-		else if (var_type == "mat4")	// MAT4 detected
+		break;
+		
+		case VarType::MAT4:
 		{
 			auto var = std::make_shared<varMat4>();
 			var->name = var_name;
@@ -156,12 +169,14 @@ namespace Phoenix {
 			var->eva->SymbolTable.add_variable("v15", var->value[3][2]);
 			var->eva->SymbolTable.add_variable("v16", var->value[3][3]);
 			var->eva->compileFormula();
-
 			mat4.push_back(var);
 		}
-		else if (var_type == "sampler2D")	// Texture (sampler2D) detected
+		break;
+		
+		case VarType::SAMPLER2D:
 		{
-			if (var_value.substr(0, 3) == "fbo") // If it's an fbo
+			// if it's an FBO...
+			if (var_value.substr(0, 3) == "fbo")
 			{
 				auto const fboNum = std::stoi(var_value.substr(3));
 
@@ -186,7 +201,7 @@ namespace Phoenix {
 				}
 
 				// Now we send the attachments requested
-				for (int i = 0; i<colorAttachmentsToSend; i++)
+				for (int i = 0; i < colorAttachmentsToSend; i++)
 				{
 					auto var = std::make_shared<varSampler2D>();
 
@@ -202,7 +217,7 @@ namespace Phoenix {
 					var->texUnitID = static_cast<int>(sampler2D.size());
 					sampler2D.push_back(var);
 				}
-				
+
 			}
 			else // If it's a normal texture....
 			{
@@ -217,14 +232,16 @@ namespace Phoenix {
 				for (auto const& prop : var_properties) {
 					if (!loadTextureProperty(texProperties, prop))
 						Logger::error("Section {}: sampler2D has a non recognized property: {}", my_section->identifier, prop);
-				}					
+				}
 
 				var->texture = DEMO->m_textureManager.addTexture(DEMO->m_dataFolder + var_value, texProperties);
 				if (var->texture) // If texture is valid
 					sampler2D.push_back(var);
 			}
 		}
-		else if (var_type == "samplerCube")	// Cubemap (samplerCube) detected
+		break;
+			
+		case VarType::SAMPLERCUBE:
 		{
 			auto var = std::make_shared<varSamplerCube>();
 			var->name = var_name;
@@ -240,7 +257,7 @@ namespace Phoenix {
 
 			// Check if images exist
 			std::string samplerCubePath = DEMO->m_dataFolder + var_value + "/";
-			const std::vector<std::string> samplerCubeImages = { "right.jpg","left.jpg","top.jpg","bottom.jpg","front.jpg","back.jpg"};
+			const std::vector<std::string> samplerCubeImages = { "right.jpg","left.jpg","top.jpg","bottom.jpg","front.jpg","back.jpg" };
 			std::vector<std::string> samplerCubePaths;
 			for (auto& s : samplerCubeImages) {
 				samplerCubePaths.push_back(samplerCubePath + s);
@@ -254,11 +271,15 @@ namespace Phoenix {
 				}
 			}
 			if (imagesOK) {
-				var->cubemap = DEMO->m_textureManager.addCubemap(samplerCubePaths,texProperties.m_flip);
+				var->cubemap = DEMO->m_textureManager.addCubemap(samplerCubePaths, texProperties.m_flip);
 				if (var->cubemap) // If texture is valid
 					samplerCube.push_back(var);
 			}
 		}
+		break;
+		
+		}
+		
 		return true;
 	}
 
@@ -376,5 +397,13 @@ namespace Phoenix {
 			}
 		}
 		return loaded;
+	}
+
+	ShaderVars::VarType ShaderVars::getVarType(std::string_view varTypeStr) const
+	{
+		if (m_VarTypeMap.find(varTypeStr) != m_VarTypeMap.end())
+			return m_VarTypeMap[varTypeStr];
+		else
+			return VarType::UNKNOWN;
 	}
 }

@@ -6,6 +6,8 @@
 #include "main.h"
 #include "core/drivers/mathdriver.h"
 
+#include <unordered_map>
+
 namespace Phoenix {
 
 	struct varBase {
@@ -41,6 +43,30 @@ namespace Phoenix {
 	};
 
 	class ShaderVars final {
+	private:
+		enum class VarType {
+			FLOAT,
+			VEC2,
+			VEC3,
+			VEC4,
+			MAT3,
+			MAT4,
+			SAMPLER2D,
+			SAMPLERCUBE,
+			UNKNOWN
+		};
+
+		mutable std::unordered_map<std::string_view, VarType> m_VarTypeMap = {
+			{"float", VarType::FLOAT},
+			{"vec2", VarType::VEC2},
+			{"vec3", VarType::VEC3},
+			{"vec4", VarType::VEC4},
+			{"mat3", VarType::MAT3},
+			{"mat4", VarType::MAT4},
+			{"sampler2D", VarType::SAMPLER2D},
+			{"samplerCube", VarType::SAMPLERCUBE}
+		};
+
 	public:
 		std::vector<std::shared_ptr<varFloat>>			vfloat;
 		std::vector<std::shared_ptr<varVec2>>			vec2;
@@ -63,5 +89,7 @@ namespace Phoenix {
 		size_t splitString(const std::string& txt, std::vector<std::string>& strs, char ch);
 		bool loadTextureProperty(Texture::Properties& texProperty, const std::string& property);
 		bool loadFboProperty(int32_t& colorAttachments, const std::string& property);
+		VarType getVarType(std::string_view varTypeStr) const;
+		
 	};
 }
