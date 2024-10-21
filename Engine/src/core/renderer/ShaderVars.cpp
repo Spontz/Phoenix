@@ -277,6 +277,10 @@ namespace Phoenix {
 			}
 		}
 		break;
+
+		case VarType::UNKNOWN:
+			Logger::error("Variable type {} is not supported.", var_type);
+			break;
 		
 		}
 		
@@ -336,6 +340,54 @@ namespace Phoenix {
 		}
 	}
 
+	void ShaderVars::validateValues()
+	{
+		for (auto& var : vfloat) {
+			if (-1 == my_shader->getUniformLocation(var->name))
+				Logger::error("Variable 'uniform float {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+		}
+
+		for (auto& var : vec2) {
+			if (-1 == my_shader->getUniformLocation(var->name))
+				Logger::error("Variable 'uniform vec2 {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+		}
+
+		for (auto& var : vec3) {
+			if (-1 == my_shader->getUniformLocation(var->name))
+				Logger::error("Variable 'uniform vec3 {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+		}
+		for (auto& var : vec4) {
+			if (-1 == my_shader->getUniformLocation(var->name))
+				Logger::error("Variable 'uniform vec4 {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+		}
+
+		for (auto& var : mat3) {
+			if (-1 == my_shader->getUniformLocation(var->name))
+				Logger::error("Variable 'uniform mat3 {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+		}
+
+		for (auto& var : mat4) {
+			if (-1 == my_shader->getUniformLocation(var->name))
+				Logger::error("Variable 'uniform mat4 {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+		}
+
+		for (auto& var : sampler2D) {
+			if (-1 == my_shader->getUniformLocation(var->name))
+				Logger::error("Variable 'uniform sampler2D {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+		}
+
+		for (auto& var : samplerCube) {
+			if (-1 == my_shader->getUniformLocation(var->name))
+				Logger::error("Variable 'uniform samplerCube {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+		}
+	}
+
+	void ShaderVars::validateAndSetValues()
+	{
+		validateValues();
+		setValues();
+	}
+
 	// Splits a stirng in several strings, splitted by character 'ch'
 	size_t ShaderVars::splitString(const std::string& txt, std::vector<std::string>& strs, char ch)
 	{
@@ -383,7 +435,7 @@ namespace Phoenix {
 	bool ShaderVars::loadFboProperty(int32_t& colorAttachments, const std::string& property)
 	{
 		bool loaded = false;
-		if (property.rfind("ATTACHMENTS:", 0) == 0) {
+		if (property.rfind("ATTACHMENT:", 0) == 0) {
 			size_t pos = property.find_first_of(":");
 			std::string attachmentsStr = property.substr(pos + 1);
 			try {

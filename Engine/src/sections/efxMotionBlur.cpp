@@ -73,8 +73,8 @@ namespace Phoenix {
 			m_pVars->ReadString(uniform[i].c_str());
 		}
 
-		// Set shader variables
-		m_pVars->setValues();
+		// Validate and set shader variables
+		m_pVars->validateAndSetValues();
 		m_pShader->setValue("scene", 0);		// The scene is in the Tex unit 0
 		m_pShader->setValue("velocity", 1);		// The velocity is in the Tex unit 1
 

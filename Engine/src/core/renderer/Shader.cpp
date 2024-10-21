@@ -141,11 +141,12 @@ namespace Phoenix {
 			glUseProgram(0);
 			glDeleteProgram(m_id);
 			m_id = 0;
+			m_UniformLocationCache.clear();
 		}
 
 		m_URI = URI;
 
-		// 1. retrieve the vertex/fragment source code from filePath
+		// retrieve the vertex/fragment source code from filePath
 		std::string source{ Utils::readASCIIFile(URI) };
 		addLineDirective(source);
 
@@ -164,10 +165,10 @@ namespace Phoenix {
 			return m_UniformLocationCache[name];
 
 		GLint location = glGetUniformLocation(m_id, name.data());
-		if (location != -1)
-			m_UniformLocationCache[name] = location;
-		else
-			Logger::error("Shader uniform variable '{}' not found in shader '{}'", name, m_URI);
+		m_UniformLocationCache[name] = location;
+		
+//		if (location == -1)
+//			Logger::error("Shader uniform variable '{}' not found in shader '{} - ID {}'", name, m_URI, m_id);
 
 		return location;
 	}
@@ -175,62 +176,93 @@ namespace Phoenix {
 	// Set utility uniform value functions
 	void Shader::setValue(std::string_view name, GLint value) const
 	{
-		glUniform1i(getUniformLocation(name), value);
+		GLint loc = getUniformLocation(name);
+		if (loc != -1)
+			glUniform1i(loc, value);
 	}
 
 	void Shader::setValue(std::string_view name, GLuint value) const
 	{
-		glUniform1ui(getUniformLocation(name), value);
+		GLint loc = getUniformLocation(name);
+		if (loc != -1)
+			glUniform1ui(loc, value);
 	}
 
 	void Shader::setValue(std::string_view name, GLfloat value) const
 	{
-		glUniform1f(getUniformLocation(name), value);
+		GLuint loc = getUniformLocation(name);
+		if (loc != -1)
+			glUniform1f(loc, value);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::vec2& value) const
 	{
-		glUniform2fv(getUniformLocation(name), 1, &value[0]);
+		GLuint loc = getUniformLocation(name);
+		if (loc != -1)
+			glUniform2fv(loc, 1, &value[0]);
 	}
 
 	void Shader::setValue(std::string_view name, GLfloat x, GLfloat y) const
 	{
-		glUniform2f(getUniformLocation(name), x, y);
+		GLuint loc = getUniformLocation(name);
+		if (loc != -1)
+			glUniform2f(loc, x, y);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::vec3& value) const
 	{
-		glUniform3fv(getUniformLocation(name), 1, &value[0]);
+		GLuint loc = getUniformLocation(name);
+		if (loc != -1)
+			glUniform3fv(loc, 1, &value[0]);
 	}
 
 	void Shader::setValue(std::string_view name, GLfloat x, GLfloat y, GLfloat z) const
 	{
-		glUniform3f(getUniformLocation(name), x, y, z);
+		GLuint loc = getUniformLocation(name);
+		if (loc != -1)
+			glUniform3f(loc, x, y, z);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::vec4& value) const
 	{
-		glUniform4fv(getUniformLocation(name), 1, &value[0]);
+		GLuint loc = getUniformLocation(name);
+		if (loc != -1)
+			glUniform4fv(loc, 1, &value[0]);
 	}
 
 	void Shader::setValue(std::string_view name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) const
 	{
-		glUniform4f(getUniformLocation(name), x, y, z, w);
+		GLuint loc = getUniformLocation(name);
+		if (loc != -1)
+			glUniform4f(loc, x, y, z, w);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::mat2& mat) const
 	{
-		glUniformMatrix2fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+		GLuint loc = getUniformLocation(name);
+		if (loc != -1)
+			glUniformMatrix2fv(loc, 1, GL_FALSE, &mat[0][0]);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::mat3& mat) const
 	{
-		glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+		GLuint loc = getUniformLocation(name);
+		if (loc != -1)
+			glUniformMatrix3fv(loc, 1, GL_FALSE, &mat[0][0]);
 	}
 
 	void Shader::setValue(std::string_view name, const glm::mat4& mat) const
 	{
-		glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+		GLuint loc = getUniformLocation(name);
+		if (loc != -1)
+			glUniformMatrix4fv(loc, 1, GL_FALSE, &mat[0][0]);
+	}
+
+	void Shader::setValue(std::string_view name, const glm::mat4& mat, GLsizei count) const
+	{
+		GLuint loc = getUniformLocation(name);
+		if (loc != -1)
+			glUniformMatrix4fv(loc, count, GL_FALSE, &mat[0][0]);
 	}
 
 	std::string_view Shader::getURI() const

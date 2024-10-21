@@ -46,7 +46,7 @@ namespace Phoenix {
 
 	public:
 		void updateMatrices();
-		void drawInstanced(float currentTime, GLuint shaderID, uint32_t startTexUnit = 0);
+		void drawInstanced(SP_Shader shader, float currentTime, uint32_t startTexUnit = 0);
 		void copyMatrices(int instance);
 	};
 

@@ -82,6 +82,13 @@ namespace Phoenix {
 		bool ReadString(std::string_view stringVar); // Reads a string that contains vars and add it
 		void setValues();
 
+		// Validates if all variables exist in the shader, and thows an error if does not exist
+		void validateValues();
+
+		// Validates if all variables exist in the shader, and thows an error if does not exist, set the values as well
+		void validateAndSetValues();
+
+
 	private:
 		SP_Shader my_shader;	// Shader where the vars are poiting
 		Section* my_section;	// Section where the vars are needed (required for formula variables, like time, etc.)

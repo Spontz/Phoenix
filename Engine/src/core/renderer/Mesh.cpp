@@ -125,14 +125,13 @@ namespace Phoenix {
 		m_VertexArray->unbind();
 	}
 
-
-	void Mesh::setMaterialShaderVars(GLuint shaderID, uint32_t startTexUnit)
+	void Mesh::setMaterialShaderVars(SP_Shader shader, uint32_t startTexUnit)
 	{
 		// Send material properties
-		glUniform3fv(glGetUniformLocation(shaderID, "Mat_Ka"), 1, &m_material.colAmbient[0]);
-		glUniform3fv(glGetUniformLocation(shaderID, "Mat_Ks"), 1, &m_material.colSpecular[0]);
-		glUniform1f(glGetUniformLocation(shaderID, "Mat_KsStrenght"), m_material.strenghtSpecular);
-		glUniform3fv(glGetUniformLocation(shaderID, "Mat_Kd"), 1, &m_material.colDiffuse[0]);
+		shader->setValue("Mat_Ka", m_material.colAmbient);
+		shader->setValue("Mat_Ks", m_material.colSpecular);
+		shader->setValue("Mat_KsStrenght", m_material.strenghtSpecular);
+		shader->setValue("Mat_Kd", m_material.colDiffuse);
 
 		// Send textures
 		unsigned int numTextures = static_cast<unsigned int>(m_material.textures.size());
@@ -142,16 +141,16 @@ namespace Phoenix {
 			if (!(m_material.textures[i].tex))	// Avoid illegal access
 				return;
 			texUnit = startTexUnit + i;			// TODO: Check that texUnit is not greater than max TexUnits supported (normally, 32)
-			glUniform1i(glGetUniformLocation(shaderID, m_material.textures[i].shaderName.c_str()), texUnit);
+			shader->setValue(m_material.textures[i].shaderName.c_str(), texUnit);
 			m_material.textures[i].tex->bind(texUnit);
 		}
 	}
 
 	// render the mesh
-	void Mesh::Draw(GLuint shaderID, uint32_t startTexUnit)
+	void Mesh::Draw(SP_Shader shader, uint32_t startTexUnit)
 	{
 		// Setup materials for drawing
-		setMaterialShaderVars(shaderID, startTexUnit);
+		setMaterialShaderVars(shader, startTexUnit);
 
 		// draw mesh
 		m_VertexArray->bind();

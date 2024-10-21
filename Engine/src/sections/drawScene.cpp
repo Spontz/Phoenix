@@ -131,8 +131,8 @@ namespace Phoenix {
 			m_pVars->ReadString(uniform[i].c_str());
 		}
 		
-		// Set shader variables
-		m_pVars->setValues();
+		// Validate ans set shader variables initial values
+		m_pVars->validateAndSetValues();
 		
 		return !DEMO_checkGLError();
 	}
@@ -209,7 +209,8 @@ namespace Phoenix {
 		// Set the other shader variable values
 		m_pVars->setValues();
 
-		m_pModel->Draw(m_pShader->getId(), m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
+		m_pModel->Draw(m_pShader, m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
+		//m_pModel->Draw(m_pShader->getId(), m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
 
 		glUseProgram(0);
 

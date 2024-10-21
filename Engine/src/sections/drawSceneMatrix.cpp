@@ -177,8 +177,8 @@ namespace Phoenix {
 			m_pVars->ReadString(uniform[i].c_str());
 		}
 
-		// Set shader variables
-		m_pVars->setValues();
+		// Validate and set shader variables
+		m_pVars->validateAndSetValues();
 
 		// Update instance matrices
 		updateMatrices(true);
@@ -255,7 +255,7 @@ namespace Phoenix {
 				// For MotionBlur, we send the previous model matrix
 				m_pShader->setValue("prev_model", m_pmPrevModel[instance]);
 
-				m_pModel->Draw(m_pShader->getId(), m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
+				m_pModel->Draw(m_pShader, m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
 
 				instance++;
 				m_fCurrInsID = (float)instance;

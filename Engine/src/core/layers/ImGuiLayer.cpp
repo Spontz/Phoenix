@@ -473,7 +473,7 @@ namespace Phoenix {
 		}
 		m_render.windowSize = ImGui::GetWindowSize();
 		
-		ImGui::Text("Sections Execution time [Render] (ms): %.1f", m_demo.m_execTime * 1000.0f);
+		ImGui::Text("Sections Execution time [Render] (ms): %.5f", m_demo.m_execTime * 1000.0f);
 		drawTooltip("Time consumed by all sections being rendered at this moment\n(it does not include initialization or wait times due to vsync)");
 		ImGui::Text("Fps: %.0f", m_demo.m_fps);
 		ImGui::SetNextItemWidth(80);

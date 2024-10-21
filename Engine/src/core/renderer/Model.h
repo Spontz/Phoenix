@@ -26,7 +26,7 @@ namespace Phoenix {
 		// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
 		bool Load(std::string_view path);
 		// draws the model, and thus all its meshes
-		void Draw(GLuint shaderID, float currentTime, uint32_t startTexUnit = 0);
+		void Draw(SP_Shader shader, float currentTime, uint32_t startTexUnit = 0);
 		void setAnimation(unsigned int a);
 		void setCamera(unsigned int c);
 
@@ -49,7 +49,7 @@ namespace Phoenix {
 
 		// Bones Calculations
 	public:
-		void setBoneTransformations(GLuint shaderProgram, float currentTime); // Hack for ModelInstance:: TODO: Make it private again
+		void setBoneTransformations(SP_Shader shader, float currentTime); // Hack for ModelInstance:: TODO: Make it private again
 	private:
 		void boneTransform(float timeInSeconds);
 		// Bones Transformations

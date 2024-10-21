@@ -82,7 +82,7 @@ constexpr uint32_t NUM_BONES_PER_VERTEX = 4; // Number of Bones per Vertex
 
 	public:
 		// render the mesh
-		void Draw(GLuint shaderID, uint32_t startTexUnit = 0);
+		void Draw(SP_Shader shader, uint32_t startTexUnit = 0);
 
 		// Loads the unique vertices positions
 		void loadUniqueVerticesPos();
@@ -95,7 +95,7 @@ constexpr uint32_t NUM_BONES_PER_VERTEX = 4; // Number of Bones per Vertex
 		void setupMesh();
 
 		// Setup materials for drawing
-		void setMaterialShaderVars(GLuint shaderID, uint32_t startTexUnit = 0);
+		void setMaterialShaderVars(SP_Shader shader, uint32_t startTexUnit = 0);
 
 	private:
 		const aiMesh*				m_pMesh;		// ASSIMP mesh object

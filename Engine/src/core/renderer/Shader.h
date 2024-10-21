@@ -46,6 +46,7 @@ namespace Phoenix{
 		void setValue(std::string_view name, const glm::mat2& mat) const;
 		void setValue(std::string_view name, const glm::mat3& mat) const;
 		void setValue(std::string_view name, const glm::mat4& mat) const;
+		void setValue(std::string_view name, const glm::mat4& mat, GLsizei count) const;
 
 		std::string_view getURI() const;
 		uint32_t getId() const;

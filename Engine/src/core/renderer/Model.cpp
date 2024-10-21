@@ -58,14 +58,14 @@ namespace Phoenix {
 		filepath = "";
 	}
 
-	void Model::Draw(GLuint shaderID, float currentTime, uint32_t startTexUnit)
+	void Model::Draw(SP_Shader shader, float currentTime, uint32_t startTexUnit)
 	{
 		// Load the model transformation on all sub-meshes
 		setMeshesModelTransform();
 
 		// Set the Bones transformations and send the Bones info to the Shader (gBones uniform)
 		if (playAnimation)
-			setBoneTransformations(shaderID, currentTime);
+			setBoneTransformations(shader, currentTime);
 
 		// If we use camera, override the matrix view for the camera view
 		if (useCamera) {
@@ -75,27 +75,28 @@ namespace Phoenix {
 		}
 
 		// Send the matrices
-		glUniformMatrix4fv(glGetUniformLocation(shaderID, "projection"), 1, GL_FALSE, &(m_matProjection[0][0])); // TODO: Not to be stored here: What happens if we are drawing multiple instances of the same object?
-		glUniformMatrix4fv(glGetUniformLocation(shaderID, "view"), 1, GL_FALSE, &(m_matView[0][0]));
+		shader->setValue("projection", m_matProjection);// TODO: Not to be stored here: What happens if we are drawing multiple instances of the same object?
+		shader->setValue("view", m_matView);
 
-		glUniformMatrix4fv(glGetUniformLocation(shaderID, "prev_projection"), 1, GL_FALSE, &(m_matPrevProjection[0][0])); // TODO: Not to be stored here: What happens if we are drawing multiple instances of the same object?
-		glUniformMatrix4fv(glGetUniformLocation(shaderID, "prev_view"), 1, GL_FALSE, &(m_matPrevView[0][0]));
+		// Find Shader and do the matrix stuff
+		shader->setValue("prev_projection", m_matPrevProjection);// TODO: Not to be stored here: What happens if we are drawing multiple instances of the same object?
+		shader->setValue("prev_view", m_matPrevView);
 
 		// Then, send the model matrice of each mesh and draw them
 		for (auto& mesh : meshes) {
 			// Send model matrix
-			glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, &(mesh->m_matModel[0][0]));
+			shader->setValue("model", mesh->m_matModel);
 			m_matMVP = m_matProjection * m_matView * mesh->m_matModel;
-			glUniformMatrix4fv(glGetUniformLocation(shaderID, "MVP"), 1, GL_FALSE, &(m_matMVP[0][0]));
+			shader->setValue("MVP", m_matMVP);
 
 			// Send previous model matrix
-			glUniformMatrix4fv(glGetUniformLocation(shaderID, "prev_model"), 1, GL_FALSE, &(mesh->m_matPrevModel[0][0]));
+			shader->setValue("prev_model", mesh->m_matPrevModel);
 			m_matPrevMVP = m_matPrevProjection * m_matPrevView * mesh->m_matPrevModel;
-			glUniformMatrix4fv(glGetUniformLocation(shaderID, "prev_MVP"), 1, GL_FALSE, &(m_matPrevMVP[0][0]));
+			shader->setValue("prev_MVP", m_matPrevMVP);
 			mesh->m_matPrevModel = mesh->m_matModel;
 
 			// Draw
-			mesh->Draw(shaderID, startTexUnit);
+			mesh->Draw(shader, startTexUnit);
 		}
 
 		m_matPrevProjection = m_matProjection;
@@ -389,14 +390,14 @@ namespace Phoenix {
 
 	/////////////// Bones calculations
 	// TODO: Do a Bones Class, with all this calculations
-	void Model::setBoneTransformations(GLuint shaderProgram, float currentTime)
+	void Model::setBoneTransformations(SP_Shader shader, float currentTime)
 	{
 		// TODO: Hacer que los Transforms sea una propiedad de cada uno del Bone, asi no se tiene q hacer
 		// Resize ni cosas raras, y asi ya tenemos un vector de transformaciones de tamaño fijo
 		if (m_pScene->HasAnimations()) {
 			boneTransform(currentTime);
-			if (m_boneTransforms.size()>0)
-				glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "gBones"), (GLsizei)m_boneTransforms.size(), GL_FALSE, &m_boneTransforms[0][0][0]);
+			if (m_boneTransforms.size() > 0)
+				shader->setValue("gBones", m_boneTransforms[0], (GLsizei)m_boneTransforms.size());
 		}
 	}
 

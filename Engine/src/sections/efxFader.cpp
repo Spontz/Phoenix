@@ -63,8 +63,8 @@ namespace Phoenix {
 			m_pVars->ReadString(uniform[i].c_str());
 		}
 
-		// Set shader variables
-		m_pVars->setValues();
+		// Validate and set shader variables
+		m_pVars->validateAndSetValues();
 		
 		return !DEMO_checkGLError();
 	}

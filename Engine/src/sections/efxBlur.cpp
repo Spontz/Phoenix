@@ -89,8 +89,8 @@ namespace Phoenix {
 		for (int i = 0; i < uniform.size(); i++) {
 			m_pVars->ReadString(uniform[i].c_str());
 		}
-		// Set shader variables values
-		m_pVars->setValues();
+		// Validate and set shader variables values
+		m_pVars->validateAndSetValues();
 
 		return !DEMO_checkGLError();
 	}

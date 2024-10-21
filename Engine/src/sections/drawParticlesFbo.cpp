@@ -245,8 +245,8 @@ namespace Phoenix {
 			m_pVars->ReadString(uniform[i].c_str());
 		}
 
-		// Set shader variables
-		m_pVars->setValues();
+		// Validate and set shader variables
+		m_pVars->validateAndSetValues();
 
 		// Set FBO Texture unit ID, which will be the last of all the sampler2D that we have in all the shader variables
 		m_iFboTexUnitID = static_cast<int32_t>(m_pVars->sampler2D.size());

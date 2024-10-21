@@ -70,13 +70,13 @@ namespace Phoenix {
 		m_amount = 0;
 	}
 
-	void ModelInstance::drawInstanced(float currentTime, GLuint shaderID, uint32_t startTexUnit)
+	void ModelInstance::drawInstanced(SP_Shader shader, float currentTime, uint32_t startTexUnit)
 	{
 		if (m_pModel->playAnimation)
-			m_pModel->setBoneTransformations(shaderID, currentTime);
+			m_pModel->setBoneTransformations(shader, currentTime);
 
 		for (const auto& spMesh : m_pModel->meshes) {
-			spMesh->setMaterialShaderVars(shaderID, startTexUnit);
+			spMesh->setMaterialShaderVars(shader, startTexUnit);
 
 			// draw mesh
 			spMesh->m_VertexArray->bind();
