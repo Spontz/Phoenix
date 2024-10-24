@@ -24,6 +24,7 @@ namespace Phoenix {
 			SHOWCONFIG				= GLFW_KEY_8,
 			SHOWHELP				= GLFW_KEY_9,
 			SHOWDEBUGNET			= GLFW_KEY_F5,
+			SHOWMENU				= GLFW_KEY_F6,
 
 			PLAY_PAUSE				= GLFW_KEY_F1,
 			REWIND					= GLFW_KEY_F2,

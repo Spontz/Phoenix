@@ -78,6 +78,7 @@ namespace Phoenix {
 
 	public:
 		bool	show_log;
+		bool	show_menu;
 		bool	show_info;
 		bool	show_renderTime;
 		bool	show_renderSectionInfo;
@@ -93,8 +94,8 @@ namespace Phoenix {
 	private:
 
 		void drawLog();
+		void drawMenu();
 		void drawInfo();
-		void drawInfoVersion();
 		void drawRenderSectionInfo();
 		void drawSoundSectionInfo();
 		void drawRenderTime();

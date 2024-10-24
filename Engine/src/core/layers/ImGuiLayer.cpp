@@ -20,6 +20,7 @@ namespace Phoenix {
 		"9         : Show this help :)\n" \
 		"0         : Show engine and libraries versions\n" \
 		"F5        : Show Debug screen for networking analysis and simulation\n" \
+		"F6        : Show Menu bar\n" \
 		"BACKSPACE : Show error Log\n" \
 		"ENTER     : Print time on log file\n\n" \
 		"Playback control:\n" \
@@ -52,6 +53,7 @@ namespace Phoenix {
 		m_demo(*DEMO),
 		m_io(nullptr),
 		show_log(false),
+		show_menu(false),
 		show_info(false),
 		show_renderTime(false),
 		show_renderSectionInfo(false),
@@ -69,7 +71,11 @@ namespace Phoenix {
 		m_expandAllSoundSections(true),
 		m_expandAllSoundSectionsChanged(true)
 	{
-		show_info = m_demo.m_debug;	// if we are on debug, we show the fps info by default
+		// if we are on debug, we show the menu and generic info panel by default
+		if (m_demo.m_debug) {
+			show_menu = true;
+			show_info = true;
+		}		
 		
 		// Window: Info
 		m_info.demoStatus = "";
@@ -101,7 +107,7 @@ namespace Phoenix {
 		m_fboGrid.fboNum = static_cast<int32_t>(m_demo.m_fboManager.fbo.size());
 		m_fboGrid.fboColumns = 5;
 		m_fboGrid.fboRows = static_cast<int32_t>(ceil(static_cast<float>(m_fboGrid.fboNum) / static_cast<float>(m_fboGrid.fboColumns)));
-		m_fboGrid.windowPos = ImVec2(0, 0);
+		m_fboGrid.windowPos = ImVec2(0, 20);
 		m_fboGrid.windowSize = ImVec2(200, 300);
 
 		
@@ -186,10 +192,10 @@ namespace Phoenix {
 
 		if (show_log)
 			drawLog();
+		if (show_menu)
+			drawMenu();
 		if (show_info)
 			drawInfo();
-		if (show_version)
-			drawInfoVersion();
 		if (show_renderSectionInfo)
 			drawRenderSectionInfo();
 		if (show_soundSectionInfo)
@@ -289,6 +295,55 @@ namespace Phoenix {
 		ImGui::End();
 	}
 
+	void ImGuiLayer::drawMenu()
+	{
+		// Draw Menu Bar
+		ImGuiWindowFlags window_flags = 0;
+		window_flags |= ImGuiWindowFlags_MenuBar;
+		window_flags |= ImGuiWindowFlags_NoTitleBar;
+		window_flags |= ImGuiWindowFlags_NoDecoration;
+		window_flags |= ImGuiWindowFlags_NoBackground;
+		window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
+		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Appearing);
+		if (!ImGui::Begin("Demo Menu", &show_menu, window_flags)) {
+			ImGui::End();
+			return;
+		}
+
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("Info Panels"))
+			{
+				ImGui::MenuItem("Show this menu", "F6", &show_menu);
+				ImGui::MenuItem("Show Log", "BACKSPACE", &show_log);
+				ImGui::MenuItem("Show Info", "1", &show_info);
+				ImGui::MenuItem("Show render time", "2", &show_renderTime);
+				ImGui::MenuItem("Show FBO", "3", &show_fbo);
+				ImGui::MenuItem("Show all FBO's", "4", &show_fboGrid);
+				ImGui::MenuItem("Show render section stack", "5", &show_renderSectionInfo);
+				ImGui::MenuItem("Show sound section stack", "6", &show_soundSectionInfo);
+				ImGui::MenuItem("Show sound information", "7", &show_sound);
+				ImGui::MenuItem("Show config", "8", &show_config);
+				ImGui::MenuItem("Show help", "9", &show_help);
+				ImGui::MenuItem("Show versions", "0", &show_version);
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Debug"))
+			{
+				ImGui::MenuItem("Debug Network", "F5", &show_debugNet);
+				ImGui::EndMenu();
+			}
+			ImGui::MenuItem("FBO", "3", &show_fbo);
+			ImGui::MenuItem("All FBO", "4", &show_fboGrid);
+			ImGui::MenuItem("Sections", "5", &show_renderSectionInfo);
+			ImGui::MenuItem("Sound", "7", &show_sound);
+			ImGui::MenuItem("Config", "8", &show_config);
+			ImGui::MenuItem("HELP", "9", &show_help);
+			ImGui::EndMenuBar();
+		}
+		ImGui::End();
+	}
+
 	void ImGuiLayer::drawInfo()
 	{
 		// Get Demo status
@@ -310,40 +365,13 @@ namespace Phoenix {
 				m_info.demoStatus = "play";
 		}
 
-		// Draw Menu Bar
 		ImGuiWindowFlags window_flags = 0;
-		window_flags |= ImGuiWindowFlags_MenuBar;
-		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Appearing);
+		ImGui::SetNextWindowPos(ImVec2(0.0f, 20.0f), ImGuiCond_Appearing);
 		if (!ImGui::Begin("Demo Info", &show_info, window_flags)) {
 			ImGui::End();
 			return;
 		}
-
-		if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("Info Panels"))
-			{
-				ImGui::MenuItem("Show Log", "BACKSPACE", &show_log);
-				ImGui::MenuItem("Show Info", "1", &show_info);
-				ImGui::MenuItem("Show render time", "2", &show_renderTime);
-				ImGui::MenuItem("Show FBO's", "3", &show_fbo);
-				ImGui::MenuItem("Show all FBO's", "4", &show_fboGrid);
-				ImGui::MenuItem("Show render section stack", "5", &show_renderSectionInfo);
-				ImGui::MenuItem("Show sound section stack", "6", &show_soundSectionInfo);
-				ImGui::MenuItem("Show sound information", "7", &show_sound);
-				ImGui::MenuItem("Show config", "8", &show_config);
-				ImGui::MenuItem("Show help", "9", &show_help);
-				ImGui::MenuItem("Show versions", "0", &show_version);
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Debug"))
-			{
-				ImGui::MenuItem("Debug Network", "F5", &show_debugNet);
-				ImGui::EndMenu();
-			}
-			ImGui::EndMenuBar();
-		}
-
+		
 		// Draw Info
 		ImGui::Text("Fps: %.0f", m_demo.m_fps);
 		ImGui::Text("Demo status: %s", m_info.demoStatus.c_str());
@@ -366,24 +394,18 @@ namespace Phoenix {
 			ImGui::TreePop();
 		}
 
-		ImGui::End();
-	}
-
-	void ImGuiLayer::drawInfoVersion()
-	{
-		if (!ImGui::Begin("Demo Info")) {
-			ImGui::End();
-			return;
+		if (show_version) {
+			ImGui::Text("Phoenix engine version: %s", m_info.versionEngine.c_str());
+			ImGui::Text("OpenGL driver version: %s", m_info.versionOpenGL.c_str());
+			ImGui::Text("OpenGL driver vendor: %s", m_info.vendorOpenGL.c_str());
+			ImGui::Text("OpenGL driver renderer: %s", m_info.rendererOpenGL.c_str());
+			ImGui::Text("GLFW library version: %s", m_info.versionGLFW.c_str());
+			ImGui::Text("MiniAudio library version: %s", m_info.versionMiniAudio.c_str());
+			ImGui::Text("Network Dyad.c library version: %s", m_info.versionDyad.c_str());
+			ImGui::Text("Assimp library version: %s", m_info.versionASSIMP.c_str());
+			ImGui::Text("ImGUI library version: %s", m_info.versionImGUI.c_str());
 		}
-		ImGui::Text("Phoenix engine version: %s", m_info.versionEngine.c_str());
-		ImGui::Text("OpenGL driver version: %s", m_info.versionOpenGL.c_str());
-		ImGui::Text("OpenGL driver vendor: %s", m_info.vendorOpenGL.c_str());
-		ImGui::Text("OpenGL driver renderer: %s", m_info.rendererOpenGL.c_str());
-		ImGui::Text("GLFW library version: %s", m_info.versionGLFW.c_str());
-		ImGui::Text("MiniAudio library version: %s", m_info.versionMiniAudio.c_str());
-		ImGui::Text("Network Dyad.c library version: %s", m_info.versionDyad.c_str());
-		ImGui::Text("Assimp library version: %s", m_info.versionASSIMP.c_str());
-		ImGui::Text("ImGUI library version: %s", m_info.versionImGUI.c_str());
+
 		ImGui::End();
 	}
 
@@ -461,7 +483,7 @@ namespace Phoenix {
 	{
 		m_render.windowSize = ImVec2(static_cast<float>(m_vp.width / 2.f), 180.0f);
 		
-		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 0), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(m_render.windowSize, ImGuiCond_FirstUseEver);
 
 
@@ -614,7 +636,7 @@ namespace Phoenix {
 
 	void ImGuiLayer::drawSound()
 	{
-		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 0), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), 140.0f), ImGuiCond_FirstUseEver);
 
 		if (!ImGui::Begin("Sound analysis", &show_sound)) {
@@ -733,6 +755,9 @@ namespace Phoenix {
 			switch (key) {
 			case Key::SHOWLOG:
 				show_log = !show_log;
+				break;
+			case Key::SHOWMENU:
+				show_menu = !show_menu;
 				break;
 			case Key::SHOWINFO:
 				show_info = !show_info;
