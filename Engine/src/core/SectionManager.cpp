@@ -96,7 +96,7 @@ namespace Phoenix {
 		pNewSection->enabled = enabled;
 		pNewSection->DataSource = dataSource;
 		pNewSection->type = type;
-		pNewSection->type_str = getSectionInfo(type)->m_id;
+		pNewSection->type_str = pSectionInfo->m_id;
 		m_section.push_back(pNewSection);
 
 		return static_cast<int32_t>(m_section.size()) - 1;

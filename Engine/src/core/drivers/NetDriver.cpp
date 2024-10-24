@@ -4,6 +4,7 @@
 // includes ////////////////////////////////////////////////////////////////////////////////////////
 
 #include "core/drivers/NetDriver.h"
+#include "core/events/SectionEventManager.h"
 #include "core/demokernel.h"
 
 namespace Phoenix {
@@ -81,20 +82,6 @@ namespace Phoenix {
 		return dyad_getVersion();
 	}
 
-	std::vector<std::string> splitIdentifiers(const std::string& identifiers)
-	{
-		std::stringstream ss(identifiers);
-		std::vector<std::string> result;
-
-		while (ss.good())
-		{
-			std::string substr;
-			getline(ss, substr, ',');
-			result.push_back(substr);
-		}
-		return result;
-	}
-
 	std::string NetDriver::processMessage(const std::string& sMessage) const {
 		// Outcoming information
 		std::string sResult = "OK";		// Result of the operation
@@ -104,7 +91,7 @@ namespace Phoenix {
 		std::string sIdentifier;
 		std::string sType;
 		std::string sAction;
-
+		
 		const std::vector<std::string> Message = splitMessage(sMessage);
 
 		if (Message.size() < 2) {
@@ -118,77 +105,73 @@ namespace Phoenix {
 			sAction = Message[2];
 		}		
 
-		Logger::info(
-			LogLevel::low,
-			"Message received: [identifier: {}] [type: {}] [action: {}]",
-			sIdentifier,
-			sType,
-			sAction
-		);
+		Logger::info(LogLevel::low, "Message received: [identifier: {}] [type: {}] [action: {}]", sIdentifier, sType, sAction);
 
 		if (sType == "command") {
-			// Commands processing
-			if (sAction == "pause") {
+			NetDriver::DemoAction demoAction;
+			demoAction = getDemoAction(sAction.c_str());
+			switch (demoAction) {
+			case DemoAction::PING:
+				sResult = "pong";
+				break;
+			case DemoAction::PAUSE:
 				DEMO->pauseDemo();
-			} else if (sAction == "play") {
+				break;
+			case DemoAction::PLAY:
 				DEMO->playDemo();
-			} else if (sAction == "restart") {
+				break;
+			case DemoAction::RESTART:
 				DEMO->restartDemo();
-			} else if (sAction == "startTime") {
+				break;
+			case DemoAction::SET_STARTTIME: {
 				float time = std::stof(Message[3]);
 				DEMO->setStartTime(time);
-			} else if (sAction == "currentTime") {
+				break;
+			}
+			case DemoAction::SET_CURRENTTIME: {
 				float time = std::stof(Message[3]);
 				DEMO->setCurrentTime(time);
-			} else if (sAction == "endTime") {
+				break;
+			}
+			case DemoAction::SET_ENDTIME: {
 				float time = std::stof(Message[3]);
 				DEMO->setEndTime(time);
-			} else if (sAction == "windowPos") {
+				break;
+			}
+			case DemoAction::SET_WINDOWPOS: {
 				int32_t x = std::stoi(Message[3]);
 				int32_t y = std::stoi(Message[4]);
 				WindowMoveEvent WinMoveEvent(x, y);
 				DEMO->OnEvent(WinMoveEvent);
-			} else if (sAction == "windowSize") {
+				break;
+			}
+			case DemoAction::SET_WINDOWSIZE: {
 				uint32_t width = std::stoul(Message[3]);
 				uint32_t height = std::stoul(Message[4]);
 				WindowResizeEvent WinResizeEvent(width, height);
 				DEMO->OnEvent(WinResizeEvent);
-			} else if (sAction == "ping") {
-				sResult = "pong";
-			} else if (sAction == "end") {
+				break;
+			}
+			case DemoAction::END: {
 				WindowCloseEvent WinClosed;
 				DEMO->OnEvent(WinClosed);
-			} else {
+				break;
+			}
+			default:
 				sResult = "NOK";
 				sInfo = "Unknown command (" + sAction + "): " + sMessage;
+				break;
 			}
 		} else if (sType == "section") {
-			// Sections processing
-			if (sAction == "new") {
-				if (DEMO->loadScriptFromNetwork(Message[3]) == false) {
-					sResult = "NOK";
-					sInfo = "Section load failed";
-				}
-			} else if (sAction == "toggle") {
-				DEMO->m_sectionManager.toggleSections(splitIdentifiers(Message[3]));
-			} else if (sAction == "delete") {
-				DEMO->m_sectionManager.deleteSections(splitIdentifiers(Message[3]));
-			} else if (sAction == "update") {
-				DEMO->m_sectionManager.updateSection(Message[3], Message[4]);
-//				Utils::appendIntoASCIIFile(DEMO->m_dataFolder + "debug/message.txt", sMessage);
-			} else if (sAction == "setStartTime") {
-				DEMO->m_sectionManager.setSectionsStartTime(
-					splitIdentifiers(Message[4]),
-					float(atof(Message[3].c_str())) // hack: use doubles
-				);
-			} else if (sAction == "setEndTime") {
-				DEMO->m_sectionManager.setSectionsEndTime(
-					splitIdentifiers(Message[4]),
-					float(atof(Message[3].c_str())) // hack: use doubles
-				);
-			} else if (sAction == "setLayer") {
-				DEMO->m_sectionManager.setSectionLayer(Message[4], atoi(Message[3].c_str()));
-			} else {
+			std::string msg1 = "";
+			std::string msg2 = "";
+			
+			if (Message.size() > 3)
+				msg1 = Message[3];
+			if (Message.size() > 4)
+				msg2 = Message[4];
+
+			if (!DEMO->m_sectionEventManager.addSectionEvent(sAction, msg1, msg2)) {
 				sResult = "NOK";
 				sInfo = "Unknown section command (" + sAction + "): " + sMessage;
 			}
@@ -216,6 +199,14 @@ namespace Phoenix {
 			return;
 
 		dyad_write(m_pServConnect, sMessage.c_str(), static_cast<int>(sMessage.size()));
+	}
+
+	NetDriver::DemoAction NetDriver::getDemoAction(std::string_view Action) const
+	{
+		if (m_NetDemoAction.find(Action) != m_NetDemoAction.end())
+			return m_NetDemoAction[Action];
+		else
+			return DemoAction::UNKNOWN;
 	}
 
 	// private static //////////////////////////////////////////////////////////////////////////////////

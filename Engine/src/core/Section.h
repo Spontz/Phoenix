@@ -47,7 +47,7 @@ namespace Phoenix {
 		Test
 	};
 
-	SectionType getSectionType(std::string_view);
+	SectionType getSectionType(std::string_view key);
 
 	std::ostream& operator<<(std::ostream&, SectionType);
 	std::string str(SectionType);

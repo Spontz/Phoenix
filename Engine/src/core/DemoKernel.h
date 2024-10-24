@@ -9,6 +9,7 @@ namespace Phoenix { class DemoKernel; }
 #include "core/LayerStack.h"
 #include "core/events/Event.h"
 #include "core/events/DemoKernelEvent.h"
+#include "core/events/SectionEventManager.h"
 
 #include "core/input/Input.h"
 
@@ -182,17 +183,18 @@ namespace Phoenix {
 		float m_demoEndTime;	// last demo second (0 = unlimited)
 
 		// Managers
-		SectionManager	m_sectionManager;
-		TextureManager	m_textureManager;
-		VideoManager	m_videoManager;
-		FboManager		m_fboManager;		// FBO Manager (FBO's free to be used by the demo maker)
-		FboManager		m_efxBloomFbo;		// Bloom efx FBO Manager (internal FBO's used by the engine)
-		FboManager		m_efxAccumFbo;		// Accumulation efx FBO Manager (internal engine FBO's)
-		ModelManager	m_modelManager;
-		ShaderManager	m_shaderManager;
-		LightManager	m_lightManager;
-		CameraManager	m_cameraManager;
-		SoundManager	m_soundManager;
+		SectionManager		m_sectionManager;
+		SectionEventManager m_sectionEventManager;
+		TextureManager		m_textureManager;
+		VideoManager		m_videoManager;
+		FboManager			m_fboManager;		// FBO Manager (FBO's free to be used by the demo maker)
+		FboManager			m_efxBloomFbo;		// Bloom efx FBO Manager (internal FBO's used by the engine)
+		FboManager			m_efxAccumFbo;		// Accumulation efx FBO Manager (internal engine FBO's)
+		ModelManager		m_modelManager;
+		ShaderManager		m_shaderManager;
+		LightManager		m_lightManager;
+		CameraManager		m_cameraManager;
+		SoundManager		m_soundManager;
 
 		// Resources
 		Resource* m_pRes;

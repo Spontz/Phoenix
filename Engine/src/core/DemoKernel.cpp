@@ -459,6 +459,10 @@ namespace Phoenix {
 			PX_PROFILE_SCOPE("RunLoop");
 #endif
 
+			// Evaluate if we have section events to process (create new sections, etc...), only if we are in slave mode
+			if (m_slaveMode)
+				m_sectionEventManager.executeEvents();
+
 			// Evaluate the time of the demo
 			if (m_status & DemoStatus::PLAY) {
 				// If demo is playing: Update the timing information for the sections
@@ -605,9 +609,10 @@ namespace Phoenix {
 	void DemoKernel::Close()
 	{
 		Logger::info(LogLevel::low, "Clearing memory...");
-		m_sectionManager.clear();	// Delete all sections
-		m_textureManager.clear();	// Delete all textures
-		m_videoManager.clear();		// Delete all videos
+		m_sectionEventManager.clear();	// Clear all section events
+		m_sectionManager.clear();		// Delete all sections
+		m_textureManager.clear();		// Delete all textures
+		m_videoManager.clear();			// Delete all videos
 
 		m_fboManager.clearFbos();	// Clear FBO's
 		m_efxBloomFbo.clearFbos();

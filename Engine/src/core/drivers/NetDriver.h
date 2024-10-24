@@ -4,13 +4,43 @@
 #pragma once
 
 #include "core/drivers/net/dyad.h"
+#include "core/events/SectionEventManager.h"
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 namespace Phoenix {
 
 	class NetDriver final {
+
+		enum class DemoAction {
+			PING = 0,
+			PAUSE,
+			PLAY,
+			RESTART,
+			SET_STARTTIME,
+			SET_CURRENTTIME,
+			SET_ENDTIME,
+			SET_WINDOWPOS,
+			SET_WINDOWSIZE,
+			END,
+			UNKNOWN
+		};
+
+		mutable std::unordered_map<std::string_view, DemoAction> m_NetDemoAction = {
+			{"ping",		DemoAction::PING},
+			{"pause",		DemoAction::PAUSE},
+			{"play",		DemoAction::PLAY},
+			{"restart",		DemoAction::RESTART},
+			{"startTime",	DemoAction::SET_STARTTIME},
+			{"currentTime",	DemoAction::SET_CURRENTTIME},
+			{"endTime",		DemoAction::SET_ENDTIME},
+			{"windowPos",	DemoAction::SET_WINDOWPOS},
+			{"windowSize",	DemoAction::SET_WINDOWSIZE},
+			{"end",			DemoAction::END}
+		};
+
 	public:
 		static NetDriver& getInstance();
 		static void release();
@@ -28,6 +58,8 @@ namespace Phoenix {
 		void sendMessage(std::string const& sMessage) const;
 
 	private:
+		NetDriver::DemoAction getDemoAction(std::string_view Action) const;
+
 		// Dyad Callbacks
 		static void dyadOnData(dyad_Event* const pDyadEvent);
 		static void dyadOnAccept(dyad_Event* const pDyadEvent);
