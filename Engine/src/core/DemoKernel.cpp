@@ -319,8 +319,7 @@ namespace Phoenix {
 		m_ImGuiLayer(nullptr)
 	{
 		// Create the Window management
-		m_Window = std::make_unique<Window>();
-		m_Window->m_demo = this; // Hack guarro
+		m_Window = std::make_unique<Window>(this);
 
 		memset(m_fVar, 0, MULTIPURPOSE_VARS * sizeof(float));
 	}

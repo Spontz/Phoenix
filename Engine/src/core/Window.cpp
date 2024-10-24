@@ -6,9 +6,9 @@
 
 namespace Phoenix
 {
-	Window::Window()
+	Window::Window(DemoKernel *demo)
 		:
-		m_demo(nullptr),
+		m_demo(demo),
 		m_timeCurrentFrame(0.0f),
 		m_timeDelta(0.0f),
 		m_timeLastFrame(0.0f),
@@ -160,14 +160,19 @@ namespace Phoenix
 
 	void Window::InitFbos()
 	{
+		FboManager *efxBloomFbo = &(m_demo->m_efxBloomFbo);
+		FboManager *efxAccumFbo = &(m_demo->m_efxAccumFbo);
+		FboManager *fboManager = &(m_demo->m_fboManager);
+
 		Logger::info(LogLevel::low, "FBO regeneration Init.");
 		////////////// efxBloom FBO Manager: internal FBO's that are being used by the engine effects
 		{
+
 			Logger::ScopedIndent _;
 			// Clear Fbo's, if there is any
-			if (m_demo->m_efxBloomFbo.fbo.size() > 0) {
+			if (efxBloomFbo->fbo.size() > 0) {
 				Logger::info(LogLevel::low,	"Regenerating Bloom efx FBO's!...");
-				m_demo->m_efxBloomFbo.clearFbos();
+				efxBloomFbo->clearFbos();
 			}
 
 			// init fbo's for Bloom
@@ -179,7 +184,7 @@ namespace Phoenix
 			bloomFbo.height = static_cast<float>(m_Data.WindowProperties.Height) / static_cast<float>(bloomFbo.ratio);
 
 			for (int i = 0; i < EFXBLOOM_FBO_BUFFERS; i++) {
-				if (m_demo->m_efxBloomFbo.addFbo(bloomFbo) >= 0) {
+				if (efxBloomFbo->addFbo(bloomFbo) >= 0) {
 					Logger::info(LogLevel::low,	"EfxBloom Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}", i, bloomFbo.width, bloomFbo.height, bloomFbo.format);
 				}
 				else {
@@ -188,7 +193,7 @@ namespace Phoenix
 			}
 
 			// Init all fbo's color to black
-			m_demo->m_efxBloomFbo.clearFbosColor();
+			efxBloomFbo->clearFbosColor();
 
 		}
 
@@ -197,9 +202,9 @@ namespace Phoenix
 		{
 			Logger::ScopedIndent _;
 			// Clear Fbo's, if there is any
-			if (m_demo->m_efxAccumFbo.fbo.size() > 0) {
+			if (efxAccumFbo->fbo.size() > 0) {
 				Logger::info(LogLevel::low, "Regenerating Accum efx FBO's!...");
-				m_demo->m_efxAccumFbo.clearFbos();
+				efxAccumFbo->clearFbos();
 			}
 
 			// init fbo's for Accum
@@ -211,7 +216,7 @@ namespace Phoenix
 			accumFbo.height = static_cast<float>(m_Data.WindowProperties.Height) / static_cast<float>(accumFbo.ratio);
 
 			for (int i = 0; i < EFXACCUM_FBO_BUFFERS; i++) {
-				if (m_demo->m_efxAccumFbo.addFbo(accumFbo) >= 0) {
+				if (efxAccumFbo->addFbo(accumFbo) >= 0) {
 					Logger::info(LogLevel::low, "EfxAccum Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}", i, accumFbo.width, accumFbo.height, accumFbo.format);
 				}
 				else {
@@ -220,7 +225,7 @@ namespace Phoenix
 			}
 
 			// Init all fbo's color to black
-			m_demo->m_efxAccumFbo.clearFbosColor();
+			efxAccumFbo->clearFbosColor();
 
 		}
 
@@ -228,9 +233,9 @@ namespace Phoenix
 		// Clear Fbo's, if there is any
 		{
 			Logger::ScopedIndent _;
-			if (m_demo->m_fboManager.fbo.size() > 0) {
+			if (fboManager->fbo.size() > 0) {
 				Logger::info(LogLevel::low, "Regenerating generic FBO's!...");
-				m_demo->m_fboManager.clearFbos();
+				fboManager->clearFbos();
 			}
 
 			// init fbo's
@@ -240,7 +245,7 @@ namespace Phoenix
 					fboConfig[i].height = static_cast<float>(m_Data.WindowProperties.Height) / static_cast<float>(fboConfig[i].ratio);
 				}
 
-				if (m_demo->m_fboManager.addFbo(fboConfig[i]) >= 0) {
+				if (fboManager->addFbo(fboConfig[i]) >= 0) {
 					Logger::info(LogLevel::low,	"Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}", i, fboConfig[i].width, fboConfig[i].height, fboConfig[i].format);
 				}
 				else {
@@ -249,7 +254,7 @@ namespace Phoenix
 			}
 
 			// Init all fbo's color to black
-			m_demo->m_fboManager.clearFbosColor();
+			fboManager->clearFbosColor();
 		}
 		Logger::info(LogLevel::low, "FBO regeneration complete.");
 	}
@@ -386,10 +391,10 @@ namespace Phoenix
 		glDepthFunc(GL_LEQUAL);						// depth test comparison function set to LEQUAL
 
 		// Init lights colors, fbo's, shader ID's and texture States
-		DEMO->m_lightManager.initAllLightsColors();
-		DEMO->m_fboManager.unbind(true, true);
-		DEMO->m_shaderManager.unbindShaders();
-		DEMO->m_textureManager.initTextureStates();
+		m_demo->m_lightManager.initAllLightsColors();
+		m_demo->m_fboManager.unbind(true, true);
+		m_demo->m_shaderManager.unbindShaders();
+		m_demo->m_textureManager.initTextureStates();
 	}
 
 	void Window::Shutdown()

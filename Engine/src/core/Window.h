@@ -85,7 +85,7 @@ namespace Phoenix {
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
 
-		Window();
+		Window(DemoKernel *demo);
 		~Window();
 		bool	Init(std::string const& title);
 		void	OnUpdate();
