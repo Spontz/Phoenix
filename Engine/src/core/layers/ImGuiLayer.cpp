@@ -312,8 +312,11 @@ namespace Phoenix {
 
 		if (ImGui::BeginMenuBar())
 		{
+			ImGui::Text("Spontz (%s)", m_info.versionEngine.c_str());
+			ImGui::Separator();
 			if (ImGui::BeginMenu("Info Panels"))
 			{
+
 				ImGui::MenuItem("Show this menu", "F6", &show_menu);
 				ImGui::MenuItem("Show Log", "BACKSPACE", &show_log);
 				ImGui::MenuItem("Show Info", "1", &show_info);
