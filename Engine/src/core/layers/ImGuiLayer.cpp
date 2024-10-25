@@ -304,6 +304,7 @@ namespace Phoenix {
 		window_flags |= ImGuiWindowFlags_NoDecoration;
 		window_flags |= ImGuiWindowFlags_NoBackground;
 		window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
+		window_flags |= ImGuiWindowFlags_NoMove;
 		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Appearing);
 		if (!ImGui::Begin("Demo Menu", &show_menu, window_flags)) {
 			ImGui::End();
