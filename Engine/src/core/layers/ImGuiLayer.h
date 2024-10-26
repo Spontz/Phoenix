@@ -90,6 +90,7 @@ namespace Phoenix {
 		bool	show_config;
 		bool	show_help;
 		bool	show_debugNet;
+		bool	show_debugMemory;
 
 	private:
 
@@ -106,6 +107,7 @@ namespace Phoenix {
 		void drawHelp();
 		void drawCameraInfo(Camera* pCamera);
 		void drawDebugNet();
+		void drawDebugMemory();
 
 		bool OnKeyPressed(KeyPressedEvent& e);
 

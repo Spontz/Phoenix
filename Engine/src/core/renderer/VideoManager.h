@@ -8,6 +8,7 @@
 namespace Phoenix {
 
 	class VideoManager final {
+		friend class ImGuiLayer;
 
 	private:
 		using CVideoMap = std::map<CVideoSource, SP_Video>;

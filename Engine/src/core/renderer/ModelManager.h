@@ -8,6 +8,7 @@
 namespace Phoenix {
 
 	class ModelManager final {
+		friend ImGuiLayer;
 	public:
 		SP_Model	addModel(std::string_view path);
 		void		clear();

@@ -10,6 +10,7 @@ namespace Phoenix {
 	class ShaderManager final
 	{
 		friend class DemoKernel;
+		friend class ImGuiLayer;
 
 	public:
 		~ShaderManager();

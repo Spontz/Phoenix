@@ -20,7 +20,8 @@ namespace Phoenix {
 		"9         : Show this help :)\n" \
 		"0         : Show engine and libraries versions\n" \
 		"F5        : Show Debug screen for networking analysis and simulation\n" \
-		"F6        : Show Menu bar\n" \
+		"F6        : Show Debug Memory managers\n" \
+		"F8        : Show Menu bar\n" \
 		"BACKSPACE : Show error Log\n" \
 		"ENTER     : Print time on log file\n\n" \
 		"Playback control:\n" \
@@ -65,6 +66,7 @@ namespace Phoenix {
 		show_config(false),
 		show_help(false),
 		show_debugNet(false),
+		show_debugMemory(false),
 		
 		m_expandAllRenderSections(true),
 		m_expandAllRenderSectionsChanged(true),
@@ -214,6 +216,8 @@ namespace Phoenix {
 			drawHelp();
 		if (show_debugNet)
 			drawDebugNet();
+		if (show_debugMemory)
+			drawDebugMemory();
 	}
 
 	void ImGuiLayer::End()
@@ -318,7 +322,7 @@ namespace Phoenix {
 			if (ImGui::BeginMenu("Info Panels"))
 			{
 
-				ImGui::MenuItem("Show this menu", "F6", &show_menu);
+				ImGui::MenuItem("Show this menu", "F8", &show_menu);
 				ImGui::MenuItem("Show Log", "BACKSPACE", &show_log);
 				ImGui::MenuItem("Show Info", "1", &show_info);
 				ImGui::MenuItem("Show render time", "2", &show_renderTime);
@@ -335,6 +339,7 @@ namespace Phoenix {
 			if (ImGui::BeginMenu("Debug"))
 			{
 				ImGui::MenuItem("Debug Network", "F5", &show_debugNet);
+				ImGui::MenuItem("Debug Nemory", "F6", &show_debugMemory);
 				ImGui::EndMenu();
 			}
 			ImGui::MenuItem("FBO", "3", &show_fbo);
@@ -749,6 +754,310 @@ namespace Phoenix {
 		ImGui::End();
 	}
 
+	void ImGuiLayer::drawDebugMemory()
+	{
+		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), static_cast<float>(m_vp.y)), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height)), ImGuiCond_FirstUseEver);
+
+		if (!ImGui::Begin("Engine internal memory", &show_debugMemory)) {
+			ImGui::End();
+			return;
+		}
+
+		static ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_ContextMenuInBody;
+
+		ImGuiTabBarFlags tabBarFlags = ImGuiTabBarFlags_FittingPolicyDefault_ | ImGuiTabBarFlags_Reorderable;
+		if (ImGui::BeginTabBar("MainTabs", tabBarFlags))
+		{
+			// Section Manager
+			if (ImGui::BeginTabItem("Sections")) {
+				
+				ImGui::Text("Total sections: %d", m_demo.m_sectionManager.m_section.size());
+				if (ImGui::BeginTable("Sections", 5, tableFlags)) {
+					// Setup headers
+					ImGui::TableSetupColumn("Identifier");
+					ImGui::TableSetupColumn("Layer");
+					ImGui::TableSetupColumn("Type");
+					ImGui::TableSetupColumn("Enabled");
+					ImGui::TableSetupColumn("RunTime");
+					ImGui::TableHeadersRow();
+
+					for (auto* pSec : m_demo.m_sectionManager.m_section) {
+						ImGui::TableNextRow();
+						
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text(pSec->identifier.c_str());
+						
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text("%d", pSec->layer);
+
+						ImGui::TableSetColumnIndex(2);
+						ImGui::Text(pSec->type_str.c_str());
+
+						ImGui::TableSetColumnIndex(3);
+						ImGui::Text("%d", pSec->enabled);
+
+						ImGui::TableSetColumnIndex(4);
+						ImGui::Text("%.3f", pSec->runTime);
+					}
+					ImGui::EndTable();
+				}
+				
+				ImGui::EndTabItem();
+			}
+
+			// Texture Manager (Textures and Cubemaps)
+			if (ImGui::BeginTabItem("Textures")) {
+				ImGui::Text("Total mem: %.1fMb", m_demo.m_textureManager.m_mem);
+				ImGui::SameLine(0, 40);
+				ImGui::Text("Force reload: %d", m_demo.m_textureManager.m_forceLoad);
+				ImGui::Text("Total textures: %d", m_demo.m_textureManager.texture.size());
+				ImGui::SameLine(0, 40);
+				ImGui::Text("Total cubemaps: %d", m_demo.m_textureManager.cubemap.size());
+				if (ImGui::BeginTable("Textures", 4, tableFlags)) {
+					// Setup headers
+					ImGui::TableSetupColumn("Filename");
+					ImGui::TableSetupColumn("ID");
+					ImGui::TableSetupColumn("Size");
+					ImGui::TableSetupColumn("Mem");
+					ImGui::TableHeadersRow();
+
+					for (auto pText : m_demo.m_textureManager.texture) {
+						ImGui::TableNextRow();
+
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text(pText->m_filename.c_str());
+
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text("%d", pText->m_textureID);
+
+						ImGui::TableSetColumnIndex(2);
+						ImGui::Text("%dx%dx%d", pText->m_width, pText->m_height, pText->m_components);
+
+						ImGui::TableSetColumnIndex(3);
+						ImGui::Text("%.3fMb", pText->m_mem);
+					}
+					ImGui::EndTable();
+				}
+										
+				if (ImGui::BeginTable("Cubemaps", 4, tableFlags)) {
+					// Setup headers
+					ImGui::TableSetupColumn("Filename");
+					ImGui::TableSetupColumn("ID");
+					ImGui::TableSetupColumn("Size");
+					ImGui::TableHeadersRow();
+
+					for (auto pCube : m_demo.m_textureManager.cubemap) {
+						ImGui::TableNextRow();
+
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text(pCube->m_filename[0].c_str());
+
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text("%d", pCube->m_cubemapID);
+
+						ImGui::TableSetColumnIndex(2);
+						ImGui::Text("%dx%dx6", pCube->m_width[0], pCube->m_height[0]);
+
+						ImGui::TableSetColumnIndex(3);
+						ImGui::Text("%.3fMb", pCube->m_mem);
+					}
+					ImGui::EndTable();
+				}
+				ImGui::EndTabItem();
+
+			}
+			
+			// FBO Manager (fbo's, Bloom and Accum)
+			if (ImGui::BeginTabItem("FBO's")) {
+				ImGui::Text("FBO mem: %.1fMb", m_demo.m_fboManager.mem);
+				ImGui::SameLine(0, 40);
+				ImGui::Text("Total FBOs: %d", m_demo.m_fboManager.fbo.size());
+
+				ImGui::Text("EFX Bloom fbo mem: %.1fMb", m_demo.m_efxBloomFbo.mem);
+				ImGui::SameLine(0, 40);
+				ImGui::Text("Total Bloom fbos: %d", m_demo.m_efxBloomFbo.fbo.size());
+
+				ImGui::Text("EFX Accum fbo mem: %.1fMb", m_demo.m_efxAccumFbo.mem);
+				ImGui::SameLine(0, 40);
+				ImGui::Text("Total Accum fbos: %d", m_demo.m_efxAccumFbo.fbo.size());
+
+				if (ImGui::BeginTable("FBOs", 4, tableFlags)) {
+					// Setup headers
+					ImGui::TableSetupColumn("ID");
+					ImGui::TableSetupColumn("Format");
+					ImGui::TableSetupColumn("Size");
+					ImGui::TableSetupColumn("Attachments");
+					ImGui::TableHeadersRow();
+
+					int number = 0;
+					for (auto* pFbo : m_demo.m_fboManager.fbo) {
+						ImGui::TableNextRow();
+
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text("%d", number);
+
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text(pFbo->engineFormat.c_str());
+
+						ImGui::TableSetColumnIndex(2);
+						ImGui::Text("%dx%d", pFbo->width, pFbo->height);
+
+						ImGui::TableSetColumnIndex(3);
+						ImGui::Text("%d", pFbo->numAttachments);
+						number++;
+					}
+					ImGui::EndTable();
+				}
+
+				if (ImGui::BeginTable("Bloom FBOs", 4, tableFlags)) {
+					// Setup headers
+					ImGui::TableSetupColumn("ID");
+					ImGui::TableSetupColumn("Format");
+					ImGui::TableSetupColumn("Size");
+					ImGui::TableSetupColumn("Attachments");
+					ImGui::TableHeadersRow();
+
+					int number = 0;
+					for (auto* pFbo : m_demo.m_efxBloomFbo.fbo) {
+						ImGui::TableNextRow();
+
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text("%d", number);
+
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text(pFbo->engineFormat.c_str());
+
+						ImGui::TableSetColumnIndex(2);
+						ImGui::Text("%dx%d", pFbo->width, pFbo->height);
+
+						ImGui::TableSetColumnIndex(3);
+						ImGui::Text("%d", pFbo->numAttachments);
+						number++;
+					}
+					ImGui::EndTable();
+				}
+
+				if (ImGui::BeginTable("Accum FBOs", 4, tableFlags)) {
+					// Setup headers
+					ImGui::TableSetupColumn("ID");
+					ImGui::TableSetupColumn("Format");
+					ImGui::TableSetupColumn("Size");
+					ImGui::TableSetupColumn("Attachments");
+					ImGui::TableHeadersRow();
+
+					int number = 0;
+					for (auto* pFbo : m_demo.m_efxAccumFbo.fbo) {
+						ImGui::TableNextRow();
+
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text("%d", number);
+
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text(pFbo->engineFormat.c_str());
+
+						ImGui::TableSetColumnIndex(2);
+						ImGui::Text("%dx%d", pFbo->width, pFbo->height);
+
+						ImGui::TableSetColumnIndex(3);
+						ImGui::Text("%d", pFbo->numAttachments);
+						number++;
+					}
+					ImGui::EndTable();
+				}
+
+				ImGui::EndTabItem();
+			}
+			
+			// Model Manager
+			if (ImGui::BeginTabItem("Models")) {
+				ImGui::Text("Total models: %d", m_demo.m_modelManager.model.size());
+
+				if (ImGui::BeginTable("Models", 5, tableFlags)) {
+					// Setup headers
+					ImGui::TableSetupColumn("Filename");
+					ImGui::TableSetupColumn("Path");
+					ImGui::TableSetupColumn("Num Meshes");
+					ImGui::TableSetupColumn("Num Vertices");
+					ImGui::TableSetupColumn("Num Faces");
+					ImGui::TableHeadersRow();
+
+					for (auto pModel : m_demo.m_modelManager.model) {
+						ImGui::TableNextRow();
+
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text(pModel->filename.c_str());
+
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text(pModel->directory.c_str());
+
+						ImGui::TableSetColumnIndex(2);
+						ImGui::Text("%d", pModel->m_statNumMeshes);
+
+						ImGui::TableSetColumnIndex(3);
+						ImGui::Text("%d", pModel->m_statNumVertices);
+
+						ImGui::TableSetColumnIndex(4);
+						ImGui::Text("%d", pModel->m_statNumFaces);
+					}
+					ImGui::EndTable();
+				}
+
+				ImGui::EndTabItem();
+			}
+
+			// Shader Manager
+			if (ImGui::BeginTabItem("Shaders")) {
+				ImGui::Text("Total shaders: %d", m_demo.m_shaderManager.m_shader.size());
+
+				if (ImGui::BeginTable("Shaders", 2, tableFlags)) {
+					// Setup headers
+					ImGui::TableSetupColumn("Path");
+					ImGui::TableSetupColumn("ID");
+					ImGui::TableHeadersRow();
+
+					for (auto pShader : m_demo.m_shaderManager.m_shader) {
+						ImGui::TableNextRow();
+
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text(pShader->getURI().data());
+
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text("%d", pShader->getId());
+					}
+					ImGui::EndTable();
+				}
+
+				ImGui::EndTabItem();
+			}
+
+			// Video Manager
+			if (ImGui::BeginTabItem("Videos")) {
+				ImGui::Text("Total videos: %d", m_demo.m_videoManager.VideoMap_.size());
+
+				if (ImGui::BeginTable("Videos", 1, tableFlags)) {
+					// Setup headers
+					ImGui::TableSetupColumn("Path");
+					ImGui::TableHeadersRow();
+
+					for (auto pVideo : m_demo.m_videoManager.VideoMap_) {
+						ImGui::TableNextRow();
+
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text(pVideo.first.m_sPath.c_str());
+					}
+					ImGui::EndTable();
+				}
+
+				ImGui::EndTabItem();
+			}
+
+			ImGui::EndTabBar();
+		}
+		
+		ImGui::End();
+	}
+
 	bool ImGuiLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
 		bool EventHandled = false;
@@ -795,6 +1104,9 @@ namespace Phoenix {
 				break;
 			case Key::SHOWDEBUGNET:
 				show_debugNet = !show_debugNet;
+				break;
+			case Key::SHOWDEBUGMEMORY:
+				show_debugMemory = !show_debugMemory;
 				break;
 			default:
 				EventHandled = false;
