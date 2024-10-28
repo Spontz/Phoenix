@@ -179,32 +179,34 @@ namespace Phoenix {
 			if (var_value.substr(0, 3) == "fbo")
 			{
 				auto const fboNum = std::stoi(var_value.substr(3));
-				bool sendAllAttachments = true;
+				bool sendAllAttachments = true; // Bu default, we will send all the fbo attachments
+				int32_t colorAttachmentToSend = -1; // Stores the color attachment that will be sent. -1:all attachments
 
 				if (fboNum<0 || fboNum>(FBO_BUFFERS - 1)) {
 					Logger::error("Section {}: sampler2D {} not correct, it should be 'fboX', where X=>0 and X<={}", my_section->identifier, var_value, (FBO_BUFFERS - 1));
 					return false;
 				}
-
-				// Read how many color attachments will send to the shader
-				int32_t colorAttachmentToSend = -1; // if -1: All attachments, else: the attachment to be sent
+				
+				// Read the FBO properties
 				for (auto const& prop : var_properties) {
 					if (!loadFboProperty(colorAttachmentToSend, prop))
 						Logger::error("Section {}: sampler2D {} has a non recognized property: {}", my_section->identifier, var_value, prop);
 				}
 
+				// If we have a color attachment, means that not all the attachments need to be sent
+				if (colorAttachmentToSend >= 0)
+					sendAllAttachments = false;
+
 				// Check if the attachments requested are available
 				int fboAttachments = DEMO->m_fboManager.fbo[fboNum]->numAttachments;
-				if (colorAttachmentToSend < 0 || colorAttachmentToSend > (fboAttachments-1)) {
-					if (colorAttachmentToSend > (fboAttachments-1))
-						Logger::error("Section {}: sampler2D {}, attachment ({}) is not available, all attachments have been sent to the shader", my_section->identifier, var_value, colorAttachmentToSend);
-				}
-				else {
-					sendAllAttachments = false;
+				if (colorAttachmentToSend > (fboAttachments-1)) {
+					Logger::error("Section {}: sampler2D {}, attachment ({}) is not available, all attachments have been sent to the shader", my_section->identifier, var_value, colorAttachmentToSend);
+					sendAllAttachments = true;
+					colorAttachmentToSend = -1;
 				}
 				
 				if (sendAllAttachments) {
-					// Now we send the attachments requested
+					// Send all FBO attachments
 					for (int32_t i = 0; i < fboAttachments; i++)
 					{
 						auto var = std::make_shared<varSampler2D>();
@@ -213,7 +215,7 @@ namespace Phoenix {
 						var->fboNum = fboNum;
 						var->fboAttachment = i;
 						var->name = var_name;
-						if (fboAttachments >1)
+						if (fboAttachments>1)
 							var->name += "[" + std::to_string(i) + "]";
 
 						var->loc = my_shader->getUniformLocation(var->name.c_str());
@@ -222,6 +224,7 @@ namespace Phoenix {
 					}
 				}
 				else {
+					// Send only one specific FBO attcahment
 					auto var = std::make_shared<varSampler2D>();
 
 					var->isFBO = true;
