@@ -179,6 +179,7 @@ namespace Phoenix {
 			if (var_value.substr(0, 3) == "fbo")
 			{
 				auto const fboNum = std::stoi(var_value.substr(3));
+				bool sendAllAttachments = true;
 
 				if (fboNum<0 || fboNum>(FBO_BUFFERS - 1)) {
 					Logger::error("Section {}: sampler2D {} not correct, it should be 'fboX', where X=>0 and X<={}", my_section->identifier, var_value, (FBO_BUFFERS - 1));
@@ -186,38 +187,52 @@ namespace Phoenix {
 				}
 
 				// Read how many color attachments will send to the shader
-				int32_t colorAttachmentsToSend = -1; // -1 = All attachments
+				int32_t colorAttachmentToSend = -1; // if -1: All attachments, else: the attachment to be sent
 				for (auto const& prop : var_properties) {
-					if (!loadFboProperty(colorAttachmentsToSend, prop))
+					if (!loadFboProperty(colorAttachmentToSend, prop))
 						Logger::error("Section {}: sampler2D {} has a non recognized property: {}", my_section->identifier, var_value, prop);
 				}
 
 				// Check if the attachments requested are available
 				int fboAttachments = DEMO->m_fboManager.fbo[fboNum]->numAttachments;
-				if (colorAttachmentsToSend < 0 || colorAttachmentsToSend > fboAttachments) {
-					if (colorAttachmentsToSend > fboAttachments)
-						Logger::error("Section {}: sampler2D {} has less attachments ({}) than requested: {}", my_section->identifier, var_value, fboAttachments, colorAttachmentsToSend);
-					colorAttachmentsToSend = fboAttachments;
+				if (colorAttachmentToSend < 0 || colorAttachmentToSend > (fboAttachments-1)) {
+					if (colorAttachmentToSend > (fboAttachments-1))
+						Logger::error("Section {}: sampler2D {}, attachment ({}) is not available, all attachments have been sent to the shader", my_section->identifier, var_value, colorAttachmentToSend);
 				}
+				else {
+					sendAllAttachments = false;
+				}
+				
+				if (sendAllAttachments) {
+					// Now we send the attachments requested
+					for (int32_t i = 0; i < fboAttachments; i++)
+					{
+						auto var = std::make_shared<varSampler2D>();
 
-				// Now we send the attachments requested
-				for (int i = 0; i < colorAttachmentsToSend; i++)
-				{
+						var->isFBO = true;
+						var->fboNum = fboNum;
+						var->fboAttachment = i;
+						var->name = var_name;
+						if (fboAttachments >1)
+							var->name += "[" + std::to_string(i) + "]";
+
+						var->loc = my_shader->getUniformLocation(var->name.c_str());
+						var->texUnitID = static_cast<int>(sampler2D.size());
+						sampler2D.push_back(var);
+					}
+				}
+				else {
 					auto var = std::make_shared<varSampler2D>();
 
 					var->isFBO = true;
 					var->fboNum = fboNum;
-					var->fboAttachment = i;
+					var->fboAttachment = colorAttachmentToSend;
 					var->name = var_name;
-
-					if (colorAttachmentsToSend > 1)
-						var->name += "[" + std::to_string(i) + "]";
 
 					var->loc = my_shader->getUniformLocation(var->name.c_str());
 					var->texUnitID = static_cast<int>(sampler2D.size());
 					sampler2D.push_back(var);
 				}
-
 			}
 			else // If it's a normal texture....
 			{
