@@ -77,9 +77,6 @@ namespace Phoenix {
 		DemoKernel();
 		~DemoKernel();
 
-		static inline DemoKernel* kpDemoKernel = nullptr;
-
-
 	public:
 		void OnEvent(Event& e);
 
