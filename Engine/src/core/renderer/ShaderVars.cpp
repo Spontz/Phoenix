@@ -193,18 +193,20 @@ namespace Phoenix {
 						Logger::error("Section {}: sampler2D {} has a non recognized property: {}", my_section->identifier, var_value, prop);
 				}
 
-				// If we have a color attachment, means that not all the attachments need to be sent
-				if (colorAttachmentToSend >= 0)
+				// Get the total FBO attachments available
+				int fboAttachments = DEMO->m_fboManager.fbo[fboNum]->numAttachments;
+
+				// If we need to send a specific attachment...
+				if (colorAttachmentToSend >= 0) {
 					sendAllAttachments = false;
 
-				// Check if the attachments requested are available
-				int fboAttachments = DEMO->m_fboManager.fbo[fboNum]->numAttachments;
-				if (colorAttachmentToSend > (fboAttachments-1)) {
-					Logger::error("Section {}: sampler2D {}, attachment ({}) is not available, all attachments have been sent to the shader", my_section->identifier, var_value, colorAttachmentToSend);
-					sendAllAttachments = true;
-					colorAttachmentToSend = -1;
+					// Validate that the attachment is valid
+					if (colorAttachmentToSend > (fboAttachments - 1)) {
+						Logger::error("Section {}: sampler2D {}, attachment ({}) is not available, only attachment 0 has been sent to the shader", my_section->identifier, var_value, colorAttachmentToSend);
+						colorAttachmentToSend = 0;
+					}
 				}
-				
+
 				if (sendAllAttachments) {
 					// Send all FBO attachments
 					for (int32_t i = 0; i < fboAttachments; i++)

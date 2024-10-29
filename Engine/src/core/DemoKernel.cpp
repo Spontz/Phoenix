@@ -15,7 +15,7 @@
 
 namespace Phoenix {
 
-	DemoKernel* kpDemoKernel = nullptr;
+	static DemoKernel* kpDemoKernel = nullptr;
 
 	void DemoKernel::PushLayer(Layer* layer)
 	{
