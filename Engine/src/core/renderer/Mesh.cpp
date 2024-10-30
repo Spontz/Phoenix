@@ -135,13 +135,13 @@ namespace Phoenix {
 
 		// Send textures
 		unsigned int numTextures = static_cast<unsigned int>(m_material.textures.size());
-		unsigned int texUnit = startTexUnit;
+		GLint texUnit = startTexUnit;
 		for (unsigned int i = 0; i < numTextures; i++)
 		{
 			if (!(m_material.textures[i].tex))	// Avoid illegal access
 				return;
 			texUnit = startTexUnit + i;			// TODO: Check that texUnit is not greater than max TexUnits supported (normally, 32)
-			shader->setValue(m_material.textures[i].shaderName.c_str(), texUnit);
+			shader->setValue(m_material.textures[i].shaderName, texUnit);
 			m_material.textures[i].tex->bind(texUnit);
 		}
 	}

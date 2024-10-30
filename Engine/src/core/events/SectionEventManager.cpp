@@ -47,7 +47,7 @@ namespace Phoenix {
 	}
 	void SectionEventManager::executeEvents()
 	{
-		if (m_SectionEventQueue[m_executionQueue].empty() && m_SectionEventQueue[m_additionQueue].empty())
+		if ((m_SectionEventQueue[m_executionQueue].empty()) && (m_SectionEventQueue[m_additionQueue].empty()))
 			return;
 
 		// We only execute the execution queue if we have something insisde

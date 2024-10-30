@@ -210,7 +210,6 @@ namespace Phoenix {
 		m_pVars->setValues();
 
 		m_pModel->Draw(m_pShader, m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
-		//m_pModel->Draw(m_pShader->getId(), m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
 
 		glUseProgram(0);
 

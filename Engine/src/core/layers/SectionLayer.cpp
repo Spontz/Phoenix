@@ -264,6 +264,8 @@ namespace Phoenix {
 			const auto ds = m_SectionManager->m_section[sec_id];
 			ds->runTime = DemoRunTime - ds->startTime;
 			ds->exec();			// Exec the Section
+			if (DEMO_checkGLError())
+				Logger::error("GL error found while executing Section {} [layer: {} id: {} type: {}]", sec_id, ds->layer, ds->identifier, ds->type_str);
 			Logger::info(LogLevel::low, "Section {} [layer: {} id: {} type: {}] executed", sec_id, ds->layer, ds->identifier, ds->type_str);
 		}
 		Logger::info(LogLevel::med, "End queue processing!");
