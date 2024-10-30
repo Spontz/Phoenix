@@ -284,18 +284,14 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Error Log (automatically cleared after 1000 messages)", &show_errorLog, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
-		{
-			ImGui::End();
-			return;
+		if (ImGui::Begin("Error Log (automatically cleared after 1000 messages)", &show_errorLog, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
+			if (ImGui::Button("Clear Log"))
+			{
+				clearErrorLog();
+			}
+			ImGui::TextUnformatted(m_errorLog.begin());
+			ImGui::SetScrollHereY(1.0f);
 		}
-
-		if (ImGui::Button("Clear Log"))
-		{
-			clearErrorLog();
-		}
-		ImGui::TextUnformatted(m_errorLog.begin());
-		ImGui::SetScrollHereY(1.0f);
 		ImGui::End();
 	}
 
@@ -315,13 +311,10 @@ namespace Phoenix {
 			return;
 		}
 
-		if (ImGui::BeginMenuBar())
-		{
+		if (ImGui::BeginMenuBar()) {
 			ImGui::Text("Spontz (%s)", m_info.versionEngine.c_str());
 			ImGui::Separator();
-			if (ImGui::BeginMenu("Info Panels"))
-			{
-
+			if (ImGui::BeginMenu("Info Panels")) {
 				ImGui::MenuItem("Show this menu", "F8", &show_menu);
 				ImGui::MenuItem("Show Errors Log", "BACKSPACE", &show_errorLog);
 				ImGui::MenuItem("Show Info", "1", &show_info);
@@ -336,12 +329,13 @@ namespace Phoenix {
 				ImGui::MenuItem("Show versions", "0", &show_version);
 				ImGui::EndMenu();
 			}
-			if (ImGui::BeginMenu("Debug"))
-			{
+			
+			if (ImGui::BeginMenu("Debug")) {
 				ImGui::MenuItem("Debug Network", "F5", &show_debugNet);
 				ImGui::MenuItem("Debug Nemory", "F6", &show_debugMemory);
 				ImGui::EndMenu();
 			}
+
 			ImGui::MenuItem("FBO", "3", &show_fbo);
 			ImGui::MenuItem("All FBO", "4", &show_fboGrid);
 			ImGui::MenuItem("Sections", "5", &show_renderSectionInfo);
@@ -376,43 +370,38 @@ namespace Phoenix {
 
 		ImGuiWindowFlags window_flags = 0;
 		ImGui::SetNextWindowPos(ImVec2(0.0f, 20.0f), ImGuiCond_Appearing);
-		if (!ImGui::Begin("Demo Info", &show_info, window_flags)) {
-			ImGui::End();
-			return;
-		}
-		
-		// Draw Info
-		ImGui::Text("Fps: %.0f", m_demo.m_fps);
-		ImGui::Text("Demo status: %s", m_info.demoStatus.c_str());
-		ImGui::Text("Time: %.2f/%.2f", m_demo.m_demoRunTime, m_demo.m_demoEndTime);
-		ImGui::Text("Texture mem used: %.2fmb", m_demo.m_textureManager.m_mem + m_demo.m_fboManager.mem + m_demo.m_efxBloomFbo.mem + m_demo.m_efxAccumFbo.mem);
-		if (m_demo.m_slaveMode)
-			ImGui::Text("Slave Mode ON");
-		else
-			ImGui::Text("Slave Mode OFF");
+		if (ImGui::Begin("Demo Info", &show_info, window_flags)) {
+			// Draw Info
+			ImGui::Text("Fps: %.0f", m_demo.m_fps);
+			ImGui::Text("Demo status: %s", m_info.demoStatus.c_str());
+			ImGui::Text("Time: %.2f/%.2f", m_demo.m_demoRunTime, m_demo.m_demoEndTime);
+			ImGui::Text("Texture mem used: %.2fmb", m_demo.m_textureManager.m_mem + m_demo.m_fboManager.mem + m_demo.m_efxBloomFbo.mem + m_demo.m_efxAccumFbo.mem);
+			if (m_demo.m_slaveMode)
+				ImGui::Text("Slave Mode ON");
+			else
+				ImGui::Text("Slave Mode OFF");
 
-		if (ImGui::TreeNode("Active camera info"))
-		{
-			drawCameraInfo(m_demo.m_cameraManager.getActiveCamera());
-			ImGui::TreePop();
-		}
+			if (ImGui::TreeNode("Active camera info")) {
+				drawCameraInfo(m_demo.m_cameraManager.getActiveCamera());
+				ImGui::TreePop();
+			}
 
-		if (ImGui::TreeNode("Internal camera info"))
-		{
-			drawCameraInfo(m_demo.m_cameraManager.getInternalCamera());
-			ImGui::TreePop();
-		}
+			if (ImGui::TreeNode("Internal camera info")) {
+				drawCameraInfo(m_demo.m_cameraManager.getInternalCamera());
+				ImGui::TreePop();
+			}
 
-		if (show_version) {
-			ImGui::Text("Phoenix engine version: %s", m_info.versionEngine.c_str());
-			ImGui::Text("OpenGL driver version: %s", m_info.versionOpenGL.c_str());
-			ImGui::Text("OpenGL driver vendor: %s", m_info.vendorOpenGL.c_str());
-			ImGui::Text("OpenGL driver renderer: %s", m_info.rendererOpenGL.c_str());
-			ImGui::Text("GLFW library version: %s", m_info.versionGLFW.c_str());
-			ImGui::Text("MiniAudio library version: %s", m_info.versionMiniAudio.c_str());
-			ImGui::Text("Network Dyad.c library version: %s", m_info.versionDyad.c_str());
-			ImGui::Text("Assimp library version: %s", m_info.versionASSIMP.c_str());
-			ImGui::Text("ImGUI library version: %s", m_info.versionImGUI.c_str());
+			if (show_version) {
+				ImGui::Text("Phoenix engine version: %s", m_info.versionEngine.c_str());
+				ImGui::Text("OpenGL driver version: %s", m_info.versionOpenGL.c_str());
+				ImGui::Text("OpenGL driver vendor: %s", m_info.vendorOpenGL.c_str());
+				ImGui::Text("OpenGL driver renderer: %s", m_info.rendererOpenGL.c_str());
+				ImGui::Text("GLFW library version: %s", m_info.versionGLFW.c_str());
+				ImGui::Text("MiniAudio library version: %s", m_info.versionMiniAudio.c_str());
+				ImGui::Text("Network Dyad.c library version: %s", m_info.versionDyad.c_str());
+				ImGui::Text("Assimp library version: %s", m_info.versionASSIMP.c_str());
+				ImGui::Text("ImGUI library version: %s", m_info.versionImGUI.c_str());
+			}
 		}
 
 		ImGui::End();
@@ -426,30 +415,27 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(ImVec2(2.0f * windowWidth, 0.0f), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Render Section Stack", &show_renderSectionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
-			ImGui::End();
-			return;
-		}
+		if (ImGui::Begin("Render Section Stack", &show_renderSectionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
+			 if (ImGui::Checkbox("Expand All", &m_expandAllRenderSections))
+				m_expandAllRenderSectionsChanged = true;
 
-		if (ImGui::Checkbox("Expand All", &m_expandAllRenderSections))
-			m_expandAllRenderSectionsChanged = true;
-
-		// Render sections
-		for (size_t i = 0; i < m_demo.m_sectionManager.m_execRenderSection.size(); i++) {
-			const auto sec_id = m_demo.m_sectionManager.m_execRenderSection[i].second;	// The second value is the ID of the section
-			const auto ds = m_demo.m_sectionManager.m_section[sec_id];
-			std::stringstream ss;
-			ss << ds->type_str << " id/layer[" << ds->identifier << "/" + std::to_string(ds->layer) << "]";
-			if (m_expandAllRenderSectionsChanged)
-				ImGui::SetNextItemOpen(m_expandAllRenderSections);
-			if (ImGui::CollapsingHeader(ss.str().c_str())) {
-				ImGuiTextBuffer sectionInfoText;
-				sectionInfoText.appendf(ds->debug().c_str());
-				ImGui::TextUnformatted(sectionInfoText.begin(), sectionInfoText.end());
+			// Render sections
+			for (size_t i = 0; i < m_demo.m_sectionManager.m_execRenderSection.size(); i++) {
+				const auto sec_id = m_demo.m_sectionManager.m_execRenderSection[i].second;	// The second value is the ID of the section
+				const auto ds = m_demo.m_sectionManager.m_section[sec_id];
+				std::stringstream ss;
+				ss << ds->type_str << " id/layer[" << ds->identifier << "/" + std::to_string(ds->layer) << "]";
+				if (m_expandAllRenderSectionsChanged)
+					ImGui::SetNextItemOpen(m_expandAllRenderSections);
+				if (ImGui::CollapsingHeader(ss.str().c_str())) {
+					ImGuiTextBuffer sectionInfoText;
+					sectionInfoText.appendf(ds->debug().c_str());
+					ImGui::TextUnformatted(sectionInfoText.begin(), sectionInfoText.end());
+				}
 			}
-		}
 
-		m_expandAllRenderSectionsChanged = false;
+			m_expandAllRenderSectionsChanged = false;
+		}
 		ImGui::End();
 	}
 
@@ -461,64 +447,59 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(ImVec2(2.0f * windowWidth, 0.0f), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Sound Section Stack", &show_soundSectionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
-			ImGui::End();
-			return;
-		}
+		if (ImGui::Begin("Sound Section Stack", &show_soundSectionInfo, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
+			if (ImGui::Checkbox("Expand All", &m_expandAllSoundSections))
+				m_expandAllSoundSectionsChanged = true;
 
-		if (ImGui::Checkbox("Expand All", &m_expandAllSoundSections))
-			m_expandAllSoundSectionsChanged = true;
-
-		// Sound sections
-		for (size_t i = 0; i < m_demo.m_sectionManager.m_execSoundSection.size(); i++) {
-			const auto sec_id = m_demo.m_sectionManager.m_execSoundSection[i].second;	// The second value is the ID of the section
-			const auto ds = m_demo.m_sectionManager.m_section[sec_id];
-			std::stringstream ss;
-			ss << ds->type_str << " id/layer[" << ds->identifier << "/" + std::to_string(ds->layer) << "]";
-			if (m_expandAllSoundSectionsChanged)
-				ImGui::SetNextItemOpen(m_expandAllSoundSections);
-			if (ImGui::CollapsingHeader(ss.str().c_str())) {
-				ImGuiTextBuffer sectionInfoText;
-				sectionInfoText.appendf(ds->debug().c_str());
-				ImGui::TextUnformatted(sectionInfoText.begin(), sectionInfoText.end());
+			// Sound sections
+			for (size_t i = 0; i < m_demo.m_sectionManager.m_execSoundSection.size(); i++) {
+				const auto sec_id = m_demo.m_sectionManager.m_execSoundSection[i].second;	// The second value is the ID of the section
+				const auto ds = m_demo.m_sectionManager.m_section[sec_id];
+				std::stringstream ss;
+				ss << ds->type_str << " id/layer[" << ds->identifier << "/" + std::to_string(ds->layer) << "]";
+				if (m_expandAllSoundSectionsChanged)
+					ImGui::SetNextItemOpen(m_expandAllSoundSections);
+				if (ImGui::CollapsingHeader(ss.str().c_str())) {
+					ImGuiTextBuffer sectionInfoText;
+					sectionInfoText.appendf(ds->debug().c_str());
+					ImGui::TextUnformatted(sectionInfoText.begin(), sectionInfoText.end());
+				}
 			}
-		}
 
-		m_expandAllSoundSectionsChanged = false;
+			m_expandAllSoundSectionsChanged = false;
+		}
 		ImGui::End();
 	}
 
 	void ImGuiLayer::drawRenderTime()
 	{
 		m_render.windowSize = ImVec2(static_cast<float>(m_vp.width / 2.f), 180.0f);
-		
+
 		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(m_render.windowSize, ImGuiCond_FirstUseEver);
 
 
 		m_render.renderTimes[m_render.currentRenderTime] = m_demo.m_realFrameTime * 1000.f; // Render times in ms
 
-		if (!ImGui::Begin("Render time histogram", &show_renderTime)) {
-			ImGui::End();
-			return;
-		}
-		m_render.windowSize = ImGui::GetWindowSize();
-		
-		ImGui::Text("Sections Execution time [Render] (ms): %.5f", m_demo.m_execTime * 1000.0f);
-		drawTooltip("Time consumed by all sections being rendered at this moment\n(it does not include initialization or wait times due to vsync)");
-		ImGui::Text("Fps: %.0f", m_demo.m_fps);
-		ImGui::SetNextItemWidth(80);
-		ImGui::DragInt("FPS Scale", &m_render.maxRenderFPSScale, 10, 10, 1000, "%d");
-		float max = 1000.0f / static_cast<float>(m_render.maxRenderFPSScale);
-		ImGui::SameLine(); 
-		ImGui::Text("Max scale (ms): %.2f", max);
-		ImGui::PlotLines("", m_render.renderTimes, m_render.RENDERTIMES_SAMPLES, m_render.currentRenderTime, "Frame time", 0, max, ImVec2(m_render.windowSize.x - 10, m_render.windowSize.y - 95));
-		ImGui::End();
+		if (ImGui::Begin("Render time histogram", &show_renderTime)) {
+			m_render.windowSize = ImGui::GetWindowSize();
 
-		m_render.currentRenderTime++;
-		if (m_render.currentRenderTime >= m_render.RENDERTIMES_SAMPLES) {
-			m_render.currentRenderTime = 0;
+			ImGui::Text("Sections Execution time [Render] (ms): %.5f", m_demo.m_execTime * 1000.0f);
+			drawTooltip("Time consumed by all sections being rendered at this moment\n(it does not include initialization or wait times due to vsync)");
+			ImGui::Text("Fps: %.0f", m_demo.m_fps);
+			ImGui::SetNextItemWidth(80);
+			ImGui::DragInt("FPS Scale", &m_render.maxRenderFPSScale, 10, 10, 1000, "%d");
+			float max = 1000.0f / static_cast<float>(m_render.maxRenderFPSScale);
+			ImGui::SameLine();
+			ImGui::Text("Max scale (ms): %.2f", max);
+			ImGui::PlotLines("", m_render.renderTimes, m_render.RENDERTIMES_SAMPLES, m_render.currentRenderTime, "Frame time", 0, max, ImVec2(m_render.windowSize.x - 10, m_render.windowSize.y - 95));
+
+			m_render.currentRenderTime++;
+			if (m_render.currentRenderTime >= m_render.RENDERTIMES_SAMPLES) {
+				m_render.currentRenderTime = 0;
+			}
 		}
+		ImGui::End();
 	}
 
 	void ImGuiLayer::drawFbo()
@@ -530,47 +511,44 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(m_fbo.windowPos, ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(m_fbo.windowSize, ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Fbo detail", &show_fbo)) {
-			ImGui::End();
-			return;
-		}
+		if (ImGui::Begin("Fbo detail", &show_fbo)) {
+			// Get window size, in case it has been resized
+			m_fbo.windowSize = ImGui::GetWindowSize();
 
-		// Get window size, in case it has been resized
-		m_fbo.windowSize = ImGui::GetWindowSize();
+			// Calc Fbo size, cosidering window Padding and space between items (itemSpacng)
+			ImGuiStyle& style = ImGui::GetStyle();
+			ImVec2 windowPadding = style.WindowPadding;
+			ImVec2 spaceForSpacing(windowPadding.x * 2, windowPadding.y * 2 + 50);
+			m_fbo.fboSize.x = m_fbo.windowSize.x - spaceForSpacing.x;
+			m_fbo.fboSize.y = m_fbo.windowSize.y - spaceForSpacing.y;
 
-		// Calc Fbo size, cosidering window Padding and space between items (itemSpacng)
-		ImGuiStyle& style = ImGui::GetStyle();
-		ImVec2 windowPadding = style.WindowPadding;
-		ImVec2 spaceForSpacing(windowPadding.x * 2, windowPadding.y * 2 + 50);
-		m_fbo.fboSize.x = m_fbo.windowSize.x - spaceForSpacing.x;
-		m_fbo.fboSize.y = m_fbo.windowSize.y - spaceForSpacing.y;
+			// Draw Fbo selctor
+			if (ImGui::ArrowButton("##leftFbo", ImGuiDir_Left)) { decreaseFbo(); }
+			ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+			if (ImGui::ArrowButton("##rightFbo", ImGuiDir_Right)) { increaseFbo(); }
+			ImGui::SameLine();
+			ImGui::Text("Fbo: %d", m_fbo.fbo);
+			ImGui::SameLine(0, 20);
 
-		// Draw Fbo selctor
-		if (ImGui::ArrowButton("##leftFbo", ImGuiDir_Left)) { decreaseFbo(); }
-		ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-		if (ImGui::ArrowButton("##rightFbo", ImGuiDir_Right)) { increaseFbo(); }
-		ImGui::SameLine();
-		ImGui::Text("Fbo: %d", m_fbo.fbo);
-		ImGui::SameLine(0, 20);
-		
-		// Draw Attachment selctor
-		if (ImGui::ArrowButton("##leftAtt", ImGuiDir_Left)) { decreaseFboAttachment(m_fbo.fbo); }
-		ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-		if (ImGui::ArrowButton("##rightAtt", ImGuiDir_Right)) { increaseFboAttachment(m_fbo.fbo); }
-		ImGui::SameLine();
-		ImGui::Text("Color Attachment: %d", m_fbo.fboAttachment);
-		
-		// Draw Fbo
-		Fbo* my_fbo = m_demo.m_fboManager.fbo[m_fbo.fbo];
-		float aspectRatio = static_cast<float>(my_fbo->width) / static_cast<float>(my_fbo->height);
-		m_fbo.fboSize.y = m_fbo.fboSize.x / aspectRatio;
-		ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[m_fbo.fboAttachment], m_fbo.fboSize, ImVec2(0, 1), ImVec2(1, 0));
-		if (ImGui::IsItemHovered()) {
-			ImGui::BeginTooltip();
-			ImGui::Text("Size: %i, %i", my_fbo->width, my_fbo->height);
-			ImGui::Text("Format: %s", my_fbo->engineFormat.c_str());
-			ImGui::Text("Attachments: %i", my_fbo->numAttachments);
-			ImGui::EndTooltip();
+			// Draw Attachment selctor
+			if (ImGui::ArrowButton("##leftAtt", ImGuiDir_Left)) { decreaseFboAttachment(m_fbo.fbo); }
+			ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+			if (ImGui::ArrowButton("##rightAtt", ImGuiDir_Right)) { increaseFboAttachment(m_fbo.fbo); }
+			ImGui::SameLine();
+			ImGui::Text("Color Attachment: %d", m_fbo.fboAttachment);
+
+			// Draw Fbo
+			Fbo* my_fbo = m_demo.m_fboManager.fbo[m_fbo.fbo];
+			float aspectRatio = static_cast<float>(my_fbo->width) / static_cast<float>(my_fbo->height);
+			m_fbo.fboSize.y = m_fbo.fboSize.x / aspectRatio;
+			ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[m_fbo.fboAttachment], m_fbo.fboSize, ImVec2(0, 1), ImVec2(1, 0));
+			if (ImGui::IsItemHovered()) {
+				ImGui::BeginTooltip();
+				ImGui::Text("Size: %i, %i", my_fbo->width, my_fbo->height);
+				ImGui::Text("Format: %s", my_fbo->engineFormat.c_str());
+				ImGui::Text("Attachments: %i", my_fbo->numAttachments);
+				ImGui::EndTooltip();
+			}
 		}
 		ImGui::End();
 	}
@@ -583,62 +561,60 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(m_fboGrid.windowPos, ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(m_fboGrid.windowSize, ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Fbo grid", &show_fboGrid)) {
-			ImGui::End();
-			return;
-		}
+		if (ImGui::Begin("Fbo grid", &show_fboGrid)) {
 
-		// Get window size, in case it has been resized
-		m_fboGrid.windowSize = ImGui::GetWindowSize();
+			// Get window size, in case it has been resized
+			m_fboGrid.windowSize = ImGui::GetWindowSize();
 
-		// Calc Fbo size, cosidering window Padding and space between items (itemSpacng)
-		ImGuiStyle& style = ImGui::GetStyle();
-		ImVec2 windowPadding = style.WindowPadding;
-		ImVec2 itemSpacing = style.ItemInnerSpacing;
-		ImVec2 spaceForSpacing(windowPadding.x * 2 + itemSpacing.x * (m_fboGrid.fboColumns - 1), windowPadding.y * 2 + itemSpacing.y * (m_fboGrid.fboRows - 1) + 50);
-		m_fboGrid.fboSize.x = (m_fboGrid.windowSize.x - spaceForSpacing.x) / static_cast<float>(m_fboGrid.fboColumns);
-		m_fboGrid.fboSize.y = (m_fboGrid.windowSize.y - spaceForSpacing.y) / static_cast<float>(m_fboGrid.fboRows);
+			// Calc Fbo size, cosidering window Padding and space between items (itemSpacng)
+			ImGuiStyle& style = ImGui::GetStyle();
+			ImVec2 windowPadding = style.WindowPadding;
+			ImVec2 itemSpacing = style.ItemInnerSpacing;
+			ImVec2 spaceForSpacing(windowPadding.x * 2 + itemSpacing.x * (m_fboGrid.fboColumns - 1), windowPadding.y * 2 + itemSpacing.y * (m_fboGrid.fboRows - 1) + 50);
+			m_fboGrid.fboSize.x = (m_fboGrid.windowSize.x - spaceForSpacing.x) / static_cast<float>(m_fboGrid.fboColumns);
+			m_fboGrid.fboSize.y = (m_fboGrid.windowSize.y - spaceForSpacing.y) / static_cast<float>(m_fboGrid.fboRows);
 
-		// Draw Attachment selctor
-		if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { decreaseFboGridAttachment(); }
-		ImGui::SameLine(0.0f, itemSpacing.x);
-		if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { increaseFboGridAttachment(); }
-		ImGui::SameLine();
-		ImGui::Text("Color Attachment: %d", m_fboGrid.fboAttachment);
-		
-		// Draw Fbo Grid
-		int32_t column = 1;
-		for (int32_t i = 0; i < m_fboGrid.fboNum; i++) {
-			Fbo* my_fbo = m_demo.m_fboManager.fbo[i];
-			if (m_fboGrid.fboAttachment < static_cast<int32_t>(my_fbo->numAttachments)) {
-				ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[m_fboGrid.fboAttachment], m_fboGrid.fboSize, ImVec2(0, 1), ImVec2(1, 0));
-				if (ImGui::IsItemHovered())
-				{
-					ImGui::BeginTooltip();
-					ImGui::Text("Fbo Number: %i", i);
-					ImGui::Text("Size: %i, %i", my_fbo->width, my_fbo->height);
-					ImGui::Text("Format: %s", my_fbo->engineFormat.c_str());
-					ImGui::Text("Attachments: %i", my_fbo->numAttachments);
-					ImGui::EndTooltip();
+			// Draw Attachment selctor
+			if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { decreaseFboGridAttachment(); }
+			ImGui::SameLine(0.0f, itemSpacing.x);
+			if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { increaseFboGridAttachment(); }
+			ImGui::SameLine();
+			ImGui::Text("Color Attachment: %d", m_fboGrid.fboAttachment);
+
+			// Draw Fbo Grid
+			int32_t column = 1;
+			for (int32_t i = 0; i < m_fboGrid.fboNum; i++) {
+				Fbo* my_fbo = m_demo.m_fboManager.fbo[i];
+				if (m_fboGrid.fboAttachment < static_cast<int32_t>(my_fbo->numAttachments)) {
+					ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[m_fboGrid.fboAttachment], m_fboGrid.fboSize, ImVec2(0, 1), ImVec2(1, 0));
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::BeginTooltip();
+						ImGui::Text("Fbo Number: %i", i);
+						ImGui::Text("Size: %i, %i", my_fbo->width, my_fbo->height);
+						ImGui::Text("Format: %s", my_fbo->engineFormat.c_str());
+						ImGui::Text("Attachments: %i", my_fbo->numAttachments);
+						ImGui::EndTooltip();
+					}
 				}
-			}
-			else {
-				ImGui::Image((void*)(intptr_t)NULL, m_fboGrid.fboSize);
-				if (ImGui::IsItemHovered())
-				{
-					ImGui::BeginTooltip();
-					ImGui::Text("Attachment not available");
-					ImGui::EndTooltip();
+				else {
+					ImGui::Image((void*)(intptr_t)NULL, m_fboGrid.fboSize);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::BeginTooltip();
+						ImGui::Text("Attachment not available");
+						ImGui::EndTooltip();
+					}
 				}
+
+
+				if (column < m_fboGrid.fboColumns) {
+					ImGui::SameLine(0.0f, itemSpacing.x);
+					column++;
+				}
+				else
+					column = 1;
 			}
-				
-			
-			if (column < m_fboGrid.fboColumns) {
-				ImGui::SameLine(0.0f, itemSpacing.x);
-				column++;
-			}
-			else
-				column = 1;
 		}
 		ImGui::End();
 	}
@@ -648,18 +624,15 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), 140.0f), ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Sound analysis", &show_sound)) {
-			ImGui::End();
-			return;
+		if (ImGui::Begin("Sound analysis", &show_sound)) {
+			ImVec2 win = ImGui::GetWindowSize();
+			int plotSamples = m_demo.m_soundManager.m_spectrogram.getSpectogramSamples();
+			ImGui::Text("Spectrum analyzer: %d samples", plotSamples);
+			ImGui::PlotHistogram("", m_demo.m_soundManager.m_spectrogram.getSpectogramData(), plotSamples, 0, "Spectrum analyzer", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectogram display
+
+			ImGui::Text("Beat: %.3f", m_demo.m_soundManager.m_fBeat);
+			ImGui::Text("Frequencies Magnitudes: Low (%.3f), Mid (%.3f), High (%.3f)", m_demo.m_soundManager.m_fLowFreqSum, m_demo.m_soundManager.m_fMidFreqSum, m_demo.m_soundManager.m_fHighFreqSum);
 		}
-		ImVec2 win = ImGui::GetWindowSize();
-		int plotSamples = m_demo.m_soundManager.m_spectrogram.getSpectogramSamples();
-		ImGui::Text("Spectrum analyzer: %d samples", plotSamples);
-		ImGui::PlotHistogram("", m_demo.m_soundManager.m_spectrogram.getSpectogramData(), plotSamples, 0, "Spectrum analyzer", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectogram display
-
-		ImGui::Text("Beat: %.3f", m_demo.m_soundManager.m_fBeat);
-		ImGui::Text("Frequencies Magnitudes: Low (%.3f), Mid (%.3f), High (%.3f)", m_demo.m_soundManager.m_fLowFreqSum, m_demo.m_soundManager.m_fMidFreqSum, m_demo.m_soundManager.m_fHighFreqSum);
-
 		ImGui::End();
 	}
 
@@ -670,31 +643,28 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Engine config", &show_config)) {
-			ImGui::End();
-			return;
-		}
-		// Font config
-		if (ImGui::SliderFloat("Font size", &m_demo.m_debugFontSize, 1, 3, "%.1f")) {
-			changeFontSize();
-		}
-		ImGui::NewLine();
+		if (ImGui::Begin("Engine config", &show_config)) {
+			// Font config
+			if (ImGui::SliderFloat("Font size", &m_demo.m_debugFontSize, 1, 3, "%.1f")) {
+				changeFontSize();
+			}
+			ImGui::NewLine();
 
-		
-		// Grid config
-		ImGui::Checkbox("Enable Axis", &m_demo.m_debugEnableAxis);
-		ImGui::Checkbox("Draw X Axis", &m_demo.m_debugDrawAxisX); ImGui::SameLine();
-		ImGui::Checkbox("Draw Y Axis", &m_demo.m_debugDrawAxisY); ImGui::SameLine();
-		ImGui::Checkbox("Draw Z Axis", &m_demo.m_debugDrawAxisZ);
-		ImGui::Checkbox("Enable floor", &m_demo.m_debugEnableFloor);
-		if (ImGui::SliderFloat("Floor size", &m_demo.m_pRes->m_gridSize, 1, 50)) {
-			m_demo.m_pRes->loadFloor();
-		}
 
-		if (ImGui::SliderInt("Floor slices", &m_demo.m_pRes->m_gridSlices, 1, 100)) {
-			m_demo.m_pRes->loadFloor();
-		}
+			// Grid config
+			ImGui::Checkbox("Enable Axis", &m_demo.m_debugEnableAxis);
+			ImGui::Checkbox("Draw X Axis", &m_demo.m_debugDrawAxisX); ImGui::SameLine();
+			ImGui::Checkbox("Draw Y Axis", &m_demo.m_debugDrawAxisY); ImGui::SameLine();
+			ImGui::Checkbox("Draw Z Axis", &m_demo.m_debugDrawAxisZ);
+			ImGui::Checkbox("Enable floor", &m_demo.m_debugEnableFloor);
+			if (ImGui::SliderFloat("Floor size", &m_demo.m_pRes->m_gridSize, 1, 50)) {
+				m_demo.m_pRes->loadFloor();
+			}
 
+			if (ImGui::SliderInt("Floor slices", &m_demo.m_pRes->m_gridSlices, 1, 100)) {
+				m_demo.m_pRes->loadFloor();
+			}
+		}
 		ImGui::End();
 	}
 
@@ -705,11 +675,12 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Help commands", &show_help)) {
-			ImGui::End();
-			return;
+		ImGui::SetNextWindowBgAlpha(1.0f);
+		if (ImGui::Begin("Help commands", &show_help)) {
+			ImGui::TextLinkOpenURL("Link to engine documentation", "https://github.com/Spontz/Phoenix/wiki");
+			ImGui::NewLine();
+			ImGui::TextUnformatted(m_helpText.begin(), m_helpText.end());
 		}
-		ImGui::TextUnformatted(m_helpText.begin(), m_helpText.end());
 		ImGui::End();
 	}
 
@@ -737,20 +708,16 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 
-		if (!ImGui::Begin("Network debugging", &show_debugNet, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
-			ImGui::End();
-			return;
+		if (ImGui::Begin("Network debugging", &show_debugNet, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
+			if (ImGui::Button("load message")) {
+				m_debugMsgFromEditor = Utils::readASCIIFile(m_demo.m_dataFolder + "debug/message.txt");
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Simulate receive message")) {
+				NetDriver::getInstance().processMessage(m_debugMsgFromEditor.c_str());
+			}
+			ImGui::InputTextMultiline(" ", &m_debugMsgFromEditor, ImVec2(size.x - 100, size.y - 100));
 		}
-
-		if (ImGui::Button("load message")) {
-			m_debugMsgFromEditor = Utils::readASCIIFile(m_demo.m_dataFolder + "debug/message.txt");
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Simulate receive message")) {
-			NetDriver::getInstance().processMessage(m_debugMsgFromEditor.c_str());
-		}
-		ImGui::InputTextMultiline(" ", &m_debugMsgFromEditor, ImVec2(size.x-100, size.y-100));
-		
 		ImGui::End();
 	}
 
@@ -758,320 +725,342 @@ namespace Phoenix {
 	{
 		ImGui::SetNextWindowPos(ImVec2(static_cast<float>(m_vp.x), static_cast<float>(m_vp.y)), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(static_cast<float>(m_vp.width), static_cast<float>(m_vp.height)), ImGuiCond_FirstUseEver);
-
-		if (!ImGui::Begin("Engine internal memory", &show_debugMemory)) {
-			ImGui::End();
-			return;
-		}
-
-		static ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_ContextMenuInBody;
-
-		ImGuiTabBarFlags tabBarFlags = ImGuiTabBarFlags_FittingPolicyDefault_ | ImGuiTabBarFlags_Reorderable;
-		if (ImGui::BeginTabBar("MainTabs", tabBarFlags))
-		{
-			// Section Manager
-			if (ImGui::BeginTabItem("Sections")) {
-				
-				ImGui::Text("Total sections: %d", m_demo.m_sectionManager.m_section.size());
-				if (ImGui::BeginTable("Sections", 5, tableFlags)) {
-					// Setup headers
-					ImGui::TableSetupColumn("Identifier");
-					ImGui::TableSetupColumn("Layer");
-					ImGui::TableSetupColumn("Type");
-					ImGui::TableSetupColumn("Enabled");
-					ImGui::TableSetupColumn("RunTime");
-					ImGui::TableHeadersRow();
-
-					for (auto* pSec : m_demo.m_sectionManager.m_section) {
-						ImGui::TableNextRow();
-						
-						ImGui::TableSetColumnIndex(0);
-						ImGui::Text(pSec->identifier.c_str());
-						
-						ImGui::TableSetColumnIndex(1);
-						ImGui::Text("%d", pSec->layer);
-
-						ImGui::TableSetColumnIndex(2);
-						ImGui::Text(pSec->type_str.c_str());
-
-						ImGui::TableSetColumnIndex(3);
-						ImGui::Text("%d", pSec->enabled);
-
-						ImGui::TableSetColumnIndex(4);
-						ImGui::Text("%.3f", pSec->runTime);
-					}
-					ImGui::EndTable();
-				}
-				
-				ImGui::EndTabItem();
-			}
-
-			// Texture Manager (Textures and Cubemaps)
-			if (ImGui::BeginTabItem("Textures")) {
-				ImGui::Text("Total mem: %.1fMb", m_demo.m_textureManager.m_mem);
-				ImGui::SameLine(0, 40);
-				ImGui::Text("Force reload: %d", m_demo.m_textureManager.m_forceLoad);
-				ImGui::Text("Total textures: %d", m_demo.m_textureManager.texture.size());
-				ImGui::SameLine(0, 40);
-				ImGui::Text("Total cubemaps: %d", m_demo.m_textureManager.cubemap.size());
-				if (ImGui::BeginTable("Textures", 4, tableFlags)) {
-					// Setup headers
-					ImGui::TableSetupColumn("Filename");
-					ImGui::TableSetupColumn("ID");
-					ImGui::TableSetupColumn("Size");
-					ImGui::TableSetupColumn("Mem");
-					ImGui::TableHeadersRow();
-
-					for (auto pText : m_demo.m_textureManager.texture) {
-						ImGui::TableNextRow();
-
-						ImGui::TableSetColumnIndex(0);
-						ImGui::Text(pText->m_filename.c_str());
-
-						ImGui::TableSetColumnIndex(1);
-						ImGui::Text("%d", pText->m_textureID);
-
-						ImGui::TableSetColumnIndex(2);
-						ImGui::Text("%dx%dx%d", pText->m_width, pText->m_height, pText->m_components);
-
-						ImGui::TableSetColumnIndex(3);
-						ImGui::Text("%.3fMb", pText->m_mem);
-					}
-					ImGui::EndTable();
-				}
-										
-				if (ImGui::BeginTable("Cubemaps", 4, tableFlags)) {
-					// Setup headers
-					ImGui::TableSetupColumn("Filename");
-					ImGui::TableSetupColumn("ID");
-					ImGui::TableSetupColumn("Size");
-					ImGui::TableHeadersRow();
-
-					for (auto pCube : m_demo.m_textureManager.cubemap) {
-						ImGui::TableNextRow();
-
-						ImGui::TableSetColumnIndex(0);
-						ImGui::Text(pCube->m_filename[0].c_str());
-
-						ImGui::TableSetColumnIndex(1);
-						ImGui::Text("%d", pCube->m_cubemapID);
-
-						ImGui::TableSetColumnIndex(2);
-						ImGui::Text("%dx%dx6", pCube->m_width[0], pCube->m_height[0]);
-
-						ImGui::TableSetColumnIndex(3);
-						ImGui::Text("%.3fMb", pCube->m_mem);
-					}
-					ImGui::EndTable();
-				}
-				ImGui::EndTabItem();
-
-			}
-			
-			// FBO Manager (fbo's, Bloom and Accum)
-			if (ImGui::BeginTabItem("FBO's")) {
-				ImGui::Text("FBO mem: %.1fMb", m_demo.m_fboManager.mem);
-				ImGui::SameLine(0, 40);
-				ImGui::Text("Total FBOs: %d", m_demo.m_fboManager.fbo.size());
-
-				ImGui::Text("EFX Bloom fbo mem: %.1fMb", m_demo.m_efxBloomFbo.mem);
-				ImGui::SameLine(0, 40);
-				ImGui::Text("Total Bloom fbos: %d", m_demo.m_efxBloomFbo.fbo.size());
-
-				ImGui::Text("EFX Accum fbo mem: %.1fMb", m_demo.m_efxAccumFbo.mem);
-				ImGui::SameLine(0, 40);
-				ImGui::Text("Total Accum fbos: %d", m_demo.m_efxAccumFbo.fbo.size());
-
-				if (ImGui::BeginTable("FBOs", 4, tableFlags)) {
-					// Setup headers
-					ImGui::TableSetupColumn("ID");
-					ImGui::TableSetupColumn("Format");
-					ImGui::TableSetupColumn("Size");
-					ImGui::TableSetupColumn("Attachments");
-					ImGui::TableHeadersRow();
-
-					int number = 0;
-					for (auto* pFbo : m_demo.m_fboManager.fbo) {
-						ImGui::TableNextRow();
-
-						ImGui::TableSetColumnIndex(0);
-						ImGui::Text("%d", number);
-
-						ImGui::TableSetColumnIndex(1);
-						ImGui::Text(pFbo->engineFormat.c_str());
-
-						ImGui::TableSetColumnIndex(2);
-						ImGui::Text("%dx%d", pFbo->width, pFbo->height);
-
-						ImGui::TableSetColumnIndex(3);
-						ImGui::Text("%d", pFbo->numAttachments);
-						number++;
-					}
-					ImGui::EndTable();
-				}
-
-				if (ImGui::BeginTable("Bloom FBOs", 4, tableFlags)) {
-					// Setup headers
-					ImGui::TableSetupColumn("ID");
-					ImGui::TableSetupColumn("Format");
-					ImGui::TableSetupColumn("Size");
-					ImGui::TableSetupColumn("Attachments");
-					ImGui::TableHeadersRow();
-
-					int number = 0;
-					for (auto* pFbo : m_demo.m_efxBloomFbo.fbo) {
-						ImGui::TableNextRow();
-
-						ImGui::TableSetColumnIndex(0);
-						ImGui::Text("%d", number);
-
-						ImGui::TableSetColumnIndex(1);
-						ImGui::Text(pFbo->engineFormat.c_str());
-
-						ImGui::TableSetColumnIndex(2);
-						ImGui::Text("%dx%d", pFbo->width, pFbo->height);
-
-						ImGui::TableSetColumnIndex(3);
-						ImGui::Text("%d", pFbo->numAttachments);
-						number++;
-					}
-					ImGui::EndTable();
-				}
-
-				if (ImGui::BeginTable("Accum FBOs", 4, tableFlags)) {
-					// Setup headers
-					ImGui::TableSetupColumn("ID");
-					ImGui::TableSetupColumn("Format");
-					ImGui::TableSetupColumn("Size");
-					ImGui::TableSetupColumn("Attachments");
-					ImGui::TableHeadersRow();
-
-					int number = 0;
-					for (auto* pFbo : m_demo.m_efxAccumFbo.fbo) {
-						ImGui::TableNextRow();
-
-						ImGui::TableSetColumnIndex(0);
-						ImGui::Text("%d", number);
-
-						ImGui::TableSetColumnIndex(1);
-						ImGui::Text(pFbo->engineFormat.c_str());
-
-						ImGui::TableSetColumnIndex(2);
-						ImGui::Text("%dx%d", pFbo->width, pFbo->height);
-
-						ImGui::TableSetColumnIndex(3);
-						ImGui::Text("%d", pFbo->numAttachments);
-						number++;
-					}
-					ImGui::EndTable();
-				}
-
-				ImGui::EndTabItem();
-			}
-			
-			// Model Manager
-			if (ImGui::BeginTabItem("Models")) {
-				ImGui::Text("Total models: %d", m_demo.m_modelManager.model.size());
-
-				if (ImGui::BeginTable("Models", 5, tableFlags)) {
-					// Setup headers
-					ImGui::TableSetupColumn("Filename");
-					ImGui::TableSetupColumn("Path");
-					ImGui::TableSetupColumn("Num Meshes");
-					ImGui::TableSetupColumn("Num Vertices");
-					ImGui::TableSetupColumn("Num Faces");
-					ImGui::TableHeadersRow();
-
-					for (auto pModel : m_demo.m_modelManager.model) {
-						ImGui::TableNextRow();
-
-						ImGui::TableSetColumnIndex(0);
-						ImGui::Text(pModel->filename.c_str());
-
-						ImGui::TableSetColumnIndex(1);
-						ImGui::Text(pModel->directory.c_str());
-
-						ImGui::TableSetColumnIndex(2);
-						ImGui::Text("%d", pModel->m_statNumMeshes);
-
-						ImGui::TableSetColumnIndex(3);
-						ImGui::Text("%d", pModel->m_statNumVertices);
-
-						ImGui::TableSetColumnIndex(4);
-						ImGui::Text("%d", pModel->m_statNumFaces);
-					}
-					ImGui::EndTable();
-				}
-
-				ImGui::EndTabItem();
-			}
-
-			// Shader Manager
-			if (ImGui::BeginTabItem("Shaders")) {
-				ImGui::Text("Total shaders: %d", m_demo.m_shaderManager.m_shader.size());
-
-				if (ImGui::BeginTable("Shaders", 2, tableFlags)) {
-					// Setup headers
-					ImGui::TableSetupColumn("Path");
-					ImGui::TableSetupColumn("ID");
-					ImGui::TableHeadersRow();
-
-					for (auto pShader : m_demo.m_shaderManager.m_shader) {
-						ImGui::TableNextRow();
-
-						ImGui::TableSetColumnIndex(0);
-						ImGui::Text(pShader->getURI().data());
-
-						ImGui::TableSetColumnIndex(1);
-						ImGui::Text("%d", pShader->getId());
-					}
-					ImGui::EndTable();
-				}
-
-				ImGui::EndTabItem();
-			}
-
-			// Video Manager
-			if (ImGui::BeginTabItem("Videos")) {
-				ImGui::Text("Total videos: %d", m_demo.m_videoManager.VideoMap_.size());
-
-				if (ImGui::BeginTable("Videos", 1, tableFlags)) {
-					// Setup headers
-					ImGui::TableSetupColumn("Path");
-					ImGui::TableHeadersRow();
-
-					for (auto pVideo : m_demo.m_videoManager.VideoMap_) {
-						ImGui::TableNextRow();
-
-						ImGui::TableSetColumnIndex(0);
-						ImGui::Text(pVideo.first.m_sPath.c_str());
-					}
-					ImGui::EndTable();
-				}
-
-				ImGui::EndTabItem();
-			}
-
-			// Message Queues Manager
-			if (ImGui::BeginTabItem("Editor Event Queues")) {
-
-				ImGui::Text("Events in addition queue: %d", m_demo.m_sectionEventManager.getNumEventsAdditionQueue());
-				ImGui::Text("Events in execution queue: %d", m_demo.m_sectionEventManager.getNumEventsExecutionQueue());
-				
-				if (ImGui::Button("Clear Event Log"))
-				{
-					clearEventLog();
-				}
-				ImGui::Text("Events in queue processed (log is automatically cleared after 1000 messages):");
-				ImGui::TextUnformatted(m_eventLog.begin());
-				ImGui::SetScrollHereY(1.0f);
-
-				ImGui::EndTabItem();
-			}
-
-			ImGui::EndTabBar();
-		}
 		
+		ImGui::SetNextWindowBgAlpha(1.0f);
+		if (ImGui::Begin("Engine internal memory", &show_debugMemory)) {
+			static ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_ContextMenuInBody;
+
+			ImGuiTabBarFlags tabBarFlags = ImGuiTabBarFlags_FittingPolicyDefault_ | ImGuiTabBarFlags_Reorderable;
+			if (ImGui::BeginTabBar("MainTabs", tabBarFlags))
+			{
+				// Global Stats
+				if (ImGui::BeginTabItem("Global")) {
+
+					ImGui::SeparatorText("Sections");
+					ImGui::Text("Total sections: %d", m_demo.m_sectionManager.m_section.size());
+					ImGui::Text("Executing rendering sections: %d", m_demo.m_sectionManager.m_execRenderSection.size());
+					ImGui::SeparatorText("Texture memory");
+					ImGui::Text("Total textures: %d", m_demo.m_textureManager.texture.size());
+					ImGui::Text("Total cubemaps: %d", m_demo.m_textureManager.cubemap.size());
+					ImGui::Text("Total FBOs: %d", m_demo.m_fboManager.fbo.size());
+					ImGui::Text("Total FBOs (exfAccum): %d", m_demo.m_efxAccumFbo.fbo.size());
+					ImGui::Text("Total FBOs (exfBloom): %d", m_demo.m_efxBloomFbo.fbo.size());
+					ImGui::Text("Total memory: %.2fMb", m_demo.m_textureManager.m_mem + m_demo.m_fboManager.mem + m_demo.m_efxBloomFbo.mem + m_demo.m_efxAccumFbo.mem);
+					ImGui::SeparatorText("3D Models");
+					ImGui::Text("Total models: %d", m_demo.m_modelManager.model.size());
+					ImGui::SeparatorText("Shaders");
+					ImGui::Text("Total shaders: %d", m_demo.m_shaderManager.m_shader.size());
+					ImGui::SeparatorText("Videos");
+					ImGui::Text("Total videos: %d", m_demo.m_videoManager.VideoMap_.size());
+					ImGui::SeparatorText("Sounds");
+					ImGui::Text("Total sounds: %d", m_demo.m_soundManager.sound.size());
+					ImGui::Text("Executing sound sections: %d", m_demo.m_sectionManager.m_execSoundSection.size());
+					ImGui::EndTabItem();
+				}
+
+				// Section Manager
+				if (ImGui::BeginTabItem("Sections")) {
+
+					ImGui::Text("Total sections: %d", m_demo.m_sectionManager.m_section.size());
+					if (ImGui::BeginTable("Sections", 5, tableFlags)) {
+						// Setup headers
+						ImGui::TableSetupColumn("Identifier");
+						ImGui::TableSetupColumn("Layer");
+						ImGui::TableSetupColumn("Type");
+						ImGui::TableSetupColumn("Enabled");
+						ImGui::TableSetupColumn("RunTime");
+						ImGui::TableHeadersRow();
+
+						for (auto* pSec : m_demo.m_sectionManager.m_section) {
+							ImGui::TableNextRow();
+
+							ImGui::TableSetColumnIndex(0);
+							ImGui::Text(pSec->identifier.c_str());
+
+							ImGui::TableSetColumnIndex(1);
+							ImGui::Text("%d", pSec->layer);
+
+							ImGui::TableSetColumnIndex(2);
+							ImGui::Text(pSec->type_str.c_str());
+
+							ImGui::TableSetColumnIndex(3);
+							ImGui::Text("%d", pSec->enabled);
+
+							ImGui::TableSetColumnIndex(4);
+							ImGui::Text("%.3f", pSec->runTime);
+						}
+						ImGui::EndTable();
+					}
+
+					ImGui::EndTabItem();
+				}
+
+				// Texture Manager (Textures and Cubemaps)
+				if (ImGui::BeginTabItem("Textures")) {
+					ImGui::Text("Total mem: %.1fMb", m_demo.m_textureManager.m_mem);
+					ImGui::SameLine(0, 40);
+					ImGui::Text("Force reload: %d", m_demo.m_textureManager.m_forceLoad);
+					ImGui::Text("Total textures: %d", m_demo.m_textureManager.texture.size());
+					ImGui::SameLine(0, 40);
+					ImGui::Text("Total cubemaps: %d", m_demo.m_textureManager.cubemap.size());
+					if (ImGui::BeginTable("Textures", 4, tableFlags)) {
+						// Setup headers
+						ImGui::TableSetupColumn("Texture file");
+						ImGui::TableSetupColumn("ID");
+						ImGui::TableSetupColumn("Size");
+						ImGui::TableSetupColumn("Mem");
+						ImGui::TableHeadersRow();
+
+						for (auto pText : m_demo.m_textureManager.texture) {
+							ImGui::TableNextRow();
+
+							ImGui::TableSetColumnIndex(0);
+							ImGui::Text(pText->m_filename.c_str());
+
+							ImGui::TableSetColumnIndex(1);
+							ImGui::Text("%d", pText->m_textureID);
+
+							ImGui::TableSetColumnIndex(2);
+							ImGui::Text("%dx%dx%d", pText->m_width, pText->m_height, pText->m_components);
+
+							ImGui::TableSetColumnIndex(3);
+							ImGui::Text("%.3fMb", pText->m_mem);
+						}
+						ImGui::EndTable();
+					}
+
+					if (ImGui::BeginTable("Cubemaps", 4, tableFlags)) {
+						// Setup headers
+						ImGui::TableSetupColumn("Cubemap file");
+						ImGui::TableSetupColumn("ID");
+						ImGui::TableSetupColumn("Size");
+						ImGui::TableHeadersRow();
+
+						for (auto pCube : m_demo.m_textureManager.cubemap) {
+							ImGui::TableNextRow();
+
+							ImGui::TableSetColumnIndex(0);
+							ImGui::Text(pCube->m_filename[0].c_str());
+
+							ImGui::TableSetColumnIndex(1);
+							ImGui::Text("%d", pCube->m_cubemapID);
+
+							ImGui::TableSetColumnIndex(2);
+							ImGui::Text("%dx%dx6", pCube->m_width[0], pCube->m_height[0]);
+
+							ImGui::TableSetColumnIndex(3);
+							ImGui::Text("%.3fMb", pCube->m_mem);
+						}
+						ImGui::EndTable();
+					}
+					ImGui::EndTabItem();
+
+				}
+
+				// FBO Manager (fbo's, Bloom and Accum)
+				if (ImGui::BeginTabItem("FBO's")) {
+					ImGui::Text("FBO mem: %.1fMb", m_demo.m_fboManager.mem);
+					ImGui::SameLine(0, 40);
+					ImGui::Text("Total FBOs: %d", m_demo.m_fboManager.fbo.size());
+
+					ImGui::Text("EFX Bloom fbo mem: %.1fMb", m_demo.m_efxBloomFbo.mem);
+					ImGui::SameLine(0, 40);
+					ImGui::Text("Total Bloom fbos: %d", m_demo.m_efxBloomFbo.fbo.size());
+
+					ImGui::Text("EFX Accum fbo mem: %.1fMb", m_demo.m_efxAccumFbo.mem);
+					ImGui::SameLine(0, 40);
+					ImGui::Text("Total Accum fbos: %d", m_demo.m_efxAccumFbo.fbo.size());
+
+					if (ImGui::BeginTable("FBOs", 4, tableFlags)) {
+						// Setup headers
+						ImGui::TableSetupColumn("ID");
+						ImGui::TableSetupColumn("Format");
+						ImGui::TableSetupColumn("Size");
+						ImGui::TableSetupColumn("Attachments");
+						ImGui::TableHeadersRow();
+
+						int number = 0;
+						for (auto* pFbo : m_demo.m_fboManager.fbo) {
+							ImGui::TableNextRow();
+
+							ImGui::TableSetColumnIndex(0);
+							ImGui::Text("%d", number);
+
+							ImGui::TableSetColumnIndex(1);
+							ImGui::Text(pFbo->engineFormat.c_str());
+
+							ImGui::TableSetColumnIndex(2);
+							ImGui::Text("%dx%d", pFbo->width, pFbo->height);
+
+							ImGui::TableSetColumnIndex(3);
+							ImGui::Text("%d", pFbo->numAttachments);
+							number++;
+						}
+						ImGui::EndTable();
+					}
+
+					if (ImGui::BeginTable("Bloom FBOs", 4, tableFlags)) {
+						// Setup headers
+						ImGui::TableSetupColumn("ID");
+						ImGui::TableSetupColumn("Format");
+						ImGui::TableSetupColumn("Size");
+						ImGui::TableSetupColumn("Attachments");
+						ImGui::TableHeadersRow();
+
+						int number = 0;
+						for (auto* pFbo : m_demo.m_efxBloomFbo.fbo) {
+							ImGui::TableNextRow();
+
+							ImGui::TableSetColumnIndex(0);
+							ImGui::Text("%d", number);
+
+							ImGui::TableSetColumnIndex(1);
+							ImGui::Text(pFbo->engineFormat.c_str());
+
+							ImGui::TableSetColumnIndex(2);
+							ImGui::Text("%dx%d", pFbo->width, pFbo->height);
+
+							ImGui::TableSetColumnIndex(3);
+							ImGui::Text("%d", pFbo->numAttachments);
+							number++;
+						}
+						ImGui::EndTable();
+					}
+
+					if (ImGui::BeginTable("Accum FBOs", 4, tableFlags)) {
+						// Setup headers
+						ImGui::TableSetupColumn("ID");
+						ImGui::TableSetupColumn("Format");
+						ImGui::TableSetupColumn("Size");
+						ImGui::TableSetupColumn("Attachments");
+						ImGui::TableHeadersRow();
+
+						int number = 0;
+						for (auto* pFbo : m_demo.m_efxAccumFbo.fbo) {
+							ImGui::TableNextRow();
+
+							ImGui::TableSetColumnIndex(0);
+							ImGui::Text("%d", number);
+
+							ImGui::TableSetColumnIndex(1);
+							ImGui::Text(pFbo->engineFormat.c_str());
+
+							ImGui::TableSetColumnIndex(2);
+							ImGui::Text("%dx%d", pFbo->width, pFbo->height);
+
+							ImGui::TableSetColumnIndex(3);
+							ImGui::Text("%d", pFbo->numAttachments);
+							number++;
+						}
+						ImGui::EndTable();
+					}
+
+					ImGui::EndTabItem();
+				}
+
+				// Model Manager
+				if (ImGui::BeginTabItem("Models")) {
+					ImGui::Text("Total models: %d", m_demo.m_modelManager.model.size());
+
+					if (ImGui::BeginTable("Models", 5, tableFlags)) {
+						// Setup headers
+						ImGui::TableSetupColumn("Filename");
+						ImGui::TableSetupColumn("Path");
+						ImGui::TableSetupColumn("Num Meshes");
+						ImGui::TableSetupColumn("Num Vertices");
+						ImGui::TableSetupColumn("Num Faces");
+						ImGui::TableHeadersRow();
+
+						for (auto pModel : m_demo.m_modelManager.model) {
+							ImGui::TableNextRow();
+
+							ImGui::TableSetColumnIndex(0);
+							ImGui::Text(pModel->filename.c_str());
+
+							ImGui::TableSetColumnIndex(1);
+							ImGui::Text(pModel->directory.c_str());
+
+							ImGui::TableSetColumnIndex(2);
+							ImGui::Text("%d", pModel->m_statNumMeshes);
+
+							ImGui::TableSetColumnIndex(3);
+							ImGui::Text("%d", pModel->m_statNumVertices);
+
+							ImGui::TableSetColumnIndex(4);
+							ImGui::Text("%d", pModel->m_statNumFaces);
+						}
+						ImGui::EndTable();
+					}
+
+					ImGui::EndTabItem();
+				}
+
+				// Shader Manager
+				if (ImGui::BeginTabItem("Shaders")) {
+					ImGui::Text("Total shaders: %d", m_demo.m_shaderManager.m_shader.size());
+
+					if (ImGui::BeginTable("Shaders", 2, tableFlags)) {
+						// Setup headers
+						ImGui::TableSetupColumn("Path");
+						ImGui::TableSetupColumn("ID");
+						ImGui::TableHeadersRow();
+
+						for (auto pShader : m_demo.m_shaderManager.m_shader) {
+							ImGui::TableNextRow();
+
+							ImGui::TableSetColumnIndex(0);
+							ImGui::Text(pShader->getURI().data());
+
+							ImGui::TableSetColumnIndex(1);
+							ImGui::Text("%d", pShader->getId());
+						}
+						ImGui::EndTable();
+					}
+
+					ImGui::EndTabItem();
+				}
+
+				// Video Manager
+				if (ImGui::BeginTabItem("Videos")) {
+					ImGui::Text("Total videos: %d", m_demo.m_videoManager.VideoMap_.size());
+
+					if (ImGui::BeginTable("Videos", 1, tableFlags)) {
+						// Setup headers
+						ImGui::TableSetupColumn("Path");
+						ImGui::TableHeadersRow();
+
+						for (auto pVideo : m_demo.m_videoManager.VideoMap_) {
+							ImGui::TableNextRow();
+
+							ImGui::TableSetColumnIndex(0);
+							ImGui::Text(pVideo.first.m_sPath.c_str());
+						}
+						ImGui::EndTable();
+					}
+
+					ImGui::EndTabItem();
+				}
+
+				// Message Queues Manager
+				if (ImGui::BeginTabItem("Editor Event Queues")) {
+
+					ImGui::Text("Events in addition queue: %d", m_demo.m_sectionEventManager.getNumEventsAdditionQueue());
+					ImGui::Text("Events in execution queue: %d", m_demo.m_sectionEventManager.getNumEventsExecutionQueue());
+
+					if (ImGui::Button("Clear Event Log"))
+					{
+						clearEventLog();
+					}
+					ImGui::Text("Events in queue processed (log is automatically cleared after 1000 messages):");
+					ImGui::TextUnformatted(m_eventLog.begin());
+					ImGui::SetScrollHereY(1.0f);
+
+					ImGui::EndTabItem();
+				}
+
+				ImGui::EndTabBar();
+			}
+		}
 		ImGui::End();
 	}
 
