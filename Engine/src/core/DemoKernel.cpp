@@ -767,7 +767,13 @@ namespace Phoenix {
 	void DemoKernel::ImGuiAddLogMessage(std::string_view message)
 	{
 		if (m_ImGuiLayer)
-			m_ImGuiLayer->addLog(message);
+			m_ImGuiLayer->addErrorLog(message);
+	}
+
+	void DemoKernel::ImGuiAddEventLogMessage(std::string_view message)
+	{
+		if (m_ImGuiLayer)
+			m_ImGuiLayer->addEventLog(message);
 	}
 
 	void DemoKernel::initTimer()

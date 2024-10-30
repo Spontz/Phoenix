@@ -127,6 +127,7 @@ namespace Phoenix {
 		// ImGUI management
 		bool ImGuiWantCaptureMouse();
 		void ImGuiAddLogMessage(std::string_view message);
+		void ImGuiAddEventLogMessage(std::string_view message);
 
 		// Demo control
 		void playDemo();

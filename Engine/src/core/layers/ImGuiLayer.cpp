@@ -53,7 +53,7 @@ namespace Phoenix {
 		Layer("ImGuiLayer"),
 		m_demo(*DEMO),
 		m_io(nullptr),
-		show_log(false),
+		show_errorLog(false),
 		show_menu(false),
 		show_info(false),
 		show_renderTime(false),
@@ -192,8 +192,8 @@ namespace Phoenix {
 	{
 		m_vp = m_demo.m_Window->GetFramebufferViewport();
 
-		if (show_log)
-			drawLog();
+		if (show_errorLog)
+			drawErrorLog();
 		if (show_menu)
 			drawMenu();
 		if (show_info)
@@ -275,7 +275,7 @@ namespace Phoenix {
 		colors[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 	}
 
-	void ImGuiLayer::drawLog()
+	void ImGuiLayer::drawErrorLog()
 	{
 		ImVec2 pos = ImVec2(0, m_vp.y * 2.0f + 2.0f * (static_cast<float>(m_vp.height) / 3.0f));
 		ImVec2 size = ImVec2(static_cast<float>(m_vp.width + (m_vp.x * 2)), static_cast<float>(m_vp.height / 3.0f));
@@ -284,8 +284,7 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 
-
-		if (!ImGui::Begin("Error Log", &show_log, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
+		if (!ImGui::Begin("Error Log (automatically cleared after 1000 messages)", &show_errorLog, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
 		{
 			ImGui::End();
 			return;
@@ -293,9 +292,10 @@ namespace Phoenix {
 
 		if (ImGui::Button("Clear Log"))
 		{
-			clearLog();
+			clearErrorLog();
 		}
-		ImGui::TextUnformatted(m_log.begin(), m_log.end());
+		ImGui::TextUnformatted(m_errorLog.begin());
+		ImGui::SetScrollHereY(1.0f);
 		ImGui::End();
 	}
 
@@ -323,7 +323,7 @@ namespace Phoenix {
 			{
 
 				ImGui::MenuItem("Show this menu", "F8", &show_menu);
-				ImGui::MenuItem("Show Log", "BACKSPACE", &show_log);
+				ImGui::MenuItem("Show Errors Log", "BACKSPACE", &show_errorLog);
 				ImGui::MenuItem("Show Info", "1", &show_info);
 				ImGui::MenuItem("Show render time", "2", &show_renderTime);
 				ImGui::MenuItem("Show FBO", "3", &show_fbo);
@@ -1052,6 +1052,23 @@ namespace Phoenix {
 				ImGui::EndTabItem();
 			}
 
+			// Message Queues Manager
+			if (ImGui::BeginTabItem("Editor Event Queues")) {
+
+				ImGui::Text("Events in addition queue: %d", m_demo.m_sectionEventManager.getNumEventsAdditionQueue());
+				ImGui::Text("Events in execution queue: %d", m_demo.m_sectionEventManager.getNumEventsExecutionQueue());
+				
+				if (ImGui::Button("Clear Event Log"))
+				{
+					clearEventLog();
+				}
+				ImGui::Text("Events in queue processed (log is automatically cleared after 1000 messages):");
+				ImGui::TextUnformatted(m_eventLog.begin());
+				ImGui::SetScrollHereY(1.0f);
+
+				ImGui::EndTabItem();
+			}
+
 			ImGui::EndTabBar();
 		}
 		
@@ -1067,7 +1084,7 @@ namespace Phoenix {
 			EventHandled = true;
 			switch (key) {
 			case Key::SHOWLOG:
-				show_log = !show_log;
+				show_errorLog = !show_errorLog;
 				break;
 			case Key::SHOWMENU:
 				show_menu = !show_menu;
@@ -1189,13 +1206,30 @@ namespace Phoenix {
 		ImGui::GetIO().FontGlobalScale = m_demo.m_debugFontSize;
 	}
 
-	void ImGuiLayer::addLog(std::string_view message)
+	void ImGuiLayer::addErrorLog(std::string_view message)
 	{
-		m_log.appendf(message.data());
+		m_errorLog.appendf(message.data());
+		// Prevent infinite log
+		if (m_errorLog.size() > 1000)
+			m_errorLog.clear();
+	}
+	
+	void ImGuiLayer::clearErrorLog()
+	{
+		m_errorLog.clear();
 	}
 
-	void ImGuiLayer::clearLog()
+	void ImGuiLayer::addEventLog(std::string_view message)
 	{
-		m_log.clear();
+		m_eventLog.appendf(message.data());
+		// Prevent infinite log
+		if (m_eventLog.size() > 1000)
+			m_eventLog.clear();
 	}
+
+	void ImGuiLayer::clearEventLog()
+	{
+		m_eventLog.clear();
+	}
+		
 }

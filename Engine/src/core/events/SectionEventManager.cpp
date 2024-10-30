@@ -43,6 +43,11 @@ namespace Phoenix {
 		// We add the event in the "add" Queue
 		m_SectionEventQueue[m_additionQueue].push_back(pNewSectionEvent);
 
+		// Add event to the log message
+		std::stringstream ss;
+		ss << "Type: " << EventType << std::endl;
+		DEMO->ImGuiAddEventLogMessage(ss.str());
+
 		return true;
 	}
 	void SectionEventManager::executeEvents()
@@ -77,6 +82,16 @@ namespace Phoenix {
 		for (uint32_t i = 0; i < 2; i++) {
 			clearQueue(i);
 		}
+	}
+
+	int32_t SectionEventManager::getNumEventsExecutionQueue()
+	{
+		return static_cast<int32_t>(m_SectionEventQueue[m_executionQueue].size());
+	}
+
+	int32_t SectionEventManager::getNumEventsAdditionQueue()
+	{
+		return static_cast<int32_t>(m_SectionEventQueue[m_additionQueue].size());
 	}
 
 

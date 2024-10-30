@@ -72,12 +72,14 @@ namespace Phoenix {
 		void BlockEvents(bool block) { m_BlockEvents = block; }
 
 		void changeFontSize();
-		void addLog(std::string_view message);
-		void clearLog();
+		void addErrorLog(std::string_view message);
+		void clearErrorLog();
+		void addEventLog(std::string_view message);
+		void clearEventLog();
 		void SetDarkThemeColors();
 
 	public:
-		bool	show_log;
+		bool	show_errorLog;
 		bool	show_menu;
 		bool	show_info;
 		bool	show_renderTime;
@@ -94,7 +96,7 @@ namespace Phoenix {
 
 	private:
 
-		void drawLog();
+		void drawErrorLog();
 		void drawMenu();
 		void drawInfo();
 		void drawRenderSectionInfo();
@@ -123,7 +125,8 @@ namespace Phoenix {
 
 		ImGuiTextBuffer		m_helpText;
 
-		ImGuiTextBuffer		m_log;
+		ImGuiTextBuffer		m_errorLog;
+		ImGuiTextBuffer		m_eventLog;
 
 		std::string			m_debugMsgFromEditor;
 

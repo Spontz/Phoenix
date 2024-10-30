@@ -14,6 +14,8 @@ namespace Phoenix {
 
 	class SectionEventManager final {
 
+		friend class ImGuiLayer;
+
 		mutable std::unordered_map<std::string_view, SectionEventType> m_SectionEvents = {
 			{"new",			SectionEventType::SEC_NEW},
 			{"toggle",		SectionEventType::SEC_TOGGLE},
@@ -32,6 +34,8 @@ namespace Phoenix {
 		bool addSectionEvent(std::string_view EventType, std::string_view Message1, std::string_view Message2);
 		void executeEvents();
 		void clear();
+		int32_t getNumEventsExecutionQueue();
+		int32_t getNumEventsAdditionQueue();
 
 	private:
 		void clearQueue(uint32_t queue);
