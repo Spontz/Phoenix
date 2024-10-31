@@ -1197,10 +1197,10 @@ namespace Phoenix {
 
 	void ImGuiLayer::addErrorLog(std::string_view message)
 	{
-		m_errorLog.appendf(message.data());
 		// Prevent infinite log
 		if (m_errorLog.size() > 1000)
 			m_errorLog.clear();
+		m_errorLog.appendf(message.data());
 	}
 	
 	void ImGuiLayer::clearErrorLog()
@@ -1210,10 +1210,10 @@ namespace Phoenix {
 
 	void ImGuiLayer::addEventLog(std::string_view message)
 	{
-		m_eventLog.appendf(message.data());
 		// Prevent infinite log
 		if (m_eventLog.size() > 1000)
 			m_eventLog.clear();
+		m_eventLog.appendf(message.data());
 	}
 
 	void ImGuiLayer::clearEventLog()
