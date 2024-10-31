@@ -36,7 +36,7 @@ namespace Phoenix {
 			spNewShader = std::make_shared<Shader>();
 			loaded = spNewShader->load(path, feedbackVaryings);
 			if (loaded) {
-				m_shader.push_back(spNewShader);
+				m_shader.emplace_back(spNewShader);
 				shad_id = static_cast<int>(m_shader.size()) - 1;
 			}
 		}

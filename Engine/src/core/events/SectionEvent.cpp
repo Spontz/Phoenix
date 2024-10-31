@@ -23,11 +23,10 @@ namespace Phoenix {
 		std::stringstream ss(identifiers.data());
 		std::vector<std::string> result;
 
-		while (ss.good())
-		{
+		while (ss.good()) {
 			std::string substr;
 			getline(ss, substr, ',');
-			result.push_back(substr);
+			result.emplace_back(substr);
 		}
 		return result;
 	}

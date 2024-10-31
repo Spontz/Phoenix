@@ -207,7 +207,7 @@ namespace Phoenix {
 			aiCam->GetCameraMatrix(mat);
 			Camera* cam = new CameraRawMatrix(mat4_cast(mat));
 			cam->TypeStr = aiCam->mName.C_Str();
-			m_camera.push_back(cam);
+			m_camera.emplace_back(cam);
 		}
 	}
 
@@ -242,7 +242,7 @@ namespace Phoenix {
 			// the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 			Logger::info(LogLevel::low, "Reading node name: {}", node->mName.data);
-			meshes.push_back(processMesh(node->mName.data, mesh, scene));
+			meshes.emplace_back(processMesh(node->mName.data, mesh, scene));
 		}
 		// after we've processed all of the meshes (if any) we then recursively process each of the children nodes
 		for (unsigned int i = 0; i < node->mNumChildren; i++)
@@ -316,17 +316,24 @@ namespace Phoenix {
 				vertex.Bitangent = glm::vec3(0, 0, 0);
 			}
 
-			vertices.push_back(vertex);
+			vertices.emplace_back(vertex);
 		}
+
 		// now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
-		for (unsigned int i = 0; i < mesh->mNumFaces; i++)
-		{
+		uint32_t numTotalIndices = 0;
+		for (uint32_t i = 0; i < mesh->mNumFaces; i++) {
+			numTotalIndices += mesh->mFaces[i].mNumIndices;
+		}
+
+		// Allocate memory so we avoid resizing the vector each time
+		indices.reserve(numTotalIndices);
+				
+		for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
 			aiFace face = mesh->mFaces[i];
 
-			indices.reserve(face.mNumIndices);	// Allocate memory so we avoid resizing the vector each time
 			// retrieve all indices of the face and store them in the indices vector
 			for (unsigned int j = 0; j < face.mNumIndices; j++)
-				indices.push_back(face.mIndices[j]);
+				indices.emplace_back(face.mIndices[j]);
 		}
 
 		// Process Bones of this mesh and loads it into the "BoneInfo" and "BoneMapping" lists
@@ -348,7 +355,7 @@ namespace Phoenix {
 				m_numBones++;
 
 				// Allocate space for the bone transformation matrix
-				m_boneTransforms.push_back(glm::mat4(1.0f));
+				m_boneTransforms.emplace_back(glm::mat4(1.0f));
 			}
 			else
 			{

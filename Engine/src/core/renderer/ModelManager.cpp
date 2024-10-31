@@ -18,7 +18,7 @@ namespace Phoenix {
 		// if we must load the model...
 		SP_Model new_model = std::make_shared<Model>();
 		if (new_model->Load(path)) {
-			model.push_back(new_model);
+			model.emplace_back(new_model);
 			p_model = new_model;
 			Logger::info(LogLevel::med, "Model {} [id: {}] loaded OK", path, model.size() - 1);
 		}

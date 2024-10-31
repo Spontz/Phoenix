@@ -22,7 +22,7 @@ namespace Phoenix {
 		std::string lightName = "light[" + std::to_string(light.size()) + "]";
 
 		Light* new_light = new Light(lightName, lightType, position);
-		light.push_back(new_light);
+		light.emplace_back(new_light);
 	}
 
 	void LightManager::initAllLightsColors()

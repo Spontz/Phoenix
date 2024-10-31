@@ -127,7 +127,7 @@ namespace Phoenix {
 		for (const auto& filePath : m_pModelFilePaths) {
 			SP_Model model = m_demo.m_modelManager.addModel(filePath);
 			if (model)
-				m_pModel.push_back(model);
+				m_pModel.emplace_back(model);
 		}
 
 		if (m_pModel.empty()) {
@@ -158,7 +158,7 @@ namespace Phoenix {
 				if (pNewModelInstance->m_pModel->playAnimation)
 					pNewModelInstance->m_pModel->setAnimation(m_iAnimationNumber);
 
-				m_pModelInstance.push_back(pNewModelInstance);
+				m_pModelInstance.emplace_back(pNewModelInstance);
 			}
 		}
 		*/
@@ -170,7 +170,7 @@ namespace Phoenix {
 				if (pNewModelInstance->m_pModel->playAnimation)
 					pNewModelInstance->m_pModel->setAnimation(m_iAnimationNumber);
 
-				m_pModelInstance.push_back(pNewModelInstance);
+				m_pModelInstance.emplace_back(pNewModelInstance);
 			}
 		}
 

@@ -477,7 +477,7 @@ namespace Phoenix {
 					Logger::ScopedIndent _;
 					try {
 						float fval = std::stof(s_line.second);
-						new_sec->param.push_back(fval);
+						new_sec->param.emplace_back(fval);
 						Logger::info(LogLevel::low, "Section parameter: {} = {}", s_line.first, fval);
 					}
 					catch (...) {
@@ -488,14 +488,14 @@ namespace Phoenix {
 
 				case SectionCommand::STRING: {
 					Logger::ScopedIndent _;
-					new_sec->strings.push_back(s_line.second);
+					new_sec->strings.emplace_back(s_line.second);
 					Logger::info(LogLevel::low, "Loaded string: \"{}\"", s_line.second);
 					break;
 				}
 
 				case SectionCommand::UNIFORM: {
 					Logger::ScopedIndent _;
-					new_sec->uniform.push_back(s_line.second);
+					new_sec->uniform.emplace_back(s_line.second);
 					Logger::info(LogLevel::low, "Loaded uniform: \"{}\"", s_line.second);
 					break;
 				}
@@ -506,7 +506,7 @@ namespace Phoenix {
 					new_spl = new Spline();
 					new_spl->filename = DEMO->m_dataFolder + s_line.second;
 					new_spl->setDuration(new_sec->duration, new_sec->duration);// Force the spline duration to be the same as the section duration, by default
-					new_sec->spline.push_back(new_spl);
+					new_sec->spline.emplace_back(new_spl);
 					Logger::info(LogLevel::low, "Loaded Spline: {}", new_spl->filename);
 					break;
 				}
@@ -543,7 +543,7 @@ namespace Phoenix {
 		std::string s;
 		// Split the string by spaces
 		while (std::getline(f, s, ' ')) {
-			strings.push_back(s);
+			strings.emplace_back(s);
 		}
 		return strings;
 	}

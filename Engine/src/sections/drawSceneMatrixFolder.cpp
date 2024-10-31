@@ -120,7 +120,7 @@ namespace Phoenix {
 		for (const auto& filePath : m_pModelFilePaths) {
 			SP_Model model = m_demo.m_modelManager.addModel(filePath);
 			if (model)
-				m_pModel.push_back(model);
+				m_pModel.emplace_back(model);
 		}
 
 		if (m_pModel.empty()) {

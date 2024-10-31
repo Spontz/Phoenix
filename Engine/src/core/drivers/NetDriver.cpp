@@ -251,7 +251,7 @@ namespace Phoenix {
 		std::string s;
 		// Split the string by spaces
 		while (std::getline(f, s, kDelimiterChar)) {
-			strings.push_back(s);
+			strings.emplace_back(s);
 		}
 		return strings;
 	}

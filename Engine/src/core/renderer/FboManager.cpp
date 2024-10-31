@@ -84,7 +84,7 @@ namespace Phoenix {
 		
 		Fbo* new_fbo = new Fbo();
 		if (new_fbo->upload(cfg.format, static_cast<int>(cfg.width), static_cast<int>(cfg.height), iformat, format, type, colorAttachments, useBilinearFilter)) {
-			fbo.push_back(new_fbo);
+			fbo.emplace_back(new_fbo);
 			mem += (float)(new_fbo->width * new_fbo->height * components) / 1048576.0f;		// increase the texture mem
 			fbo_id = (int)fbo.size() - 1;
 			Logger::info(LogLevel::med, "Fbo Color {} loaded OK. Overall fbo Memory: {:.3f}Mb", fbo_id, mem);

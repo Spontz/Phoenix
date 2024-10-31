@@ -125,8 +125,8 @@ namespace Phoenix {
 
 		ImGuiTextBuffer		m_helpText;
 
-		ImGuiTextBuffer		m_errorLog;
-		ImGuiTextBuffer		m_eventLog;
+		std::string			m_errorLog;
+		std::string			m_eventLog;
 
 		std::string			m_debugMsgFromEditor;
 

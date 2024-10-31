@@ -284,13 +284,14 @@ namespace Phoenix {
 		ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 
-		if (ImGui::Begin("Error Log (automatically cleared after 1000 messages)", &show_errorLog, ImGuiWindowFlags_AlwaysHorizontalScrollbar)) {
-			if (ImGui::Button("Clear Log"))
-			{
+		if (ImGui::Begin("Error Log (automatically cleared)", &show_errorLog)) {
+			if (ImGui::Button("Clear Log"))	{
 				clearErrorLog();
 			}
-			ImGui::TextUnformatted(m_errorLog.begin());
-			ImGui::SetScrollHereY(1.0f);
+			ImVec2 windowSize = ImGui::GetWindowSize();
+			windowSize.x -= 35;
+			windowSize.y -= 70;
+			ImGui::InputTextMultiline(" ", &m_errorLog, windowSize, ImGuiInputTextFlags_ReadOnly);
 		}
 		ImGui::End();
 	}
@@ -1047,13 +1048,15 @@ namespace Phoenix {
 					ImGui::Text("Events in addition queue: %d", m_demo.m_sectionEventManager.getNumEventsAdditionQueue());
 					ImGui::Text("Events in execution queue: %d", m_demo.m_sectionEventManager.getNumEventsExecutionQueue());
 
-					if (ImGui::Button("Clear Event Log"))
-					{
+					if (ImGui::Button("Clear Log")) {
 						clearEventLog();
 					}
-					ImGui::Text("Events in queue processed (log is automatically cleared after 1000 messages):");
-					ImGui::TextUnformatted(m_eventLog.begin());
-					ImGui::SetScrollHereY(1.0f);
+					ImGui::Text("Processed events (log is automatically cleared):");
+
+					ImVec2 windowSize = ImGui::GetWindowSize();
+					windowSize.x -= 30;
+					windowSize.y -= 135;
+					ImGui::InputTextMultiline(" ", &m_eventLog, windowSize, ImGuiInputTextFlags_ReadOnly);
 
 					ImGui::EndTabItem();
 				}
@@ -1198,9 +1201,9 @@ namespace Phoenix {
 	void ImGuiLayer::addErrorLog(std::string_view message)
 	{
 		// Prevent infinite log
-		if (m_errorLog.size() > 1000)
+		if (m_errorLog.size() > 5000)
 			m_errorLog.clear();
-		m_errorLog.appendf(message.data());
+		m_errorLog.append(message);
 	}
 	
 	void ImGuiLayer::clearErrorLog()
@@ -1213,7 +1216,7 @@ namespace Phoenix {
 		// Prevent infinite log
 		if (m_eventLog.size() > 1000)
 			m_eventLog.clear();
-		m_eventLog.appendf(message.data());
+		m_eventLog.append(message);
 	}
 
 	void ImGuiLayer::clearEventLog()

@@ -147,7 +147,7 @@ namespace Phoenix {
 		if (p_sound == nullptr) {
 			SP_Sound new_sound = std::make_shared<Sound>();
 			if (new_sound->loadSoundFile(filePath, m_channels, m_sampleRate)) {
-				sound.push_back(new_sound);
+				sound.emplace_back(new_sound);
 				m_LoadedSounds++;
 				p_sound = new_sound;
 				Logger::info(LogLevel::med, "Song {} loaded OK", filePath);

@@ -187,7 +187,7 @@ namespace Phoenix {
 			int32_t lineChannels = 0;
 
 			while (std::getline(lineStream, value, '\t')) {
-				valueList.push_back(value);
+				valueList.emplace_back(value);
 			}
 
 			// Validate the line
@@ -220,7 +220,7 @@ namespace Phoenix {
 				newKey->cv[i] = std::stof(valueList[i]);
 			}
 
-			key.push_back(newKey);
+			key.emplace_back(newKey);
 			//Logger::info(LogLevel::high, "Line read: {}", line.c_str());
 			lineCnt++;
 		}

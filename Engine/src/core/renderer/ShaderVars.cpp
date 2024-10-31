@@ -40,7 +40,7 @@ namespace Phoenix {
 				has_properties = true;
 				// Load all properties
 				for (int i = 3; i < vars.size(); i++) {
-					var_properties.push_back(vars[i]);
+					var_properties.emplace_back(vars[i]);
 				}
 			}
 			// In case is not a sampler, then we concatenate all the values
@@ -75,7 +75,7 @@ namespace Phoenix {
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value);
 			var->eva->compileFormula();
-			vfloat.push_back(var);
+			vfloat.emplace_back(var);
 		}
 		break;
 
@@ -89,7 +89,7 @@ namespace Phoenix {
 			var->eva->SymbolTable.add_variable("v1", var->value[0]);
 			var->eva->SymbolTable.add_variable("v2", var->value[1]);
 			var->eva->compileFormula();
-			vec2.push_back(var);
+			vec2.emplace_back(var);
 		}
 		break;
 
@@ -104,7 +104,7 @@ namespace Phoenix {
 			var->eva->SymbolTable.add_variable("v2", var->value[1]);
 			var->eva->SymbolTable.add_variable("v3", var->value[2]);
 			var->eva->compileFormula();
-			vec3.push_back(var);
+			vec3.emplace_back(var);
 		}
 		break;
 
@@ -120,7 +120,7 @@ namespace Phoenix {
 			var->eva->SymbolTable.add_variable("v3", var->value[2]);
 			var->eva->SymbolTable.add_variable("v4", var->value[3]);
 			var->eva->compileFormula();
-			vec4.push_back(var);
+			vec4.emplace_back(var);
 		}
 		break;
 		
@@ -141,7 +141,7 @@ namespace Phoenix {
 			var->eva->SymbolTable.add_variable("v8", var->value[2][1]);
 			var->eva->SymbolTable.add_variable("v9", var->value[2][2]);
 			var->eva->compileFormula();
-			mat3.push_back(var);
+			mat3.emplace_back(var);
 		}
 		break;
 		
@@ -169,7 +169,7 @@ namespace Phoenix {
 			var->eva->SymbolTable.add_variable("v15", var->value[3][2]);
 			var->eva->SymbolTable.add_variable("v16", var->value[3][3]);
 			var->eva->compileFormula();
-			mat4.push_back(var);
+			mat4.emplace_back(var);
 		}
 		break;
 		
@@ -222,7 +222,7 @@ namespace Phoenix {
 
 						var->loc = my_shader->getUniformLocation(var->name.c_str());
 						var->texUnitID = static_cast<int>(sampler2D.size());
-						sampler2D.push_back(var);
+						sampler2D.emplace_back(var);
 					}
 				}
 				else {
@@ -236,7 +236,7 @@ namespace Phoenix {
 
 					var->loc = my_shader->getUniformLocation(var->name.c_str());
 					var->texUnitID = static_cast<int>(sampler2D.size());
-					sampler2D.push_back(var);
+					sampler2D.emplace_back(var);
 				}
 			}
 			else // If it's a normal texture....
@@ -256,7 +256,7 @@ namespace Phoenix {
 
 				var->texture = DEMO->m_textureManager.addTexture(DEMO->m_dataFolder + var_value, texProperties);
 				if (var->texture) // If texture is valid
-					sampler2D.push_back(var);
+					sampler2D.emplace_back(var);
 			}
 		}
 		break;
@@ -280,7 +280,7 @@ namespace Phoenix {
 			const std::vector<std::string> samplerCubeImages = { "right.jpg","left.jpg","top.jpg","bottom.jpg","front.jpg","back.jpg" };
 			std::vector<std::string> samplerCubePaths;
 			for (auto& s : samplerCubeImages) {
-				samplerCubePaths.push_back(samplerCubePath + s);
+				samplerCubePaths.emplace_back(samplerCubePath + s);
 			}
 
 			bool imagesOK = true;
@@ -293,7 +293,7 @@ namespace Phoenix {
 			if (imagesOK) {
 				var->cubemap = DEMO->m_textureManager.addCubemap(samplerCubePaths, texProperties.m_flip);
 				if (var->cubemap) // If texture is valid
-					samplerCube.push_back(var);
+					samplerCube.emplace_back(var);
 			}
 		}
 		break;
@@ -417,14 +417,14 @@ namespace Phoenix {
 
 		// Decompose statement
 		while (pos != std::string::npos) {
-			strs.push_back(txt.substr(initialPos, pos - initialPos));
+			strs.emplace_back(txt.substr(initialPos, pos - initialPos));
 			initialPos = pos + 1;
 
 			pos = txt.find(ch, initialPos);
 		}
 
 		// Add the last one
-		strs.push_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
+		strs.emplace_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
 
 		return strs.size();
 	}

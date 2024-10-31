@@ -96,7 +96,7 @@ namespace Phoenix {
 			}
 		}
 
-		m_vertexBuffers.push_back(spVertexBuffer);
+		m_vertexBuffers.emplace_back(spVertexBuffer);
 		glBindVertexArray(0);
 	}
 
@@ -172,7 +172,7 @@ namespace Phoenix {
 				Logger::error("Unknown ShaderDataType");
 			}
 		}
-		m_VertexBuffers.push_back(vertexBuffer);
+		m_VertexBuffers.emplace_back(vertexBuffer);
 	}
 #endif
 

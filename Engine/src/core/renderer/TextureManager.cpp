@@ -40,7 +40,7 @@ namespace Phoenix {
 			SP_Texture new_tex = std::make_shared<Texture>();
 			new_tex->m_properties = texProperties;
 			if (new_tex->load(path)) {
-				texture.push_back(new_tex);
+				texture.emplace_back(new_tex);
 				m_mem += new_tex->m_mem;
 				p_tex = new_tex;
 				Logger::info(LogLevel::med, "Texture {} [id: {}] loaded OK. Overall texture Memory: {:.3f}Mb", path, texture.size() - 1, m_mem);
@@ -73,7 +73,7 @@ namespace Phoenix {
 		auto new_tex = std::make_shared<Texture>();
 		new_tex->m_properties = texProperties;
 		if (new_tex->loadFromMem(data, len)) {
-			texture.push_back(new_tex);
+			texture.emplace_back(new_tex);
 			m_mem += new_tex->m_mem;
 			p_tex = new_tex;
 			Logger::info(LogLevel::med, "Texture embedded [id: {}] loaded OK. Overall texture Memory: {:.3f}Mb", texture.size() - 1, m_mem);
@@ -102,7 +102,7 @@ namespace Phoenix {
 		if (p_cubemap == nullptr) { // If the cubemap has not been found, we need to load it from the first time
 			SP_Cubemap new_cubemap = std::make_shared<Cubemap>();
 			if (new_cubemap->load(path, flip)) {
-				cubemap.push_back(new_cubemap);
+				cubemap.emplace_back(new_cubemap);
 				p_cubemap = new_cubemap;
 				m_mem += new_cubemap->m_mem;
 				Logger::info(LogLevel::med, "Cubemap {} [id: {}] loaded OK. Overall texture Memory: {:.3f}Mb", path[0], cubemap.size() - 1, m_mem);

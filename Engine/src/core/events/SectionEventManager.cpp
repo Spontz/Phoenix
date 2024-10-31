@@ -41,7 +41,7 @@ namespace Phoenix {
 		pNewSectionEvent->m_actionStr = EventType;
 
 		// We add the event in the "add" Queue
-		m_SectionEventQueue[m_additionQueue].push_back(pNewSectionEvent);
+		m_SectionEventQueue[m_additionQueue].emplace_back(pNewSectionEvent);
 
 		// Add event to the log message
 		std::stringstream ss;

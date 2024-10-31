@@ -254,14 +254,19 @@ namespace Phoenix {
 		float start = 0;
 		float step = 1.0f / static_cast<float>(m_gridSlices);
 
+
+		vertices.reserve((m_gridSlices + 1) * 2);
+
 		for (int j = 0; j <= m_gridSlices; ++j) {
 			for (int i = 0; i <= m_gridSlices; ++i) {
 				float x = m_gridSize * (start + static_cast<float>(i) * step);
 				float y = 0;
 				float z = m_gridSize * (start + static_cast<float>(j) * step);
-				vertices.push_back(glm::vec3(x, y, z));
+				vertices.emplace_back(glm::vec3(x, y, z));
 			}
 		}
+
+		indices.reserve((m_gridSlices * 2) * 8);
 
 		for (int j = 0; j < m_gridSlices; ++j) {
 			for (int i = 0; i < m_gridSlices; ++i) {
@@ -269,15 +274,15 @@ namespace Phoenix {
 				int row1 = j * (m_gridSlices + 1);
 				int row2 = (j + 1) * (m_gridSlices + 1);
 
-				indices.push_back(row1 + i);
-				indices.push_back(row1 + i + 1);
-				indices.push_back(row1 + i + 1);
-				indices.push_back(row2 + i + 1);
+				indices.emplace_back(row1 + i);
+				indices.emplace_back(row1 + i + 1);
+				indices.emplace_back(row1 + i + 1);
+				indices.emplace_back(row2 + i + 1);
 
-				indices.push_back(row2 + i + 1);
-				indices.push_back(row2 + i);
-				indices.push_back(row2 + i);
-				indices.push_back(row1 + i);
+				indices.emplace_back(row2 + i + 1);
+				indices.emplace_back(row2 + i);
+				indices.emplace_back(row2 + i);
+				indices.emplace_back(row1 + i);
 
 			}
 		}
@@ -303,16 +308,9 @@ namespace Phoenix {
 
 	void Resource::loadAxisLine()
 	{
-		std::vector<glm::vec3> vertices;
-		std::vector<uint32_t> indices;
+		std::array<glm::vec3, 2> vertices = { glm::vec3(0, 0, 0) , glm::vec3(1, 0, 0) };
+		std::array<uint32_t, 2> indices = { 0, 1 };
 	
-		vertices.push_back(glm::vec3(0, 0, 0));
-		vertices.push_back(glm::vec3(1, 0, 0));
-
-
-		indices.push_back(0);
-		indices.push_back(1);
-
 		// Creatr the Vertex Array
 		m_spAxisLine = std::make_shared<VertexArray>();
 

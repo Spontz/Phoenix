@@ -139,7 +139,7 @@ namespace Phoenix {
 				tex.strength = blendFactor;
 				if (tex.tex) {
 					tex.shaderName = std::string(typeName) + std::to_string(i + 1);
-					ret.push_back(tex);
+					ret.emplace_back(tex);
 				}
 				break;
 			}
@@ -160,7 +160,7 @@ namespace Phoenix {
 				tex.strength = blendFactor;
 				if (tex.tex) {
 					tex.shaderName = std::string(typeName) + std::to_string(i + 1);
-					ret.push_back(tex);
+					ret.emplace_back(tex);
 				}
 				break;
 			}
@@ -189,7 +189,7 @@ namespace Phoenix {
 					tex.strength = blendFactor;
 					if (tex.tex) {
 						tex.shaderName = std::string(typeName) + std::to_string(i + 1);
-						ret.push_back(tex);
+						ret.emplace_back(tex);
 					}
 				}
 				break;

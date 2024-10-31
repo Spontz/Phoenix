@@ -34,10 +34,11 @@ namespace Phoenix {
 		// Store OpenGL extensions
 		GLint nExt = 0;
 		glGetIntegerv(GL_NUM_EXTENSIONS, &nExt);
-		for (GLint i = 0; i < nExt; i++)
-		{
+		if (nExt != 0)
+			m_GLExtensions.reserve(nExt);
+		for (GLint i = 0; i < nExt; i++) {
 			std::string s = (const char*)glGetStringi(GL_EXTENSIONS, i);
-			m_GLExtensions.push_back(s);
+			m_GLExtensions.emplace_back(s);
 		}
 
 		//HZ_CORE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5), "Hazel requires at least OpenGL version 4.5!");

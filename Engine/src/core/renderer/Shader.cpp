@@ -323,7 +323,7 @@ namespace Phoenix {
 			}
 
 			glAttachShader(m_id, shader);
-			glShaderIDs.push_back(shader);
+			glShaderIDs.emplace_back(shader);
 		}
 
 		// Add the Transform Feedback Varyings

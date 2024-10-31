@@ -81,9 +81,9 @@ namespace Phoenix {
 		for (unsigned int face = 0; face < faces_file_name.size(); ++face) {
 			data = stbi_load(faces_file_name[face].c_str(), &Width, &Height, &components, 0);
 			if (data) {
-				m_filename.push_back(faces_file_name[face]);
-				m_width.push_back(Width);
-				m_height.push_back(Height);
+				m_filename.emplace_back(faces_file_name[face]);
+				m_width.emplace_back(Width);
+				m_height.emplace_back(Height);
 				glTextureSubImage3D(m_cubemapID, 0, 0, 0,		// target, level , xOffset, yOffset
 					face, Width, Height, 1, dataFormat, 		// cube map face, width, height, 1 face a time, format
 					GL_UNSIGNED_BYTE, data);					// datatype, data pointer

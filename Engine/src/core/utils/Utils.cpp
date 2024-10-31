@@ -80,7 +80,7 @@ namespace Phoenix {
 		if ((hFile = _findfirst(fullpath.c_str(), &FindData)) != -1L) {
 			do {
 				ScriptRelativePath = folderPath + "/" + FindData.name;
-				fileName.push_back(ScriptRelativePath);
+				fileName.emplace_back(ScriptRelativePath);
 			} while (_findnext(hFile, &FindData) == 0);
 			_findclose(hFile);
 		}

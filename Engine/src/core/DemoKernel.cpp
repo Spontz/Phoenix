@@ -365,7 +365,7 @@ namespace Phoenix {
 				}
 			}
 			else {
-				sources.push_back(argv[i]);
+				sources.emplace_back(argv[i]);
 			}
 		}
 	}

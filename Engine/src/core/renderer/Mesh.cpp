@@ -81,13 +81,8 @@ namespace Phoenix {
 				UniqueVertex newUniqueVertex;
 				newUniqueVertex.Position = vertex.Position;
 				newUniqueVertex.Normal = vertex.Normal;
-				float r = glm::sqrt(vertex.Position.x * vertex.Position.x +
-					vertex.Position.y * vertex.Position.y +
-					vertex.Position.z * vertex.Position.z);
-				float a = glm::atan(vertex.Position.y, vertex.Position.x);
-				float b = glm::acos(vertex.Position.z / r);
-				newUniqueVertex.PositionPolar = glm::vec3(a, b, r); // Same as: glm::polar(m_vertices[i].Position)
-				m_uniqueVertices.push_back(newUniqueVertex);
+				newUniqueVertex.PositionPolar = glm::polar(vertex.Position);
+				m_uniqueVertices.emplace_back(newUniqueVertex);
 			}
 		}
 

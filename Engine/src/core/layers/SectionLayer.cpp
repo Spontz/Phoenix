@@ -82,7 +82,7 @@ namespace Phoenix {
 				if (DEMO->m_slaveMode == 1 || ((pSection->startTime < DEMO->m_demoEndTime || fabs(DEMO->m_demoEndTime) < FLT_EPSILON) && (pSection->endTime > startTime))) {
 					// If the section is not the "loading", then we add id to the Ready Section lst
 					if (pSection->type != SectionType::Loading) {
-						m_SectionManager->m_loadSection.push_back(static_cast<int32_t>(i));
+						m_SectionManager->m_loadSection.emplace_back(static_cast<int32_t>(i));
 						// load section splines (to avoid code load in the sections)
 						// loadSplines(ds); // TODO: Delete this once splines are working
 					}
@@ -189,7 +189,7 @@ namespace Phoenix {
 				case SectionType::Sound:
 					if (pSection->loaded) {
 						// Load the section: first the layer and then the ID
-						m_SectionManager->m_execSoundSection.push_back(std::make_pair(pSection->layer, i));
+						m_SectionManager->m_execSoundSection.emplace_back(std::make_pair(pSection->layer, i));
 					}
 					break;
 
@@ -200,7 +200,7 @@ namespace Phoenix {
 						// If its enabled, loaded and is not the Loading section
 						if (pSection->enabled && pSection->loaded) {
 							// Load the section: first the layer and then the ID
-							m_SectionManager->m_execRenderSection.push_back(std::make_pair(pSection->layer, i));
+							m_SectionManager->m_execRenderSection.emplace_back(std::make_pair(pSection->layer, i));
 						}
 					}
 					break;
