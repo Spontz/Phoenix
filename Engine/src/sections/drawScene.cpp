@@ -132,7 +132,7 @@ namespace Phoenix {
 		}
 		
 		// Validate ans set shader variables initial values
-		m_pVars->validateAndSetValues();
+		m_pVars->validateAndSetValues(identifier);
 		
 		return !DEMO_checkGLError();
 	}

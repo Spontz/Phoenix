@@ -100,7 +100,7 @@ namespace Phoenix {
 			m_pVars->ReadString(uniform[i].c_str());
 		}
 		// Validate ans set shader variables
-		m_pVars->validateAndSetValues();
+		m_pVars->validateAndSetValues(identifier);
 		m_pShaderBloom->setValue("scene", 0);		// The scene is in the Tex unit 0
 		m_pShaderBloom->setValue("bloomBlur", 1);	// The bloom blur is in the Tex unit 1
 		

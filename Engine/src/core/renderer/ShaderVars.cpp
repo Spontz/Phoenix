@@ -360,51 +360,51 @@ namespace Phoenix {
 		}
 	}
 
-	void ShaderVars::validateValues()
+	void ShaderVars::validateValues(std::string_view sectionID)
 	{
 		for (auto& var : vfloat) {
 			if (-1 == my_shader->getUniformLocation(var->name))
-				Logger::error("Variable 'uniform float {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+				Logger::error("Variable 'uniform float {}' not found in section {}, shader '{}'", var->name, sectionID, my_shader->getURI());
 		}
 
 		for (auto& var : vec2) {
 			if (-1 == my_shader->getUniformLocation(var->name))
-				Logger::error("Variable 'uniform vec2 {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+				Logger::error("Variable 'uniform vec2 {}' not found in section {}, shader '{}'", var->name, sectionID, my_shader->getURI());
 		}
 
 		for (auto& var : vec3) {
 			if (-1 == my_shader->getUniformLocation(var->name))
-				Logger::error("Variable 'uniform vec3 {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+				Logger::error("Variable 'uniform vec3 {}' not found in section {}, shader '{}'", var->name, sectionID, my_shader->getURI());
 		}
 		for (auto& var : vec4) {
 			if (-1 == my_shader->getUniformLocation(var->name))
-				Logger::error("Variable 'uniform vec4 {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+				Logger::error("Variable 'uniform vec4 {}' not found in section {}, shader '{}'", var->name, sectionID, my_shader->getURI());
 		}
 
 		for (auto& var : mat3) {
 			if (-1 == my_shader->getUniformLocation(var->name))
-				Logger::error("Variable 'uniform mat3 {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+				Logger::error("Variable 'uniform mat3 {}' not found in section {}, shader '{}'", var->name, sectionID, my_shader->getURI());
 		}
 
 		for (auto& var : mat4) {
 			if (-1 == my_shader->getUniformLocation(var->name))
-				Logger::error("Variable 'uniform mat4 {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+				Logger::error("Variable 'uniform mat4 {}' not found in section {}, shader '{}'", var->name, sectionID, my_shader->getURI());
 		}
 
 		for (auto& var : sampler2D) {
 			if (-1 == my_shader->getUniformLocation(var->name))
-				Logger::error("Variable 'uniform sampler2D {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+				Logger::error("Variable 'uniform sampler2D {}' not found in section {}, shader '{}'", var->name, sectionID, my_shader->getURI());
 		}
 
 		for (auto& var : samplerCube) {
 			if (-1 == my_shader->getUniformLocation(var->name))
-				Logger::error("Variable 'uniform samplerCube {}' not found in shader '{} - ID {}'", var->name, my_shader->getURI(), my_shader->getId());
+				Logger::error("Variable 'uniform samplerCube {}' not found in section {}, shader '{}'", var->name, sectionID, my_shader->getURI());
 		}
 	}
 
-	void ShaderVars::validateAndSetValues()
+	void ShaderVars::validateAndSetValues(std::string_view sectionID)
 	{
-		validateValues();
+		validateValues(sectionID);
 		setValues();
 	}
 

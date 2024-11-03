@@ -161,14 +161,11 @@ namespace Phoenix {
 
 	GLint Shader::getUniformLocation(std::string_view name) const
 	{
-		if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
-			return m_UniformLocationCache[name];
+		if (m_UniformLocationCache.find(name.data()) != m_UniformLocationCache.end())
+			return m_UniformLocationCache[name.data()];
 
 		GLint location = glGetUniformLocation(m_id, name.data());
-		m_UniformLocationCache[name] = location;
-		
-//		if (location == -1)
-//			Logger::error("Shader uniform variable '{}' not found in shader '{} - ID {}'", name, m_URI, m_id);
+		m_UniformLocationCache[name.data()] = location;
 
 		return location;
 	}

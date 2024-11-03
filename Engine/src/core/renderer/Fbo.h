@@ -34,7 +34,7 @@ namespace Phoenix {
 	public:
 		struct Properties final {
 			FboType				m_bufferType;		// buffer type: FRAMEBUFFER, DEPTH, RENDER, etc.
-			std::string_view	m_bufferFormat;		// buffer format: RGB, RGBA, RGB_8, etc.
+			std::string			m_bufferFormat;		// buffer format: RGB, RGBA, RGB_8, etc.
 		};
 		*/
 	public:

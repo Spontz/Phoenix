@@ -60,7 +60,7 @@ namespace Phoenix{
 	private:
 		uint32_t m_id = 0;
 		std::string m_URI;
-		mutable std::unordered_map<std::string_view, GLint> m_UniformLocationCache;
+		mutable std::unordered_map<std::string, GLint> m_UniformLocationCache;
 	};
 
 }

@@ -83,10 +83,10 @@ namespace Phoenix {
 		void setValues();
 
 		// Validates if all variables exist in the shader, and thows an error if does not exist
-		void validateValues();
+		void validateValues(std::string_view sectionID = "");
 
 		// Validates if all variables exist in the shader, and thows an error if does not exist, set the values as well
-		void validateAndSetValues();
+		void validateAndSetValues(std::string_view sectionID = "");
 
 
 	private:

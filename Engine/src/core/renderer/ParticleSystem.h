@@ -54,7 +54,7 @@ namespace Phoenix {
 		bool initShaderBillboard();		// For drawing the quads using geometry shaders
 		bool initShaderParticleSystem();// For drawing the particles using geometry shaders
 
-		bool initRandomTexture(unsigned int Size); //TODO: Add it into the textureManager
+		bool initRandomTexture(uint32_t Size); //TODO: Add it into the textureManager
 		void bindRandomTexture(GLuint TexUnit = 0);//TODO: this should be removed once is included in the textureManager
 
 		void debugLogBufferData();

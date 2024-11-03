@@ -18,7 +18,7 @@ namespace Phoenix {
 		struct Properties final {
 			bool				m_flip = true;
 			bool				m_useLinearFilter = true;
-			std::string_view	m_type = "texture_diffuse";
+			std::string			m_type = "texture_diffuse";
 		};
 
 	public:

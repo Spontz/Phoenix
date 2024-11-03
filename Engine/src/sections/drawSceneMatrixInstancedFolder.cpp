@@ -222,7 +222,7 @@ namespace Phoenix {
 		}
 
 		// Validate and set shader variables
-		m_pVars->validateAndSetValues();
+		m_pVars->validateAndSetValues(identifier);
 
 		// Update object matrices
 		updateMatrices(true);
