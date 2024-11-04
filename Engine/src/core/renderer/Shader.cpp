@@ -62,7 +62,7 @@ namespace Phoenix {
 		};
 
 		const auto it = s.find(type);
-		return it == s.end() ? "UNKNOWN" : it->second.data();
+		return it == s.end() ? "UNKNOWN" : it->second;
 	}
 
 	void addLineDirective(std::string& shaderSource)

@@ -16,7 +16,7 @@ namespace Phoenix {
 
 		friend class ImGuiLayer;
 
-		mutable std::unordered_map<std::string_view, SectionEventType> m_SectionEvents = {
+		mutable std::unordered_map<std::string, SectionEventType> m_SectionEvents = {
 			{"new",			SectionEventType::SEC_NEW},
 			{"toggle",		SectionEventType::SEC_TOGGLE},
 			{"delete",		SectionEventType::SEC_DELETE},

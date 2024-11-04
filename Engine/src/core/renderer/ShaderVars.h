@@ -56,7 +56,7 @@ namespace Phoenix {
 			UNKNOWN
 		};
 
-		mutable std::unordered_map<std::string_view, VarType> m_VarTypeMap = {
+		mutable std::unordered_map<std::string, VarType> m_VarTypeMap = {
 			{"float", VarType::FLOAT},
 			{"vec2", VarType::VEC2},
 			{"vec3", VarType::VEC3},

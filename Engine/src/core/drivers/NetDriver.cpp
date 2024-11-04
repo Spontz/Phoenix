@@ -203,8 +203,9 @@ namespace Phoenix {
 
 	NetDriver::DemoAction NetDriver::getDemoAction(std::string_view Action) const
 	{
-		if (m_NetDemoAction.find(Action) != m_NetDemoAction.end())
-			return m_NetDemoAction[Action];
+		auto it = m_NetDemoAction.find(std::string(Action));
+		if (it != m_NetDemoAction.end())
+			return it->second;
 		else
 			return DemoAction::UNKNOWN;
 	}

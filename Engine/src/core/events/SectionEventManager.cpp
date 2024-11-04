@@ -23,8 +23,9 @@ namespace Phoenix {
 
 	SectionEventType SectionEventManager::getSectionEventType(std::string_view type) const
 	{
-		if (m_SectionEvents.find(type) != m_SectionEvents.end())
-			return m_SectionEvents[type];
+		auto it = m_SectionEvents.find(std::string(type));
+		if (it != m_SectionEvents.end())
+			return it->second;
 		else
 			return SectionEventType::SEC_UNKNOWN;
 	}

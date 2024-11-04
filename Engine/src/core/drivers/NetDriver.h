@@ -28,7 +28,7 @@ namespace Phoenix {
 			UNKNOWN
 		};
 
-		mutable std::unordered_map<std::string_view, DemoAction> m_NetDemoAction = {
+		mutable std::unordered_map<std::string, DemoAction> m_NetDemoAction = {
 			{"ping",		DemoAction::PING},
 			{"pause",		DemoAction::PAUSE},
 			{"play",		DemoAction::PLAY},

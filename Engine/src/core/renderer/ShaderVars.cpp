@@ -473,8 +473,9 @@ namespace Phoenix {
 
 	ShaderVars::VarType ShaderVars::getVarType(std::string_view varTypeStr) const
 	{
-		if (m_VarTypeMap.find(varTypeStr) != m_VarTypeMap.end())
-			return m_VarTypeMap[varTypeStr];
+		auto it = m_VarTypeMap.find(std::string(varTypeStr));
+		if (it != m_VarTypeMap.end())
+			return it->second;
 		else
 			return VarType::UNKNOWN;
 	}

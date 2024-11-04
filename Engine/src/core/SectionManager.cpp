@@ -52,12 +52,13 @@ namespace Phoenix {
 	};
 
 	const SectionInfo* getSectionInfo(SectionType type) {
-		static std::map<SectionType, const SectionInfo*> m;
+		static std::unordered_map<SectionType, const SectionInfo*> m;
 		if (m.empty())
 			for (auto const& i : kSectionInfo)
 				m[i.m_type] = &i;
 
 		const auto it = m.find(type);
+
 		if (it == m.end())
 			return nullptr;
 
@@ -65,12 +66,12 @@ namespace Phoenix {
 	}
 
 	const SectionInfo* getSectionInfo(std::string_view id) {
-		static std::map<std::string_view, const SectionInfo*> m;
+		static std::unordered_map<std::string, const SectionInfo*> m;
 		if (m.empty())
 			for (auto const& i : kSectionInfo)
 				m[i.m_id] = &i;
 
-		const auto it = m.find(id);
+		const auto it = m.find(std::string(id));
 		if (it == m.end())
 			return nullptr;
 
