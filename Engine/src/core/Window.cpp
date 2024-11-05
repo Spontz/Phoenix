@@ -344,6 +344,16 @@ namespace Phoenix
 			glEnable(GL_MULTISAMPLE);
 		}
 
+		// Set window icon
+		GLFWimage images[1];
+		int channels;
+		std::string iconPath = m_demo->m_dataFolder + "/resources/textures/icon.png";
+		images[0].pixels = stbi_load(iconPath.c_str(), &images[0].width, &images[0].height, &channels, 4); //rgba channels
+		if (images[0].pixels) {
+			glfwSetWindowIcon(m_GLFWindow, 1, images);
+			stbi_image_free(images[0].pixels);
+		}
+
 		// Set VSync
 		SetVSync(m_Data.WindowProperties.VSync);
 
