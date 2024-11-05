@@ -874,7 +874,7 @@ namespace Phoenix {
 
 					if (ImGui::BeginTable("FBOs", 4, tableFlags)) {
 						// Setup headers
-						ImGui::TableSetupColumn("ID");
+						ImGui::TableSetupColumn("FBO ID");
 						ImGui::TableSetupColumn("Format");
 						ImGui::TableSetupColumn("Size");
 						ImGui::TableSetupColumn("Attachments");
@@ -902,7 +902,7 @@ namespace Phoenix {
 
 					if (ImGui::BeginTable("Bloom FBOs", 4, tableFlags)) {
 						// Setup headers
-						ImGui::TableSetupColumn("ID");
+						ImGui::TableSetupColumn("Bloom FBO ID");
 						ImGui::TableSetupColumn("Format");
 						ImGui::TableSetupColumn("Size");
 						ImGui::TableSetupColumn("Attachments");
@@ -930,7 +930,7 @@ namespace Phoenix {
 
 					if (ImGui::BeginTable("Accum FBOs", 4, tableFlags)) {
 						// Setup headers
-						ImGui::TableSetupColumn("ID");
+						ImGui::TableSetupColumn("Accum FBO ID");
 						ImGui::TableSetupColumn("Format");
 						ImGui::TableSetupColumn("Size");
 						ImGui::TableSetupColumn("Attachments");
