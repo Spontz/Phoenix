@@ -30,6 +30,13 @@ Phoenix uses the following libs:
 
 Please run 00_bootstrap.bat, this will download all required dependecies and create the vs2022 project, then compile the project usign Visual Studio. Feel free to contact any of us if you need further assistance.
 
+# Screenshots (because is cool)
+
+<p align="center">
+  <img src="img/engine.png">
+</p>
+
+
 <p align="center">
   <img width="400" height="400" src="/img/spontzLogo.jpg">
 </p>
