@@ -493,7 +493,7 @@ namespace Phoenix {
 			float max = 1000.0f / static_cast<float>(m_render.maxRenderFPSScale);
 			ImGui::SameLine();
 			ImGui::Text("Max scale (ms): %.2f", max);
-			ImGui::PlotLines("", m_render.renderTimes, m_render.RENDERTIMES_SAMPLES, m_render.currentRenderTime, "Frame time", 0, max, ImVec2(m_render.windowSize.x - 10, m_render.windowSize.y - 95));
+			ImGui::PlotLines(" ", m_render.renderTimes, m_render.RENDERTIMES_SAMPLES, m_render.currentRenderTime, "Frame time", 0, max, ImVec2(m_render.windowSize.x - 10, m_render.windowSize.y - 95));
 
 			m_render.currentRenderTime++;
 			if (m_render.currentRenderTime >= m_render.RENDERTIMES_SAMPLES) {
@@ -542,7 +542,7 @@ namespace Phoenix {
 			Fbo* my_fbo = m_demo.m_fboManager.fbo[m_fbo.fbo];
 			float aspectRatio = static_cast<float>(my_fbo->width) / static_cast<float>(my_fbo->height);
 			m_fbo.fboSize.y = m_fbo.fboSize.x / aspectRatio;
-			ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[m_fbo.fboAttachment], m_fbo.fboSize, ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::Image(my_fbo->m_colorAttachment[m_fbo.fboAttachment], m_fbo.fboSize, ImVec2(0, 1), ImVec2(1, 0));
 			if (ImGui::IsItemHovered()) {
 				ImGui::BeginTooltip();
 				ImGui::Text("Size: %i, %i", my_fbo->width, my_fbo->height);
@@ -587,7 +587,7 @@ namespace Phoenix {
 			for (int32_t i = 0; i < m_fboGrid.fboNum; i++) {
 				Fbo* my_fbo = m_demo.m_fboManager.fbo[i];
 				if (m_fboGrid.fboAttachment < static_cast<int32_t>(my_fbo->numAttachments)) {
-					ImGui::Image((void*)(intptr_t)my_fbo->m_colorAttachment[m_fboGrid.fboAttachment], m_fboGrid.fboSize, ImVec2(0, 1), ImVec2(1, 0));
+					ImGui::Image(my_fbo->m_colorAttachment[m_fboGrid.fboAttachment], m_fboGrid.fboSize, ImVec2(0, 1), ImVec2(1, 0));
 					if (ImGui::IsItemHovered())
 					{
 						ImGui::BeginTooltip();
@@ -599,7 +599,7 @@ namespace Phoenix {
 					}
 				}
 				else {
-					ImGui::Image((void*)(intptr_t)NULL, m_fboGrid.fboSize);
+					ImGui::Image(NULL, m_fboGrid.fboSize);
 					if (ImGui::IsItemHovered())
 					{
 						ImGui::BeginTooltip();
@@ -629,7 +629,7 @@ namespace Phoenix {
 			ImVec2 win = ImGui::GetWindowSize();
 			int plotSamples = m_demo.m_soundManager.m_spectrogram.getSpectogramSamples();
 			ImGui::Text("Spectrum analyzer: %d samples", plotSamples);
-			ImGui::PlotHistogram("", m_demo.m_soundManager.m_spectrogram.getSpectogramData(), plotSamples, 0, "Spectrum analyzer", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectogram display
+			ImGui::PlotHistogram(" ", m_demo.m_soundManager.m_spectrogram.getSpectogramData(), plotSamples, 0, "Spectrum analyzer", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectogram display
 
 			ImGui::Text("Beat: %.3f", m_demo.m_soundManager.m_fBeat);
 			ImGui::Text("Frequencies Magnitudes: Low (%.3f), Mid (%.3f), High (%.3f)", m_demo.m_soundManager.m_fLowFreqSum, m_demo.m_soundManager.m_fMidFreqSum, m_demo.m_soundManager.m_fHighFreqSum);
