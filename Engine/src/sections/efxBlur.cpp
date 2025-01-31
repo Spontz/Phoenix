@@ -90,7 +90,7 @@ namespace Phoenix {
 			m_pVars->ReadString(uniform[i].c_str());
 		}
 		// Validate and set shader variables values
-		m_pVars->validateAndSetValues(identifier);
+		m_pVars->validateAndSetValues(type_str+"["+identifier+"]");
 
 		return !DEMO_checkGLError();
 	}

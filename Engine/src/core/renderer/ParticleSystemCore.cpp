@@ -178,7 +178,7 @@ namespace Phoenix {
 			m_varsParticleSystem->ReadString(shaderVars[i]);
 		}
 		// Validate and set particleSystem shader variables values
-		m_varsParticleSystem->validateAndSetValues();
+		m_varsParticleSystem->validateAndSetValues(sec->type_str + "[" + sec->identifier + "]");
 
 		//Use the billboard shader and send variables
 		m_billboardShader->use();
@@ -188,7 +188,7 @@ namespace Phoenix {
 			m_varsBillboard->ReadString(shaderVars[i]);
 		}
 		// Validate and set billboard shader variables values (texture, particle size, etc...)
-		m_varsBillboard->validateAndSetValues();
+		m_varsBillboard->validateAndSetValues(sec->type_str + "[" + sec->identifier + "]");
 		
 		// Delete the temporary particles data, all is now in the GPU
 		delete[] particles;
