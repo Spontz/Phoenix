@@ -52,6 +52,11 @@ namespace Phoenix {
 	std::ostream& operator<<(std::ostream&, SectionType);
 	std::string str(SectionType);
 
+	// Shader Block Information
+	struct ShaderBlock {
+		std::string					filename = "";
+		std::vector<std::string>    uniform;		// string of uniform parameters
+	};
 
 	class Section {
 		friend class DemoKernel;
@@ -104,6 +109,9 @@ namespace Phoenix {
 		std::vector<std::string>    uniform;		// string of uniform parameters
 		std::vector<Spline*>        spline;			// Splines
 		std::string                 debugStatic;	// Debug Static string
+		
+		std::vector<ShaderBlock*>	shaderBlock;	// Shader Block Information (shader path and uniforms)
+		std::string					formula;		// Formula containing all position information
 
 		// Render states
 		bool                        render_drawWireframe;	// Draw in wireframe (disabled by default)

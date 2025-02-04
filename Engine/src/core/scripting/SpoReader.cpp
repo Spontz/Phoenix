@@ -17,7 +17,14 @@ namespace Phoenix {
 		{"string",			SectionCommand::STRING},
 		{"uniform",			SectionCommand::UNIFORM},
 		{"spline",			SectionCommand::SPLINE},
-		{"modify",			SectionCommand::MODIFIER}
+		{"modify",			SectionCommand::MODIFIER},
+		{"{shader}",		SectionCommand::SHADER_BLOCK},
+		{"{formula}",		SectionCommand::FORMULA_BLOCK}
+	};
+
+	const std::map<std::string, SpoReader::ShaderBlockCommand> SpoReader::spoShaderBlockCommand = {
+		{"path",			ShaderBlockCommand::STRING},
+		{"uniform",			ShaderBlockCommand::UNIFORM}
 	};
 
 	const std::map<std::string, int> SpoReader::spoBlendFunc = {
@@ -380,6 +387,8 @@ namespace Phoenix {
 			}
 			// If we have already loaded the section type, then load it's parameters
 			else if (sec_id != -1) {
+				if (line == "{shader}")
+					int kk = 0;
 				std::pair<std::string, std::string> s_line = splitIn2Lines(line);
 				// check if its a known command
 				if (spoSectionCommand.find(s_line.first) == spoSectionCommand.end()) {
@@ -510,6 +519,31 @@ namespace Phoenix {
 					Logger::info(LogLevel::low, "Loaded Spline: {}", new_spl->filename);
 					break;
 				}
+
+				case SectionCommand::SHADER_BLOCK:
+				{
+					ShaderBlock* new_shb = loadShaderBlock(f, lineNum);
+
+					if (new_shb) {
+						new_sec->shaderBlock.emplace_back(new_shb);
+						Logger::info(LogLevel::low, "Loaded Shader block: {}", new_shb->filename);
+					}
+					else {
+						Logger::error("  Shader block has missing fields, shader not processed.");
+					}
+
+					break;
+				}
+
+				case SectionCommand::FORMULA_BLOCK:
+				{
+					new_sec->formula = loadFormulaBlock(f, lineNum);
+					if (new_sec->formula != "") {
+						Logger::info(LogLevel::low, "Loaded Formula block: {}", new_sec->formula);
+					}
+					break;
+				}
+
 				default:
 					Logger::error("Unknown section variable was found in line: \"{}\"", line);
 					break;
@@ -520,13 +554,126 @@ namespace Phoenix {
 		return sec_id;
 	}
 
+	ShaderBlock* SpoReader::loadShaderBlock(std::istringstream& f, int& lineNum)
+	{
+		Logger::ScopedIndent _;
+		std::string	line;
+		bool exitBlock = false;
+		ShaderBlock* new_shb = new ShaderBlock();
+
+		while (!exitBlock) {
+			std::streampos oldpos = f.tellg();  // stores the position before reading any line
+
+			// Read the text line
+			std::istream& lineRead = std::getline(f, line);
+			lineNum++;
+
+			// Line validation: if end of file found
+			if (!lineRead) {
+				exitBlock = true;
+				continue;
+			}
+			// Line validation: Ignore comments or empty line
+			if (line.empty() || (line[0] == ';') || (line[0] == '\n') || (line[0] == '\r') || (line[0] == ' ') || (line[0] == '\t')) {
+				//Logger::info(LogLevel::low, "  Comments found or empty in line %i, ignoring this line.", lineNum);
+				continue;
+			}
+			// Remove '\r' (if exists)
+			if (!line.empty() && line[line.size() - 1] == '\r')
+				line.erase(line.size() - 1);
+
+			// Exit if new block detected
+			if (line[0] == '{') {
+				f.seekg(oldpos); // restore position
+				//Logger::info(LogLevel::low, "  New block detected in line %i, exit current block.", lineNum);
+				lineNum--;
+				break;
+			}
+
+			std::pair<std::string, std::string> sb_line = splitIn2Lines(line);
+			// check if its a known command
+			if (spoShaderBlockCommand.find(sb_line.first) == spoShaderBlockCommand.end()) {
+				Logger::error("  Invalid line: {}", line);
+				break;
+			}
+			const auto shb_command = spoShaderBlockCommand.find(sb_line.first)->second;
+			switch (shb_command)
+			{
+				case ShaderBlockCommand::INVALID:
+					Logger::error("  Invalid line in Shader: {}", line);
+					break;
+				case ShaderBlockCommand::STRING:
+				{
+					new_shb->filename = sb_line.second;
+					Logger::info(LogLevel::low, "Loaded Shader filename: {}", new_shb->filename);
+					break;
+				}
+				case ShaderBlockCommand::UNIFORM:
+				{
+					new_shb->uniform.emplace_back(sb_line.second);
+					Logger::info(LogLevel::low, "Loaded Shader uniform: \"{}\"", sb_line.second);
+					break;
+				}
+			}
+		}
+
+		if (new_shb->filename != "")
+			return new_shb;
+		else {
+			delete new_shb;
+			return nullptr;
+		}
+	}
+
+	std::string SpoReader::loadFormulaBlock(std::istringstream& f, int& lineNum)
+	{
+		std::string formula = "";
+		Logger::ScopedIndent _;
+		std::string	line;
+		bool exitBlock = false;
+		
+		while (!exitBlock) {
+			std::streampos oldpos = f.tellg();  // stores the position before reading any line
+
+			// Read the text line
+			std::istream& lineRead = std::getline(f, line);
+			lineNum++;
+
+			// Line validation: if end of file found
+			if (!lineRead) {
+				exitBlock = true;
+				continue;
+			}
+			// Line validation: Ignore comments or empty line
+			if (line.empty() || (line[0] == ';') || (line[0] == '\n') || (line[0] == '\r') || (line[0] == ' ') || (line[0] == '\t')) {
+				//Logger::info(LogLevel::low, "  Comments found or empty in line %i, ignoring this line.", lineNum);
+				continue;
+			}
+			// Remove '\r' (if exists)
+			if (!line.empty() && line[line.size() - 1] == '\r')
+				line.erase(line.size() - 1);
+
+			// Exit if new block detected
+			if (line[0] == '{') {
+				f.seekg(oldpos); // restore position
+				//Logger::info(LogLevel::low, "  New block detected in line %i, exit current block.", lineNum);
+				lineNum--;
+				break;
+			}
+
+			formula += line + "\n";
+		}
+
+		return formula;
+	}
+
 	std::pair<std::string, std::string> SpoReader::splitIn2Lines(const std::string& line) {
 		std::pair<std::string, std::string> ret("", "");
 
 		std::vector<std::string> strings = splitInMultipleLines(line);
 
 		// recompose the string: in the first we have the commmand, in the second we have all the string
-		if (strings.size() > 1) {
+		if (strings.size() >= 1) {
 			ret.first = strings[0];
 			for (int i = 1; i < strings.size(); i++) {
 				ret.second += strings[i];

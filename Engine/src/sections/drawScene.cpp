@@ -63,11 +63,10 @@ namespace Phoenix {
 	}
 
 	bool sDrawScene::load() {
-		if ((param.size() != 6) || (strings.size() < 7)) {
+		if ((param.size() != 6) || (strings.size() < 1) || (shaderBlock.size() < 1)) {
 			Logger::error(
-				"DrawScene [{}]: 5 param (do depth buffer clearing, disable depth test, disable depth mask, enable wireframe, enable animation & "
-				"animation number) and 7 strings needed (model, shader, CameraNumber, aTime & "
-				"three more for object positioning)",
+				"DrawScene [{}]: 6 params (depth buffer clearing, disable depth test, disable depth mask, enable wireframe, enable animation & "
+				"animation number), 1 string (model) and 1 Shader block",
 				identifier
 			);
 			return false;
@@ -86,7 +85,7 @@ namespace Phoenix {
 		m_pModel = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[0]);
 		if (!m_pModel)
 			return false;
-		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[1]);
+		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
 		if (!m_pShader)
 			return false;
 
@@ -96,9 +95,7 @@ namespace Phoenix {
 			m_pModel->setAnimation(m_iAnimationNumber);
 
 		m_pExprPosition = new MathDriver(this);
-		// Load all the other strings
-		for (int i = 2; i < strings.size(); i++)
-			m_pExprPosition->expression += strings[i];
+		m_pExprPosition->expression += formula;
 
 		m_pExprPosition->SymbolTable.add_variable("CameraNumber", m_fCameraNumber);
 		m_pExprPosition->SymbolTable.add_variable("aTime", m_fAnimationTime);
@@ -127,8 +124,8 @@ namespace Phoenix {
 		m_pVars = new ShaderVars(this, m_pShader);
 
 		// Read the shader variables
-		for (int i = 0; i < uniform.size(); i++) {
-			m_pVars->ReadString(uniform[i].c_str());
+		for (auto& uni : shaderBlock[0]->uniform) {
+			m_pVars->ReadString(uni);
 		}
 		
 		// Validate ans set shader variables initial values

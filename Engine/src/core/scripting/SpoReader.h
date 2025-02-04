@@ -26,6 +26,15 @@ namespace Phoenix {
 			UNIFORM,
 			SPLINE,
 			MODIFIER,
+			SHADER_BLOCK,
+			FORMULA_BLOCK,
+			INVALID
+		};
+
+		// defined shader commands
+		enum class ShaderBlockCommand {
+			STRING = 0,
+			UNIFORM,
 			INVALID
 		};
 
@@ -54,8 +63,11 @@ namespace Phoenix {
 		int	loadScriptData();
 
 	private:
-		bool loadConfigScriptData();
-		int loadSectionScriptData();
+		bool			loadConfigScriptData();
+		int				loadSectionScriptData();
+		ShaderBlock*	loadShaderBlock(std::istringstream& f, int& lineNum);
+		std::string		loadFormulaBlock(std::istringstream& f, int& lineNum);
+
 		std::pair<std::string, std::string> splitIn2Lines(const std::string& line);
 		std::vector<std::string> splitInMultipleLines(const std::string& line);
 		std::string& removeDoubleSpaces(std::string& line);
@@ -65,6 +77,8 @@ namespace Phoenix {
 		static const std::map<std::string, SectionCommand> spoSectionCommand;
 		static const std::map<std::string, int32_t> spoBlendFunc;
 		static const std::map<std::string, int32_t> spoBlendEquationFunc;
+
+		static const std::map<std::string, ShaderBlockCommand> spoShaderBlockCommand;
 
 	private:
 		std::string m_filepath;
