@@ -95,10 +95,10 @@ namespace Phoenix {
 			m_pModel->setAnimation(m_iAnimationNumber);
 
 		m_pExprPosition = new MathDriver(this);
-		m_pExprPosition->expression += formula;
+		m_pExprPosition->expression = expressionBlock;
 
 		m_pExprPosition->SymbolTable.add_variable("CameraNumber", m_fCameraNumber);
-		m_pExprPosition->SymbolTable.add_variable("aTime", m_fAnimationTime);
+		m_pExprPosition->SymbolTable.add_variable("AnimationTime", m_fAnimationTime);
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
 		m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
 		m_pExprPosition->SymbolTable.add_variable("tz", m_vTranslation.z);

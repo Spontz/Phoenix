@@ -111,7 +111,7 @@ namespace Phoenix {
 		std::string                 debugStatic;	// Debug Static string
 		
 		std::vector<ShaderBlock*>	shaderBlock;	// Shader Block Information (shader path and uniforms)
-		std::string					formula;		// Formula containing all position information
+		std::string					expressionBlock;// Expression containing all variables information (position, rotation, scale, etc.)
 
 		// Render states
 		bool                        render_drawWireframe;	// Draw in wireframe (disabled by default)

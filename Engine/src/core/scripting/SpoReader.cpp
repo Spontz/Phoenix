@@ -17,13 +17,12 @@ namespace Phoenix {
 		{"string",			SectionCommand::STRING},
 		{"uniform",			SectionCommand::UNIFORM},
 		{"spline",			SectionCommand::SPLINE},
-		{"modify",			SectionCommand::MODIFIER},
-		{"{shader}",		SectionCommand::SHADER_BLOCK},
-		{"{formula}",		SectionCommand::FORMULA_BLOCK}
+		{"[shader]",		SectionCommand::SHADER_BLOCK},
+		{"[expression]",	SectionCommand::EXPRESSION_BLOCK}
 	};
 
 	const std::map<std::string, SpoReader::ShaderBlockCommand> SpoReader::spoShaderBlockCommand = {
-		{"path",			ShaderBlockCommand::STRING},
+		{"path",			ShaderBlockCommand::PATH},
 		{"uniform",			ShaderBlockCommand::UNIFORM}
 	};
 
@@ -224,7 +223,7 @@ namespace Phoenix {
 			}
 
 			// If its a section
-			if (line[0] == '[') {
+			if (line.substr(0, 3) == ":::") {
 				sec_id = loadSectionScriptData();
 				return sec_id;
 			}
@@ -365,13 +364,10 @@ namespace Phoenix {
 			line = removeDoubleSpaces(line);
 
 			// If its a section
-			if (line[0] == '[') {
-				char c_sec_type[512];
-				// First we read the Section type (key)
-				if (sscanf(line.c_str(), "[%s]", c_sec_type) != 1)
-					throw std::exception();
-				c_sec_type[strlen(c_sec_type) - 1] = '\0';
-				const auto sec_type = getSectionType(c_sec_type);
+			if (line.substr(0,3) == ":::") {
+				// Get the section name and type
+				std::string sec_type_string = line.substr(3);
+				const auto sec_type = getSectionType(sec_type_string);
 
 				// by default the section is enabled and marked as not loaded
 				sec_id = -1;
@@ -381,14 +377,12 @@ namespace Phoenix {
 					Logger::info(LogLevel::low, "  Section {} added!", new_sec->type_str);
 				}
 				else {
-					Logger::error("Section {} not supported! File skipped", c_sec_type);
+					Logger::error("Section {} not supported! File skipped", sec_type_string);
 					return sec_id;
 				}
 			}
 			// If we have already loaded the section type, then load it's parameters
 			else if (sec_id != -1) {
-				if (line == "{shader}")
-					int kk = 0;
 				std::pair<std::string, std::string> s_line = splitIn2Lines(line);
 				// check if its a known command
 				if (spoSectionCommand.find(s_line.first) == spoSectionCommand.end()) {
@@ -405,9 +399,6 @@ namespace Phoenix {
 						break;
 					case 'c':
 						command = SectionCommand::SPLINE;
-						break;
-					case 'm':
-						command = SectionCommand::MODIFIER;
 						break;
 					default:
 						command = SectionCommand::INVALID;
@@ -535,11 +526,11 @@ namespace Phoenix {
 					break;
 				}
 
-				case SectionCommand::FORMULA_BLOCK:
+				case SectionCommand::EXPRESSION_BLOCK:
 				{
-					new_sec->formula = loadFormulaBlock(f, lineNum);
-					if (new_sec->formula != "") {
-						Logger::info(LogLevel::low, "Loaded Formula block: {}", new_sec->formula);
+					new_sec->expressionBlock = loadExpressionBlock(f, lineNum);
+					if (new_sec->expressionBlock != "") {
+						Logger::info(LogLevel::low, "Loaded Expression block: {}", new_sec->expressionBlock);
 					}
 					break;
 				}
@@ -583,7 +574,7 @@ namespace Phoenix {
 				line.erase(line.size() - 1);
 
 			// Exit if new block detected
-			if (line[0] == '{') {
+			if (line[0] == '[') {
 				f.seekg(oldpos); // restore position
 				//Logger::info(LogLevel::low, "  New block detected in line %i, exit current block.", lineNum);
 				lineNum--;
@@ -599,10 +590,7 @@ namespace Phoenix {
 			const auto shb_command = spoShaderBlockCommand.find(sb_line.first)->second;
 			switch (shb_command)
 			{
-				case ShaderBlockCommand::INVALID:
-					Logger::error("  Invalid line in Shader: {}", line);
-					break;
-				case ShaderBlockCommand::STRING:
+				case ShaderBlockCommand::PATH:
 				{
 					new_shb->filename = sb_line.second;
 					Logger::info(LogLevel::low, "Loaded Shader filename: {}", new_shb->filename);
@@ -612,6 +600,11 @@ namespace Phoenix {
 				{
 					new_shb->uniform.emplace_back(sb_line.second);
 					Logger::info(LogLevel::low, "Loaded Shader uniform: \"{}\"", sb_line.second);
+					break;
+				}
+				default:
+				{
+					Logger::error("  Invalid line in Shader: {}", line);
 					break;
 				}
 			}
@@ -625,7 +618,7 @@ namespace Phoenix {
 		}
 	}
 
-	std::string SpoReader::loadFormulaBlock(std::istringstream& f, int& lineNum)
+	std::string SpoReader::loadExpressionBlock(std::istringstream& f, int& lineNum)
 	{
 		std::string formula = "";
 		Logger::ScopedIndent _;
@@ -654,7 +647,7 @@ namespace Phoenix {
 				line.erase(line.size() - 1);
 
 			// Exit if new block detected
-			if (line[0] == '{') {
+			if (line[0] == '[') {
 				f.seekg(oldpos); // restore position
 				//Logger::info(LogLevel::low, "  New block detected in line %i, exit current block.", lineNum);
 				lineNum--;

@@ -163,7 +163,17 @@ namespace Phoenix {
 	{
 		Expression.register_symbol_table(SymbolTable);
 		if (!Parser.compile(expression, Expression)) {
-			Logger::error("Error in formula, please check expression: {}", expression);
+			for (std::size_t i = 0; i < Parser.error_count(); ++i)
+			{
+				typedef exprtk::parser_error::type error_t;
+				error_t error = Parser.get_error(i);
+				exprtk::parser_error::update_error(error, expression);
+								
+				Logger::error("Expression error {} at line: {} column: {}", i, error.line_no, error.column_no);
+				Logger::error("  Line: {}", error.error_line);
+				Logger::error("  Diag: {}", error.diagnostic);
+			}
+
 			return false;
 		}
 		return true;

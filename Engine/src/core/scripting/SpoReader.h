@@ -27,15 +27,14 @@ namespace Phoenix {
 			SPLINE,
 			MODIFIER,
 			SHADER_BLOCK,
-			FORMULA_BLOCK,
+			EXPRESSION_BLOCK,
 			INVALID
 		};
 
 		// defined shader commands
 		enum class ShaderBlockCommand {
-			STRING = 0,
-			UNIFORM,
-			INVALID
+			PATH = 0,
+			UNIFORM
 		};
 
 		enum class SectionVar {
@@ -58,20 +57,20 @@ namespace Phoenix {
 		~SpoReader();
 
 	public:
-		void readFromFile(std::string_view filePath);
-		void readFromNetwork(std::string_view script);
-		int	loadScriptData();
+		void	readFromFile(std::string_view filePath);
+		void	readFromNetwork(std::string_view script);
+		int		loadScriptData();
 
 	private:
 		bool			loadConfigScriptData();
 		int				loadSectionScriptData();
 		ShaderBlock*	loadShaderBlock(std::istringstream& f, int& lineNum);
-		std::string		loadFormulaBlock(std::istringstream& f, int& lineNum);
+		std::string		loadExpressionBlock(std::istringstream& f, int& lineNum);
 
-		std::pair<std::string, std::string> splitIn2Lines(const std::string& line);
-		std::vector<std::string> splitInMultipleLines(const std::string& line);
-		std::string& removeDoubleSpaces(std::string& line);
-		int32_t scriptCommandFound(const std::string& command);
+		std::pair<std::string, std::string>	splitIn2Lines(const std::string& line);
+		std::vector<std::string>			splitInMultipleLines(const std::string& line);
+		std::string&						removeDoubleSpaces(std::string& line);
+		int32_t								scriptCommandFound(const std::string& command);
 
 	private:
 		static const std::map<std::string, SectionCommand> spoSectionCommand;
