@@ -574,7 +574,7 @@ namespace Phoenix {
 				continue;
 			}
 			// Line validation: Ignore comments or empty line
-			if (line.empty() || (line[0] == ';') || (line[0] == '\n') || (line[0] == '\r') || (line[0] == ' ') || (line[0] == '\t')) {
+			if (line.empty() || (line[0] == ';') || (line[0] == '\n') || (line[0] == '\r')) {
 				//Logger::info(LogLevel::low, "  Comments found or empty in line %i, ignoring this line.", lineNum);
 				continue;
 			}
@@ -645,7 +645,7 @@ namespace Phoenix {
 				continue;
 			}
 			// Line validation: Ignore comments or empty line
-			if (line.empty() || (line[0] == ';') || (line[0] == '\n') || (line[0] == '\r') || (line[0] == ' ') || (line[0] == '\t')) {
+			if (line.empty() || (line[0] == ';') || (line[0] == '\n') || (line[0] == '\r')) {
 				//Logger::info(LogLevel::low, "  Comments found or empty in line %i, ignoring this line.", lineNum);
 				continue;
 			}
