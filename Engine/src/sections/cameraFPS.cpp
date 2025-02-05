@@ -77,7 +77,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size() != 1)) {
-			Logger::error("Camera FPS [{}]: 1 param needed (the camera mode has not been defined)", identifier);
+			Logger::error("Camera FPS [{}]: 1 param needed (camera mode)", identifier);
 			return false;
 		}
 
@@ -96,14 +96,14 @@ namespace Phoenix {
 			}
 			break;
 		case CameraMode::ONLY_FORMULA:
-			if (strings.size() == 0) {
-				Logger::error("Camera FPS [{}]: Formula mode: strings are needed with the formulas", identifier);
+			if (expressionBlock == "") {
+				Logger::error("Camera FPS [{}]: Formula mode: expression block is empty", identifier);
 				return false;
 			}
 			break;
 		case CameraMode::SPLINE_AND_FORMULA:
-			if ((spline.size() == 0) || (strings.size() == 0)) {
-				Logger::error("Camera FPS [{}]: Spline and Formula mode: spline and strings are needed", identifier);
+			if ((spline.size() == 0) || expressionBlock == "") {
+				Logger::error("Camera FPS [{}]: Spline and Formula mode: spline and expression block are needed", identifier);
 				return false;
 			}
 			break;
@@ -126,9 +126,7 @@ namespace Phoenix {
 		// Load the camera modifiers (based in formulas)
 		m_pExprCamera = new MathDriver(this);
 
-		for (int i = 0; i < strings.size(); i++) {
-			m_pExprCamera->expression += strings[i];
-		}
+		m_pExprCamera->expression = expressionBlock;
 
 		// Camera (spline) variables
 		m_pExprCamera->SymbolTable.add_variable("cPosX", m_vCamPos.x);

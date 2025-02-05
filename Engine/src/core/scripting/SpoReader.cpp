@@ -528,7 +528,7 @@ namespace Phoenix {
 
 				case SectionCommand::EXPRESSION_BLOCK:
 				{
-					new_sec->expressionBlock = loadExpressionBlock(f, lineNum);
+					new_sec->expressionBlock += loadExpressionBlock(f, lineNum);
 					if (new_sec->expressionBlock != "") {
 						Logger::info(LogLevel::low, "Loaded Expression block: {}", new_sec->expressionBlock);
 					}

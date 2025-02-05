@@ -66,20 +66,20 @@ namespace Phoenix {
 	bool sDrawEmitterScene::load()
 	{
 		// script validation
-		if ((param.size() != 2) || (strings.size() < 10)) {
-			Logger::error("Draw Emitter Scene [{}]: 2 param (Emission time & Particle Life Time) and 10 strings needed (2 shaders, model, 3 for positioning, part speed, velocity, force and color)", identifier);
+		if ((param.size() != 2) || (strings.size() != 1) || (shaderBlock.size() != 2) || expressionBlock == "") {
+			Logger::error("Draw Emitter Scene [{}]: 2 param (Emission time & Particle Life Time), 1 string needed (model), 2 shaders (update and billboard) and 1 expression block needed", identifier);
 			return false;
 		}
 
 		// Load the shaders
 		std::string pathParticleSystemShader;
-		pathParticleSystemShader = m_demo.m_dataFolder + strings[0];
+		pathParticleSystemShader = m_demo.m_dataFolder + shaderBlock[0]->filename;
 
 		std::string pathBillboardShader;
-		pathBillboardShader = m_demo.m_dataFolder + strings[1];
+		pathBillboardShader = m_demo.m_dataFolder + shaderBlock[1]->filename;
 
 		// Load the model
-		m_pModel = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[2]);
+		m_pModel = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[0]);
 
 		if (!m_pModel)
 			return false;
@@ -100,9 +100,7 @@ namespace Phoenix {
 		}
 
 		m_pExprPosition = new MathDriver(this);
-		// Load all the other strings
-		for (size_t i = 3; i < strings.size(); i++)
-			m_pExprPosition->expression += strings[i];
+		m_pExprPosition->expression = expressionBlock;
 
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
 		m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
@@ -171,7 +169,7 @@ namespace Phoenix {
 
 		// Create the particle system
 		m_pPartSystem = new ParticleSystem(pathParticleSystemShader, pathBillboardShader);
-		if (!m_pPartSystem->Init(this, Emitter, m_fEmissionTime, m_fParticleLifeTime, uniform))
+		if (!m_pPartSystem->Init(this, Emitter, m_fEmissionTime, m_fParticleLifeTime, shaderBlock[0]->uniform, shaderBlock[1]->uniform))
 			return false;
 
 		Emitter.clear(); // Delete emitters... it's worth it? or can be used for updating emitter values?
