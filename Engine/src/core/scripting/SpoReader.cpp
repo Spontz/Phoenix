@@ -620,7 +620,7 @@ namespace Phoenix {
 
 	std::string SpoReader::loadExpressionBlock(std::istringstream& f, int& lineNum)
 	{
-		std::string formula = "";
+		std::string expression = "";
 		Logger::ScopedIndent _;
 		std::string	line;
 		bool exitBlock = false;
@@ -654,10 +654,10 @@ namespace Phoenix {
 				break;
 			}
 
-			formula += line + "\n";
+			expression += line + "\n";
 		}
 
-		return formula;
+		return expression;
 	}
 
 	std::pair<std::string, std::string> SpoReader::splitIn2Lines(const std::string& line) {
