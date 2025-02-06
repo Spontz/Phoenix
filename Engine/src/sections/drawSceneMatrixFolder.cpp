@@ -247,7 +247,7 @@ namespace Phoenix {
 		m_pVars->setValues();
 
 		// Evaluate the expression
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->executeFormula();
 
 		// Update Matrices with instances positions, if required
 		if (m_bUpdateFormulas)
@@ -326,7 +326,7 @@ namespace Phoenix {
 		int instance = 0;
 
 		// Evaluate the expression
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->executeFormula();
 
 		matrixModel = glm::mat4(1.0f);
 		matrixModel = glm::translate(matrixModel, m_vInsTranslation);
@@ -344,7 +344,7 @@ namespace Phoenix {
 				m_vCurrInsPos = glm::vec3(0); // All instances are located in pos 0 by default
 				m_vCurrInsPosPolar = glm::vec3(0);
 				// Evaluate the expression
-				m_pExprPosition->Expression.value();
+				m_pExprPosition->executeFormula();
 
 				// Copy previous model instance matrix, before model matrix changes
 				m_pmPrevModel[instance] = m_pInsMatrixModel[instance];

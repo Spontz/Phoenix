@@ -108,7 +108,7 @@ namespace Phoenix {
 		//glDepthFunc(GL_LEQUAL); // Not needed - this is the generic Depth function - TODO: Pending testing and delete this
 
 		// Evaluate the expression
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->executeFormula();
 
 		m_demo.m_pRes->m_spShdrSkybox->use(); // TODO: Do not use the Resource shader for skybox, and use our own shader!
 

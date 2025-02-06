@@ -27,7 +27,7 @@ namespace Phoenix {
 		float			m_fCurrentEmitter = 0;
 		float			m_fEmissionTime = 0;
 		float			m_fParticleLifeTime = 0;
-		float			m_fParticleSpeed = 0;
+		float			m_fParticleSpeed = 1.0f;
 		float			m_fParticleRandomness = 0;
 		ParticleSystem* m_pPartSystem = nullptr;
 
@@ -38,7 +38,7 @@ namespace Phoenix {
 
 		glm::vec3		m_vVelocity = { 0, 0, 0 };
 		glm::vec3		m_vForce = { 0, 0, 0 };
-		glm::vec3		m_vColor = { 0, 0, 0 };
+		glm::vec3		m_vColor = { 1, 1, 1 };
 		MathDriver*		m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
 
 	};
@@ -66,8 +66,8 @@ namespace Phoenix {
 	bool sDrawEmitterScene::load()
 	{
 		// script validation
-		if ((param.size() != 2) || (strings.size() != 1) || (shaderBlock.size() != 2) || expressionBlock == "") {
-			Logger::error("Draw Emitter Scene [{}]: 2 param (Emission time & Particle Life Time), 1 string needed (model), 2 shaders (update and billboard) and 1 expression block needed", identifier);
+		if ((param.size() != 2) || (strings.size() != 1) || (shaderBlock.size() != 2)) {
+			Logger::error("Draw Emitter Scene [{}]: 2 param (Emission time & Particle Life Time), 1 string needed (model), 2 shaders (update and billboard) and 1 run expression block needed", identifier);
 			return false;
 		}
 
@@ -100,7 +100,7 @@ namespace Phoenix {
 		}
 
 		m_pExprPosition = new MathDriver(this);
-		m_pExprPosition->expression = expressionBlock;
+		m_pExprPosition->expression = expressionRun;
 
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
 		m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
@@ -142,9 +142,7 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_constant("TnE", static_cast<float>(m_uiNumEmitters));
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
-		if (!m_pExprPosition->compileFormula())
-			return false;
-
+		m_pExprPosition->compileFormula();
 		
 		std::vector<ParticleSystem::Particle> Emitter;
 		Emitter.resize(m_uiNumEmitters);
@@ -155,7 +153,7 @@ namespace Phoenix {
 		m_fCurrentEmitter = 0;
 		for (auto& mesh : m_pModel->meshes) {
 			for (auto& uniqueVertex : mesh->m_uniqueVertices) {
-				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
+				m_pExprPosition->executeFormula(); // Evaluate the expression on each particle, just in case something has changed
 				Emitter[numEmitter].Type = ParticleSystem::ParticleType::Emitter;
 				Emitter[numEmitter].Pos = uniqueVertex.Position;
 				Emitter[numEmitter].Vel = uniqueVertex.Normal + (m_fParticleRandomness * Utils::randomVec3(randomSeed));
@@ -193,7 +191,7 @@ namespace Phoenix {
 		EvalBlendingStart();
 
 		// Evaluate the expression
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->executeFormula();
 
 		
 		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
@@ -230,6 +228,7 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Model used: " << m_pModel->filename << std::endl;
+		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Emission Time: " << m_fEmissionTime << std::endl;
 		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
 		ss << "Emitters: " << m_uiNumEmitters << std::endl;

@@ -59,7 +59,7 @@ namespace Phoenix {
 	void sSetVariable::exec()
 	{
 		// Evaluate the expression
-		m_pExpr->Expression.value();
+		m_pExpr->executeFormula();
 	}
 
 	void sSetVariable::loadDebugStatic()

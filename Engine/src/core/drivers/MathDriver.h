@@ -11,12 +11,17 @@ namespace Phoenix {
 		MathDriver(Section* pSection);
 
 	public:
+		bool isValid() const { return valid; }
 		bool compileFormula();
+		void executeFormula();
 
 	public:
 		std::string					expression;
 		exprtk::symbol_table<float>	SymbolTable;
 		exprtk::expression<float>	Expression;
 		exprtk::parser<float>		Parser;
+
+	private:
+		bool						valid; // Is the expression valid?
 	};
 }

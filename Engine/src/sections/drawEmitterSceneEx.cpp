@@ -160,7 +160,7 @@ namespace Phoenix {
 
 		for (size_t i = 0; i < m_pModel->meshes.size(); i++) {
 			for (size_t j = 0; j < m_pModel->meshes[i]->m_uniqueVertices.size(); j++) {
-				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
+				m_pExprPosition->executeFormula(); // Evaluate the expression on each particle, just in case something has changed
 				Particles[numParticle].Type = ParticleSystemEx::ParticleType::Emitter;
 				Particles[numParticle].ID = (int32_t)numParticle;
 				Particles[numParticle].InitPosition = m_pModel->meshes[i]->m_uniqueVertices[j].Position;
@@ -175,7 +175,7 @@ namespace Phoenix {
 				numParticle++;
 				// Fill the particles per emitter
 				for (size_t k = 0; k < m_iParticlesPerEmitter; k++) {
-					m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
+					m_pExprPosition->executeFormula(); // Evaluate the expression on each particle, just in case something has changed
 					Particles[numParticle].Type = ParticleSystemEx::ParticleType::Shell;
 					Particles[numParticle].ID = (int32_t)k;
 					Particles[numParticle].InitPosition = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
@@ -220,7 +220,7 @@ namespace Phoenix {
 		EvalBlendingStart();
 
 		// Evaluate the expression
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->executeFormula();
 
 		
 		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();

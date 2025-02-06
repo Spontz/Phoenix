@@ -56,7 +56,7 @@ namespace Phoenix {
 		if ((m_SectionEventQueue[m_executionQueue].empty()) && (m_SectionEventQueue[m_additionQueue].empty()))
 			return;
 
-		// We only execute the execution queue if we have something insisde
+		// We only executeFormula the execution queue if we have something insisde
 		if (!m_SectionEventQueue[m_executionQueue].empty()) {
 			for (auto& pEvent : m_SectionEventQueue[m_executionQueue]) {
 				pEvent->exec();

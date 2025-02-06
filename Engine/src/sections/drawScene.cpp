@@ -63,7 +63,7 @@ namespace Phoenix {
 	}
 
 	bool sDrawScene::load() {
-		if ((param.size() != 6) || (strings.size() < 1) || (shaderBlock.size() < 1)) {
+		if ((param.size() != 6) || (strings.size() < 1) || (shaderBlock.size() < 1) ) {
 			Logger::error(
 				"DrawScene [{}]: 6 params (depth buffer clearing, disable depth test, disable depth mask, enable wireframe, enable animation & "
 				"animation number), 1 string (model) and 1 Shader block",
@@ -95,7 +95,7 @@ namespace Phoenix {
 			m_pModel->setAnimation(m_iAnimationNumber);
 
 		m_pExprPosition = new MathDriver(this);
-		m_pExprPosition->expression = expressionBlock;
+		m_pExprPosition->expression = expressionRun;
 
 		m_pExprPosition->SymbolTable.add_variable("CameraNumber", m_fCameraNumber);
 		m_pExprPosition->SymbolTable.add_variable("AnimationTime", m_fAnimationTime);
@@ -109,9 +109,9 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
 		m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
-		if (!m_pExprPosition->compileFormula())
-			return false;
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->compileFormula();
+		m_pExprPosition->executeFormula();
+
 		// Set the camera number
 		if (m_fCameraNumber < 0)
 			m_pModel->useCamera = false;
@@ -151,7 +151,7 @@ namespace Phoenix {
 		EvalBlendingStart();
 
 		// Evaluate the expression
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->executeFormula();
 
 		// Set model properties
 		m_pModel->playAnimation = m_bPlayAnimation;
@@ -219,6 +219,7 @@ namespace Phoenix {
 		std::stringstream ss;
 		Material* mat;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
+		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "File: " << m_pModel->filename << std::endl;
 		ss << "Meshes: " << m_pModel->m_statNumMeshes << std::endl;
 		ss << "Faces: " << m_pModel->m_statNumFaces << ", vertices: " << m_pModel->m_statNumVertices << std::endl;

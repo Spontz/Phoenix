@@ -18,7 +18,7 @@ namespace Phoenix {
 		{"uniform",			SectionCommand::UNIFORM},
 		{"spline",			SectionCommand::SPLINE},
 		{"[shader]",		SectionCommand::SHADER_BLOCK},
-		{"[expression]",	SectionCommand::EXPRESSION_BLOCK}
+		{"[expression:run]",SectionCommand::EXPRESSION_RUN_BLOCK}
 	};
 
 	const std::map<std::string, SpoReader::ShaderBlockCommand> SpoReader::spoShaderBlockCommand = {
@@ -526,11 +526,11 @@ namespace Phoenix {
 					break;
 				}
 
-				case SectionCommand::EXPRESSION_BLOCK:
+				case SectionCommand::EXPRESSION_RUN_BLOCK:
 				{
-					new_sec->expressionBlock += loadExpressionBlock(f, lineNum);
-					if (new_sec->expressionBlock != "") {
-						Logger::info(LogLevel::low, "Loaded Expression block: {}", new_sec->expressionBlock);
+					new_sec->expressionRun += loadExpressionBlock(f, lineNum);
+					if (new_sec->expressionRun != "") {
+						Logger::info(LogLevel::low, "Loaded Expression block: {}", new_sec->expressionRun);
 					}
 					break;
 				}

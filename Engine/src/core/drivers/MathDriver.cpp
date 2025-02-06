@@ -9,6 +9,7 @@ namespace Phoenix {
 
 	MathDriver::MathDriver(Section* sec) {
 		expression = "";
+		valid = false; // Not yet valid until is compiled
 
 		// Add the variables that will be used by all sections
 		SymbolTable.add_variable("t", sec->runTime);
@@ -173,9 +174,15 @@ namespace Phoenix {
 				Logger::error("  Line: {}", error.error_line);
 				Logger::error("  Diag: {}", error.diagnostic);
 			}
-
+			valid = false;
 			return false;
 		}
+		valid = true;
 		return true;
+	}
+	void MathDriver::executeFormula()
+	{
+		if (valid)
+			Expression.value();
 	}
 }

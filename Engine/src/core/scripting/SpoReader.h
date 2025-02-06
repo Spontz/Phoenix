@@ -27,7 +27,7 @@ namespace Phoenix {
 			SPLINE,
 			MODIFIER,
 			SHADER_BLOCK,
-			EXPRESSION_BLOCK,
+			EXPRESSION_RUN_BLOCK,
 			INVALID
 		};
 

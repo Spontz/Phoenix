@@ -23,7 +23,7 @@ namespace Phoenix {
 		
 		void LoadSections();						// Load Sections
 		void ReInitSections();						// Re-Initialize Sections
-		void ProcessSections(float DemoRunTime);	// Process Sections (sort & prepare sections that need to be rendered and execute them)
+		void ProcessSections(float DemoRunTime);	// Process Sections (sort & prepare sections that need to be rendered and executeFormula them)
 		void ExecuteSections(float DemoRuntime);	// Execute sections
 		void End();									// Post-Executing the sections
 

@@ -124,7 +124,7 @@ namespace Phoenix {
 		EvalBlendingStart();
 
 		// Evaluate the expression
-		m_pExprBloom->Expression.value();
+		m_pExprBloom->executeFormula();
 
 		{
 			// First step: Blur the image from the "fbo attachment 1", and store it in our efxBloom fbo manager (efxBloomFbo)

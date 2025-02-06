@@ -180,7 +180,7 @@ namespace Phoenix {
 				// Calculate particle position, should go from -1 to 1
 				glm::vec3 ParticlePos = glm::vec3(-1 + fXOffset +  partPosIncrementX * i, -1 + fYOffset + partPosIncrementY * j, 0);
 				
-				m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
+				m_pExprPosition->executeFormula(); // Evaluate the expression on each particle, just in case something has changed
 				Particles[numParticle].Type = ParticleMesh::ParticleType::Emitter;
 				Particles[numParticle].ID = (int32_t)numEmitter;
 				Particles[numParticle].InitPosition = ParticlePos;
@@ -191,7 +191,7 @@ namespace Phoenix {
 				numParticle++;
 				// Fill the particles per emitter
 				for (size_t k = 0; k < m_iParticlesPerEmitter; k++) {
-					//m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
+					//m_pExprPosition->executeFormula(); // Evaluate the expression on each particle, just in case something has changed
 					Particles[numParticle].Type = ParticleMesh::ParticleType::Shell;
 					Particles[numParticle].ID = (int32_t)k;
 					Particles[numParticle].InitPosition = Particles[emitterID].InitPosition;	// Load the position of the emitter as Initial position
@@ -245,7 +245,7 @@ namespace Phoenix {
 		EvalBlendingStart();
 		
 		// Evaluate the expression
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->executeFormula();
 
 		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
 		glm::mat4 view = m_demo.m_cameraManager.getActiveView();

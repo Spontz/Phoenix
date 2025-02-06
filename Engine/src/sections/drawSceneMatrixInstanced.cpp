@@ -228,7 +228,7 @@ namespace Phoenix {
 		m_pVars->setValues();
 
 		// Evaluate the expression
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->executeFormula();
 
 		// Update Matrices with instance positions, if required
 		if (m_bUpdateFormulas)
@@ -249,7 +249,7 @@ namespace Phoenix {
 				m_cObjPos = model_ref->meshes[i].unique_vertices_pos[j];
 				m_cObjPosPolar = model_ref->meshes[i].unique_vertices_polar[j];
 				// Evaluate the expression
-				exprPosition->Expression.value();
+				exprPosition->executeFormula();
 				shader->setValue("n", m_cObjID);				// Send the number of instance to the shader
 				shader->setValue("n_pos", m_cObjPos);			// Send the instance relative position to the shader
 				shader->setValue("n_polar", m_cObjPosPolar);	// Send the instance relative position to the shader (in polar format: x=alpha, y=beta, z=distance)
@@ -300,7 +300,7 @@ namespace Phoenix {
 		int instance = 0;
 
 		// Evaluate the expression
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->executeFormula();
 
 		matrixModel = glm::mat4(1.0f);
 		matrixModel = glm::translate(matrixModel, m_vInsTranslation);
@@ -319,7 +319,7 @@ namespace Phoenix {
 				m_vCurrInsPos = m_pModelRef->meshes[i]->m_uniqueVertices[j].Position;
 				m_vCurrInsPosPolar = m_pModelRef->meshes[i]->m_uniqueVertices[j].PositionPolar;
 				// Evaluate the expression
-				m_pExprPosition->Expression.value();
+				m_pExprPosition->executeFormula();
 
 				// Copy previous model instance matrix, before model matrix changes
 				m_pModel->copyMatrices(instance);

@@ -266,7 +266,7 @@ namespace Phoenix {
 		m_pVars->setValues();
 
 		// Evaluate the expression
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->executeFormula();
 
 		// Update Matrices with objects positions, if required
 		if (m_bUpdateFormulas)
@@ -320,7 +320,7 @@ namespace Phoenix {
 		int object = 0;
 
 		// Evaluate the expression
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->executeFormula();
 
 		matrixModel = glm::mat4(1.0f);
 		matrixModel = glm::translate(matrixModel, m_vInsTranslation);
@@ -341,7 +341,7 @@ namespace Phoenix {
 				m_vCurrInsPos = glm::vec3(0); // All objects are located in pos 0 by default
 				//m_vCurrObjPosPolar = glm::vec3(0); // All objects are located in pos 0 by default
 				// Evaluate the expression
-				m_pExprPosition->Expression.value();
+				m_pExprPosition->executeFormula();
 
 				// Copy previous model object matrix, before model matrix changes
 				// todo: move ouside the FOR??

@@ -153,7 +153,7 @@ namespace Phoenix {
 
 		// Evaluate the expression if we are not in fullscreen
 		if (!m_bFullscreen)
-			m_pExprPosition->Expression.value();
+			m_pExprPosition->executeFormula();
 
 		{
 			m_pShader->use();

@@ -96,13 +96,13 @@ namespace Phoenix {
 			}
 			break;
 		case CameraMode::ONLY_FORMULA:
-			if (expressionBlock == "") {
+			if (expressionRun == "") {
 				Logger::error("Camera Target [{}]: Formula mode: expression block is empty", identifier);
 				return false;
 			}
 			break;
 		case CameraMode::SPLINE_AND_FORMULA:
-			if ((spline.size() == 0) || (expressionBlock == "")) {
+			if ((spline.size() == 0) || (expressionRun == "")) {
 				Logger::error("Camera Target [{}]: Spline and Formula mode: spline and expression block are needed", identifier);
 				return false;
 			}
@@ -126,7 +126,7 @@ namespace Phoenix {
 		// Load the camera modifiers (based in formulas)
 		m_pExprCamera = new MathDriver(this);
 
-		m_pExprCamera->expression = expressionBlock;
+		m_pExprCamera->expression = expressionRun;
 
 		// Camera (spline) variables
 		m_pExprCamera->SymbolTable.add_variable("cPosX", m_vCamPos.x);
@@ -162,9 +162,8 @@ namespace Phoenix {
 		m_pExprCamera->SymbolTable.add_variable("Near", m_fCamFinalFrustumNear);
 		m_pExprCamera->SymbolTable.add_variable("Far", m_fCamFinalFrustumFar);
 
-		if (!m_pExprCamera->compileFormula())
-			return false;
-		m_pExprCamera->Expression.value();
+		m_pExprCamera->compileFormula();
+		m_pExprCamera->executeFormula();
 
 		// Create the Camera class
 		m_pCam = new CameraProjectionTarget(CameraProjectionTarget::DEFAULT_CAM_POSITION, CameraProjectionTarget::DEFAULT_CAM_TARGET);
@@ -201,7 +200,7 @@ namespace Phoenix {
 			break;
 		case CameraMode::ONLY_FORMULA:		// Only Formulas: Do not use spline file
 			// Evaluate formulas
-			m_pExprCamera->Expression.value();
+			m_pExprCamera->executeFormula();
 			break;
 		case CameraMode::SPLINE_AND_FORMULA:// Spline and formula: Combine both
 			// Calculate the motion step of the first spline and set it to "new_pos"
@@ -216,7 +215,7 @@ namespace Phoenix {
 			m_fCamFrustumNear = new_pos[10];
 			m_fCamFrustumFar = new_pos[11];
 			// Evaluate formulas
-			m_pExprCamera->Expression.value();
+			m_pExprCamera->executeFormula();
 			break;
 		}
 
@@ -259,6 +258,7 @@ namespace Phoenix {
 		std::stringstream ss;
 		ss << "Type: " << m_pCam->TypeStr << std::endl;
 		ss << "Camera Mode: " << sCameraMode << std::endl;
+		ss << "Expression is: " << (m_pExprCamera->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		debugStatic = ss.str();
 	}
 

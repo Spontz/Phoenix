@@ -109,7 +109,7 @@ namespace Phoenix {
 	void sLight::exec()
 	{
 		// Evaluate the expression
-		m_pExprLight->Expression.value();
+		m_pExprLight->executeFormula();
 
 		Light* my_light = m_demo.m_lightManager.light[m_iLightNum];
 

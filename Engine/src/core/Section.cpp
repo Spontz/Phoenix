@@ -32,7 +32,7 @@ namespace Phoenix {
 		render_clearDepth(false),
 		render_disableDepthTest(false),
 		render_disableDepthMask(false),
-		expressionBlock("")
+		expressionRun("")
 	{
 	}
 
@@ -45,6 +45,10 @@ namespace Phoenix {
 		for (auto const& spl : spline)
 			delete spl;
 		spline.clear();
+		// Clear stored Shader Blocks
+		for (auto const& shader : shaderBlock)
+			delete shader;
+		shaderBlock.clear();
 	}
 
 	void Section::EvalBlendingStart()

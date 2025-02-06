@@ -167,7 +167,7 @@ namespace Phoenix {
 		if (!m_pExprPosition->compileFormula())
 			return false;
 
-		m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
+		m_pExprPosition->executeFormula(); // Evaluate the expression on each particle, just in case something has changed
 		spline[0]->MotionCalcStep(m_splineCurrentPos, 0, m_loopSpline); // Evaluate position
 
 		// Create the particle system
@@ -207,7 +207,7 @@ namespace Phoenix {
 		EvalBlendingStart();
 
 		// Evaluate the expression
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->executeFormula();
 				
 		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
 		glm::mat4 view = m_demo.m_cameraManager.getActiveView();

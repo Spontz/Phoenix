@@ -130,7 +130,7 @@ namespace Phoenix {
 
 		uint32_t randomSeed = 0;
 		for (int32_t i = 0; i < m_iNumParticles; i++) {
-			m_pExprPosition->Expression.value(); // Evaluate the expression on each particle, just in case something has changed
+			m_pExprPosition->executeFormula(); // Evaluate the expression on each particle, just in case something has changed
 			Particles[i].Type = ParticleMesh::ParticleType::Emitter;
 			Particles[i].ID = i;
 			Particles[i].InitPosition = m_vInitialPosition;
@@ -179,7 +179,7 @@ namespace Phoenix {
 		EvalBlendingStart();
 
 		// Evaluate the expression
-		m_pExprPosition->Expression.value();
+		m_pExprPosition->executeFormula();
 
 		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
 		glm::mat4 view = m_demo.m_cameraManager.getActiveView();

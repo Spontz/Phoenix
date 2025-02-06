@@ -311,31 +311,31 @@ namespace Phoenix {
 	void ShaderVars::setValues()
 	{
 		for (auto& var : vfloat) {
-			var->eva->Expression.value();
+			var->eva->executeFormula();
 			my_shader->setValue(var->name.c_str(), var->value);
 		}
 		
 		for (auto& var : vec2) {
-			var->eva->Expression.value();
+			var->eva->executeFormula();
 			my_shader->setValue(var->name.c_str(), var->value);
 		}
 
 		for (auto& var : vec3) {
-			var->eva->Expression.value();
+			var->eva->executeFormula();
 			my_shader->setValue(var->name.c_str(), var->value);
 		}
 		for (auto& var : vec4) {
-			var->eva->Expression.value();
+			var->eva->executeFormula();
 			my_shader->setValue(var->name.c_str(), var->value);
 		}
 
 		for (auto& var : mat3) {
-			var->eva->Expression.value();
+			var->eva->executeFormula();
 			my_shader->setValue(var->name.c_str(), var->value);
 		}
 
 		for (auto& var : mat4) {
-			var->eva->Expression.value();
+			var->eva->executeFormula();
 			my_shader->setValue(var->name.c_str(), var->value);
 		}
 

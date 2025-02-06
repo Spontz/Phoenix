@@ -130,7 +130,7 @@ namespace Phoenix {
 		m_lastTime = runTime;
 
 		// Evaluate the expression
-		m_pExprAccum->Expression.value();
+		m_pExprAccum->executeFormula();
 
 		{
 

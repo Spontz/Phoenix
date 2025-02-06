@@ -73,8 +73,8 @@ namespace Phoenix {
 	private:
 		virtual bool load();			// load section data
 		virtual void init();			// set up local variables before execution
-		virtual void warmExec();		// warm execution (pre-execute) (for shader pre-catching) - This only impacts sections that uses shaders
-		virtual void exec();			// execute section (normally, render)
+		virtual void warmExec();		// warm execution (pre-executeFormula) (for shader pre-catching) - This only impacts sections that uses shaders
+		virtual void exec();			// executeFormula section (normally, render)
 		virtual void loadDebugStatic(); // load the debug static string
 
 	public:
@@ -111,7 +111,7 @@ namespace Phoenix {
 		std::string                 debugStatic;	// Debug Static string
 		
 		std::vector<ShaderBlock*>	shaderBlock;	// Shader Block Information (shader path and uniforms)
-		std::string					expressionBlock;// Expression containing all variables information (position, rotation, scale, etc.)
+		std::string					expressionRun;	// Expression to be executed when the section is Running (exec), containing all variables information (position, rotation, scale, etc.)
 
 		// Render states
 		bool                        render_drawWireframe;	// Draw in wireframe (disabled by default)
