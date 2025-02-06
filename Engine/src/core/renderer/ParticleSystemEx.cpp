@@ -76,7 +76,7 @@ namespace Phoenix {
 	}
 
 
-	bool ParticleSystemEx::Init(Section* sec, const std::vector<Particle> particles, unsigned int numParticlesPerEmitter, std::vector<std::string> shaderVars)
+	bool ParticleSystemEx::Init(Section* sec, const std::vector<Particle> particles, unsigned int numParticlesPerEmitter, std::vector<std::string> shaderVarsUpdate, std::vector<std::string> shaderVarsBillboard)
 	{
 		if (particles.size() == 0)
 			return false;
@@ -192,8 +192,8 @@ namespace Phoenix {
 		m_particleSystemShader->use();
 		m_varsParticleSystem = new ShaderVars(sec, m_particleSystemShader);
 		// Read the shader variables
-		for (int i = 0; i < shaderVars.size(); i++) {
-			m_varsParticleSystem->ReadString(shaderVars[i]);
+		for (int i = 0; i < shaderVarsUpdate.size(); i++) {
+			m_varsParticleSystem->ReadString(shaderVarsUpdate[i]);
 		}
 		// Validate and set particle system shader variables values
 		m_varsParticleSystem->validateAndSetValues(sec->type_str + "[" + sec->identifier + "]");
@@ -202,8 +202,8 @@ namespace Phoenix {
 		m_billboardShader->use();
 		m_varsBillboard = new ShaderVars(sec, m_billboardShader);
 		// Read the shader variables
-		for (int i = 0; i < shaderVars.size(); i++) {
-			m_varsBillboard->ReadString(shaderVars[i]);
+		for (int i = 0; i < shaderVarsBillboard.size(); i++) {
+			m_varsBillboard->ReadString(shaderVarsBillboard[i]);
 		}
 		// Validate and set billboard shader variables values (texture, particle size, etc...)
 		m_varsBillboard->validateAndSetValues(sec->type_str + "[" + sec->identifier + "]");

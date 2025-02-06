@@ -34,7 +34,7 @@ namespace Phoenix {
 		bool			m_loopSpline = true;
 		float			m_fEmissionTime = 0;
 		float			m_fParticleLifeTime = 0;
-		float			m_fParticleSpeed = 0;
+		float			m_fParticleSpeed = 1;
 		float			m_fParticleRandomness = 0;
 		ParticleSystemCore* m_pPartSystem = nullptr;
 
@@ -72,17 +72,17 @@ namespace Phoenix {
 	bool sDrawEmitterSpline::load()
 	{
 		// script validation
-		if ((param.size() != 4) || (spline.size() < 1) || (strings.size() < 9)) {
-			Logger::error("Draw Emitter Spline [{}]: 4 param (SplineTime, SplineLoop, Emission time & Particle Life Time) 1 spline and 9 strings needed (2 shaders, 3 for positioning, part speed, velocity, force and color)", identifier);
+		if ((param.size() != 4) || (spline.size() != 1) || (shaderBlock.size() != 2)) {
+			Logger::error("Draw Emitter Spline [{}]: 4 param (SplineTime, SplineLoop, Emission time & Particle Life Time) 1 spline, 2 shaders (update and billboard) and 1 run expression block needed", identifier);
 			return false;
 		}
 
 		// Load the shaders
 		std::string pathParticleSystemShader;
-		pathParticleSystemShader = m_demo.m_dataFolder + strings[0];
+		pathParticleSystemShader = m_demo.m_dataFolder + shaderBlock[0]->filename;
 
 		std::string pathBillboardShader;
-		pathBillboardShader = m_demo.m_dataFolder + strings[1];
+		pathBillboardShader = m_demo.m_dataFolder + shaderBlock[1]->filename;
 
 
 		// Load Emitters and Particles config
@@ -108,21 +108,7 @@ namespace Phoenix {
 			}
 
 		}
-		/*
-		for (int i = 0; i < spline.size(); i++) {
-			if (m_splineTime > 0)
-				spline[i]->durationFixedToSection = false;
-			else
-				spline[i]->durationFixedToSection = true;
 
-			spline[i]->setDuration(m_splineTime, this->duration);
-
-			if (spline[i]->load() == false) {
-				Logger::error("Draw Emitter Spline [{}]: Spline not loaded", identifier);
-				return false;
-			}
-		}
-		*/
 		// Render states
 		render_disableDepthMask = true;
 				
@@ -133,9 +119,7 @@ namespace Phoenix {
 		}
 
 		m_pExprPosition = new MathDriver(this);
-		// Load all the other strings
-		for (size_t i = 2; i < strings.size(); i++)
-			m_pExprPosition->expression += strings[i];
+		m_pExprPosition->expression = expressionRun;
 
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
 		m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
@@ -165,14 +149,14 @@ namespace Phoenix {
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
-			return false;
+			Logger::error("Draw Emitter Spline [{}]: Error while compiling the expression, default values used", identifier);
 
 		m_pExprPosition->executeFormula(); // Evaluate the expression on each particle, just in case something has changed
 		spline[0]->MotionCalcStep(m_splineCurrentPos, 0, m_loopSpline); // Evaluate position
 
 		// Create the particle system
 		m_pPartSystem = new ParticleSystemCore(pathParticleSystemShader, pathBillboardShader);
-		if (!m_pPartSystem->Init(this, m_fEmissionTime, m_fParticleLifeTime, uniform))
+		if (!m_pPartSystem->Init(this, m_fEmissionTime, m_fParticleLifeTime, shaderBlock[0]->uniform, shaderBlock[1]->uniform))
 			return false;
 
 		return !DEMO_checkGLError();
@@ -251,6 +235,7 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Spline used: " << spline[0]->filename << std::endl;
+		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Emission Time: " << m_fEmissionTime << std::endl;
 		ss << "Particle Life Time: " << m_fParticleLifeTime << std::endl;
 		ss << "Max Particles: " << m_pPartSystem->getNumMaxParticles() << std::endl;

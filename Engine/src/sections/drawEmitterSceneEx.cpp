@@ -26,10 +26,10 @@ namespace Phoenix {
 		unsigned int	m_uiNumParticles = 0;
 		unsigned int	m_uiNumEmitters = 0;
 		float			m_fCurrentEmitter = 0;
-		int				m_iParticlesPerEmitter = 0;
-		float			m_fParticleLifeTime = 0;
+		int				m_iParticlesPerEmitter = 1000;
+		float			m_fParticleLifeTime = 10;
 		float			m_fParticleSystemTime = 0;
-		float			m_fParticleRandomness = 0;
+		float			m_fParticleRandomness = 0.5;
 		ParticleSystemEx* m_pPartSystem = nullptr;
 
 		// Particles positioning (for all the model)
@@ -38,8 +38,8 @@ namespace Phoenix {
 		glm::vec3		m_vScale = { 1, 1, 1 };
 
 		glm::vec3		m_vVelocity = { 0, 0, 0 };
-		glm::vec3		m_vForce = { 0, 0, 0 };
-		glm::vec3		m_vColor = { 0, 0, 0 };
+		glm::vec3		m_vForce = { 0, 1, 0 };
+		glm::vec3		m_vColor = { 1, 1, 1 };
 		MathDriver*		m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
 
 	};
@@ -67,20 +67,20 @@ namespace Phoenix {
 	bool sDrawEmitterSceneEx::load()
 	{
 		// script validation
-		if ((param.size() != 2) || (strings.size() < 10)) {
-			Logger::error("Draw Emitter Scene Ex [{}]: 2 param (Particles per Emitter & Particle Life Time) and 10 strings needed (2 shaders, scene, 3 for positioning, particleSystemTime, partRandomness, force and color)", identifier);
+		if ((param.size() != 2) || (strings.size() != 1) || (shaderBlock.size() != 2)) {
+			Logger::error("Draw Emitter Scene Ex [{}]: 2 param (Particles per Emitter & Particle Life Time), 1 string needed (scene), 2 shaders (update and billboard) and 1 run expression block needed", identifier);
 			return false;
 		}
 
 		// Load the shaders
 		std::string pathParticleSystemShader;
-		pathParticleSystemShader = m_demo.m_dataFolder + strings[0];
+		pathParticleSystemShader = m_demo.m_dataFolder + shaderBlock[0]->filename;
 
 		std::string pathBillboardShader;
-		pathBillboardShader = m_demo.m_dataFolder + strings[1];
+		pathBillboardShader = m_demo.m_dataFolder + shaderBlock[1]->filename;
 
 		// Load the model
-		m_pModel = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[2]);
+		m_pModel = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[0]);
 
 		if (!m_pModel)
 			return false;
@@ -101,9 +101,7 @@ namespace Phoenix {
 		}
 
 		m_pExprPosition = new MathDriver(this);
-		// Load all the other strings
-		for (size_t i = 3; i < strings.size(); i++)
-			m_pExprPosition->expression += strings[i];
+		m_pExprPosition->expression = expressionRun;
 
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
 		m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
@@ -141,8 +139,8 @@ namespace Phoenix {
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
-			return false;
-
+			Logger::error("Draw Emitter Scene Ex [{}]: Error while compiling the expression, default values used", identifier);
+		
 		m_uiNumParticles = m_uiNumEmitters + static_cast<unsigned int>(m_uiNumEmitters * m_iParticlesPerEmitter);
 		Logger::info(LogLevel::low, "Draw Emitter Scene Ex [{}]: Num max of particles will be: {}", identifier, m_uiNumParticles);
 
@@ -196,7 +194,7 @@ namespace Phoenix {
 		
 		// Create the particle system
 		m_pPartSystem = new ParticleSystemEx(pathParticleSystemShader, pathBillboardShader, m_fParticleLifeTime);
-		if (!m_pPartSystem->Init(this, Particles, static_cast<unsigned int>(m_iParticlesPerEmitter), uniform))
+		if (!m_pPartSystem->Init(this, Particles, static_cast<unsigned int>(m_iParticlesPerEmitter), shaderBlock[0]->uniform, shaderBlock[1]->uniform))
 			return false;
 
 		Particles.clear();
@@ -251,6 +249,7 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Model used: " << m_pModel->filename << std::endl;
+		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Emitters: " << m_uiNumEmitters << std::endl;
 		ss << "Particles per Emitter: " << m_iParticlesPerEmitter << std::endl;
 		ss << "Max Particles: " << m_uiNumParticles << std::endl;

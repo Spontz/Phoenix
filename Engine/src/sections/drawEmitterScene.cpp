@@ -142,7 +142,8 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_constant("TnE", static_cast<float>(m_uiNumEmitters));
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
-		m_pExprPosition->compileFormula();
+		if (!m_pExprPosition->compileFormula())
+			Logger::error("Draw Emitter Scene [{}]: Error while compiling the expression, default values used", identifier);
 		
 		std::vector<ParticleSystem::Particle> Emitter;
 		Emitter.resize(m_uiNumEmitters);

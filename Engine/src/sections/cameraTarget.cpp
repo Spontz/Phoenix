@@ -162,7 +162,8 @@ namespace Phoenix {
 		m_pExprCamera->SymbolTable.add_variable("Near", m_fCamFinalFrustumNear);
 		m_pExprCamera->SymbolTable.add_variable("Far", m_fCamFinalFrustumFar);
 
-		m_pExprCamera->compileFormula();
+		if (!m_pExprCamera->compileFormula())
+			Logger::error("Camera Target [{}]: Error while compiling the expression, default values used", identifier);
 		m_pExprCamera->executeFormula();
 
 		// Create the Camera class

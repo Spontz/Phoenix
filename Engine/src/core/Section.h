@@ -106,7 +106,7 @@ namespace Phoenix {
 		int32_t                     dfactor;		// default dest blending factor
 		std::vector<float>          param;			// float parameters
 		std::vector<std::string>    strings;		// string parameters
-		std::vector<std::string>    uniform;		// string of uniform parameters
+		std::vector<std::string>    uniform;		// string of uniform parameters -- TODO: remove this, now we are using shaderblocks
 		std::vector<Spline*>        spline;			// Splines
 		std::string                 debugStatic;	// Debug Static string
 		
