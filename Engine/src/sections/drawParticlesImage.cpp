@@ -68,8 +68,8 @@ namespace Phoenix {
 	bool sDrawParticlesImage::load()
 	{
 		// script validation
-		if ((param.size() != 3) || (strings.size() != 5)) {
-			Logger::error("Draw Particles Image [{}]: 3 param (Fit to content, particles per Emitter & particle Life Time) + 5 strings needed (shader file, image, 3 for positioning)", identifier);
+		if ((param.size() != 3) || (strings.size() != 1) || (shaderBlock.size() != 1)) {
+			Logger::error("Draw Particles Image [{}]: 3 param (Fit to content, particles per Emitter & particle Life Time), 1 shader and 1 expression needed", identifier);
 			return false;
 		}
 
@@ -90,12 +90,12 @@ namespace Phoenix {
 		}
 
 		// Load the shader
-		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
+		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
 		if (!m_pShader)
 			return false;
 
 		// Load the image
-		m_pTexture = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + strings[1]);
+		m_pTexture = m_demo.m_textureManager.addTexture(m_demo.m_dataFolder + strings[0]);
 		if (m_pTexture == nullptr)
 			return false;
 		if (!m_pTexture->keepData()) {
@@ -115,9 +115,7 @@ namespace Phoenix {
 
 		// Load particle positioning
 		m_pExprPosition = new MathDriver(this);
-		// Load all the other strings
-		for (int i = 2; i < strings.size(); i++)
-			m_pExprPosition->expression += strings[i];
+		m_pExprPosition->expression = expressionRun;
 
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
 		m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
@@ -138,7 +136,7 @@ namespace Phoenix {
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
-			return false;
+			Logger::error("Draw Particles Image [{}]: Error while compiling the expression, default values used", identifier);
 
 		// Load the emitters and particle values, based in our source image
 		std::vector<ParticleMesh::Particle> Particles;
@@ -219,8 +217,8 @@ namespace Phoenix {
 		m_pVars = new ShaderVars(this, m_pShader);
 
 		// Read the shader variables
-		for (int i = 0; i < uniform.size(); i++) {
-			m_pVars->ReadString(uniform[i].c_str());
+		for (auto& uni : shaderBlock[0]->uniform) {
+			m_pVars->ReadString(uni);
 		}
 
 		// Validate and set shader variables
@@ -281,6 +279,7 @@ namespace Phoenix {
 		ss << "Image: " << m_pTexture->m_filename << std::endl;
 		ss << "Width: " << m_pTexture->m_width << std::endl;
 		ss << "Height: " << m_pTexture->m_height << std::endl;
+		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Emitters: " << m_iNumEmitters << std::endl;
 		ss << "Particles per Emitter: " << m_iParticlesPerEmitter << std::endl;
 		ss << "Num Particles: " << m_iNumParticles << std::endl;

@@ -311,9 +311,9 @@ namespace Phoenix {
 		std::stringstream ss;
 		ss << "Fbo num: " << m_uFboNum << std::endl;
 		ss << "Fbo attachment: " << m_uFboAttachment << std::endl;
-		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Width: " << m_pFbo->width << std::endl;
 		ss << "Height: " << m_pFbo->height << std::endl;
+		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Emitters: " << m_iNumEmitters << std::endl;
 		ss << "Particles per Emitter: " << m_iParticlesPerEmitter << std::endl;
 		ss << "Num Particles: " << m_iNumParticles << std::endl;

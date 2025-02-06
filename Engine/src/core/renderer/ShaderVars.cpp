@@ -362,6 +362,8 @@ namespace Phoenix {
 
 	void ShaderVars::validateValues(std::string_view sectionID)
 	{
+		// TODO: Porque necesitamos el sectionID, si ya lo tenemos en seccion en "my_section->type_str" y "my_section->identifier"??
+		// https://github.com/Spontz/Phoenix/issues/49
 		for (auto& var : vfloat) {
 			if (-1 == my_shader->getUniformLocation(var->name))
 				Logger::error("Variable 'uniform float {}' not found in section {}, shader '{}'", var->name, sectionID, my_shader->getURI());
