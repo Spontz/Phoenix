@@ -64,10 +64,10 @@ namespace Phoenix {
 
 	bool sDrawFbo2::load()
 	{
-		if ((param.size() != 7) || (strings.size() < 4)) {
+		if ((param.size() != 7) || (shaderBlock.size() != 1)) {
 			Logger::error(
-				"DrawFbo2 [{}]: 7 param needed (Fbo Number, Fbo Attachment, Clear screen buffer, clear depth buffer, fullscreen, "
-				"fit to content & filter) and 4 strings needed (shader and 3 for position)",
+				"DrawFbo2 [{}]: 7 param (Fbo Number, Fbo Attachment, Clear screen buffer, clear depth buffer, fullscreen, "
+				"fit to content & filter), 1 shader and 1 expression needed",
 				identifier
 			);
 			return false;
@@ -97,15 +97,14 @@ namespace Phoenix {
 		m_fTexAspectRatio = static_cast<float>(m_pFbo->width) / static_cast<float>(m_pFbo->height);
 
 		// Load the Shader
-		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
+		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
 		if (!m_pShader)
 			return false;
 
 		// Load the formmula containing the Image position and scale
 		m_pExprPosition = new MathDriver(this);
-		// Load positions, process constants and compile expression
-		for (size_t i = 1; i < strings.size(); i++)
-			m_pExprPosition->expression += strings[i];
+		m_pExprPosition->expression = expressionRun;
+
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
 		m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
 		m_pExprPosition->SymbolTable.add_variable("tz", m_vTranslation.z);
@@ -121,15 +120,18 @@ namespace Phoenix {
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
-			return false;
+			Logger::error("Draw Fbo 2 [{}]: Error while compiling the expression, default values used", identifier);
+
+		m_pExprPosition->executeFormula();
 
 		// Create shader variables
 		m_pShader->use();
 		m_pVars = new ShaderVars(this, m_pShader);
 
 		// Read the shader variables
-		for (std::string const& s : uniform)
-			m_pVars->ReadString(s.c_str());
+		for (auto& uni : shaderBlock[0]->uniform) {
+			m_pVars->ReadString(uni);
+		}
 
 		// Validate and set shader variables
 		m_pVars->validateAndSetValues(type_str+"["+identifier+"]");
@@ -226,6 +228,7 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
+		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Fbo num: " << m_uFboNum << std::endl;
 		ss << "Fbo attachment: " << m_uFboAttachment << std::endl;
 		ss << "Width: " << m_pFbo->width << std::endl;
@@ -240,9 +243,9 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << debugStatic;
-		ss << "Pos: " << glm::to_string(m_vTranslation) << std::endl;
-		ss << "Rot: " << glm::to_string(m_vRotation) << std::endl;
-		ss << "Scale: " << glm::to_string(m_vScale) << std::endl;
+		ss << "Pos: " << std::format("({:.2f},{:.2f},{:.2f})", m_vTranslation.x, m_vTranslation.y, m_vTranslation.z) << std::endl;
+		ss << "Rot: " << std::format("({:.2f},{:.2f},{:.2f})", m_vRotation.x, m_vRotation.y, m_vRotation.z) << std::endl;
+		ss << "Scale: " << std::format("({:.2f},{:.2f},{:.2f})", m_vScale.x, m_vScale.y, m_vScale.z) << std::endl;
 		return ss.str();
 	}
 }

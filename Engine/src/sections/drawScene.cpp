@@ -66,7 +66,7 @@ namespace Phoenix {
 		if ((param.size() != 6) || (strings.size() < 1) || (shaderBlock.size() < 1) ) {
 			Logger::error(
 				"DrawScene [{}]: 6 params (depth buffer clearing, disable depth test, disable depth mask, enable wireframe, enable animation & "
-				"animation number), 1 string (model) and 1 Shader block",
+				"animation number), 1 string (model), 1 shader and 1 expression",
 				identifier
 			);
 			return false;
@@ -109,7 +109,9 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
 		m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
-		m_pExprPosition->compileFormula();
+		if(!m_pExprPosition->compileFormula())
+			Logger::error("Draw Scene [{}]: Error while compiling the expression, default values used", identifier);
+
 		m_pExprPosition->executeFormula();
 
 		// Set the camera number
@@ -230,10 +232,10 @@ namespace Phoenix {
 			ss << " Faces: " << mesh->m_numFaces << ", vertices: " << mesh->m_numVertices << std::endl;
 			mat = mesh->getMaterial();
 			ss << " Material name: " << mat->name << std::endl;
-			ss << "  Mat_Ka:" << glm::to_string(mat->colAmbient) << std::endl;
-			ss << "  Mat_Kd:" << glm::to_string(mat->colDiffuse) << std::endl;
-			ss << "  Mat_Ks:" << glm::to_string(mat->colSpecular) << std::endl;
-			ss << "  Mat_KsStrenght:" << std::to_string(mat->strenghtSpecular) << std::endl;
+			ss << "  Mat_Ka: " << std::format("({:.2f},{:.2f},{:.2f})", mat->colAmbient.r, mat->colAmbient.g, mat->colAmbient.b) << std::endl;
+			ss << "  Mat_Kd: " << std::format("({:.2f},{:.2f},{:.2f})", mat->colDiffuse.r, mat->colDiffuse.g, mat->colDiffuse.b) << std::endl;
+			ss << "  Mat_Ks: " << std::format("({:.2f},{:.2f},{:.2f})", mat->colSpecular.r, mat->colSpecular.g, mat->colSpecular.b) << std::endl;
+			ss << "  Mat_KsStrenght: " << std::format("{:.2f}", mat->strenghtSpecular) << std::endl;
 			for (auto& texture : mat->textures) {
 				ss << "  Texture shader name: " << texture.shaderName << std::endl;
 				ss << "  Texture file: " << texture.tex->m_filename << std::endl;

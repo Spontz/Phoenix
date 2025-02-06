@@ -32,8 +32,8 @@ namespace Phoenix {
 
 		// Particles initial data
 		glm::vec3		m_vInitialPosition = { 0, 0, 0 };
-		glm::vec4		m_vInitialColor = { 0, 0, 0, 1 };
-		float			m_fParticleLife = 0;
+		glm::vec4		m_vInitialColor = { 1, 1, 1, 1 };
+		float			m_fParticleLife = 1;
 
 		MathDriver*		m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
 		ShaderVars*		m_pVars = nullptr;			// For storing any other shader variables
@@ -65,14 +65,13 @@ namespace Phoenix {
 	bool sDrawParticles::load()
 	{
 		// script validation
-		if ((param.size() != 1) || (strings.size() < 7)) {
-			Logger::error("Draw Particles [{}]: 1 param (Particles number) and 7 strings needed (shader file, 3 for positioning, 3 for particles data)", identifier);
+		if ((param.size() != 1) || (shaderBlock.size() != 1) ) {
+			Logger::error("Draw Particles [{}]: 1 param (Particles number), 1 shader and 1 expression needed", identifier);
 			return false;
 		}
 
-
 		// Load the shader
-		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
+		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
 
 		if (!m_pShader)
 			return false;
@@ -88,11 +87,9 @@ namespace Phoenix {
 			return false;
 		}
 
-		// Load particle positioning
+		// Load particle expresion
 		m_pExprPosition = new MathDriver(this);
-		// Load all the other strings
-		for (int i = 1; i < strings.size(); i++)
-			m_pExprPosition->expression += strings[i];
+		m_pExprPosition->expression = expressionRun;
 
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
 		m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
@@ -121,7 +118,7 @@ namespace Phoenix {
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
-			return false;
+			Logger::error("Draw Particles [{}]: Error while compiling the expression, default values used", identifier);
 
 		// Load the emitters and particle values, based in our source image
 		std::vector<ParticleMesh::Particle> Particles;
@@ -153,8 +150,8 @@ namespace Phoenix {
 		m_pVars = new ShaderVars(this, m_pShader);
 
 		// Read the shader variables
-		for (int i = 0; i < uniform.size(); i++) {
-			m_pVars->ReadString(uniform[i].c_str());
+		for (auto& uni : shaderBlock[0]->uniform) {
+			m_pVars->ReadString(uni);
 		}
 
 		// Validate and set shader variables
@@ -213,6 +210,7 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Num Particles: " << m_iNumParticles << std::endl;
+		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Memory Used: " << std::format("{:.1f}", m_pParticleMesh->getMemUsedInMb()) << " Mb" << std::endl;
 		debugStatic = ss.str();
 	}
