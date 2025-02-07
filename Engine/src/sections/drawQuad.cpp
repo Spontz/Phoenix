@@ -42,8 +42,8 @@ namespace Phoenix {
 	bool sDrawQuad::load()
 	{
 		// script validation
-		if ((param.size()) != 2 || (strings.size() != 1)) {
-			Logger::error("DrawQuad [{}]: 2 params are needed (Clear the screen buffer & clear depth buffer), and the shader file", identifier);
+		if ((param.size()) != 2 || (shaderBlock.size() != 1)) {
+			Logger::error("DrawQuad [{}]: 2 params (Clear the screen buffer & clear depth buffer), and 1 shader block are needed", identifier);
 			return false;
 		}
 
@@ -53,7 +53,7 @@ namespace Phoenix {
 		render_clearDepth = static_cast<bool>(param[1]);
 
 		// Load shader
-		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
+		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
 		if (!m_pShader)
 			return false;
 
@@ -62,8 +62,8 @@ namespace Phoenix {
 		m_pVars = new ShaderVars(this, m_pShader);
 
 		// Read the shader variables
-		for (int i = 0; i < uniform.size(); i++) {
-			m_pVars->ReadString(uniform[i].c_str());
+		for (auto& uni : shaderBlock[0]->uniform) {
+			m_pVars->ReadString(uni);
 		}
 
 		// Validate and set shader variables
