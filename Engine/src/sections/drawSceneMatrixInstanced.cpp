@@ -80,12 +80,15 @@ namespace Phoenix {
 
 	bool sDrawSceneMatrixInstanced::load()
 	{
-		if ((param.size() != 6) || (strings.size() < 7)) {
-			Logger::error("DrawSceneMatrixInstanced [{}]: 6 param (do depth buffer clearing, disbale depth test, enable wireframe, update formulas on each frame, enable animation and animation number) and 7 strings needed", identifier);
+		if ((param.size() != 6) || (strings.size() != 2) || (shaderBlock.size() != 1)) {
+			Logger::error(
+				"DrawSceneMatrixInstanced [{}]: 6 param (do depth buffer clearing, disbale depth test, enable wireframe, "
+				"update formulas on each frame, enable animation and animation number), 2 strings (matrix model and "
+				"object model), 1 shader and 1 expression are needed", identifier);
 			return false;
 		}
 
-		Logger::info(LogLevel::high, "[sDrawSceneMatrixInstanced] Warning! you are using an experimental section, probably will not behave correctly!!");
+		Logger::info(LogLevel::high, "DrawSceneMatrixInstanced [{}]: Warning! you are using an experimental section, probably will not behave correctly!!", identifier);
 
 		// Render Flags
 		render_clearDepth = static_cast<bool>(param[0]);
@@ -108,7 +111,7 @@ namespace Phoenix {
 		// Load unique vertices for the reference model (it can take a while)
 		m_pModelRef->loadUniqueVertices();
 
-		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[2]);
+		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
 		if (!m_pShader)
 			return false;
 
@@ -119,7 +122,7 @@ namespace Phoenix {
 		}
 
 		if (numInstances == 0) {
-			Logger::error("DrawSceneMatrixInstanced: No vertex found in the reference model");
+			Logger::error("DrawSceneMatrixInstanced [{}]: No vertex found in the reference model", identifier);;
 			return false;
 		}
 
@@ -133,11 +136,9 @@ namespace Phoenix {
 
 
 		m_pExprPosition = new MathDriver(this);
-		// Load all the other strings
-		for (int i = 3; i < strings.size(); i++)
-			m_pExprPosition->expression += strings[i];
+		m_pExprPosition->expression = expressionRun;
 
-		m_pExprPosition->SymbolTable.add_variable("aTime", m_fAnimationTime);
+		m_pExprPosition->SymbolTable.add_variable("AnimationTime", m_fAnimationTime);
 		m_pExprPosition->SymbolTable.add_variable("n", m_fCurrInsID);
 		m_pExprPosition->SymbolTable.add_variable("n_total", m_fNumInstances);
 		m_pExprPosition->SymbolTable.add_variable("x", m_vCurrInsPos.x);
@@ -167,15 +168,15 @@ namespace Phoenix {
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
-			return false;
+			Logger::error("DrawSceneMatrixInstanced [{}]: Error while compiling the expression, default values used", identifier);
 
 		// Create Shader variables
 		m_pShader->use();
 		m_pVars = new ShaderVars(this, m_pShader);
 
 		// Read the shader variables
-		for (int i = 0; i < uniform.size(); i++) {
-			m_pVars->ReadString(uniform[i].c_str());
+		for (auto& uni : shaderBlock[0]->uniform) {
+			m_pVars->ReadString(uni);
 		}
 
 		// Validate and set shader variables
@@ -276,6 +277,7 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
+		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Matrix file: " << m_pModelRef->filename << std::endl;
 		ss << "Model instances drawn: " << m_fNumInstances << std::endl;
 		ss << "Model file: " << m_pModel->m_pModel->filename << std::endl;

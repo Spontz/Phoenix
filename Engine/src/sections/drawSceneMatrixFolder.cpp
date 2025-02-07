@@ -305,11 +305,11 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
+		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Folder scanned: " << m_pFolder << std::endl;
 		ss << "Models found: " << m_pModel.size() << std::endl;
 		ss << "Instances per model: " << m_iNumInstancesPerModel << std::endl;
 		ss << "Total instances drawn: " << m_fNumTotalInstances << std::endl;
-		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		debugStatic = ss.str();
 	}
 

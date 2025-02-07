@@ -46,8 +46,8 @@ namespace Phoenix {
 
 	bool sDrawSkybox::load()
 	{
-		if ((param.size() != 2) || (strings.size() < 8)) {
-			Logger::error("DrawSkybox [{}]: 2 param and 8 strings needed: clear depth buffer, draw wireframe + 6 strings with skybox faces, 2 strings with rot and scale", identifier);
+		if ((param.size() != 2) || (strings.size() != 6)) {
+			Logger::error("DrawSkybox [{}]: 2 param (clear depth buffer, draw wireframe), 6 strings (skybox faces) and 1 expression are needed", identifier);
 			return false;
 		}
 
@@ -71,9 +71,7 @@ namespace Phoenix {
 
 		// Read variables for traslation, rotation and scaling
 		m_pExprPosition = new MathDriver(this);
-		// Load all the other strings
-		for (int i = 6; i < strings.size(); i++)
-			m_pExprPosition->expression += strings[i];
+		m_pExprPosition->expression = expressionRun;
 
 		m_pExprPosition->SymbolTable.add_variable("rx", m_vRotation.x);
 		m_pExprPosition->SymbolTable.add_variable("ry", m_vRotation.y);
@@ -83,7 +81,7 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
-			return false;
+			Logger::error("DrawSkybox [{}]: Error while compiling the expression, default values used", identifier);
 
 		return !DEMO_checkGLError();
 	}
@@ -138,6 +136,7 @@ namespace Phoenix {
 	void sDrawSkybox::loadDebugStatic()
 	{
 		std::stringstream ss;
+		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		for (auto& file : m_pCubemap->m_filename) {
 			ss << "File: " << file << std::endl;
 		}

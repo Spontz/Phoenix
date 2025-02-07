@@ -58,10 +58,10 @@ namespace Phoenix {
 
 	bool sDrawVideo::load()
 	{
-		if ((param.size() != 4) || (strings.size() < 5)) {
+		if ((param.size() != 4) || (strings.size() != 1)) {
 			Logger::error(
 				"DrawVideo [{}]: 4 param needed (Clear screen buffer, clear depth buffer, fullscreen &"
-				"fit to content) and 5 strings needed (Video & shader paths and 3 for positon)",
+				"fit to content), 1 string (Video), 1 shader and 1 expression are needed",
 				identifier);
 			return false;
 		}
@@ -88,15 +88,14 @@ namespace Phoenix {
 		m_fvideoDuration = static_cast<float>(m_pVideo->videoDurationSecs());
 
 		// Load the Shader
-		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[1]);
+		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
 		if (!m_pShader)
 			return false;
 
 		// Load the formmula containing the Image position and scale
 		m_pExprPosition = new MathDriver(this);
-		// Load positions, process constants and compile expression
-		for (int i = 2; i < strings.size(); i++)
-			m_pExprPosition->expression += strings[i];
+		m_pExprPosition->expression = expressionRun;
+
 		m_pExprPosition->SymbolTable.add_variable("tx", m_vTranslation.x);
 		m_pExprPosition->SymbolTable.add_variable("ty", m_vTranslation.y);
 		m_pExprPosition->SymbolTable.add_variable("tz", m_vTranslation.z);
@@ -112,15 +111,16 @@ namespace Phoenix {
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
-			return false;
+			Logger::error("DrawVideo [{}]: Error while compiling the expression, default values used", identifier);
 
 		// Create Shader variables
 		m_pShader->use();
 		m_pVars = new ShaderVars(this, m_pShader);
 
 		// Read the shader variables
-		for (std::string const& s : uniform)
-			m_pVars->ReadString(s.c_str());
+		for (auto& uni : shaderBlock[0]->uniform) {
+			m_pVars->ReadString(uni);
+		}
 
 		// Validate and set shader variables
 		m_pVars->validateAndSetValues(type_str+"["+identifier+"]");
@@ -218,6 +218,7 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
+		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "File: " << m_pVideo->getFileName() << std::endl;
 		ss << "Fullscreen: " << m_bFullscreen << ", Fit to content: " << m_bFitToContent << std::endl;
 		ss << "Video Duration: " << m_fvideoDuration << std::endl;

@@ -89,23 +89,27 @@ namespace Phoenix {
 		}
 		m_pModelInstance.clear();
 		*/
+		// TODO: FIX A BUG CLEARING DATA!!
 	}
 
 	bool sDrawSceneMatrixInstancedFolder::load()
 	{
-		if ((param.size() != 7) || (strings.size() < 7)) {
-			Logger::error("DrawSceneMatrixInstancedFolder [{}]: 7 param (number of instance per object, do depth buffer clearing, disbale depth test, enable wireframe, update formulas on each frame, enable animation and animation number) and 6 strings needed", identifier);
+		if ((param.size() != 7) || (strings.size() < 2) || (shaderBlock.size() < 1)) {
+			Logger::error(
+				"DrawSceneMatrixInstancedFolder [{}]: 7 param (number of instances per model, do depth buffer clearing, "
+				"disbale depth test, enable wireframe, update formulas on each frame, enable animation and animation "
+				"number), 2 strings (models folder and extension), 1 shader and 1 expression are needed", identifier);
 			return false;
 		}
 
-		Logger::info(LogLevel::high, "[DrawSceneMatrixInstancedFolder] Warning! you are using an experimental section, probably will not behave correctly!!");
+		Logger::info(LogLevel::high, "DrawSceneMatrixInstancedFolder [{}]: Warning! you are using an experimental section, probably will not behave correctly!!", identifier);
 
 
 		// Instances per object
 		m_iNumInstancesPerObject = static_cast<int32_t>(param[0]);
 		m_fNumInstancesPerObject = param[0];
 		if (m_iNumInstancesPerObject == 0) {
-			Logger::error("DrawSceneMatrixInstancedFolder: Number of object instances cannot be 0");
+			Logger::error("DrawSceneMatrixInstancedFolder [{}]: Number of object instances cannot be 0", identifier);
 			return false;
 		}
 
@@ -131,18 +135,17 @@ namespace Phoenix {
 		}
 
 		if (m_pModel.empty()) {
-			Logger::error("DrawSceneMatrixInstancedFolder: No objects loaded");
+			Logger::error("DrawSceneMatrixInstancedFolder [{}]: No objects loaded", identifier);
 			return false;
 		}
 
 		if (m_pModel.size() != m_pModelFilePaths.size()) {
-			Logger::error("DrawSceneMatrixInstancedFolder: Not all objects loaded");
+			Logger::error("DrawSceneMatrixInstancedFolder [{}]: Not all objects loaded", identifier);
 			return false;
 		}
 
 		// Load shader
-		std::string shaderPath = m_demo.m_dataFolder + strings[2];
-		m_pShader = m_demo.m_shaderManager.addShader(shaderPath);
+		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
 		if (!m_pShader)
 			return false;
 
@@ -175,11 +178,9 @@ namespace Phoenix {
 		}
 
 		m_pExprPosition = new MathDriver(this);
-		// Load all the other strings
-		for (int i = 3; i < strings.size(); i++)
-			m_pExprPosition->expression += strings[i];
+		m_pExprPosition->expression = expressionRun;
 
-		m_pExprPosition->SymbolTable.add_variable("aTime", m_fAnimationTime);
+		m_pExprPosition->SymbolTable.add_variable("AnimationTime", m_fAnimationTime);
 		m_pExprPosition->SymbolTable.add_variable("n", m_fCurrInsID);
 		m_pExprPosition->SymbolTable.add_variable("instances", m_fNumInstancesPerObject);
 		m_pExprPosition->SymbolTable.add_variable("n_total", m_fNumTotalInstances);
@@ -210,15 +211,15 @@ namespace Phoenix {
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
-			return false;
+			Logger::error("DrawSceneMatrixInstancedFolder [{}]: Error while compiling the expression, default values used", identifier);
 
 		// Create Shader variables
 		m_pShader->use();
 		m_pVars = new ShaderVars(this, m_pShader);
 
 		// Read the shader variables
-		for (int i = 0; i < uniform.size(); i++) {
-			m_pVars->ReadString(uniform[i].c_str());
+		for (auto& uni : shaderBlock[0]->uniform) {
+			m_pVars->ReadString(uni);
 		}
 
 		// Validate and set shader variables
@@ -298,6 +299,7 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
+		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Folder scanned: " << m_pFolder << std::endl;
 		ss << "Objects found: " << m_pModel.size() << std::endl;
 		ss << "Instances per object: " << m_iNumInstancesPerObject << std::endl;
