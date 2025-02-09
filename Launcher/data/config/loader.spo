@@ -1,8 +1,9 @@
-[loading]
+:::loading
 id loader
-string /resources/loading/loadingback.jpg
-string /resources/loading/loadingfront.jpg
-string /resources/loading/loadingbar.jpg
+sFirstImage /resources/loading/loadingback.jpg
+sLastImage /resources/loading/loadingfront.jpg
+sLoadingBarImage /resources/loading/loadingbar.jpg
+
 ;Postion goes from -1.0 to 1.0
 fBarStartPositionX -0.164
 fBarStartPositionY -0.379167

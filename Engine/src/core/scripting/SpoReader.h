@@ -23,9 +23,7 @@ namespace Phoenix {
 			BLEND_EQUATION,
 			PARAM,
 			STRING,
-			UNIFORM,
 			SPLINE,
-			MODIFIER,
 			SHADER_BLOCK,
 			EXPRESSION_RUN_BLOCK,
 			INVALID

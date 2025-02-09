@@ -42,13 +42,13 @@ namespace Phoenix {
 	bool sEfxFader::load()
 	{
 		// script validation
-		if (strings.size() < 1) {
-			Logger::error("EfxFader [{}]: 1 shader file required", identifier);
+		if (shaderBlock.size() != 1) {
+			Logger::error("EfxFader [{}]: 1 shader required", identifier);
 			return false;
 		}
 
 		// Load Fader shader
-		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
+		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
 		if (!m_pShader)
 			return false;
 
@@ -58,9 +58,10 @@ namespace Phoenix {
 		// Configure Fader shader
 		m_pShader->use();
 		m_pVars = new ShaderVars(this, m_pShader);
+
 		// Read the shader variables
-		for (int i = 0; i < uniform.size(); i++) {
-			m_pVars->ReadString(uniform[i].c_str());
+		for (auto& uni : shaderBlock[0]->uniform) {
+			m_pVars->ReadString(uni);
 		}
 
 		// Validate and set shader variables

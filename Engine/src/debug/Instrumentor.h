@@ -55,7 +55,7 @@ namespace Phoenix {
 				// profiling output.
 				//if (LOG) // Edge case: BeginSession() might be before Log::Init()
 				{
-					Logger::error("Instrumentor::BeginSession('{}') when session '{}' already open.", name, m_CurrentSession->Name);
+					Logger::error("Instrumentor::BeginSession('{}') when session '{}' already open", name, m_CurrentSession->Name);
 				}
 				InternalEndSession();
 			}
@@ -70,7 +70,7 @@ namespace Phoenix {
 			{
 				//if (LOG) // Edge case: BeginSession() might be before Log::Init()
 				{
-					Logger::error("Instrumentor could not open results file '{}'.", filepath);
+					Logger::error("Instrumentor could not open results file '{}'", filepath);
 				}
 			}
 		}

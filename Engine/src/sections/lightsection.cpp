@@ -16,15 +16,15 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		int			m_iLightNum = 0;		// Light Number
+		int			m_iLightNum = 0;			// Light Number
 		bool		m_bLinkPosToCamera = false;	// Link the light to the Camera Position
 		bool		m_bShadowMapping = false;	// Is the light being used for shadowMapping?
 		float		m_fShadowNearPlane = 0;		// shadowMapping: Near plane used in Orthographic view
 		float		m_fShadowFarPlane = 100.0f;	// shadowMapping: Far plane used in Orthographic view
-		float		m_fShadowSize = 10.0f;	// shadowMapping: Size of the plane used in Orthographic view
-		bool		m_bDrawLight = false;	// Draw a cube representing the light: usefult for debugging
-		float		m_fDrawLightSize = 1.0f;		// Size of our debug cube
-		MathDriver* m_pExprLight = nullptr;	// A equation containing the calculations of the light
+		float		m_fShadowSize = 10.0f;		// shadowMapping: Size of the plane used in Orthographic view
+		bool		m_bDrawLight = false;		// Draw a cube representing the light: usefult for debugging
+		float		m_fDrawLightSize = 1.0f;	// Size of our debug cube
+		MathDriver* m_pExprLight = nullptr;		// A equation containing the calculations of the light
 	};
 
 	// ******************************************************************
@@ -64,14 +64,16 @@ namespace Phoenix {
 	{
 		// script validation
 		if ((param.size() != 8)) {
-			Logger::error("Light [{}]: 8 params needed (light Number, link to camera position, shadowMapping, near&far planes, size, DebugDraw & DebugDraw size)", identifier);
+			Logger::error(
+				"Light [{}]: 8 params (light Number, link to camera position, shadowMapping, near&far planes, "
+				"size, DebugDraw & DebugDraw size) and 1 expression are needed", identifier);
 			return false;
 		}
 
 		// Load the parameters
 		m_iLightNum = (int)param[0];
 		if (m_iLightNum < 0 || m_iLightNum >= m_demo.m_lightManager.light.size()) {
-			Logger::error("Light: The light number is not supported by the engine. Max Lights: {}", (m_demo.m_lightManager.light.size() - 1));
+			Logger::error("Light [{}]: The light number is not supported by the engine. Max Lights: {}", identifier, (m_demo.m_lightManager.light.size() - 1));
 			return false;
 		}
 
@@ -90,11 +92,9 @@ namespace Phoenix {
 
 		// Register the variables
 		m_pExprLight = new MathDriver(this);
-		std::string expr;
-		for (int i = 0; i < strings.size(); i++)
-			expr += strings[i];
+		std::string expr = expressionRun;
 		expr = replaceString(expr, "light_", "light" + std::to_string(m_iLightNum) + "_");	// Adds the name of the light that we want to modify
-		m_pExprLight->expression = expr;															// Loads the expression, properly composed
+		m_pExprLight->expression = expr;													// Loads the expression, properly composed
 		m_pExprLight->Expression.register_symbol_table(m_pExprLight->SymbolTable);
 		if (!m_pExprLight->compileFormula())
 			return false;
@@ -135,12 +135,22 @@ namespace Phoenix {
 		std::stringstream ss;
 		ss << "Light: " << m_iLightNum << std::endl;
 		ss << "ShadowMapping: " << m_bShadowMapping << " Size: " << m_fShadowSize << " Near: " << m_fShadowNearPlane << " Far: " << m_fShadowFarPlane << std::endl;
-		ss << "DrawLight: " << m_bDrawLight << std::endl;
+		ss << "DrawLight: " << (m_bDrawLight ? "Yes" : "No") << std::endl;
+		ss << "Expression is: " << (m_pExprLight->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		debugStatic = ss.str();
 	}
 
 	std::string sLight::debug()
 	{
-		return debugStatic;
+		Light* my_light = m_demo.m_lightManager.light[m_iLightNum];
+		std::stringstream ss;
+		ss << debugStatic;
+		ss << "Pos: " << std::format("({:.2f},{:.2f},{:.2f})", my_light->position.x, my_light->position.y, my_light->position.z) << std::endl;
+		ss << "Dir: " << std::format("({:.2f},{:.2f},{:.2f})", my_light->direction.x, my_light->direction.y, my_light->direction.z) << std::endl;
+		ss << "Color Ambient: " << std::format("({:.2f},{:.2f},{:.2f})", my_light->colAmbient.r, my_light->colAmbient.g, my_light->colAmbient.b) << std::endl;
+		ss << "Strenght Ambient: " << std::format("{:.2f}", my_light->ambientStrength) << std::endl;
+		ss << "Color Diffuse: " << std::format("({:.2f},{:.2f},{:.2f})", my_light->colDiffuse.r, my_light->colDiffuse.g, my_light->colDiffuse.b) << std::endl;
+		ss << "Strenght Specular: " << std::format("{:.2f}", my_light->specularStrength) << std::endl;
+		return ss.str();;
 	}
 }

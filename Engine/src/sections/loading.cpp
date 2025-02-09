@@ -17,9 +17,9 @@ namespace Phoenix {
 		SP_Texture m_pTexBack;
 		SP_Texture m_pTexBar;
 
-		glm::vec2	startPoint;
-		glm::vec2	endPoint;
-		float		size;
+		glm::vec2	startPoint =	{ -0.5, -0.5 };
+		glm::vec2	endPoint =		{  0.5, -0.5 };
+		float		size = 0.1f;
 
 		bool	m_bDefaultLoader = false;	// Use the default loader?
 	};

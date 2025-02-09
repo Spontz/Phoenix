@@ -109,7 +109,7 @@ namespace Phoenix {
 		result = ma_device_init(NULL, &deviceConfig, m_pDevice);
 		if (result != MA_SUCCESS) {
 			// Failed to open playback device
-			Logger::error("Error initing the sound device.");
+			Logger::error("Error initing the sound device");
 			destroyDevice();
 			m_inited = false;
 			return m_inited;
@@ -220,13 +220,13 @@ namespace Phoenix {
 		ma_uint32 iDevice;
 
 		if (ma_context_init(NULL, 0, NULL, &context) != MA_SUCCESS) {
-			Logger::error("Failed to initialize context.");
+			Logger::error("Failed to initialize context");
 			return;
 		}
 
 		result = ma_context_get_devices(&context, &pPlaybackDeviceInfos, &playbackDeviceCount, &pCaptureDeviceInfos, &captureDeviceCount);
 		if (result != MA_SUCCESS) {
-			Logger::error("Failed to retrieve device information.");
+			Logger::error("Failed to retrieve device information");
 			return;
 		}
 

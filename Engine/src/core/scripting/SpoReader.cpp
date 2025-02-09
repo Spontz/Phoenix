@@ -15,7 +15,6 @@ namespace Phoenix {
 		{"blendequation",	SectionCommand::BLEND_EQUATION},
 		{"param",			SectionCommand::PARAM},
 		{"string",			SectionCommand::STRING},
-		{"uniform",			SectionCommand::UNIFORM},
 		{"spline",			SectionCommand::SPLINE},
 		{"[shader]",		SectionCommand::SHADER_BLOCK},
 		{"[expression:run]",SectionCommand::EXPRESSION_RUN_BLOCK}
@@ -394,9 +393,6 @@ namespace Phoenix {
 					case 's':
 						command = SectionCommand::STRING;
 						break;
-					case 'u':
-						command = SectionCommand::UNIFORM;
-						break;
 					case 'c':
 						command = SectionCommand::SPLINE;
 						break;
@@ -489,14 +485,7 @@ namespace Phoenix {
 				case SectionCommand::STRING: {
 					Logger::ScopedIndent _;
 					new_sec->strings.emplace_back(s_line.second);
-					Logger::info(LogLevel::low, "Loaded string: \"{}\"", s_line.second);
-					break;
-				}
-
-				case SectionCommand::UNIFORM: {
-					Logger::ScopedIndent _;
-					new_sec->uniform.emplace_back(s_line.second);
-					Logger::info(LogLevel::low, "Loaded uniform: \"{}\"", s_line.second);
+					Logger::info(LogLevel::low, "Loaded string: {}", s_line.second);
 					break;
 				}
 
@@ -513,6 +502,7 @@ namespace Phoenix {
 
 				case SectionCommand::SHADER_BLOCK:
 				{
+					Logger::ScopedIndent _;
 					ShaderBlock* new_shb = loadShaderBlock(f, lineNum);
 
 					if (new_shb) {
@@ -520,7 +510,7 @@ namespace Phoenix {
 						Logger::info(LogLevel::low, "Loaded Shader block: {}", new_shb->filename);
 					}
 					else {
-						Logger::error("  Shader block has missing fields, shader not processed.");
+						Logger::error("  Shader block has missing fields, shader not processed");
 					}
 
 					break;
@@ -528,15 +518,16 @@ namespace Phoenix {
 
 				case SectionCommand::EXPRESSION_RUN_BLOCK:
 				{
+					Logger::ScopedIndent _;
 					new_sec->expressionRun += loadExpressionBlock(f, lineNum);
 					if (new_sec->expressionRun != "") {
-						Logger::info(LogLevel::low, "Loaded Expression block: {}", new_sec->expressionRun);
+						Logger::info(LogLevel::low, "Loaded Expression block:\n{}", new_sec->expressionRun);
 					}
 					break;
 				}
 
 				default:
-					Logger::error("Unknown section variable was found in line: \"{}\"", line);
+					Logger::error("Unknown section variable was found in line {}", line);
 					break;
 				}
 			}
@@ -547,7 +538,6 @@ namespace Phoenix {
 
 	ShaderBlock* SpoReader::loadShaderBlock(std::istringstream& f, int& lineNum)
 	{
-		Logger::ScopedIndent _;
 		std::string	line;
 		bool exitBlock = false;
 		ShaderBlock* new_shb = new ShaderBlock();
@@ -599,7 +589,7 @@ namespace Phoenix {
 				case ShaderBlockCommand::UNIFORM:
 				{
 					new_shb->uniform.emplace_back(sb_line.second);
-					Logger::info(LogLevel::low, "Loaded Shader uniform: \"{}\"", sb_line.second);
+					Logger::info(LogLevel::low, "Loaded Shader uniform: {}", sb_line.second);
 					break;
 				}
 				default:
@@ -621,7 +611,6 @@ namespace Phoenix {
 	std::string SpoReader::loadExpressionBlock(std::istringstream& f, int& lineNum)
 	{
 		std::string expression = "";
-		Logger::ScopedIndent _;
 		std::string	line;
 		bool exitBlock = false;
 		

@@ -15,7 +15,7 @@ namespace Phoenix {
 
 	// sections functions references
 	const SectionInfo kSectionInfo[] = {
-		{"loading",						SectionType::Loading, instance_loading},
+		{"loading",							SectionType::Loading, instance_loading},
 
 		// built-in sections
 		{"cameraFPS",						SectionType::CameraFPS, instance_cameraFPS},
@@ -40,7 +40,7 @@ namespace Phoenix {
 		{"drawEmitterSceneEx",				SectionType::DrawEmitterSceneEx, instance_drawEmitterSceneEx},
 		{"drawEmitterSpline",				SectionType::DrawEmitterSpline, instance_drawEmitterSpline},
 		{"sound",							SectionType::Sound, instance_sound},
-		{"setVariable",						SectionType::SetVariable, instance_setVariable},
+		{"setExpression",					SectionType::SetExpression, instance_setExpression},
 		{"fboBind",							SectionType::FboBind, instance_fboBind},
 		{"fboUnbind",						SectionType::FboUnbind, instance_fboUnbind},
 		{"efxAccum",						SectionType::EfxAccum, instance_efxAccum},

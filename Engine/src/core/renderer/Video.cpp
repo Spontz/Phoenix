@@ -47,12 +47,12 @@ namespace Phoenix {
 		Logger::info(LogLevel::low, "Video: Unloading video {}", m_VideoSource.m_sPath);
 
 		if (!loaded()) {
-			Logger::info(LogLevel::low, "Video: Video not loaded.");
+			Logger::info(LogLevel::low, "Video: Video not loaded");
 			throw std::exception();
 		}
 
 		if (m_bStopWorkerThread) {
-			Logger::info(LogLevel::low, "Video: Worker thread stop already requested.");
+			Logger::info(LogLevel::low, "Video: Worker thread stop already requested");
 			throw std::exception();
 		}
 
@@ -115,29 +115,29 @@ namespace Phoenix {
 
 		m_pFormatContext = avformat_alloc_context();
 		if (!m_pFormatContext) {
-			Logger::error("Video: could not allocate memory for AVFormatContext.");
+			Logger::error("Video: could not allocate memory for AVFormatContext");
 			return false;
 		}
 
 		// Open file and read header
 		// Codecs are not opened
 		if (m_bDebug)
-			Logger::info(LogLevel::low, "Video: Opening \"{}\" and loading format (container) header.", m_VideoSource.m_sPath);
+			Logger::info(LogLevel::low, "Video: Opening \"{}\" and loading format (container) header", m_VideoSource.m_sPath);
 
 		if (avformat_open_input(&m_pFormatContext, m_VideoSource.m_sPath.c_str(), nullptr, nullptr) != 0) {
-			Logger::error("Video: Error opening \"{}\".", m_VideoSource.m_sPath);
+			Logger::error("Video: Error opening: {}", m_VideoSource.m_sPath);
 			return false;
 		}
 
 		// Show info
-		Logger::info(LogLevel::low,"Video: {}, {}ms, {}bits/s.", m_pFormatContext->iformat->name, m_pFormatContext->duration / (AV_TIME_BASE / 1000), m_pFormatContext->bit_rate);
+		Logger::info(LogLevel::low,"Video: {}, {}ms, {}bits/s", m_pFormatContext->iformat->name, m_pFormatContext->duration / (AV_TIME_BASE / 1000), m_pFormatContext->bit_rate);
 
 		// Read Packets from AVFormatContext to get stream information
 		// avformat_find_streainfo populates pFormatContext_->streams (of size equals to pFormatContext->nb_streams)
 		if (m_bDebug)
 			Logger::info(LogLevel::low, "Video: Finding stream info from format");
 		if (avformat_find_stream_info(m_pFormatContext, nullptr) < 0) {
-			Logger::error("Video: Could not get the stream info.");
+			Logger::error("Video: Could not get the stream info");
 			return false;
 		}
 
@@ -167,14 +167,14 @@ namespace Phoenix {
 			// Find AVCodec given an AVCodecID
 			const auto pAVCodec = avcodec_find_decoder(pAVCodecParameters->codec_id);
 			if (pAVCodec == nullptr) {
-				Logger::error("Video: Unsupported codec.");
+				Logger::error("Video: Unsupported codec");
 				return false;
 			}
 
 			switch (pAVCodecParameters->codec_type) {
 			case AVMEDIA_TYPE_VIDEO:
 				// Show video stream info
-				Logger::info(LogLevel::low,"Video: {} Video stream[CodecID:{}], {}, {}x{}, {}hz, {}bps.",
+				Logger::info(LogLevel::low,"Video: {} Video stream[CodecID:{}], {}, {}x{}, {}hz, {}bps",
 					i,
 					avcodec_get_name(pAVCodec->id),
 					pAVCodec->name, pAVCodecParameters->width,
@@ -185,7 +185,7 @@ namespace Phoenix {
 				// Store video stream index, codec parameters and codec
 				if (m_VideoSource.m_iVideoStreamIndex == -1) {
 					if (videoSource.m_iVideoStreamIndex == -1 || videoSource.m_iVideoStreamIndex == i) {
-						Logger::info(LogLevel::low, "Video: Using video stream #{}.", i);
+						Logger::info(LogLevel::low, "Video: Using video stream #{}", i);
 
 						m_VideoSource.m_iVideoStreamIndex = i;
 						m_pAVCodec = pAVCodec;
@@ -200,7 +200,7 @@ namespace Phoenix {
 				// Show extra stream info
 				Logger::info(
 					LogLevel::low,
-					"Video: #{} {} stream[CodecID:{}], {}, {}hz, {}bps.",
+					"Video: #{} {} stream[CodecID:{}], {}, {}hz, {}bps",
 					i,
 					pAVCodecParameters->codec_type == AVMEDIA_TYPE_AUDIO ? "Audio" : "Extra",
 					avcodec_get_name(pAVCodec->id),
@@ -369,13 +369,13 @@ namespace Phoenix {
 		if (!loaded())
 		{
 			m_dTime = 0;
-			Logger::info(LogLevel::low, "Video: {}, {}: Video not loaded.", __FUNCTION__, __LINE__);
+			Logger::info(LogLevel::low, "Video: {}, {}: Video not loaded", __FUNCTION__, __LINE__);
 			return;
 		}
 
 		if (m_pCodecContext == nullptr)
 		{
-			Logger::info(LogLevel::low, "Video: {}, {}: Null codec context.", __FUNCTION__, __LINE__);
+			Logger::info(LogLevel::low, "Video: {}, {}: Null codec context", __FUNCTION__, __LINE__);
 			return;
 		}
 
@@ -414,7 +414,7 @@ namespace Phoenix {
 		
 		if (dSeconds > videoDurationSecs())
 		{
-			Logger::error("{} {}: Seek time out of range: {:.4f}s, frame: {}. Using frame 0.", __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
+			Logger::error("{} {}: Seek time out of range: {:.4f}s, frame: {}. Using frame 0", __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
 			return -5;
 		}
 
@@ -428,19 +428,19 @@ namespace Phoenix {
 		switch (rc)
 		{
 		case -EINVAL:
-			Logger::info(LogLevel::low, "Video: {} {}: Invalid Argument error: {:.4f}s, frame: {}. Using frame 0.", __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
+			Logger::info(LogLevel::low, "Video: {} {}: Invalid Argument error: {:.4f}s, frame: {}. Using frame 0", __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
 			return -1;
 		case -EIO:
-			Logger::info(LogLevel::low, "Video: {} {}: Input/output error: {:.4f}s, frame: {}. Using frame 0.", __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
+			Logger::info(LogLevel::low, "Video: {} {}: Input/output error: {:.4f}s, frame: {}. Using frame 0", __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
 			return -2;
 		case -ENOSYS:
-			Logger::info(LogLevel::low, "Video: {} {}: Seek not supported on this stream: {:.4f}s, frame: {}. Using frame 0.", __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
+			Logger::info(LogLevel::low, "Video: {} {}: Seek not supported on this stream: {:.4f}s, frame: {}. Using frame 0", __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
 			return -3;
 		}
 
 		if (rc != 0)
 		{
-			Logger::error("Video: {} {}: Unknown error: {:.4f}s, frame: {}. Using frame 0.", __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
+			Logger::error("Video: {} {}: Unknown error: {:.4f}s, frame: {}. Using frame 0", __FUNCTION__, __LINE__, dSeconds, iFrameNumber);
 			return -4;
 		}
 

@@ -40,7 +40,6 @@ namespace Phoenix {
 	{
 		param.clear();
 		strings.clear();
-		uniform.clear();
 		// Clear stored splines
 		for (auto const& spl : spline)
 			delete spl;

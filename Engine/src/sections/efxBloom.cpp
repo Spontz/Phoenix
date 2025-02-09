@@ -19,11 +19,12 @@ namespace Phoenix {
 
 	private:
 		unsigned int	m_uiFboNum = 0;			// Fbo to use (must have 2 color attachments!)
-		float			m_fBlurAmount = 1;		// Blur layers to apply
+		float			m_fBlurAmount = 10;		// Blur layers to apply
 		SP_Shader		m_pShaderBlur;			// Blur Shader to apply
 		SP_Shader		m_pShaderBloom;			// Bloom Shader to apply
 		MathDriver*		m_pExprBloom = nullptr;	// Equations for the Bloom effect
-		ShaderVars*		m_pVars = nullptr;		// Shader variables
+		ShaderVars*		m_pBlurVars = nullptr;	// Blur Shader variables (first shader)
+		ShaderVars*		m_pBloomVars = nullptr;	// Bloom Shader variables (second shader)
 	};
 
 	// ******************************************************************
@@ -42,15 +43,19 @@ namespace Phoenix {
 	{
 		if (m_pExprBloom)
 			delete m_pExprBloom;
-		if (m_pVars)
-			delete m_pVars;
+		if (m_pBlurVars)
+			delete m_pBlurVars;
+		if (m_pBloomVars)
+			delete m_pBloomVars;
 	}
 
 	bool sEfxBloom::load()
 	{
 		// script validation
-		if ((param.size()) != 3 || (strings.size() != 3)) {
-			Logger::error("EfxBloom [{}]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 3 strings (One with the formula of the Blur Amount + 2 with the Blur and Bloom shaders)", identifier);
+		if ((param.size()) != 3 || (shaderBlock.size() != 2)) {
+			Logger::error(
+				"EfxBloom [{}]: 3 params (Clear the screen & depth buffers and Fbo to use), "
+				"2 shaders (Blur and Bloom shaders) and 1 expression are needed", identifier);
 			return false;
 		}
 
@@ -72,37 +77,51 @@ namespace Phoenix {
 
 		// Load the Blur amount formula
 		m_pExprBloom = new MathDriver(this);
-		// Load positions, process constants and compile expression
-		m_pExprBloom->expression = strings[0]; // The first string should contain the blur amount
-		m_pExprBloom->SymbolTable.add_variable("blurAmount", m_fBlurAmount);
+		m_pExprBloom->expression = expressionRun;
+
+		m_pExprBloom->SymbolTable.add_variable("BlurAmount", m_fBlurAmount);
 		m_pExprBloom->Expression.register_symbol_table(m_pExprBloom->SymbolTable);
 		if (!m_pExprBloom->compileFormula())
 			return false;
 
 		// Load Blur shader
-		m_pShaderBlur = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[1]);
+		m_pShaderBlur = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
 		// Load Bloom shader
-		m_pShaderBloom = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[2]);
+		m_pShaderBloom = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[1]->filename);
 		if (!m_pShaderBlur || !m_pShaderBloom)
 			return false;
 
 		// Create Shader variables
 
 		// Configure Blur shader
-		m_pShaderBlur->use();
-		m_pShaderBlur->setValue("image", 0);	// The image is in the texture unit 0
+		{
+			m_pShaderBlur->use();
+			m_pBlurVars = new ShaderVars(this, m_pShaderBlur);
 
-		// Configure Bloom shader (variables are for this shader)
-		m_pShaderBloom->use();
-		m_pVars = new ShaderVars(this, m_pShaderBloom);
-		// Read the shader variables
-		for (int i = 0; i < uniform.size(); i++) {
-			m_pVars->ReadString(uniform[i].c_str());
+			// Read the shader variables
+			for (auto& uni : shaderBlock[0]->uniform) {
+				m_pBlurVars->ReadString(uni);
+			}
+			// Validate ans set Bloom shader variables
+			m_pBlurVars->validateAndSetValues(type_str + "[" + identifier + "]");
+			m_pShaderBlur->setValue("image", 0);	// The image is in the texture unit 0
 		}
-		// Validate ans set shader variables
-		m_pVars->validateAndSetValues(type_str+"["+identifier+"]");
-		m_pShaderBloom->setValue("scene", 0);		// The scene is in the Tex unit 0
-		m_pShaderBloom->setValue("bloomBlur", 1);	// The bloom blur is in the Tex unit 1
+		
+		// Configure Bloom shader (variables are for this shader)
+		{
+			m_pShaderBloom->use();
+			m_pBloomVars = new ShaderVars(this, m_pShaderBloom);
+
+			// Read the shader variables
+			for (auto& uni : shaderBlock[1]->uniform) {
+				m_pBloomVars->ReadString(uni);
+			}
+			// Validate ans set Bloom shader variables
+			m_pBloomVars->validateAndSetValues(type_str + "[" + identifier + "]");
+			m_pShaderBloom->setValue("scene", 0);		// The scene is in the Tex unit 0
+			m_pShaderBloom->setValue("bloomBlur", 1);	// The bloom blur is in the Tex unit 1
+		}
+		
 		
 		return !DEMO_checkGLError();
 	}
@@ -131,6 +150,8 @@ namespace Phoenix {
 			bool horizontal = true;
 			bool first_iteration = true;
 			m_pShaderBlur->use();
+			// Set new shader variables values
+			m_pBlurVars->setValues();
 
 			// Prevent negative Blurs
 			if (m_fBlurAmount < 0)
@@ -161,7 +182,7 @@ namespace Phoenix {
 			// Second step: Merge the blurred image with the color image (fbo attachment 0)
 			m_pShaderBloom->use();
 			// Set new shader variables values
-			m_pVars->setValues();
+			m_pBloomVars->setValues();
 
 			// Tex unit 0: scene
 			m_demo.m_fboManager.fbo[m_uiFboNum]->bind_tex(0);
@@ -184,6 +205,7 @@ namespace Phoenix {
 		ss << "Shader Bloom: " << m_pShaderBloom->getURI() << std::endl;
 		ss << "Shader Blur: " << m_pShaderBlur->getURI() << std::endl;
 		ss << "Fbo: " << m_uiFboNum << std::endl;
+		ss << "Expression is: " << (m_pExprBloom->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		debugStatic = ss.str();
 	}
 

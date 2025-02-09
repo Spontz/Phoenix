@@ -36,7 +36,7 @@ namespace Phoenix {
 	Section* instance_efxBlur();
 	Section* instance_efxFader();
 	Section* instance_efxMotionBlur();
-	Section* instance_setVariable();
+	Section* instance_setExpression();
 	Section* instance_test();
 
 	namespace sections {

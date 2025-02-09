@@ -164,7 +164,7 @@ namespace Phoenix
 		FboManager *efxAccumFbo = &(m_demo->m_efxAccumFbo);
 		FboManager *fboManager = &(m_demo->m_fboManager);
 
-		Logger::info(LogLevel::low, "FBO regeneration Init.");
+		Logger::info(LogLevel::low, "FBO regeneration Init");
 		////////////// efxBloom FBO Manager: internal FBO's that are being used by the engine effects
 		{
 
@@ -249,14 +249,14 @@ namespace Phoenix
 					Logger::info(LogLevel::low,	"Fbo {} uploaded: width: {:.0f}, height: {:.0f}, format: {}", i, fboConfig[i].width, fboConfig[i].height, fboConfig[i].format);
 				}
 				else {
-					Logger::error("Error in FBO definition: FBO number {} has a non recongised format: '{}', please check 'graphics.spo' file.", i, fboConfig[i].format);
+					Logger::error("Error in FBO definition: FBO number {} has a non recongised format: '{}', please check 'graphics.spo' file", i, fboConfig[i].format);
 				}
 			}
 
 			// Init all fbo's color to black
 			fboManager->clearFbosColor();
 		}
-		Logger::info(LogLevel::low, "FBO regeneration complete.");
+		Logger::info(LogLevel::low, "FBO regeneration complete");
 	}
 
 	Viewport Window::GetFramebufferViewport() const

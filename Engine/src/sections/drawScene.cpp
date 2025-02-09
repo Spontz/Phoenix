@@ -63,7 +63,7 @@ namespace Phoenix {
 	}
 
 	bool sDrawScene::load() {
-		if ((param.size() != 6) || (strings.size() < 1) || (shaderBlock.size() < 1) ) {
+		if ((param.size() != 6) || (strings.size() != 1) || (shaderBlock.size() != 1) ) {
 			Logger::error(
 				"DrawScene [{}]: 6 params (depth buffer clearing, disable depth test, disable depth mask, enable wireframe, enable animation & "
 				"animation number), 1 string (model), 1 shader and 1 expression are needed",

@@ -58,7 +58,7 @@ namespace Phoenix {
 
 	bool sDrawVideo::load()
 	{
-		if ((param.size() != 4) || (strings.size() != 1)) {
+		if ((param.size() != 4) || (strings.size() != 1) || (shaderBlock.size() != 1)) {
 			Logger::error(
 				"DrawVideo [{}]: 4 param needed (Clear screen buffer, clear depth buffer, fullscreen &"
 				"fit to content), 1 string (Video), 1 shader and 1 expression are needed",

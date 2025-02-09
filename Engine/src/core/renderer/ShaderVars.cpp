@@ -74,7 +74,8 @@ namespace Phoenix {
 			var->eva = std::make_shared<MathDriver>(my_section);
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value);
-			var->eva->compileFormula();
+			if (!var->eva->compileFormula())
+				Logger::error("Found in section {} [{}]", my_section->type_str, my_section->identifier);
 			vfloat.emplace_back(var);
 		}
 		break;
@@ -88,7 +89,8 @@ namespace Phoenix {
 			var->eva->expression = var_value;
 			var->eva->SymbolTable.add_variable("v1", var->value[0]);
 			var->eva->SymbolTable.add_variable("v2", var->value[1]);
-			var->eva->compileFormula();
+			if (!var->eva->compileFormula())
+				Logger::error("Found in section {} [{}]", my_section->type_str, my_section->identifier);
 			vec2.emplace_back(var);
 		}
 		break;
@@ -103,7 +105,8 @@ namespace Phoenix {
 			var->eva->SymbolTable.add_variable("v1", var->value[0]);
 			var->eva->SymbolTable.add_variable("v2", var->value[1]);
 			var->eva->SymbolTable.add_variable("v3", var->value[2]);
-			var->eva->compileFormula();
+			if (!var->eva->compileFormula())
+				Logger::error("Found in section {} [{}]", my_section->type_str, my_section->identifier);
 			vec3.emplace_back(var);
 		}
 		break;
@@ -119,7 +122,8 @@ namespace Phoenix {
 			var->eva->SymbolTable.add_variable("v2", var->value[1]);
 			var->eva->SymbolTable.add_variable("v3", var->value[2]);
 			var->eva->SymbolTable.add_variable("v4", var->value[3]);
-			var->eva->compileFormula();
+			if (!var->eva->compileFormula())
+				Logger::error("Found in section {} [{}]", my_section->type_str, my_section->identifier);
 			vec4.emplace_back(var);
 		}
 		break;
@@ -140,7 +144,8 @@ namespace Phoenix {
 			var->eva->SymbolTable.add_variable("v7", var->value[2][0]);
 			var->eva->SymbolTable.add_variable("v8", var->value[2][1]);
 			var->eva->SymbolTable.add_variable("v9", var->value[2][2]);
-			var->eva->compileFormula();
+			if (!var->eva->compileFormula())
+				Logger::error("Found in section {} [{}]", my_section->type_str, my_section->identifier);
 			mat3.emplace_back(var);
 		}
 		break;
@@ -168,7 +173,8 @@ namespace Phoenix {
 			var->eva->SymbolTable.add_variable("v14", var->value[3][1]);
 			var->eva->SymbolTable.add_variable("v15", var->value[3][2]);
 			var->eva->SymbolTable.add_variable("v16", var->value[3][3]);
-			var->eva->compileFormula();
+			if (!var->eva->compileFormula())
+				Logger::error("Found in section {} [{}]", my_section->type_str, my_section->identifier);
 			mat4.emplace_back(var);
 		}
 		break;

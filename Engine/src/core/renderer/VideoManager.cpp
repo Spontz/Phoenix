@@ -26,13 +26,13 @@ namespace Phoenix {
 				// Reload video acording to m_bForceReload
 				if (!pVideo->load(VideoSource)) {
 					// Handle reload error
-					Logger::error("Could not reload video: \"{}\"", VideoSource.m_sPath);
+					Logger::error("Could not reload video: {}", VideoSource.m_sPath);
 					return nullptr;
 				}
 
 				Logger::info(
 					LogLevel::med,
-					"Video \"{}\" [id: {}] force reload OK.",
+					"Video \"{}\" [id: {}] force reload OK",
 					VideoSource.m_sPath,
 					VideoMap_.size() - 1
 				);
@@ -47,14 +47,14 @@ namespace Phoenix {
 		// Load video
 		if (!pVideo->load(VideoSource)) {
 			// Handle load error
-			Logger::error("Could not load video: \"{}\"", VideoSource.m_sPath);
+			Logger::error("Could not load video: {}", VideoSource.m_sPath);
 			return nullptr;
 		}
 
 		VideoMap_.insert({ VideoSource, pVideo });
 		Logger::info(
 			LogLevel::med,
-			"Video \"{}\" [id: {}] loaded OK.",
+			"Video \"{}\" [id: {}] loaded OK",
 			VideoSource.m_sPath.c_str(),
 			VideoMap_.size() - 1
 		);

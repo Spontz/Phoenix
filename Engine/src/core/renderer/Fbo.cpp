@@ -118,7 +118,7 @@ namespace Phoenix {
 				Logger::error("Fbo::upload: Error uploading {}: glCheckFramebufferStatus returned GL_FRAMEBUFFER_UNSUPPORTED. Choose other format, this is not supported in the current system.", engineFormat);
 				break;
 			default:
-				Logger::error("Fbo::upload: Error uploading {}: Invalid framebuffer status.", engineFormat);
+				Logger::error("Fbo::upload: Error uploading {}: Invalid framebuffer status", engineFormat);
 				break;
 			}
 			return false;

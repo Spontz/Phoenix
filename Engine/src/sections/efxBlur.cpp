@@ -20,7 +20,7 @@ namespace Phoenix {
 
 	private:
 		unsigned int	m_uiFboNum = 0;			// Fbo to use (must have 2 color attachments!)
-		float			m_fBlurAmount = 1.0;	// Blur layers to apply
+		float			m_fBlurAmount = 10.0;	// Blur layers to apply
 		SP_Shader		m_pShader;				// Blur Shader to apply
 		MathDriver*		m_pExprBlur = nullptr;	// Equations for the Blur effect
 		ShaderVars*		m_pVars = nullptr;		// Shader variables
@@ -49,8 +49,10 @@ namespace Phoenix {
 	bool sEfxBlur::load()
 	{
 		// script validation
-		if ((param.size()) != 3 || (strings.size() != 2)) {
-			Logger::error("EfxBlur [{}]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 2 strings (One with the formula of the Blur Amount + blur shader file)", identifier);
+		if ((param.size()) != 3 || (shaderBlock.size() != 1)) {
+			Logger::error(
+				"EfxBlur [{}]: 3 params (Clear the screen & depth buffers and Fbo to use), "
+				"1 shader and 1 expression are needed", identifier);
 			return false;
 		}
 
@@ -68,15 +70,15 @@ namespace Phoenix {
 
 		// Load the Blur amount formula
 		m_pExprBlur = new MathDriver(this);
-		// Load positions, process constants and compile expression
-		m_pExprBlur->expression = strings[0]; // The first string should contain the blur amount
-		m_pExprBlur->SymbolTable.add_variable("blurAmount", m_fBlurAmount);
+		m_pExprBlur->expression = expressionRun;
+
+		m_pExprBlur->SymbolTable.add_variable("BlurAmount", m_fBlurAmount);
 		m_pExprBlur->Expression.register_symbol_table(m_pExprBlur->SymbolTable);
 		if (!m_pExprBlur->compileFormula())
-			return false;
+			Logger::error("EfxBlur [{}]: Error while compiling the expression, default values used", identifier);
 
 		// Load Blur shader
-		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[1]);
+		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
 		if (!m_pShader)
 			return false;
 
@@ -85,10 +87,12 @@ namespace Phoenix {
 		m_pShader->setValue("image", 0);	// The image is in the texture unit 0
 
 		m_pVars = new ShaderVars(this, m_pShader);
+
 		// Read the shader variables
-		for (int i = 0; i < uniform.size(); i++) {
-			m_pVars->ReadString(uniform[i].c_str());
+		for (auto& uni : shaderBlock[0]->uniform) {
+			m_pVars->ReadString(uni);
 		}
+
 		// Validate and set shader variables values
 		m_pVars->validateAndSetValues(type_str+"["+identifier+"]");
 
@@ -162,6 +166,7 @@ namespace Phoenix {
 		std::stringstream ss;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		ss << "Fbo: " << m_uiFboNum << std::endl;
+		ss << "Expression is: " << (m_pExprBlur->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		debugStatic = ss.str();
 	}
 

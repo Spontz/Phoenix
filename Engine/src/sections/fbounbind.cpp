@@ -36,7 +36,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if (param.size() != 2) {
-			Logger::error("FboUnbind [{}]: 2 params are needed: clear the screen buffer, clear depth buffer", identifier);
+			Logger::error("FboUnbind [{}]: 2 params (clear the screen buffer and clear depth buffer) are needed", identifier);
 			return false;
 		}
 

@@ -89,7 +89,7 @@ namespace Phoenix {
 
 	bool sDrawSceneMatrixFolder::load()
 	{
-		if ((param.size() != 7) || (strings.size() < 2) || (shaderBlock.size() < 1)) {
+		if ((param.size() != 7) || (strings.size() != 2) || (shaderBlock.size() != 1)) {
 			Logger::error(
 				"DrawSceneMatrixFolder [{}]: 7 param (number of instances per model, do depth buffer clearing, "
 				"disbale depth test, enable wireframe, update formulas on each frame, enable animation and animation "

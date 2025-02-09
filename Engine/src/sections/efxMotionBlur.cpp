@@ -45,8 +45,9 @@ namespace Phoenix {
 
 	bool sEfxMotionBlur::load()
 	{
-		if ((param.size()) != 2 || (strings.size() != 1)) {
-			Logger::error("EfxMotionBlur [{}]: 2 params are needed (Fbo to use and FPS Scale), and 1 shader file (for Motionblur)", identifier);
+		if ((param.size()) != 2 || (shaderBlock.size() != 1)) {
+			Logger::error(
+				"EfxMotionBlur [{}]: 2 params (Fbo to use and FPS Scale), and 1 shader are needed", identifier);
 			return false;
 		}
 
@@ -60,7 +61,7 @@ namespace Phoenix {
 		if (m_uiFPSScale == 0)
 			m_uiFPSScale = 1;
 
-		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
+		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
 		if (!m_pShader)
 			return false;
 
@@ -68,9 +69,10 @@ namespace Phoenix {
 		m_pShader->use();
 
 		m_pVars = new ShaderVars(this, m_pShader);
+
 		// Read the shader variables
-		for (int i = 0; i < uniform.size(); i++) {
-			m_pVars->ReadString(uniform[i].c_str());
+		for (auto& uni : shaderBlock[0]->uniform) {
+			m_pVars->ReadString(uni);
 		}
 
 		// Validate and set shader variables
@@ -122,7 +124,6 @@ namespace Phoenix {
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		ss << "Fbo: " << m_uiFboNum << ", Fps Scale: " << m_uiFPSScale << std::endl;
 		debugStatic = ss.str();
-
 	}
 
 	std::string sEfxMotionBlur::debug()

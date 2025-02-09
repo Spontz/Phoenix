@@ -38,7 +38,7 @@ namespace Phoenix {
 	{
 		// script validation
 		if (param.size() != 3) {
-			Logger::error("FboBind [{}]: 3 params are needed: fbo to use, clear the screen buffer, clear depth buffer", identifier);
+			Logger::error("FboBind [{}]: 3 params (fbo to use, clear the screen buffer, clear depth buffer) are needed", identifier);
 			return false;
 		}
 

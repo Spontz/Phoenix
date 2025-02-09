@@ -22,8 +22,8 @@ namespace Phoenix {
 		float		m_lastTime = 0;
 		bool		m_firstIteration = true;
 		uint32_t	m_uiFboNum = 0;				// Fbo to use (must have 2 color attachments!)
-		float		m_fSourceInfluence = .5f;	// Source influence (0 to 1)
-		float		m_fAccumInfluence = .5f;	// Accumulation influence (0 to 1)
+		float		m_fSourceInfluence = 0.1f;	// Source influence (0 to 1)
+		float		m_fAccumInfluence = 0.05f;	// Accumulation influence (0 to 1)
 		bool		m_bAccumBuffer = false;		// Accum buffer to use (0 or 1)
 		SP_Shader	m_spShader;					// Accumulation Shader to apply
 		MathDriver* m_pExprAccum = nullptr;		// Equations for the Accum effect
@@ -53,8 +53,10 @@ namespace Phoenix {
 	bool sEfxAccum::load()
 	{
 		// script validation
-		if ((param.size()) != 3 || (strings.size() < 1)) {
-			Logger::error("EfxAccum [{}]: 3 params are needed (Clear the screen & depth buffers and Fbo to use), and 1 string (accum shader)", identifier);
+		if ((param.size()) != 3 || (shaderBlock.size() != 1)) {
+			Logger::error(
+				"EfxAccum [{}]: 3 params (Clear the screen & depth buffers and Fbo to use), "
+				"1 shader and 1 expression are needed", identifier);
 			return false;
 		}
 
@@ -67,23 +69,22 @@ namespace Phoenix {
 
 		// Check if the fbo can be used for the effect
 		if (m_uiFboNum < 0 || m_uiFboNum >= m_demo.m_fboManager.fbo.size()) {
-			Logger::error("EfxBlur [{}]: The fbo specified [{}] is not supported, should be between 0 and {}", identifier, m_uiFboNum, m_demo.m_fboManager.fbo.size() - 1);
+			Logger::error("EfxAccum [{}]: The fbo specified [{}] is not supported, should be between 0 and {}", identifier, m_uiFboNum, m_demo.m_fboManager.fbo.size() - 1);
 			return false;
 		}
 
 		// Load the Blur amount formula
 		m_pExprAccum = new MathDriver(this);
-		// Load positions, process constants and compile expression
-		for (int i = 1; i < strings.size(); i++)
-			m_pExprAccum->expression += strings[i];
+		m_pExprAccum->expression = expressionRun;
+
 		m_pExprAccum->SymbolTable.add_variable("SourceInfluence", m_fSourceInfluence);
 		m_pExprAccum->SymbolTable.add_variable("AccumInfluence", m_fAccumInfluence);
 		m_pExprAccum->Expression.register_symbol_table(m_pExprAccum->SymbolTable);
 		if (!m_pExprAccum->compileFormula())
-			return false;
+			Logger::error("EfxAccum [{}]: Error while compiling the expression, default values used", identifier);
 
 		// Load Blur shader
-		m_spShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + strings[0]);
+		m_spShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
 		if (!m_spShader)
 			return false;
 
@@ -93,9 +94,10 @@ namespace Phoenix {
 		m_spShader->setValue("accumImage", 1);	// The accumulated image will be in the texture unit 1
 
 		m_pVars = new ShaderVars(this, m_spShader);
+
 		// Read the shader variables
-		for (int i = 0; i < uniform.size(); i++) {
-			m_pVars->ReadString(uniform[i].c_str());
+		for (auto& uni : shaderBlock[0]->uniform) {
+			m_pVars->ReadString(uni);
 		}
 
 		// Validate and set shader variables
@@ -133,7 +135,6 @@ namespace Phoenix {
 		m_pExprAccum->executeFormula();
 
 		{
-
 			{
 				// We want to capture the frame in the "Accum Fbo", so first we use the previous fbo for storing the entire image
 				m_demo.m_efxAccumFbo.bind(m_bAccumBuffer, false, false);
@@ -162,7 +163,6 @@ namespace Phoenix {
 				m_demo.m_fboManager.bindCurrent();
 			}
 
-
 			// Second step: Draw the accum buffer
 			m_demo.m_pRes->m_spShdrQuadTex->use();
 			m_demo.m_pRes->m_spShdrQuadTex->setValue("screenTexture", 0);
@@ -183,6 +183,7 @@ namespace Phoenix {
 		std::stringstream ss;
 		ss << "Shader: " << m_spShader->getURI() << std::endl;
 		ss << "Fbo: " << m_uiFboNum << std::endl;
+		ss << "Expression is: " << (m_pExprAccum->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		debugStatic = ss.str();
 	}
 
