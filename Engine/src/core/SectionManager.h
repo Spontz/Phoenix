@@ -7,29 +7,29 @@
 
 namespace Phoenix {
 
+	// Parameter type that we can found in a section configuration
+	enum class SectionVariableType {
+		STRING = 0,
+		PARAMETER,
+		SPLINE,
+		EXPRESSION_VARIABLE,
+		EXPRESSION_CONSTANT
+	};
+
+	// Section strings, parameters and expression variables
+	struct SectionVariable final {
+		SectionType			SectionType;
+		std::string			Name;
+		SectionVariableType	Type;
+		std::string			Description;
+	};
+
 	class SectionManager final {
 		friend class DemoKernel;
 		friend class SectionLayer;
 		friend class ImGuiLayer;
 		friend class sLoading;		// hack
 		friend class SpoReader;		// hack
-
-		// Parameter type that we can found in a section configuration
-		enum class SectionVariableType {
-			STRING = 0,
-			PARAMETER,
-			SPLINE,
-			EXPRESSION_VARIABLE,
-			EXPRESSION_CONSTANT
-		};
-
-		// Section strings, parameters and expression variables
-		struct SectionVariable final {
-			SectionType			SectionType;
-			std::string			Name;
-			SectionVariableType	Type;
-			std::string			Description;
-		};
 
 	public:
 		~SectionManager();
@@ -48,7 +48,7 @@ namespace Phoenix {
 	private:
 		Section* getSection(std::string_view id) const;
 		int32_t getSectionIndex(std::string_view id) const;
-		void	loadSectionVariables();
+		std::vector<SectionVariable> getSectionVariablesInfo(SectionType type) const;
 
 	private:
 		// Sections list, script order
@@ -70,6 +70,6 @@ namespace Phoenix {
 		int32_t m_WarmedSections	= 0;
 
 		// Table with all the variable information of each section
-		std::vector<SectionVariable> m_SectionVariableInfo;
+		static const SectionVariable kSectionVariableInfo[];
 	};
 }
