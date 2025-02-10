@@ -10,6 +10,7 @@ namespace Phoenix {
 	enum class SectionType {
 		NOT_FOUND,	// No section found
 
+		Global,		// Global section: This is special and not used in the demo script
 		Loading,
 
 		CameraFPS,
