@@ -103,7 +103,7 @@ namespace Phoenix {
 				m_pBlurVars->ReadString(uni);
 			}
 			// Validate ans set Bloom shader variables
-			m_pBlurVars->validateAndSetValues(type_str + "[" + identifier + "]");
+			m_pBlurVars->validateAndSetValues();
 			m_pShaderBlur->setValue("image", 0);	// The image is in the texture unit 0
 		}
 		
@@ -117,7 +117,7 @@ namespace Phoenix {
 				m_pBloomVars->ReadString(uni);
 			}
 			// Validate ans set Bloom shader variables
-			m_pBloomVars->validateAndSetValues(type_str + "[" + identifier + "]");
+			m_pBloomVars->validateAndSetValues();
 			m_pShaderBloom->setValue("scene", 0);		// The scene is in the Tex unit 0
 			m_pShaderBloom->setValue("bloomBlur", 1);	// The bloom blur is in the Tex unit 1
 		}

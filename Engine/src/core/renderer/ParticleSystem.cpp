@@ -187,7 +187,7 @@ namespace Phoenix {
 		}
 
 		// Validate if shader variables exist in the shader and set particle system shader variables values
-		m_varsParticleSystem->validateAndSetValues(sec->type_str + "[" + sec->identifier + "]");
+		m_varsParticleSystem->validateAndSetValues();
 
 		//Use the billboard shader and send variables
 		m_billboardShader->use();
@@ -197,7 +197,7 @@ namespace Phoenix {
 			m_varsBillboard->ReadString(shaderVarsBillboard[i]);
 		}
 		// Validate if shader variables exist in the shader and set billboard shader variables values (texture, particle size, etc...)
-		m_varsBillboard->validateAndSetValues(sec->type_str + "[" + sec->identifier + "]");
+		m_varsBillboard->validateAndSetValues();
 		
 		return !DEMO_checkGLError();
 	}
