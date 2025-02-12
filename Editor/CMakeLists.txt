@@ -1,4 +1,4 @@
-# 2018-2024, Spontz
+# 2018-2025, Spontz
 
 set(SubProject "Editor")
 set(SubProject_OutputName "Editor")

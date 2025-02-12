@@ -1,4 +1,4 @@
-# 2018-2024, Spontz
+# 2018-2025, Spontz
 
 set(SubProject "Engine")
 set(SubProject_SOURCE_DIR ${PROJECT_SOURCE_DIR}/${SubProject})

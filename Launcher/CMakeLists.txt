@@ -1,4 +1,4 @@
-# 2018-2024, Spontz
+# 2018-2025, Spontz
 
 set(SubProject "Launcher")
 set(SubProject_OutputName "Phoenix")
