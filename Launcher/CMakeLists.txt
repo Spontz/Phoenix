@@ -44,6 +44,10 @@ message("  Debugger Work directory is: ${DEBUGGER_WD}")
 # Set output name
 set_target_properties(${SubProject} PROPERTIES OUTPUT_NAME ${SubProject_OutputName})
 
+#FFMPEG
+target_include_directories(${SubProject} PRIVATE ${FFMPEG_INCLUDE_DIRS})
+target_link_directories(${SubProject} PRIVATE ${FFMPEG_LIBRARY_DIRS})
+
 # Link libraries
 target_link_libraries(${SubProject} PRIVATE Engine)
 target_link_libraries(${SubProject} PRIVATE ${OPENGL_LIBRARIES})
