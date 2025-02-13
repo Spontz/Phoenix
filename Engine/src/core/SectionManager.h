@@ -28,6 +28,7 @@ namespace Phoenix {
 		SectionType			SectionType;
 		std::string			Name;
 		SectionVariableType	Type;
+		std::string			TypeStr;
 		std::string			Description;
 	};
 

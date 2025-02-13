@@ -715,9 +715,10 @@ namespace Phoenix {
 						}
 						ImGui::EndCombo();
 					}
-					if (ImGui::BeginTable("Variables used in expression", 2, tableFlags)) {
+					if (ImGui::BeginTable("Parameters and Variables", 3, tableFlags)) {
 						// Setup headers
-						ImGui::TableSetupColumn("Variable name", ImGuiTableColumnFlags_WidthStretch,0.3f);
+						ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.35f);
+						ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 0.4f);
 						ImGui::TableSetupColumn("Description");
 						ImGui::TableHeadersRow();
 
@@ -728,6 +729,9 @@ namespace Phoenix {
 							ImGui::Text(pSecVars.Name.c_str());
 
 							ImGui::TableSetColumnIndex(1);
+							ImGui::Text(pSecVars.TypeStr.c_str());
+
+							ImGui::TableSetColumnIndex(2);
 							ImGui::Text(pSecVars.Description.c_str());
 						}
 						ImGui::EndTable();
