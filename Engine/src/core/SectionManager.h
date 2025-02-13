@@ -76,8 +76,5 @@ namespace Phoenix {
 		// loading information
 		int32_t m_LoadedSections	= 0;
 		int32_t m_WarmedSections	= 0;
-
-		// Table with all the variable information of each section
-		static const SectionVariable kSectionVariableInfo[];
 	};
 }
