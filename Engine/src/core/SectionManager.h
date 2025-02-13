@@ -7,6 +7,13 @@
 
 namespace Phoenix {
 
+	// Section info
+	struct SectionInfo final {
+		std::string m_id;
+		SectionType m_type;
+		std::function<Section* ()> m_fnCreateSection;
+	};
+
 	// Parameter type that we can found in a section configuration
 	enum class SectionVariableType {
 		STRING = 0,
@@ -48,6 +55,7 @@ namespace Phoenix {
 	private:
 		Section* getSection(std::string_view id) const;
 		int32_t getSectionIndex(std::string_view id) const;
+		std::vector<SectionInfo> getSectionTypes() const;
 		std::vector<SectionVariable> getSectionVariablesInfo(SectionType type) const;
 
 	private:

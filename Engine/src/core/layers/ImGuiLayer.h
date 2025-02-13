@@ -37,6 +37,13 @@ namespace Phoenix {
 			int32_t	currentRenderTime;
 		};
 
+		struct SectionsAndVariables final {
+			int32_t	selectedSection = 0;
+			std::string	selectedSectionText = "";
+			std::vector<SectionInfo>		sectionTypes;		// Stores all different section types available (SectionType ID and Section type String Name)
+			std::vector<SectionVariable>	sectionVariables;	// Stores all the possible variables for a given section Type
+		};
+
 		struct FboGridProperties final {
 			ImVec2	windowPos;
 			ImVec2	windowSize;
@@ -137,6 +144,9 @@ namespace Phoenix {
 		RenderTime				m_render;
 		FboGridProperties		m_fboGrid;
 		FboDetailProperties		m_fbo;
+
+		// Help
+		SectionsAndVariables	m_sectionsAndVariables;
 
 		// Static tooltip
 		void drawTooltip(const std::string_view tooltip);

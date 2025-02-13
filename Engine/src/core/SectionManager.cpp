@@ -7,14 +7,9 @@
 
 namespace Phoenix {
 
-	struct SectionInfo final {
-		std::string m_id;
-		SectionType m_type;
-		std::function<Section*()> m_fnCreateSection;
-	};
-
 	// sections functions references
 	const SectionInfo kSectionInfo[] = {
+		{"global",							SectionType::Global, nullptr},				// Special section, not used
 		{"loading",							SectionType::Loading, instance_loading},
 
 		// built-in sections
@@ -58,7 +53,6 @@ namespace Phoenix {
 		{ SectionType::Global, "tdemo",			SectionVariableType::EXPRESSION_VARIABLE,	"Global demo time" },
 		{ SectionType::Global, "fps",			SectionVariableType::EXPRESSION_VARIABLE,	"FPS of the demo" },
 		{ SectionType::Global, "mouseX",		SectionVariableType::EXPRESSION_VARIABLE,	"X value of the mouse position" },
-		{ SectionType::Global, "mouseY",		SectionVariableType::EXPRESSION_VARIABLE,	"Y value of the mouse position" },
 		{ SectionType::Global, "mouseY",		SectionVariableType::EXPRESSION_VARIABLE,	"Y value of the mouse position" },
 		// Multi-purpose variables
 		{ SectionType::Global, "var0",			SectionVariableType::EXPRESSION_VARIABLE,	"Multipurpose variable" },
@@ -245,6 +239,17 @@ namespace Phoenix {
 				return static_cast<int32_t>(i);
 
 		return -1;
+	}
+
+	std::vector<SectionInfo> SectionManager::getSectionTypes() const
+	{
+		std::vector<SectionInfo> SectionTypes;
+
+		for (auto const& section : kSectionInfo) {
+			SectionTypes.emplace_back(section);
+		}
+
+		return SectionTypes;
 	}
 
 	std::vector<SectionVariable> SectionManager::getSectionVariablesInfo(SectionType type) const

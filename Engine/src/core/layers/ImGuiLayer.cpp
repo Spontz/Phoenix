@@ -97,8 +97,11 @@ namespace Phoenix {
 		for (int i = 0; i < m_render.RENDERTIMES_SAMPLES; i++)
 			m_render.renderTimes[i] = 0.0f;
 
-		// Prepare the text
+		// Help: Prepare the text
 		m_helpText.appendf(helpText.c_str());
+		
+		// Help: Prepare the section types and names
+		m_sectionsAndVariables.sectionTypes = m_demo.m_sectionManager.getSectionTypes();
 
 		// Window: Fbo
 		m_fbo.fboNum = static_cast<int32_t>(m_demo.m_fboManager.fbo.size());
@@ -677,12 +680,65 @@ namespace Phoenix {
 		ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
 
 		ImGui::SetNextWindowBgAlpha(1.0f);
-		if (ImGui::Begin("Help commands", &show_help)) {
-			ImGui::TextLinkOpenURL("Link to engine documentation", "https://github.com/Spontz/Phoenix/wiki");
-			ImGui::NewLine();
-			ImGui::TextUnformatted(m_helpText.begin(), m_helpText.end());
+		if (ImGui::Begin("Help", &show_help)) {
+			static ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_ContextMenuInBody;
+
+			ImGuiTabBarFlags tabBarFlags = ImGuiTabBarFlags_FittingPolicyDefault_ | ImGuiTabBarFlags_Reorderable;
+			if (ImGui::BeginTabBar("HelpTabs", tabBarFlags)) {
+				// Commands
+				if (ImGui::BeginTabItem("Commands")) {
+					ImGui::TextLinkOpenURL("Link to engine documentation", "https://github.com/Spontz/Phoenix/wiki");
+					ImGui::NewLine();
+					ImGui::TextUnformatted(m_helpText.begin(), m_helpText.end());
+					ImGui::EndTabItem();
+				}
+
+				// Variables
+				if (ImGui::BeginTabItem("Section variables")) {
+					if (ImGui::BeginCombo("Section Type", m_sectionsAndVariables.selectedSectionText.c_str(), ImGuiComboFlags_PopupAlignLeft)) {
+						for (int32_t i = 0; i < m_sectionsAndVariables.sectionTypes.size(); ++i) {
+							const bool isSelected = (m_sectionsAndVariables.selectedSection == i);
+							if (ImGui::Selectable(m_sectionsAndVariables.sectionTypes[i].m_id.c_str(), isSelected)) {
+								m_sectionsAndVariables.selectedSection = i;
+								m_sectionsAndVariables.selectedSectionText = m_sectionsAndVariables.sectionTypes[i].m_id;
+								SectionType type = m_sectionsAndVariables.sectionTypes[i].m_type;
+								// Fill the variables for that section
+								m_sectionsAndVariables.sectionVariables.clear();
+								m_sectionsAndVariables.sectionVariables = m_demo.m_sectionManager.getSectionVariablesInfo(type);
+							}
+
+							// Set the initial focus when opening the combo
+							// (scrolling + keyboard navigation focus)
+							if (isSelected) {
+								ImGui::SetItemDefaultFocus();
+							}							
+						}
+						ImGui::EndCombo();
+					}
+					if (ImGui::BeginTable("Variables used in expression", 2, tableFlags)) {
+						// Setup headers
+						ImGui::TableSetupColumn("Variable name", ImGuiTableColumnFlags_WidthStretch,0.3f);
+						ImGui::TableSetupColumn("Description");
+						ImGui::TableHeadersRow();
+
+						for (auto& pSecVars : m_sectionsAndVariables.sectionVariables) {
+							ImGui::TableNextRow();
+
+							ImGui::TableSetColumnIndex(0);
+							ImGui::Text(pSecVars.Name.c_str());
+
+							ImGui::TableSetColumnIndex(1);
+							ImGui::Text(pSecVars.Description.c_str());
+						}
+						ImGui::EndTable();
+					}
+					ImGui::EndTabItem();
+				}
+				ImGui::EndTabBar();
+			}
+			ImGui::End();
 		}
-		ImGui::End();
+		
 	}
 
 	void ImGuiLayer::drawCameraInfo(Camera* pCamera)
