@@ -14,24 +14,6 @@ namespace Phoenix {
 		std::function<Section* ()> m_fnCreateSection;
 	};
 
-	// Parameter type that we can found in a section configuration
-	enum class SectionVariableType {
-		STRING = 0,
-		PARAMETER,
-		SPLINE,
-		EXPRESSION_VARIABLE,
-		EXPRESSION_CONSTANT
-	};
-
-	// Section strings, parameters and expression variables
-	struct SectionVariable final {
-		SectionType			SectionType;
-		std::string			Name;
-		SectionVariableType	Type;
-		std::string			TypeStr;
-		std::string			Description;
-	};
-
 	class SectionManager final {
 		friend class DemoKernel;
 		friend class SectionLayer;
@@ -57,7 +39,6 @@ namespace Phoenix {
 		Section* getSection(std::string_view id) const;
 		int32_t getSectionIndex(std::string_view id) const;
 		std::vector<SectionInfo> getSectionTypes() const;
-		std::vector<SectionVariable> getSectionVariablesInfo(SectionType type) const;
 
 	private:
 		// Sections list, script order

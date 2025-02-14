@@ -4,7 +4,6 @@
 #include "main.h"
 #include "SectionManager.h"
 #include "sections/sections.h"
-#include "data/SectionVariableInfo.h"
 
 namespace Phoenix {
 
@@ -128,16 +127,6 @@ namespace Phoenix {
 		}
 
 		return SectionTypes;
-	}
-
-	std::vector<SectionVariable> SectionManager::getSectionVariablesInfo(SectionType type) const
-	{
-		std::vector<SectionVariable> variables;
-		for (size_t i = 0; i < kSectionVariableInfoCount; ++i) {
-			if (kSectionVariableInfo[i].SectionType == type)
-				variables.push_back(kSectionVariableInfo[i]);
-		}
-		return variables;
 	}
 
 	void SectionManager::toggleSections(std::vector<std::string> const& ids)
