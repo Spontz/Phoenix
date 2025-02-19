@@ -31,7 +31,49 @@ namespace Phoenix {
 
 		// check if texture is already loaded, then we just retrieve the ID of our texture
 		for (i = 0; i < texture.size(); i++) {
-			if (texture[i]->m_filename.compare(path) == 0) {
+			if (texture[i]->m_filePath.compare(path) == 0) {
+				p_tex = texture[i];
+			}
+		}
+
+		if (p_tex == nullptr) { // If the texture has not been found, we need to load it for the first time
+			SP_Texture new_tex = std::make_shared<Texture>();
+			new_tex->m_properties = texProperties;
+			if (new_tex->load(path)) {
+				texture.emplace_back(new_tex);
+				m_mem += new_tex->m_mem;
+				p_tex = new_tex;
+				Logger::info(LogLevel::med, "Texture {} [id: {}] loaded OK. Overall texture Memory: {:.3f}Mb", path, texture.size() - 1, m_mem);
+			}
+			else {
+				Logger::error("Could not load texture: {}", path);
+			}
+
+		}
+		else { // If the texture is catched we should not do anything, unless we have been told to upload it again
+			if (m_forceLoad) {
+				m_mem -= p_tex->m_mem; // Decrease the overall texture memory
+				p_tex->m_properties = texProperties;
+				if (p_tex->load(path)) {
+					m_mem += p_tex->m_mem;
+					Logger::info(LogLevel::med, "Texture {} [id: {}] force reload OK. Overall texture Memory: {:.3f}Mb", path, i, m_mem);
+				}
+				else
+					Logger::error("Could not load texture: {}", path);
+			}
+		}
+
+		return p_tex;
+	}
+
+	SP_Texture TextureManager::addTexture(std::vector<std::string> path, Texture::Properties& texProperties)
+	{
+		unsigned int i;
+		SP_Texture p_tex;
+
+		// check if the 3D texture is already loaded, then we just return the ID of our texture
+		for (i = 0; i < texture.size(); i++) {
+			if (texture[i]->m_filesPath == path) {
 				p_tex = texture[i];
 			}
 		}
@@ -93,7 +135,7 @@ namespace Phoenix {
 
 		// check if cubemap is already loaded, then we just return the ID of our texture
 		for (i = 0; i < cubemap.size(); i++) {
-			if (cubemap[i]->m_filename == path) // Check if all the paths are the same (so cubemap is already loaded)
+			if (cubemap[i]->m_filePath == path) // Check if all the paths are the same (so cubemap is already loaded)
 			{
 				p_cubemap = cubemap[i];
 			}

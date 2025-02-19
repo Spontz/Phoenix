@@ -819,7 +819,7 @@ namespace Phoenix {
 							ImGui::TableNextRow();
 
 							ImGui::TableSetColumnIndex(0);
-							ImGui::Text(pText->m_filename.c_str());
+							ImGui::Text(pText->m_filePath.c_str());
 
 							ImGui::TableSetColumnIndex(1);
 							ImGui::Text("%d", pText->m_textureID);
@@ -844,7 +844,7 @@ namespace Phoenix {
 							ImGui::TableNextRow();
 
 							ImGui::TableSetColumnIndex(0);
-							ImGui::Text(pCube->m_filename[0].c_str());
+							ImGui::Text(pCube->m_filePath[0].c_str());
 
 							ImGui::TableSetColumnIndex(1);
 							ImGui::Text("%d", pCube->m_cubemapID);

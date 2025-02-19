@@ -17,7 +17,7 @@ namespace Phoenix {
 	{
 		if (m_cubemapID != 0) {
 			glDeleteTextures(1, &m_cubemapID);
-			m_filename.clear();
+			m_filePath.clear();
 			m_width.clear();
 			m_height.clear();
 			m_cubemapID = 0;
@@ -30,7 +30,7 @@ namespace Phoenix {
 		// If we already have loaded this cubemap, we unload it first
 		if (m_cubemapID > 0) {
 			glDeleteTextures(1, &m_cubemapID);
-			m_filename.clear();
+			m_filePath.clear();
 			m_width.clear();
 			m_height.clear();
 			m_cubemapID = 0;
@@ -81,7 +81,7 @@ namespace Phoenix {
 		for (unsigned int face = 0; face < faces_file_name.size(); ++face) {
 			data = stbi_load(faces_file_name[face].c_str(), &Width, &Height, &components, 0);
 			if (data) {
-				m_filename.emplace_back(faces_file_name[face]);
+				m_filePath.emplace_back(faces_file_name[face]);
 				m_width.emplace_back(Width);
 				m_height.emplace_back(Height);
 				glTextureSubImage3D(m_cubemapID, 0, 0, 0,		// target, level , xOffset, yOffset

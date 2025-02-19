@@ -276,7 +276,7 @@ namespace Phoenix {
 	void sDrawParticlesImage::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "Image: " << m_pTexture->m_filename << std::endl;
+		ss << "Image: " << m_pTexture->m_filePath << std::endl;
 		ss << "Width: " << m_pTexture->m_width << std::endl;
 		ss << "Height: " << m_pTexture->m_height << std::endl;
 		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
