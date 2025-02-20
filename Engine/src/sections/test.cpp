@@ -32,6 +32,9 @@ namespace Phoenix {
 		SP_Shader					m_pShader;
 		MathDriver*					m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
 		ShaderVars*					m_pVars = nullptr;			// For storing any other shader variables
+
+		glm::vec3					m_camPosition;
+		glm::vec3					m_camDirection;
 	};
 
 
@@ -181,16 +184,27 @@ namespace Phoenix {
 				m_pShader->setValue("projection", mProjection);
 				m_pShader->setValue("view", mView);
 			}
+			Camera *cam = m_demo.m_cameraManager.getActiveCamera();
+			
+			float yaw = glm::radians(cam->getYaw());
+			float pitch = glm::radians(cam->getPitch());
+			m_camPosition = cam->getPosition();
 
+			m_camDirection.x = cos(yaw) * cos(pitch);
+			m_camDirection.y = sin(pitch);
+			m_camDirection.z = sin(yaw) * cos(pitch);
+			m_camDirection = glm::normalize(m_camDirection);
+
+			m_pShader->setValue("camDir", m_camDirection);
 			mModel = glm::scale(mModel, glm::vec3(fXScale, fYScale, 0.0f));
 			m_pShader->setValue("model", mModel);
-			m_pShader->setValue("screenTexture", m_iImageTexUnitID);
+			m_pShader->setValue("volume", m_iImageTexUnitID);
 			m_pTexture->bind(m_iImageTexUnitID);
 
 			// Set other shader variables values
 			m_pVars->setValues();
 
-			m_demo.m_pRes->drawQuadFS(); // Draw a quad with the video
+			m_demo.m_pRes->drawQuadFS(); // Draw a quad with the volume inside
 		}
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
@@ -201,6 +215,8 @@ namespace Phoenix {
 
 	std::string sTest::debug() {
 		std::stringstream ss;
+		ss << "Cam Pos: " << std::format("({:.2f},{:.2f},{:.2f})", m_camPosition.x, m_camPosition.y, m_camPosition.z) << std::endl;
+		ss << "Cam Dir: " << std::format("({:.2f},{:.2f},{:.2f})", m_camDirection.x, m_camDirection.y, m_camDirection.z) << std::endl;
 		return ss.str();
 	}
 }
