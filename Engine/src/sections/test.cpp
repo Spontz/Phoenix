@@ -204,7 +204,7 @@ namespace Phoenix {
 			// Set other shader variables values
 			m_pVars->setValues();
 
-			m_demo.m_pRes->drawQuadFS(); // Draw a quad with the volume inside
+			m_demo.m_pRes->drawCube(); // Draw a Cube with the volume inside
 		}
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
