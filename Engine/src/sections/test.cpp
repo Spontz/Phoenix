@@ -14,16 +14,17 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		bool		m_bFullscreen = true;		// Draw image at fullscreen?
-		bool		m_bFitToContent = false;	// Fit to content: true:respect image aspect ratio, false:stretch to viewport/quad
 		bool		m_bFilter = true;			// Use Bilinear filter?
 
 		glm::vec3	m_vTranslation = { 0, 0, 0 };
 		glm::vec3	m_vRotation = { 0, 0, 0 };
 		glm::vec3	m_vScale = { 1, 1, 1 };
 
-		float						m_fTexAspectRatio = 1.0f;
-		float						m_fRenderAspectRatio = 1.0f;
+		// Model, projection and view matrix
+		glm::mat4	m_mModel = glm::mat4(1.0f);
+		glm::mat4	m_mProjection = glm::mat4(1.0f);
+		glm::mat4	m_mView = glm::mat4(1.0f);
+
 		SP_Texture					m_pTexture;
 		std::string					m_pFolder;				// Folder to scan
 		std::vector<std::string>	m_pModelFilePaths;		// Models filePath to load
@@ -32,9 +33,6 @@ namespace Phoenix {
 		SP_Shader					m_pShader;
 		MathDriver*					m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
 		ShaderVars*					m_pVars = nullptr;			// For storing any other shader variables
-
-		glm::vec3					m_camPosition;
-		glm::vec3					m_camDirection;
 	};
 
 
@@ -59,18 +57,18 @@ namespace Phoenix {
 
 		if ((param.size() != 5) || (strings.size() != 2) || (shaderBlock.size() != 1)) {
 			Logger::error(
-				"DrawImage3D [{}]: 5 param needed (Clear screen buffer, clear depth buffer, fullscreen, "
-				"fit to content & filter), 2 string needed (Images folder and format), 1 shader and 1 expression",
+				"DrawImage3D [{}]: 5 param needed (depth buffer clearing, disable depth test, disable depth mask, enable wireframe & filter), "
+				"2 string needed (Images folder and format), 1 shader and 1 expression",
 				identifier
 			);
 			return false;
 		}
 
-		render_disableDepthTest = true;
-		render_clearColor = static_cast<bool>(param[0]);
-		render_clearDepth = static_cast<bool>(param[1]);
-		m_bFullscreen = static_cast<bool>(param[2]);
-		m_bFitToContent = static_cast<bool>(param[3]);
+		// Load parameters
+		render_clearDepth = static_cast<bool>(param[0]);
+		render_disableDepthTest = static_cast<bool>(param[1]);
+		render_disableDepthMask = static_cast<bool>(param[2]);
+		render_drawWireframe = static_cast<bool>(param[3]);
 		m_bFilter = static_cast<bool>(param[4]);
 
 		// Load the Images
@@ -138,74 +136,44 @@ namespace Phoenix {
 		// Start set render states and evaluating blending
 		setRenderStatesStart();
 		EvalBlendingStart();
+		{
+			//glEnable(GL_CULL_FACE); glCullFace(GL_BACK);
 
-		// Evaluate the expression if we are not in fullscreen
-		if (!m_bFullscreen)
+			// Evaluate the expression
 			m_pExprPosition->executeFormula();
 
-		{
+			// Load shader
 			m_pShader->use();
-			glm::mat4 mModel = glm::identity<glm::mat4>();
 
-			// Render aspect ratio, stored for Keeping image proportions
-			if (m_bFullscreen)
-				m_fRenderAspectRatio = m_demo.m_Window->GetCurrentViewport().GetAspectRatio();
-			else
-				m_fRenderAspectRatio = m_vScale.x / m_vScale.y;
+			// Calculate Projection, View and Model matrix
+			m_mProjection = m_demo.m_cameraManager.getActiveProjection();
+			m_mView = m_demo.m_cameraManager.getActiveView();
 
-			// Calculate Scale factors
-			float fXScale = 1;
-			float fYScale = 1;
-			if (m_bFitToContent) {
-				if (m_fTexAspectRatio > m_fRenderAspectRatio)
-					fYScale = m_fRenderAspectRatio / m_fTexAspectRatio;
-				else
-					fXScale = m_fTexAspectRatio / m_fRenderAspectRatio;
-			}
+			m_mModel = glm::mat4(1.0f);
+			m_mModel = glm::translate(m_mModel, m_vTranslation);
+			m_mModel = glm::rotate(m_mModel, glm::radians(m_vRotation.x), glm::vec3(1, 0, 0));
+			m_mModel = glm::rotate(m_mModel, glm::radians(m_vRotation.y), glm::vec3(0, 1, 0));
+			m_mModel = glm::rotate(m_mModel, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
+			m_mModel = glm::scale(m_mModel, m_vScale);
 
-			// Calculate Matrix depending if we are on fullscreen or not
-			if (m_bFullscreen)
-			{
-				m_pShader->setValue("projection", glm::identity<glm::mat4>());
-				m_pShader->setValue("view", glm::identity<glm::mat4>());
-			}
-			else
-			{
-				glm::mat4 mView = m_demo.m_cameraManager.getActiveView();
-				glm::mat4 mProjection = m_demo.m_cameraManager.getActiveProjection();
+			// Send uniform variables to the shader
+			m_pShader->setValue("projection", m_mProjection);
+			m_pShader->setValue("view", m_mView);
+			m_pShader->setValue("model", m_mModel);
 
-				mModel = glm::translate(mModel, m_vTranslation);
-				mModel = glm::rotate(mModel, glm::radians(m_vRotation.x), glm::vec3(1, 0, 0));
-				mModel = glm::rotate(mModel, glm::radians(m_vRotation.y), glm::vec3(0, 1, 0));
-				mModel = glm::rotate(mModel, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
-				// Calc the new scale factors
-				fXScale *= m_vScale.x * m_fRenderAspectRatio;
-				fYScale *= m_vScale.y * m_fRenderAspectRatio;
-				m_pShader->setValue("projection", mProjection);
-				m_pShader->setValue("view", mView);
-			}
-			Camera *cam = m_demo.m_cameraManager.getActiveCamera();
-			
-			float yaw = glm::radians(cam->getYaw());
-			float pitch = glm::radians(cam->getPitch());
-			m_camPosition = cam->getPosition();
-
-			m_camDirection.x = cos(yaw) * cos(pitch);
-			m_camDirection.y = sin(pitch);
-			m_camDirection.z = sin(yaw) * cos(pitch);
-			m_camDirection = glm::normalize(m_camDirection);
-
-			m_pShader->setValue("camDir", m_camDirection);
-			mModel = glm::scale(mModel, glm::vec3(fXScale, fYScale, 0.0f));
-			m_pShader->setValue("model", mModel);
-			m_pShader->setValue("volume", m_iImageTexUnitID);
+			// Set the 3D volume as well
+			m_pShader->setValue("uVolumeTex", m_iImageTexUnitID);
 			m_pTexture->bind(m_iImageTexUnitID);
 
-			// Set other shader variables values
+			// Set the other shader uniform variable values
 			m_pVars->setValues();
 
 			m_demo.m_pRes->drawCube(); // Draw a Cube with the volume inside
+
+			glUseProgram(0);
+			//glDisable(GL_CULL_FACE); glCullFace(GL_BACK);
 		}
+		
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
@@ -215,8 +183,6 @@ namespace Phoenix {
 
 	std::string sTest::debug() {
 		std::stringstream ss;
-		ss << "Cam Pos: " << std::format("({:.2f},{:.2f},{:.2f})", m_camPosition.x, m_camPosition.y, m_camPosition.z) << std::endl;
-		ss << "Cam Dir: " << std::format("({:.2f},{:.2f},{:.2f})", m_camDirection.x, m_camDirection.y, m_camDirection.z) << std::endl;
 		return ss.str();
 	}
 }
