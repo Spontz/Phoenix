@@ -1,0 +1,25 @@
+Overall description of the process:
+
+https://stackoverflow.com/questions/2591956/opengl-glsl-what-is-the-best-algorithm-to-render-clouds-smoke-out-of-volumetric
+
+CPU:
+---------------------------
+1) Render a six sided cube in world space as the drawing primitive make sure to use depth culling.
+PERE: Does it means backface Culling?  See: https://learnopengl.com/Advanced-OpenGL/Face-culling
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CW); 
+
+Vertex shader:
+---------------------------
+2) In the vertex shader store off the world position of the vertices (this will interpolate per fragmet)
+
+Fragment shader:
+---------------------------
+3) Use the interpolated position minus the camera position to get the vector of traversal through the volume.
+4) Use a while loop to step through the volume from the point on the cube through the other side. 3 ways to know when to end.
+	A) at each step test if the point is still in the cube.
+	B) do a ray intersection with cube and calculate the distance between the intersections.
+	C) do a prerender of the cube with forward face culling and store the depths into a second texture map then just sampe at the screen pixel to get the distance.
+
+5) accumulate while you loop and set the pixel color.
