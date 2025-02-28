@@ -123,7 +123,8 @@ namespace Phoenix {
 		m_pVars->validateAndSetValues();
 
 		// Set Image Texture unit ID, which will be the last of all the sampler2D that we have in all the shader variables
-		m_iImageTexUnitID = static_cast<int32_t>(m_pVars->sampler2D.size());
+		// HACK, we need to support SAMPLER3D in m_pVars
+		m_iImageTexUnitID = 1;//static_cast<int32_t>(m_pVars->sampler3D.size());
 
 		return !DEMO_checkGLError();
 	}
@@ -162,8 +163,11 @@ namespace Phoenix {
 			m_pShader->setValue("model", m_mModel);
 
 			// Set the 3D volume as well
-			m_pShader->setValue("uVolumeTex", m_iImageTexUnitID);
-			m_pTexture->bind(m_iImageTexUnitID);
+			// TO FIX: When p_vars suuport Sampler3D
+			//m_pShader->setValue("uVolumeTex", m_iImageTexUnitID);
+			//m_pTexture->bind(m_iImageTexUnitID);
+			m_pShader->setValue("uVolumeTex", 0);// m_iImageTexUnitID);
+			m_pTexture->bind(0);
 
 			// Set the other shader uniform variable values
 			m_pVars->setValues();
