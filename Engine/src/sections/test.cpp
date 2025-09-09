@@ -22,6 +22,7 @@ namespace Phoenix {
 
 		// Model, projection and view matrix
 		glm::mat4	m_mModel = glm::mat4(1.0f);
+		glm::mat4	m_mInvModel = glm::mat4(1.0f);
 		glm::mat4	m_mProjection = glm::mat4(1.0f);
 		glm::mat4	m_mView = glm::mat4(1.0f);
 
@@ -156,11 +157,13 @@ namespace Phoenix {
 			m_mModel = glm::rotate(m_mModel, glm::radians(m_vRotation.y), glm::vec3(0, 1, 0));
 			m_mModel = glm::rotate(m_mModel, glm::radians(m_vRotation.z), glm::vec3(0, 0, 1));
 			m_mModel = glm::scale(m_mModel, m_vScale);
+			m_mInvModel = glm::inverse(m_mModel);
 
 			// Send uniform variables to the shader
 			m_pShader->setValue("projection", m_mProjection);
 			m_pShader->setValue("view", m_mView);
 			m_pShader->setValue("model", m_mModel);
+			m_pShader->setValue("invModel", m_mInvModel);
 
 			// Set the 3D volume as well
 			// TO FIX: When p_vars suuport Sampler3D

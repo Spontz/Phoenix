@@ -1,6 +1,6 @@
 # 2018-2025, Spontz
 
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.5)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 project(Phoenix)
