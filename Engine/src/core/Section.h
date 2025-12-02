@@ -21,6 +21,7 @@ namespace Phoenix {
 		DrawImage,
 		DrawSkybox,
 		DrawVideo,
+		DrawVolume,
 		DrawQuad,
 		DrawFbo,
 		DrawFbo2,
