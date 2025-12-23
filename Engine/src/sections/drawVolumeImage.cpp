@@ -2,10 +2,10 @@
 #include "core/renderer/ShaderVars.h"
 
 namespace Phoenix {
-	class sDrawVolume final : public Section {
+	class sDrawVolumeImage final : public Section {
 	public:
-		sDrawVolume();
-		~sDrawVolume();
+		sDrawVolumeImage();
+		~sDrawVolumeImage();
 
 	public:
 		bool		load();
@@ -26,6 +26,11 @@ namespace Phoenix {
 		glm::mat4	m_mProjection = glm::mat4(1.0f);
 		glm::mat4	m_mView = glm::mat4(1.0f);
 
+		SP_Texture					m_pTexture;
+		std::string					m_pFolder;				// Folder to scan
+		std::vector<std::string>	m_pModelFilePaths;		// Models filePath to load
+		
+		int32_t						m_iImageTexUnitID = 0;
 		SP_Shader					m_pShader;
 		MathDriver*					m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
 		ShaderVars*					m_pVars = nullptr;			// For storing any other shader variables
@@ -34,27 +39,27 @@ namespace Phoenix {
 
 	// ******************************************************************
 
-	Section* instance_drawVolume() {
-		return new sDrawVolume();
+	Section* instance_drawVolumeImage() {
+		return new sDrawVolumeImage();
 	}
 
-	sDrawVolume::sDrawVolume() {
-		type = SectionType::DrawVolume;
+	sDrawVolumeImage::sDrawVolumeImage() {
+		type = SectionType::DrawVolumeImage;
 	}
 
-	sDrawVolume::~sDrawVolume() {
+	sDrawVolumeImage::~sDrawVolumeImage() {
 		if (m_pExprPosition)
 			delete m_pExprPosition;
 		if (m_pVars)
 			delete m_pVars;
 	}
 
-	bool sDrawVolume::load() {
+	bool sDrawVolumeImage::load() {
 
-		if ((param.size() != 5) || (shaderBlock.size() != 1)) {
+		if ((param.size() != 5) || (strings.size() != 2) || (shaderBlock.size() != 1)) {
 			Logger::error(
-				"Draw Volume [{}]: 5 param needed (depth buffer clearing, disable depth test, disable depth mask, enable wireframe & filter), "
-				"1 shader and 1 expression",
+				"Draw Volume Image [{}]: 5 param needed (depth buffer clearing, disable depth test, disable depth mask, enable wireframe & filter), "
+				"2 string needed (Images folder and format), 1 shader and 1 expression",
 				identifier
 			);
 			return false;
@@ -70,6 +75,14 @@ namespace Phoenix {
 		// Load the Images
 		Texture::Properties texProps;
 		texProps.m_useLinearFilter = m_bFilter;
+
+		// Load texture folder and the textures contained in it
+		m_pFolder = m_demo.m_dataFolder + strings[0];
+		m_pModelFilePaths = Utils::getFilepathsFromFolder(m_pFolder, strings[1]);
+		m_pTexture = m_demo.m_textureManager.addTexture(m_pModelFilePaths, texProps);
+		if (!m_pTexture)
+			return false;
+		//m_fTexAspectRatio = static_cast<float>(m_pTexture->m_width) / static_cast<float>(m_pTexture->m_height);
 
 		// Load the Shader
 		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
@@ -89,10 +102,13 @@ namespace Phoenix {
 		m_pExprPosition->SymbolTable.add_variable("sx", m_vScale.x);
 		m_pExprPosition->SymbolTable.add_variable("sy", m_vScale.y);
 		m_pExprPosition->SymbolTable.add_variable("sz", m_vScale.z);
+		// Add constants
+		m_pExprPosition->SymbolTable.add_constant("texWidth", static_cast<float>(m_pTexture->m_width));
+		m_pExprPosition->SymbolTable.add_constant("texHeight", static_cast<float>(m_pTexture->m_height));
 
 		m_pExprPosition->Expression.register_symbol_table(m_pExprPosition->SymbolTable);
 		if (!m_pExprPosition->compileFormula())
-			Logger::error("Draw Volume [{}]: Error while compiling the expression, default values used", identifier);
+			Logger::error("Draw Volume Image [{}]: Error while compiling the expression, default values used", identifier);
 
 		m_pExprPosition->executeFormula();
 
@@ -107,13 +123,17 @@ namespace Phoenix {
 		// Validate and set shader variables
 		m_pVars->validateAndSetValues();
 
+		// Set Image Texture unit ID, which will be the last of all the sampler2D that we have in all the shader variables
+		// HACK, we need to support SAMPLER3D in m_pVars
+		m_iImageTexUnitID = 1;//static_cast<int32_t>(m_pVars->sampler3D.size());
+
 		return !DEMO_checkGLError();
 	}
 
-	void sDrawVolume::init() {
+	void sDrawVolumeImage::init() {
 	}
 
-	void sDrawVolume::exec() {
+	void sDrawVolumeImage::exec() {
 
 		// Start set render states and evaluating blending
 		setRenderStatesStart();
@@ -143,6 +163,13 @@ namespace Phoenix {
 			m_pShader->setValue("model", m_mModel);
 			m_pShader->setValue("invModel", m_mInvModel);
 
+			// Set the 3D volume as well
+			// TO FIX: When p_vars suuport Sampler3D
+			//m_pShader->setValue("uVolumeTex", m_iImageTexUnitID);
+			//m_pTexture->bind(m_iImageTexUnitID);
+			m_pShader->setValue("uVolumeTex", 0);// m_iImageTexUnitID);
+			m_pTexture->bind(0);
+
 			// Set the other shader uniform variable values
 			m_pVars->setValues();
 
@@ -158,7 +185,7 @@ namespace Phoenix {
 
 	}
 
-	std::string sDrawVolume::debug() {
+	std::string sDrawVolumeImage::debug() {
 		std::stringstream ss;
 		return ss.str();
 	}
