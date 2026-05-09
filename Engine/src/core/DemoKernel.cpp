@@ -5,6 +5,7 @@
 #include "core/scripting/SpoReader.h"
 #include "core/drivers/NetDriver.h"
 #include "core/resource/Resource.h"
+#include "core/streaming/FramebufferStreamer.h"
 
 #ifdef PROFILE_PHOENIX
 #include "debug/Instrumentor.h"
@@ -308,8 +309,10 @@ namespace Phoenix {
 		m_fps(0),
 		m_uiFrameCount(0),
 		m_slaveMode(false),
+		m_enableStreaming(false),
 		m_exitDemo(false),
 		m_pRes(nullptr),
+		m_framebufferStreamer(nullptr),
 		m_overrideWindowConfigParams(false),
 		m_windowPosX(30),
 		m_windowPosY(30),
@@ -364,6 +367,9 @@ namespace Phoenix {
 					std::cout << "For example: \"-window 10 10 640 480\"." << std::endl;
 				}
 			}
+			else if (arg == "enableStreaming") {
+				m_enableStreaming = true;
+			}
 			else {
 				sources.emplace_back(argv[i]);
 			}
@@ -400,6 +406,9 @@ namespace Phoenix {
 		Logger::info(LogLevel::med, "Network Dyad.c library version: {}", getLibDyadVersion());
 		Logger::info(LogLevel::med, "Assimp library version: {}", getLibAssimpVersion());
 		Logger::info(LogLevel::med, "MiniAudio library version: {}", m_soundManager.getVersion());
+
+		if (m_enableStreaming)
+			setStreamingEnabled(true);
 
 		Logger::info(LogLevel::med, "List of supported OpenGL extensions:");
 		{
@@ -512,6 +521,10 @@ namespace Phoenix {
 
 			ProcessAndExecuteSectionsLayer();
 			ProcessAndExecuteLayers();
+			if (m_framebufferStreamer) {
+				Viewport streamViewport{ 0, 0, m_Window->GetWidth(), m_Window->GetHeight() };
+				m_framebufferStreamer->submitFrame(streamViewport, glfwGetTime());
+			}
 			ProcessAndExecuteImGUILayer();
 
 			// Save the camera, if needed
@@ -575,6 +588,24 @@ namespace Phoenix {
 		m_status = (m_status & DemoStatus::PAUSE) | DemoStatus::FASTFORWARD;
 	}
 
+	void DemoKernel::setStreamingEnabled(bool enabled)
+	{
+		m_enableStreaming = enabled;
+
+		if (enabled) {
+			if (!m_framebufferStreamer) {
+				m_framebufferStreamer = std::make_unique<FramebufferStreamer>();
+				m_framebufferStreamer->init();
+			}
+			return;
+		}
+
+		if (m_framebufferStreamer) {
+			m_framebufferStreamer->shutdown();
+			m_framebufferStreamer.reset();
+		}
+	}
+
 	void DemoKernel::setStartTime(float theTime)
 	{
 		// Correct the time if it has an invalud value
@@ -608,6 +639,10 @@ namespace Phoenix {
 	void DemoKernel::Close()
 	{
 		Logger::info(LogLevel::low, "Clearing memory...");
+		if (m_framebufferStreamer) {
+			m_framebufferStreamer->shutdown();
+			m_framebufferStreamer.reset();
+		}
 		m_sectionEventManager.clear();	// Clear all section events
 		m_sectionManager.clear();		// Delete all sections
 		m_textureManager.clear();		// Delete all textures

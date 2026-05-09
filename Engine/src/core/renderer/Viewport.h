@@ -40,7 +40,12 @@ namespace Phoenix {
 			return FromRenderTargetAndAspectRatio(rt_width, rt_height, viewport_aspect.GetRatio());
 		}
 
-		float GetAspectRatio() const { return static_cast<float>(width) / static_cast<float>(height); }
+		float GetAspectRatio() const {
+			if (height == 0)
+				return 1;
+			else
+				return static_cast<float>(width) / static_cast<float>(height);
+		}
 
 		int				x;
 		int				y;
