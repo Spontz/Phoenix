@@ -30,7 +30,7 @@ namespace Phoenix {
 		std::string					m_pFolder;				// Folder to scan
 		std::vector<std::string>	m_pModelFilePaths;		// Models filePath to load
 		
-		int32_t						m_iImageTexUnitID = 0;
+		int32_t						m_iVolumeImageTexUnitID = 0;
 		SP_Shader					m_pShader;
 		MathDriver*					m_pExprPosition = nullptr;	// An equation containing the calculations to position the object
 		ShaderVars*					m_pVars = nullptr;			// For storing any other shader variables
@@ -124,8 +124,7 @@ namespace Phoenix {
 		m_pVars->validateAndSetValues();
 
 		// Set Image Texture unit ID, which will be the last of all the sampler2D that we have in all the shader variables
-		// HACK, we need to support SAMPLER3D in m_pVars
-		m_iImageTexUnitID = static_cast<int32_t>(m_pVars->sampler2D.size());
+		m_iVolumeImageTexUnitID = static_cast<int32_t>(m_pVars->sampler2D.size());
 
 		return !DEMO_checkGLError();
 	}
@@ -165,8 +164,8 @@ namespace Phoenix {
 
 			// Set the 3D volume texture unit
 			// TO FIX: When p_vars suuport Sampler3D
-			m_pShader->setValue("uVolumeTex", m_iImageTexUnitID);
-			m_pTexture->bind(m_iImageTexUnitID);
+			m_pShader->setValue("uVolumeTex", m_iVolumeImageTexUnitID);
+			m_pTexture->bind(m_iVolumeImageTexUnitID);
 
 			// Set the other shader uniform variable values
 			m_pVars->setValues();
@@ -179,8 +178,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-
-
 	}
 
 	std::string sDrawVolumeImage::debug() {

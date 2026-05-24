@@ -30,7 +30,8 @@ out vec4 FragColor;
 
 // Uniforms
 uniform mat4 invModel;
-uniform vec3 uCameraPos;         // The camera's position in world space (aka. eye pos)
+uniform vec3 uScale;			// factor used to scale the 3D texture
+uniform vec3 uCameraPos;        // The camera's position in world space (aka. eye pos)
 
 uniform vec3 u_colorTint;
 uniform float time;
@@ -171,7 +172,7 @@ void main() {
 		float seed = 1;
 		float period = 5.0;                // repetición en unidades del espacio de ruido
 		
-		vec3 uvw = texCoord + vec3(time/4.0, 0, time/2.0);
+		vec3 uvw = texCoord*uScale + vec3(time/4.0, 0, time/2.0);
 		vec3 p = period * uvw;
 		
 		float density = perlinTileable3D(p, seed, period);

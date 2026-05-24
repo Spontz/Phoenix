@@ -154,8 +154,6 @@ namespace Phoenix {
 		// End evaluating blending and set render states back
 		EvalBlendingEnd();
 		setRenderStatesEnd();
-
-
 	}
 
 	std::string sDrawVolume::debug() {
