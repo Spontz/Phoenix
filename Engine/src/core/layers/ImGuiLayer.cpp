@@ -599,7 +599,7 @@ namespace Phoenix {
 					}
 				}
 				else {
-					ImGui::Image(NULL, m_fboGrid.fboSize);
+					ImGui::Image((int*)NULL, m_fboGrid.fboSize);
 					if (ImGui::IsItemHovered())
 					{
 						ImGui::BeginTooltip();
@@ -658,6 +658,9 @@ namespace Phoenix {
 			ImGui::Checkbox("Draw Y Axis", &m_demo.m_debugDrawAxisY); ImGui::SameLine();
 			ImGui::Checkbox("Draw Z Axis", &m_demo.m_debugDrawAxisZ);
 			ImGui::Checkbox("Enable floor", &m_demo.m_debugEnableFloor);
+			if (ImGui::Checkbox("Enable RTSP streaming", &m_demo.m_enableStreaming)) {
+				m_demo.setStreamingEnabled(m_demo.m_enableStreaming);
+			}
 			if (ImGui::SliderFloat("Floor size", &m_demo.m_pRes->m_gridSize, 1, 50)) {
 				m_demo.m_pRes->loadFloor();
 			}
@@ -819,7 +822,7 @@ namespace Phoenix {
 							ImGui::TableNextRow();
 
 							ImGui::TableSetColumnIndex(0);
-							ImGui::Text(pText->m_filename.c_str());
+							ImGui::Text(pText->m_filePath.c_str());
 
 							ImGui::TableSetColumnIndex(1);
 							ImGui::Text("%d", pText->m_textureID);
@@ -844,7 +847,7 @@ namespace Phoenix {
 							ImGui::TableNextRow();
 
 							ImGui::TableSetColumnIndex(0);
-							ImGui::Text(pCube->m_filename[0].c_str());
+							ImGui::Text(pCube->m_filePath[0].c_str());
 
 							ImGui::TableSetColumnIndex(1);
 							ImGui::Text("%d", pCube->m_cubemapID);

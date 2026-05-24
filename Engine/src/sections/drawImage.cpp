@@ -206,7 +206,7 @@ namespace Phoenix {
 	void sDrawImage::loadDebugStatic()
 	{
 		std::stringstream ss;
-		ss << "File: " << m_pTexture->m_filename << std::endl;
+		ss << "File: " << m_pTexture->m_filePath << std::endl;
 		ss << "Shader: " << m_pShader->getURI() << std::endl;
 		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Fullscreen: " << (m_bFullscreen ? "Yes":"No") << std::endl;

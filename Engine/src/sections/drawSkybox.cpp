@@ -137,7 +137,7 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
-		for (auto& file : m_pCubemap->m_filename) {
+		for (auto& file : m_pCubemap->m_filePath) {
 			ss << "File: " << file << std::endl;
 		}
 		debugStatic = ss.str();

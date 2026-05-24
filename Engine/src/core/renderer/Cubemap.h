@@ -14,7 +14,7 @@ namespace Phoenix {
 
 	class Cubemap {
 	public:
-		std::vector<std::string>	m_filename;
+		std::vector<std::string>	m_filePath;
 		std::vector<int>			m_width;
 		std::vector<int>			m_height;
 		float						m_mem;

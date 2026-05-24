@@ -24,6 +24,8 @@ namespace Phoenix {
 		{"drawImage",						SectionType::DrawImage, instance_drawImage},
 		{"drawSkybox",						SectionType::DrawSkybox, instance_drawSkybox},
 		{"drawVideo",						SectionType::DrawVideo, instance_drawVideo},
+		{"drawVolume",						SectionType::DrawVolume, instance_drawVolume},
+		{"drawVolumeImage",					SectionType::DrawVolumeImage, instance_drawVolumeImage},
 		{"drawQuad",						SectionType::DrawQuad, instance_drawQuad},
 		{"drawFbo",							SectionType::DrawFbo, instance_drawFbo},
 		{"drawFbo2",						SectionType::DrawFbo2, instance_drawFbo2},

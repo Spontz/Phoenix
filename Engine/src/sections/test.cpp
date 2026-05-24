@@ -14,7 +14,7 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-
+		
 	};
 
 
@@ -40,6 +40,19 @@ namespace Phoenix {
 	}
 
 	void sTest::exec() {
+
+		// Start set render states and evaluating blending
+		setRenderStatesStart();
+		EvalBlendingStart();
+		{
+			
+
+		}
+		
+		// End evaluating blending and set render states back
+		EvalBlendingEnd();
+		setRenderStatesEnd();
+
 
 	}
 

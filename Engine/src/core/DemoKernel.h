@@ -45,6 +45,8 @@ namespace Phoenix {
 #define DEMO (&Phoenix::DemoKernel::getInstance())
 #define DEMO_checkGLError() DEMO->m_Window->checkError_(__FILE__, __LINE__) 
 
+	class FramebufferStreamer;
+
 	// Demo status
 	enum DemoStatus : int8_t
 	{
@@ -135,6 +137,7 @@ namespace Phoenix {
 		void restartDemo();
 		void rewindDemo();
 		void fastforwardDemo();
+		void setStreamingEnabled(bool enabled);
 
 		void setStartTime(float theTime);
 		void setCurrentTime(float theTime);
@@ -166,6 +169,7 @@ namespace Phoenix {
 		bool m_debug;
 		LogLevel m_logLevel;
 		bool m_slaveMode;
+		bool m_enableStreaming;
 
 		// misc
 		bool m_loop;
@@ -199,6 +203,7 @@ namespace Phoenix {
 
 		// Resources
 		Resource* m_pRes;
+		std::unique_ptr<FramebufferStreamer> m_framebufferStreamer;
 
 		// Frame time stats
 		float m_demoRunTime;		// seconds ellapsed since 0.0 <- demo init

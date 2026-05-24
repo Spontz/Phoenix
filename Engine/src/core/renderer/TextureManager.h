@@ -18,6 +18,7 @@ namespace Phoenix {
 	public:
 		SP_Texture	addTexture(std::string_view const& path);
 		SP_Texture	addTexture(std::string_view const& path, Texture::Properties& texProperties);
+		SP_Texture	addTexture(std::vector<std::string> path, Texture::Properties& texProperties);
 		SP_Texture	addTextureFromMem(const unsigned char* data, int32_t len, Texture::Properties& texProperties);
 		SP_Cubemap	addCubemap(std::vector<std::string> const& path, bool flip);
 		int32_t		getOpenGLTextureID(int32_t index);

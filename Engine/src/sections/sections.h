@@ -18,6 +18,8 @@ namespace Phoenix {
 	Section* instance_drawFbo2();
 	Section* instance_drawSkybox();
 	Section* instance_drawVideo();
+	Section* instance_drawVolume();
+	Section* instance_drawVolumeImage();
 	Section* instance_drawQuad();
 	Section* instance_drawScene();
 	Section* instance_drawSceneMatrix();
