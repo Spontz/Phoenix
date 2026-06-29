@@ -4,6 +4,7 @@
 #include "main.h"
 #include "core/scripting/SpoReader.h"
 #include "core/drivers/NetDriver.h"
+#include "core/drivers/EditorApiServer.h"
 #include "core/resource/Resource.h"
 #include "core/streaming/FramebufferStreamer.h"
 
@@ -449,6 +450,8 @@ namespace Phoenix {
 			Logger::info(LogLevel::high, "Running in network slave mode");
 			NetDriver::getInstance().init();
 			NetDriver::getInstance().update();
+			EditorApiServer::getInstance().init();
+			EditorApiServer::getInstance().update();
 		}
 		else
 			Logger::info(LogLevel::high, "Running in standalone mode");
@@ -547,8 +550,10 @@ namespace Phoenix {
 			}
 			
 			// Update network driver
-			if (m_slaveMode)
+			if (m_slaveMode) {
 				NetDriver::getInstance().update();
+				EditorApiServer::getInstance().update();
+			}
 		}
 	}
 
@@ -639,6 +644,9 @@ namespace Phoenix {
 	void DemoKernel::Close()
 	{
 		Logger::info(LogLevel::low, "Clearing memory...");
+		if (m_slaveMode)
+			EditorApiServer::getInstance().shutdown();
+
 		if (m_framebufferStreamer) {
 			m_framebufferStreamer->shutdown();
 			m_framebufferStreamer.reset();

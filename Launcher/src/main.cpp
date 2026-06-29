@@ -4,6 +4,7 @@
 #define PHOENIX_MAIN
 
 #include "Engine/src/main.h"
+#include "Engine/src/core/drivers/EditorApiServer.h"
 
 #ifdef PROFILE_PHOENIX
 #include "Engine/src/debug/Instrumentor.h"
@@ -71,6 +72,7 @@ int main(int argc, char* argv[])
 	Phoenix::Logger::info(Phoenix::LogLevel::high, "Closing demo. We hope you enjoyed watching this demo! See you next time! Watch more at www.spontz.org.");
 	demo.Close();
 	Phoenix::DemoKernel::release();
+	Phoenix::EditorApiServer::release();
 	Phoenix::NetDriver::release();
 
 	Phoenix::Logger::closeLogFile();

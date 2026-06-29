@@ -45,6 +45,7 @@ target_link_libraries(${SubProject} PRIVATE ws2_32)
 target_link_libraries(${SubProject} PRIVATE assimp::assimp)
 target_link_libraries(${SubProject} PRIVATE imgui::imgui)
 target_link_libraries(${SubProject} PRIVATE kissfft::kissfft-float)
+target_link_libraries(${SubProject} PRIVATE unofficial::uwebsockets::uwebsockets)
 
 install(
 	TARGETS ${SubProject}
