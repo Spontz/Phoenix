@@ -1,84 +1,281 @@
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <winsock2.h>
-#include <ws2tcpip.h>
-
 #include "Main.h"
 #include "core/streaming/FramebufferStreamer.h"
 
+#include "rtc/rtc.hpp"
+#include "rtc/rtp.hpp"
+
 #include <algorithm>
+#include <array>
+#include <cmath>
+#include <cstring>
+#include <future>
+#include <optional>
 
 namespace Phoenix {
 	namespace {
-		constexpr SOCKET kInvalidSocket = INVALID_SOCKET;
-
-		std::string getHeaderValue(const std::string& request, const std::string& header)
-		{
-			const auto pattern = header + ":";
-			auto pos = request.find(pattern);
-			if (pos == std::string::npos)
-				return {};
-			pos += pattern.size();
-			while (pos < request.size() && request[pos] == ' ')
-				++pos;
-			const auto end = request.find("\r\n", pos);
-			return request.substr(pos, end == std::string::npos ? std::string::npos : end - pos);
-		}
-
-		int getCSeq(const std::string& request)
-		{
-			const auto value = getHeaderValue(request, "CSeq");
-			return value.empty() ? 1 : std::max(1, atoi(value.c_str()));
-		}
-
-		bool sendAll(SOCKET socket, const uint8_t* data, size_t size)
-		{
-			size_t sent = 0;
-			while (sent < size) {
-				const auto chunk = static_cast<int>(std::min<size_t>(size - sent, 16 * 1024));
-				const auto rc = send(socket, reinterpret_cast<const char*>(data + sent), chunk, 0);
-				if (rc == SOCKET_ERROR || rc == 0)
-					return false;
-				sent += static_cast<size_t>(rc);
-			}
-			return true;
-		}
-
-		bool findStartCode(const uint8_t* data, size_t size, size_t from, size_t& pos, size_t& codeSize)
-		{
-			for (size_t i = from; i + 3 < size; ++i) {
-				if (data[i] == 0 && data[i + 1] == 0 && data[i + 2] == 1) {
-					pos = i;
-					codeSize = 3;
-					return true;
-				}
-				if (i + 4 < size && data[i] == 0 && data[i + 1] == 0 && data[i + 2] == 0 && data[i + 3] == 1) {
-					pos = i;
-					codeSize = 4;
-					return true;
-				}
-			}
-			return false;
-		}
+		constexpr uint8_t kPayloadType = 102;
+		constexpr uint32_t kVideoSsrc = 1;
+		constexpr auto kGatherTimeout = std::chrono::seconds(2);
+		constexpr std::array<const char*, 3> kEncoderPresets = { "ultrafast", "veryfast", "faster" };
 
 		int32_t normalizeStreamDimension(uint32_t dimension)
 		{
 			const auto evenDimension = static_cast<int32_t>(dimension & ~1u);
 			return std::max(2, evenDimension);
 		}
+
+		int32_t clampEven(int32_t value, int32_t minValue, int32_t maxValue)
+		{
+			const int32_t clamped = std::clamp(value, minValue, maxValue) & ~1;
+			return std::max(minValue, clamped);
+		}
+
+		std::pair<int32_t, int32_t> fitStreamDimensions(int32_t sourceWidth, int32_t sourceHeight, const FramebufferStreamer::Settings& settings)
+		{
+			const int32_t maxWidth = clampEven(settings.maxWidth, 2, 3840);
+			const int32_t maxHeight = clampEven(settings.maxHeight, 2, 2160);
+			const double scale = std::min({
+				1.0,
+				static_cast<double>(maxWidth) / static_cast<double>(sourceWidth),
+				static_cast<double>(maxHeight) / static_cast<double>(sourceHeight)
+			});
+			return {
+				normalizeStreamDimension(static_cast<uint32_t>(std::max(2.0, std::floor(static_cast<double>(sourceWidth) * scale)))),
+				normalizeStreamDimension(static_cast<uint32_t>(std::max(2.0, std::floor(static_cast<double>(sourceHeight) * scale))))
+			};
+		}
+
+		const char* peerStateName(rtc::PeerConnection::State state)
+		{
+			switch (state) {
+			case rtc::PeerConnection::State::New: return "new";
+			case rtc::PeerConnection::State::Connecting: return "connecting";
+			case rtc::PeerConnection::State::Connected: return "connected";
+			case rtc::PeerConnection::State::Disconnected: return "disconnected";
+			case rtc::PeerConnection::State::Failed: return "failed";
+			case rtc::PeerConnection::State::Closed: return "closed";
+			default: return "unknown";
+			}
+		}
+
+		const char* iceStateName(rtc::PeerConnection::IceState state)
+		{
+			switch (state) {
+			case rtc::PeerConnection::IceState::New: return "new";
+			case rtc::PeerConnection::IceState::Checking: return "checking";
+			case rtc::PeerConnection::IceState::Connected: return "connected";
+			case rtc::PeerConnection::IceState::Completed: return "completed";
+			case rtc::PeerConnection::IceState::Failed: return "failed";
+			case rtc::PeerConnection::IceState::Disconnected: return "disconnected";
+			case rtc::PeerConnection::IceState::Closed: return "closed";
+			default: return "unknown";
+			}
+		}
 	}
+
+	class WebRtcPreviewSession final {
+	public:
+		WebRtcPreviewSession()
+			:
+			m_peer(nullptr),
+			m_track(nullptr),
+			m_srReporter(nullptr),
+			m_trackOpen(false),
+			m_trackClosed(false),
+			m_answerApplied(false)
+		{
+		}
+
+		~WebRtcPreviewSession()
+		{
+			close();
+		}
+
+		std::string createOffer(FramebufferStreamer::SignalCallback signalCallback)
+		{
+			close();
+			m_trackOpen = false;
+			m_trackClosed = false;
+			m_answerApplied = false;
+
+			rtc::Configuration config;
+			config.disableAutoNegotiation = true;
+
+			m_peer = std::make_shared<rtc::PeerConnection>(config);
+			m_signalCallback = std::move(signalCallback);
+
+			m_peer->onStateChange([this](rtc::PeerConnection::State state) {
+				Logger::info(LogLevel::high, "WebRTC framebuffer preview peer state: {}", peerStateName(state));
+				if (state == rtc::PeerConnection::State::Disconnected ||
+					state == rtc::PeerConnection::State::Failed ||
+					state == rtc::PeerConnection::State::Closed) {
+					m_trackOpen = false;
+					if (m_answerApplied)
+						m_trackClosed = true;
+				}
+			});
+			m_peer->onIceStateChange([](rtc::PeerConnection::IceState state) {
+				Logger::info(LogLevel::high, "WebRTC framebuffer preview ICE state: {}", iceStateName(state));
+			});
+			m_peer->onLocalCandidate([this](rtc::Candidate candidate) {
+				Logger::info(LogLevel::high, "WebRTC framebuffer preview local ICE candidate: {}", candidate.candidate());
+				if (m_signalCallback)
+					m_signalCallback("webrtc.ice-candidate", candidate.candidate(), candidate.mid());
+			});
+
+			auto videoDescription = rtc::Description::Video("video-stream", rtc::Description::Direction::SendOnly);
+			videoDescription.addH264Codec(kPayloadType);
+			videoDescription.addSSRC(kVideoSsrc, "video-stream", "phoenix-preview", "video-stream");
+			m_track = m_peer->addTrack(videoDescription);
+
+			auto rtpConfig = std::make_shared<rtc::RtpPacketizationConfig>(
+				kVideoSsrc,
+				"video-stream",
+				kPayloadType,
+				rtc::H264RtpPacketizer::ClockRate
+			);
+			auto packetizer = std::make_shared<rtc::H264RtpPacketizer>(
+				rtc::NalUnit::Separator::StartSequence,
+				rtpConfig
+			);
+			m_srReporter = std::make_shared<rtc::RtcpSrReporter>(rtpConfig);
+			packetizer->addToChain(m_srReporter);
+			packetizer->addToChain(std::make_shared<rtc::RtcpNackResponder>());
+			m_track->setMediaHandler(packetizer);
+			m_track->onOpen([this]() {
+				m_trackOpen = true;
+				m_trackClosed = false;
+				Logger::info(LogLevel::high, "WebRTC framebuffer preview track opened");
+			});
+			m_track->onClosed([this]() {
+				m_trackOpen = false;
+				if (m_answerApplied)
+					m_trackClosed = true;
+				Logger::info(LogLevel::high, "WebRTC framebuffer preview track closed");
+			});
+
+			auto answerPromise = std::make_shared<std::promise<std::string>>();
+			auto answerFuture = answerPromise->get_future();
+			auto completed = std::make_shared<std::atomic_bool>(false);
+
+			m_peer->onGatheringStateChange([peer = m_peer, completed, answerPromise](rtc::PeerConnection::GatheringState state) mutable {
+				if (state != rtc::PeerConnection::GatheringState::Complete)
+					return;
+				if (completed->exchange(true))
+					return;
+
+				const auto description = peer->localDescription();
+				answerPromise->set_value(description ? std::string(description.value()) : std::string());
+			});
+
+			try {
+				m_peer->setLocalDescription();
+				if (answerFuture.wait_for(kGatherTimeout) == std::future_status::ready)
+					return answerFuture.get();
+
+				const auto description = m_peer->localDescription();
+				return description ? std::string(description.value()) : std::string();
+			}
+			catch (const std::exception& err) {
+				Logger::error("WebRTC framebuffer preview could not create offer: {}", err.what());
+				close();
+				return {};
+			}
+		}
+
+		void handleAnswer(std::string_view sdp)
+		{
+			if (!m_peer)
+				return;
+
+			try {
+				Logger::info(LogLevel::high, "WebRTC framebuffer preview applying browser answer");
+				m_peer->setRemoteDescription(rtc::Description(std::string(sdp), "answer"));
+				m_answerApplied = true;
+			}
+			catch (const std::exception& err) {
+				Logger::error("WebRTC framebuffer preview could not handle answer: {}", err.what());
+				close();
+			}
+		}
+
+		void addRemoteCandidate(std::string_view candidate, std::string_view sdpMid)
+		{
+			if (!m_peer)
+				return;
+
+			try {
+				Logger::info(LogLevel::high, "WebRTC framebuffer preview adding remote ICE candidate: {}", candidate);
+				m_peer->addRemoteCandidate(rtc::Candidate(std::string(candidate), std::string(sdpMid)));
+			}
+			catch (const std::exception& err) {
+				Logger::info(LogLevel::high, "WebRTC framebuffer preview ignored ICE candidate: {}", err.what());
+			}
+		}
+
+		bool sendSample(const uint8_t* data, size_t size, int64_t pts, int32_t fps)
+		{
+			if (!m_track || size == 0)
+				return true;
+			if (m_trackClosed)
+				return false;
+			if (!m_answerApplied || !m_trackOpen || !m_track->isOpen())
+				return true;
+
+			try {
+				m_track->sendFrame(reinterpret_cast<const rtc::byte*>(data), size, std::chrono::duration<double, std::micro>(
+					(static_cast<double>(pts) / static_cast<double>(std::max(1, fps))) * 1'000'000.0
+				));
+				return true;
+			}
+			catch (const std::exception& err) {
+				Logger::info(LogLevel::high, "WebRTC framebuffer preview send failed: {}", err.what());
+				m_trackOpen = false;
+				m_trackClosed = true;
+				return false;
+			}
+		}
+
+		bool isReady() const
+		{
+			return m_track && m_track->isOpen();
+		}
+
+		void close()
+		{
+			m_trackOpen = false;
+			m_trackClosed = true;
+			m_answerApplied = false;
+			if (m_track) {
+				m_track->close();
+				m_track.reset();
+			}
+			if (m_peer) {
+				m_peer->close();
+				m_peer.reset();
+			}
+			m_srReporter.reset();
+		}
+
+	private:
+		std::shared_ptr<rtc::PeerConnection> m_peer;
+		std::shared_ptr<rtc::Track> m_track;
+		std::shared_ptr<rtc::RtcpSrReporter> m_srReporter;
+		FramebufferStreamer::SignalCallback m_signalCallback;
+		std::atomic_bool m_trackOpen;
+		std::atomic_bool m_trackClosed;
+		std::atomic_bool m_answerApplied;
+	};
 
 	FramebufferStreamer::FramebufferStreamer()
 		:
-		m_streamUrl(std::format("rtsp://0.0.0.0:{}{}", kRtspPort, kRtspPath)),
+		m_streamUrl("webrtc://phoenix-preview"),
 		m_running(false),
 		m_ready(false),
 		m_stopRequested(false),
 		m_streamFailed(false),
 		m_overloadLogged(false),
 		m_clientPlaying(false),
-		m_winsockStarted(false),
 		m_nextCaptureTime(0.0),
 		m_nextPts(0),
 		m_codecContext(nullptr),
@@ -88,13 +285,18 @@ namespace Phoenix {
 		m_yuvBuffer(nullptr),
 		m_streamWidth(0),
 		m_streamHeight(0),
+		m_streamFps(0),
+		m_streamBitrate(0),
+		m_streamPreset(0),
 		m_swsSourceWidth(0),
 		m_swsSourceHeight(0),
-		m_listenSocket(static_cast<uintptr_t>(kInvalidSocket)),
-		m_clientSocket(static_cast<uintptr_t>(kInvalidSocket)),
-		m_rtpSequence(0),
-		m_rtpSsrc(0x50485831),
-		m_sessionId("PHOENIX")
+		m_settings(),
+		m_lastSourceWidth(0),
+		m_lastSourceHeight(0),
+		m_lastEncodeWidth(0),
+		m_lastEncodeHeight(0),
+		m_nextSessionId(1),
+		m_sessions()
 	{
 	}
 
@@ -115,10 +317,12 @@ namespace Phoenix {
 		m_nextCaptureTime = 0.0;
 		m_nextPts = 0;
 
-		Logger::info(LogLevel::high, "RTSP framebuffer stream starting at rtsp://localhost:{} (single VLC client)", kRtspPort);
+		rtc::InitLogger(rtc::LogLevel::Warning);
 
 		m_running = true;
+		m_ready = true;
 		m_workerThread = std::thread(&FramebufferStreamer::workerLoop, this);
+		Logger::info(LogLevel::high, "WebRTC framebuffer preview streaming enabled");
 		return true;
 	}
 
@@ -133,24 +337,44 @@ namespace Phoenix {
 		if (nowSeconds < m_nextCaptureTime)
 			return;
 
-		m_nextCaptureTime = nowSeconds + (1.0 / static_cast<double>(kStreamFps));
+		Settings settings;
+		{
+			std::lock_guard lock(m_settingsMutex);
+			settings = m_settings;
+		}
+		settings.fps = std::clamp(settings.fps, 10, 60);
+		settings.bitrate = std::clamp(settings.bitrate, 500'000, 50'000'000);
+		settings.preset = std::clamp(settings.preset, 0, static_cast<int32_t>(kEncoderPresets.size()) - 1);
+
+		m_nextCaptureTime = nowSeconds + (1.0 / static_cast<double>(settings.fps));
 
 		Frame frame;
-		frame.width = normalizeStreamDimension(viewport.width);
-		frame.height = normalizeStreamDimension(viewport.height);
+		frame.sourceWidth = normalizeStreamDimension(viewport.width);
+		frame.sourceHeight = normalizeStreamDimension(viewport.height);
+		const auto [encodeWidth, encodeHeight] = fitStreamDimensions(frame.sourceWidth, frame.sourceHeight, settings);
+		frame.encodeWidth = encodeWidth;
+		frame.encodeHeight = encodeHeight;
 		frame.pts = m_nextPts++;
-		frame.pixels.resize(static_cast<size_t>(frame.width) * static_cast<size_t>(frame.height) * 3);
+		frame.fps = settings.fps;
+		frame.pixels.resize(static_cast<size_t>(frame.sourceWidth) * static_cast<size_t>(frame.sourceHeight) * 3);
+		{
+			std::lock_guard lock(m_dimensionsMutex);
+			m_lastSourceWidth = frame.sourceWidth;
+			m_lastSourceHeight = frame.sourceHeight;
+			m_lastEncodeWidth = frame.encodeWidth;
+			m_lastEncodeHeight = frame.encodeHeight;
+		}
 
 		glPixelStorei(GL_PACK_ALIGNMENT, 1);
 		glReadBuffer(GL_BACK);
-		glReadPixels(viewport.x, viewport.y, frame.width, frame.height, GL_RGB, GL_UNSIGNED_BYTE, frame.pixels.data());
+		glReadPixels(viewport.x, viewport.y, frame.sourceWidth, frame.sourceHeight, GL_RGB, GL_UNSIGNED_BYTE, frame.pixels.data());
 
 		{
 			std::lock_guard<std::mutex> lock(m_queueMutex);
 			while (m_frames.size() >= kMaxQueuedFrames) {
 				m_frames.pop_front();
 				if (!m_overloadLogged.exchange(true))
-					Logger::info(LogLevel::high, "RTSP framebuffer stream is dropping frames to keep the render loop responsive");
+					Logger::info(LogLevel::high, "WebRTC framebuffer preview is dropping frames to keep the render loop responsive");
 			}
 			m_frames.emplace_back(std::move(frame));
 		}
@@ -163,8 +387,7 @@ namespace Phoenix {
 			return;
 
 		m_stopRequested = true;
-		closeClient();
-		closeListener();
+		closePeer();
 		m_queueSignal.notify_all();
 
 		if (m_workerThread.joinable())
@@ -178,57 +401,112 @@ namespace Phoenix {
 		closeStream();
 		m_running = false;
 		m_ready = false;
-		Logger::info(LogLevel::high, "RTSP framebuffer stream stopped");
+		Logger::info(LogLevel::high, "WebRTC framebuffer preview streaming stopped");
+	}
+
+	FramebufferStreamer::Offer FramebufferStreamer::createOffer(SignalCallback signalCallback)
+	{
+		if (!m_running)
+			return {};
+
+		std::lock_guard lock(m_peerMutex);
+		const int32_t sessionId = m_nextSessionId++;
+		auto session = std::make_shared<WebRtcPreviewSession>();
+		const std::string offer = session->createOffer(std::move(signalCallback));
+		if (offer.empty())
+			return {};
+
+		m_sessions[sessionId] = std::move(session);
+		m_clientPlaying = true;
+		m_queueSignal.notify_one();
+		return { sessionId, offer };
+	}
+
+	void FramebufferStreamer::handleAnswer(int32_t sessionId, std::string_view sdp)
+	{
+		std::lock_guard lock(m_peerMutex);
+		const auto it = m_sessions.find(sessionId);
+		if (it != m_sessions.end())
+			it->second->handleAnswer(sdp);
+		else
+			Logger::info(LogLevel::high, "WebRTC framebuffer preview ignored answer for missing session {}", sessionId);
+	}
+
+	void FramebufferStreamer::handleRemoteCandidate(int32_t sessionId, std::string_view candidate, std::string_view sdpMid, int32_t)
+	{
+		std::lock_guard lock(m_peerMutex);
+		const auto it = m_sessions.find(sessionId);
+		if (it != m_sessions.end())
+			it->second->addRemoteCandidate(candidate, sdpMid);
+		else
+			Logger::info(LogLevel::high, "WebRTC framebuffer preview ignored ICE candidate for missing session {}", sessionId);
+	}
+
+	FramebufferStreamer::Settings FramebufferStreamer::getSettings() const
+	{
+		std::lock_guard lock(m_settingsMutex);
+		return m_settings;
+	}
+
+	void FramebufferStreamer::setSettings(const Settings& settings)
+	{
+		Settings normalized = settings;
+		normalized.maxWidth = clampEven(normalized.maxWidth, 320, 3840);
+		normalized.maxHeight = clampEven(normalized.maxHeight, 240, 2160);
+		normalized.fps = std::clamp(normalized.fps, 10, 60);
+		normalized.bitrate = std::clamp(normalized.bitrate, 500'000, 50'000'000);
+		normalized.preset = std::clamp(normalized.preset, 0, static_cast<int32_t>(kEncoderPresets.size()) - 1);
+
+		{
+			std::lock_guard lock(m_settingsMutex);
+			m_settings = normalized;
+		}
+		std::lock_guard lock(m_queueMutex);
+		m_frames.clear();
+	}
+
+	void FramebufferStreamer::mapPreviewPointToSource(float& x, float& y) const
+	{
+		std::lock_guard lock(m_dimensionsMutex);
+		if (m_lastSourceWidth <= 0 || m_lastSourceHeight <= 0 || m_lastEncodeWidth <= 0 || m_lastEncodeHeight <= 0)
+			return;
+
+		x *= static_cast<float>(m_lastSourceWidth) / static_cast<float>(m_lastEncodeWidth);
+		y *= static_cast<float>(m_lastSourceHeight) / static_cast<float>(m_lastEncodeHeight);
 	}
 
 	void FramebufferStreamer::workerLoop()
 	{
-		if (!openListener()) {
-			m_streamFailed = true;
-			m_running = false;
-			return;
-		}
-
 		while (!m_stopRequested) {
-			if (!waitForClient())
-				break;
-
-			while (!m_stopRequested && m_clientPlaying) {
-				Frame frame;
-				{
-					std::unique_lock<std::mutex> lock(m_queueMutex);
-					m_queueSignal.wait(lock, [&] { return m_stopRequested || !m_frames.empty() || !m_clientPlaying; });
-					if (m_stopRequested || !m_clientPlaying)
-						break;
-					frame = std::move(m_frames.front());
-					m_frames.pop_front();
-				}
-
-				if (!encodeFrame(frame)) {
-					Logger::info(LogLevel::high, "RTSP framebuffer stream client disconnected or write failed");
+			Frame frame;
+			{
+				std::unique_lock<std::mutex> lock(m_queueMutex);
+				m_queueSignal.wait(lock, [&] { return m_stopRequested || (m_clientPlaying && !m_frames.empty()); });
+				if (m_stopRequested)
 					break;
-				}
+				if (!m_clientPlaying || m_frames.empty())
+					continue;
+				frame = std::move(m_frames.front());
+				m_frames.pop_front();
 			}
 
-			closeClient();
-			m_clientPlaying = false;
-			{
-				std::lock_guard<std::mutex> lock(m_queueMutex);
+			if (!encodeFrame(frame)) {
+				std::lock_guard lock(m_queueMutex);
 				m_frames.clear();
 			}
 		}
 
-		closeListener();
+		closePeer();
 		m_ready = false;
 	}
 
-	bool FramebufferStreamer::openEncoder(int32_t width, int32_t height)
+	bool FramebufferStreamer::openEncoder(int32_t width, int32_t height, int32_t fps, int32_t bitrate, int32_t preset)
 	{
-		if (m_codecContext && m_streamWidth == width && m_streamHeight == height)
+		if (m_codecContext && m_streamWidth == width && m_streamHeight == height && m_streamFps == fps && m_streamBitrate == bitrate && m_streamPreset == preset)
 			return true;
 
 		if (m_codecContext)
-			Logger::info(LogLevel::high, "RTSP framebuffer stream resized to {}x{}", width, height);
+			Logger::info(LogLevel::high, "WebRTC framebuffer preview resized to {}x{}", width, height);
 
 		closeStream();
 
@@ -236,13 +514,13 @@ namespace Phoenix {
 		if (!codec)
 			codec = avcodec_find_encoder(AV_CODEC_ID_H264);
 		if (!codec) {
-			Logger::error("RTSP framebuffer stream could not start: H.264 encoder not found in this FFMPEG build");
+			Logger::error("WebRTC framebuffer preview could not start: H.264 encoder not found in this FFMPEG build");
 			return false;
 		}
 
 		m_codecContext = avcodec_alloc_context3(codec);
 		if (!m_codecContext) {
-			Logger::error("RTSP framebuffer stream could not allocate encoder context");
+			Logger::error("WebRTC framebuffer preview could not allocate encoder context");
 			return false;
 		}
 
@@ -251,29 +529,30 @@ namespace Phoenix {
 		m_codecContext->width = width;
 		m_codecContext->height = height;
 		m_codecContext->pix_fmt = AV_PIX_FMT_YUV420P;
-		m_codecContext->time_base = AVRational{ 1, kStreamFps };
-		m_codecContext->framerate = AVRational{ kStreamFps, 1 };
-		m_codecContext->bit_rate = kStreamBitrate;
-		m_codecContext->gop_size = 10;
+		m_codecContext->time_base = AVRational{ 1, fps };
+		m_codecContext->framerate = AVRational{ fps, 1 };
+		m_codecContext->bit_rate = bitrate;
+		m_codecContext->gop_size = fps;
 		m_codecContext->max_b_frames = 0;
 		m_codecContext->flags |= AV_CODEC_FLAG_LOW_DELAY;
+		m_codecContext->thread_count = 1;
 
 		AVDictionary* codecOptions = nullptr;
-		av_dict_set(&codecOptions, "preset", "veryfast", 0);
+		av_dict_set(&codecOptions, "preset", kEncoderPresets[static_cast<size_t>(preset)], 0);
 		av_dict_set(&codecOptions, "tune", "zerolatency", 0);
-		av_dict_set(&codecOptions, "x264-params", "repeat-headers=1:annexb=1:scenecut=0:sync-lookahead=0:rc-lookahead=0", 0);
+		av_dict_set(&codecOptions, "x264-params", "repeat-headers=1:annexb=1:scenecut=0:sync-lookahead=0:rc-lookahead=0:bframes=0:force-cfr=1", 0);
 
 		const int rc = avcodec_open2(m_codecContext, codec, &codecOptions);
 		av_dict_free(&codecOptions);
 		if (rc < 0) {
-			logFfmpegError("RTSP framebuffer stream could not open encoder", rc);
+			logFfmpegError("WebRTC framebuffer preview could not open encoder", rc);
 			return false;
 		}
 
 		m_yuvFrame = av_frame_alloc();
 		m_packet = av_packet_alloc();
 		if (!m_yuvFrame || !m_packet) {
-			Logger::error("RTSP framebuffer stream could not allocate FFMPEG frame buffers");
+			Logger::error("WebRTC framebuffer preview could not allocate FFMPEG frame buffers");
 			return false;
 		}
 
@@ -284,184 +563,25 @@ namespace Phoenix {
 		const int yuvSize = av_image_get_buffer_size(AV_PIX_FMT_YUV420P, width, height, 1);
 		m_yuvBuffer = static_cast<uint8_t*>(av_malloc(yuvSize));
 		if (!m_yuvBuffer) {
-			Logger::error("RTSP framebuffer stream could not allocate image buffers");
+			Logger::error("WebRTC framebuffer preview could not allocate image buffers");
 			return false;
 		}
 		av_image_fill_arrays(m_yuvFrame->data, m_yuvFrame->linesize, m_yuvBuffer, AV_PIX_FMT_YUV420P, width, height, 1);
 		m_streamWidth = width;
 		m_streamHeight = height;
+		m_streamFps = fps;
+		m_streamBitrate = bitrate;
+		m_streamPreset = preset;
 		return true;
 	}
 
-	bool FramebufferStreamer::openListener()
+	void FramebufferStreamer::closePeer()
 	{
-		WSADATA wsaData;
-		if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-			Logger::error("RTSP framebuffer stream could not initialize Winsock");
-			return false;
-		}
-		m_winsockStarted = true;
-
-		const auto listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-		if (listenSocket == kInvalidSocket) {
-			Logger::error("RTSP framebuffer stream could not create TCP socket");
-			closeListener();
-			return false;
-		}
-
-		BOOL reuse = TRUE;
-		setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuse), sizeof(reuse));
-
-		sockaddr_in addr = {};
-		addr.sin_family = AF_INET;
-		addr.sin_addr.s_addr = htonl(INADDR_ANY);
-		addr.sin_port = htons(kRtspPort);
-		if (bind(listenSocket, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == SOCKET_ERROR) {
-			Logger::error("RTSP framebuffer stream could not bind TCP port {}", kRtspPort);
-			closesocket(listenSocket);
-			closeListener();
-			return false;
-		}
-
-		if (listen(listenSocket, 1) == SOCKET_ERROR) {
-			Logger::error("RTSP framebuffer stream could not listen on TCP port {}", kRtspPort);
-			closesocket(listenSocket);
-			closeListener();
-			return false;
-		}
-
-		m_listenSocket.store(static_cast<uintptr_t>(listenSocket));
-		m_ready = true;
-		Logger::info(LogLevel::high, "RTSP framebuffer stream listening on rtsp://localhost:{}", kRtspPort);
-		return true;
-	}
-
-	bool FramebufferStreamer::waitForClient()
-	{
-		const auto listenSocket = static_cast<SOCKET>(m_listenSocket.load());
-		SOCKET clientSocket = kInvalidSocket;
-		while (!m_stopRequested) {
-			fd_set readSet;
-			FD_ZERO(&readSet);
-			FD_SET(listenSocket, &readSet);
-
-			timeval timeout = {};
-			timeout.tv_usec = 100 * 1000;
-
-			const auto selected = select(0, &readSet, nullptr, nullptr, &timeout);
-			if (selected == SOCKET_ERROR)
-				return false;
-			if (selected == 0)
-				continue;
-
-			clientSocket = accept(listenSocket, nullptr, nullptr);
-			if (clientSocket != kInvalidSocket)
-				break;
-			if (m_stopRequested)
-				return false;
-		}
-
-		if (clientSocket == kInvalidSocket)
-			return false;
-
-		m_clientSocket.store(static_cast<uintptr_t>(clientSocket));
-		Logger::info(LogLevel::high, "RTSP framebuffer stream client connected");
-
-		std::string buffer;
-		char chunk[4096];
-		bool playing = false;
-		while (!m_stopRequested && !playing) {
-			const auto received = recv(clientSocket, chunk, sizeof(chunk), 0);
-			if (received <= 0)
-				return false;
-			buffer.append(chunk, static_cast<size_t>(received));
-			size_t requestEnd = 0;
-			while ((requestEnd = buffer.find("\r\n\r\n")) != std::string::npos) {
-				const auto request = buffer.substr(0, requestEnd + 4);
-				buffer.erase(0, requestEnd + 4);
-				if (!handleClientRequest(request, playing))
-					return false;
-				if (playing)
-					break;
-			}
-		}
-
-		m_clientPlaying = playing;
-		return playing;
-	}
-
-	bool FramebufferStreamer::handleClientRequest(const std::string& request, bool& playing)
-	{
-		const int cseq = getCSeq(request);
-		const auto firstLineEnd = request.find("\r\n");
-		Logger::info(
-			LogLevel::high,
-			"RTSP framebuffer stream request: {}",
-			request.substr(0, firstLineEnd == std::string::npos ? request.size() : firstLineEnd)
-		);
-
-		if (request.starts_with("OPTIONS")) {
-			return sendRtspResponse(cseq, 200, "OK", "Public: OPTIONS, DESCRIBE, SETUP, PLAY, TEARDOWN\r\n");
-		}
-
-		if (request.starts_with("DESCRIBE")) {
-			const std::string sdp =
-				"v=0\r\n"
-				"o=- 0 0 IN IP4 127.0.0.1\r\n"
-				"s=Phoenix Framebuffer\r\n"
-				"c=IN IP4 0.0.0.0\r\n"
-				"t=0 0\r\n"
-				"a=control:*\r\n"
-				"m=video 0 RTP/AVP 96\r\n"
-				"a=rtpmap:96 H264/90000\r\n"
-				"a=fmtp:96 packetization-mode=1;profile-level-id=42e01f\r\n"
-				"a=control:trackID=0\r\n";
-			const std::string headers = std::format(
-				"Content-Type: application/sdp\r\nContent-Base: rtsp://localhost:{}/\r\n",
-				kRtspPort
-			);
-			return sendRtspResponse(cseq, 200, "OK", headers, sdp);
-		}
-
-		if (request.starts_with("SETUP")) {
-			const auto transport = getHeaderValue(request, "Transport");
-			if (transport.find("RTP/AVP/TCP") == std::string::npos) {
-				Logger::info(LogLevel::high, "RTSP framebuffer stream rejecting unsupported transport: {}", transport);
-				return sendRtspResponse(cseq, 461, "Unsupported Transport");
-			}
-			const std::string headers = std::format(
-				"Transport: RTP/AVP/TCP;unicast;interleaved=0-1\r\nSession: {}\r\n",
-				m_sessionId
-			);
-			return sendRtspResponse(cseq, 200, "OK", headers);
-		}
-
-		if (request.starts_with("PLAY")) {
-			playing = true;
-			const std::string headers = std::format("Session: {}\r\nRTP-Info: url=rtsp://localhost:{}/trackID=0;seq={};rtptime=0\r\n", m_sessionId, kRtspPort, m_rtpSequence);
-			return sendRtspResponse(cseq, 200, "OK", headers);
-		}
-
-		if (request.starts_with("TEARDOWN")) {
-			sendRtspResponse(cseq, 200, "OK", std::format("Session: {}\r\n", m_sessionId));
-			return false;
-		}
-
-		return sendRtspResponse(cseq, 405, "Method Not Allowed");
-	}
-
-	bool FramebufferStreamer::sendRtspResponse(int cseq, int statusCode, std::string_view statusText, std::string_view headers, std::string_view body)
-	{
-		const std::string response = std::format(
-			"RTSP/1.0 {} {}\r\nCSeq: {}\r\n{}Content-Length: {}\r\n\r\n{}",
-			statusCode,
-			statusText,
-			cseq,
-			headers,
-			body.size(),
-			body
-		);
-		return sendAll(static_cast<SOCKET>(m_clientSocket.load()), reinterpret_cast<const uint8_t*>(response.data()), response.size());
+		std::lock_guard lock(m_peerMutex);
+		for (auto& [_, session] : m_sessions)
+			session->close();
+		m_sessions.clear();
+		m_clientPlaying = false;
 	}
 
 	bool FramebufferStreamer::encodeFrame(const Frame& frame)
@@ -469,30 +589,39 @@ namespace Phoenix {
 		if (frame.pixels.empty())
 			return true;
 
-		if (!openEncoder(frame.width, frame.height))
+		Settings settings;
+		{
+			std::lock_guard lock(m_settingsMutex);
+			settings = m_settings;
+		}
+		const int32_t fps = std::clamp(frame.fps, 10, 60);
+		const int32_t bitrate = std::clamp(settings.bitrate, 500'000, 50'000'000);
+		const int32_t preset = std::clamp(settings.preset, 0, static_cast<int32_t>(kEncoderPresets.size()) - 1);
+
+		if (!openEncoder(frame.encodeWidth, frame.encodeHeight, fps, bitrate, preset))
 			return false;
 
-		if (!m_swsContext || m_swsSourceWidth != frame.width || m_swsSourceHeight != frame.height) {
+		if (!m_swsContext || m_swsSourceWidth != frame.sourceWidth || m_swsSourceHeight != frame.sourceHeight) {
 			if (m_swsContext)
 				sws_freeContext(m_swsContext);
-			m_swsContext = sws_getContext(frame.width, frame.height, AV_PIX_FMT_RGB24, m_streamWidth, m_streamHeight, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
-			m_swsSourceWidth = frame.width;
-			m_swsSourceHeight = frame.height;
+			m_swsContext = sws_getContext(frame.sourceWidth, frame.sourceHeight, AV_PIX_FMT_RGB24, m_streamWidth, m_streamHeight, AV_PIX_FMT_YUV420P, SWS_BICUBIC, nullptr, nullptr, nullptr);
+			m_swsSourceWidth = frame.sourceWidth;
+			m_swsSourceHeight = frame.sourceHeight;
 			if (!m_swsContext) {
-				Logger::error("RTSP framebuffer stream could not create pixel conversion context");
+				Logger::error("WebRTC framebuffer preview could not create pixel conversion context");
 				return false;
 			}
 		}
 
-		const uint8_t* sourceData[1] = { frame.pixels.data() + static_cast<size_t>(frame.height - 1) * static_cast<size_t>(frame.width) * 3 };
-		const int sourceLinesize[1] = { -frame.width * 3 };
-		sws_scale(m_swsContext, sourceData, sourceLinesize, 0, frame.height, m_yuvFrame->data, m_yuvFrame->linesize);
+		const uint8_t* sourceData[1] = { frame.pixels.data() + static_cast<size_t>(frame.sourceHeight - 1) * static_cast<size_t>(frame.sourceWidth) * 3 };
+		const int sourceLinesize[1] = { -frame.sourceWidth * 3 };
+		sws_scale(m_swsContext, sourceData, sourceLinesize, 0, frame.sourceHeight, m_yuvFrame->data, m_yuvFrame->linesize);
 
 		m_yuvFrame->pts = frame.pts;
 
 		int rc = avcodec_send_frame(m_codecContext, m_yuvFrame);
 		if (rc < 0) {
-			logFfmpegError("RTSP framebuffer stream could not send frame to encoder", rc);
+			logFfmpegError("WebRTC framebuffer preview could not send frame to encoder", rc);
 			return false;
 		}
 
@@ -501,10 +630,10 @@ namespace Phoenix {
 			if (rc == AVERROR(EAGAIN) || rc == AVERROR_EOF)
 				return true;
 			if (rc < 0) {
-				logFfmpegError("RTSP framebuffer stream could not receive encoded packet", rc);
+				logFfmpegError("WebRTC framebuffer preview could not receive encoded packet", rc);
 				return false;
 			}
-			const bool sent = sendEncodedPacket(m_packet);
+			const bool sent = sendEncodedPacket(m_packet, fps);
 			av_packet_unref(m_packet);
 			if (!sent)
 				return false;
@@ -512,87 +641,33 @@ namespace Phoenix {
 		return true;
 	}
 
-	bool FramebufferStreamer::sendEncodedPacket(const AVPacket* packet)
+	bool FramebufferStreamer::sendEncodedPacket(const AVPacket* packet, int32_t fps)
 	{
-		const auto timestamp = static_cast<uint32_t>((packet->pts < 0 ? 0 : packet->pts) * (90000 / kStreamFps));
-		const uint8_t* data = packet->data;
-		const size_t size = static_cast<size_t>(packet->size);
-
-		size_t start = 0;
-		size_t codeSize = 0;
-		if (!findStartCode(data, size, 0, start, codeSize))
-			return sendNalUnit(data, size, timestamp, true);
-
-		while (start < size) {
-			const size_t nalStart = start + codeSize;
-			size_t nextStart = 0;
-			size_t nextCodeSize = 0;
-			const bool hasNext = findStartCode(data, size, nalStart, nextStart, nextCodeSize);
-			const size_t nalEnd = hasNext ? nextStart : size;
-			if (nalEnd > nalStart) {
-				const bool marker = !hasNext;
-				if (!sendNalUnit(data + nalStart, nalEnd - nalStart, timestamp, marker))
-					return false;
-			}
-			if (!hasNext)
-				break;
-			start = nextStart;
-			codeSize = nextCodeSize;
+		std::vector<std::pair<int32_t, std::shared_ptr<WebRtcPreviewSession>>> sessions;
+		{
+			std::lock_guard lock(m_peerMutex);
+			sessions.reserve(m_sessions.size());
+			for (const auto& [sessionId, session] : m_sessions)
+				sessions.emplace_back(sessionId, session);
 		}
-		return true;
-	}
 
-	bool FramebufferStreamer::sendNalUnit(const uint8_t* nal, size_t size, uint32_t timestamp, bool marker)
-	{
-		if (size <= kMaxRtpPayload)
-			return sendRtpPayload(nal, size, timestamp, marker);
+		if (sessions.empty())
+			return true;
 
-		const uint8_t nalHeader = nal[0];
-		const uint8_t fuIndicator = (nalHeader & 0xE0) | 28;
-		const uint8_t nalType = nalHeader & 0x1F;
-		size_t offset = 1;
-		bool first = true;
-		while (offset < size) {
-			const size_t chunk = std::min(kMaxRtpPayload - 2, size - offset);
-			std::vector<uint8_t> payload(chunk + 2);
-			payload[0] = fuIndicator;
-			payload[1] = nalType;
-			if (first)
-				payload[1] |= 0x80;
-			if (offset + chunk >= size)
-				payload[1] |= 0x40;
-			memcpy(payload.data() + 2, nal + offset, chunk);
-			if (!sendRtpPayload(payload.data(), payload.size(), timestamp, marker && (offset + chunk >= size)))
-				return false;
-			first = false;
-			offset += chunk;
+		std::vector<int32_t> failedSessions;
+		for (const auto& [sessionId, session] : sessions) {
+			if (!session->sendSample(packet->data, static_cast<size_t>(packet->size), packet->pts < 0 ? 0 : packet->pts, fps))
+				failedSessions.push_back(sessionId);
 		}
-		return true;
-	}
 
-	bool FramebufferStreamer::sendRtpPayload(const uint8_t* payload, size_t size, uint32_t timestamp, bool marker)
-	{
-		std::vector<uint8_t> packet(4 + 12 + size);
-		packet[0] = '$';
-		packet[1] = 0;
-		const uint16_t rtpSize = static_cast<uint16_t>(12 + size);
-		packet[2] = static_cast<uint8_t>(rtpSize >> 8);
-		packet[3] = static_cast<uint8_t>(rtpSize & 0xFF);
-		packet[4] = 0x80;
-		packet[5] = static_cast<uint8_t>(96 | (marker ? 0x80 : 0));
-		packet[6] = static_cast<uint8_t>(m_rtpSequence >> 8);
-		packet[7] = static_cast<uint8_t>(m_rtpSequence & 0xFF);
-		m_rtpSequence++;
-		packet[8] = static_cast<uint8_t>(timestamp >> 24);
-		packet[9] = static_cast<uint8_t>((timestamp >> 16) & 0xFF);
-		packet[10] = static_cast<uint8_t>((timestamp >> 8) & 0xFF);
-		packet[11] = static_cast<uint8_t>(timestamp & 0xFF);
-		packet[12] = static_cast<uint8_t>(m_rtpSsrc >> 24);
-		packet[13] = static_cast<uint8_t>((m_rtpSsrc >> 16) & 0xFF);
-		packet[14] = static_cast<uint8_t>((m_rtpSsrc >> 8) & 0xFF);
-		packet[15] = static_cast<uint8_t>(m_rtpSsrc & 0xFF);
-		memcpy(packet.data() + 16, payload, size);
-		return sendAll(static_cast<SOCKET>(m_clientSocket.load()), packet.data(), packet.size());
+		if (!failedSessions.empty()) {
+			std::lock_guard lock(m_peerMutex);
+			for (const int32_t sessionId : failedSessions)
+				m_sessions.erase(sessionId);
+			m_clientPlaying = !m_sessions.empty();
+		}
+
+		return true;
 	}
 
 	void FramebufferStreamer::closeStream()
@@ -621,26 +696,9 @@ namespace Phoenix {
 		m_swsSourceHeight = 0;
 		m_streamWidth = 0;
 		m_streamHeight = 0;
-	}
-
-	void FramebufferStreamer::closeClient()
-	{
-		const auto socket = static_cast<SOCKET>(m_clientSocket.exchange(static_cast<uintptr_t>(kInvalidSocket)));
-		if (socket != kInvalidSocket) {
-			::shutdown(socket, SD_BOTH);
-			closesocket(socket);
-		}
-		m_clientPlaying = false;
-	}
-
-	void FramebufferStreamer::closeListener()
-	{
-		const auto socket = static_cast<SOCKET>(m_listenSocket.exchange(static_cast<uintptr_t>(kInvalidSocket)));
-		if (socket != kInvalidSocket) {
-			closesocket(socket);
-		}
-		if (m_winsockStarted.exchange(false))
-			WSACleanup();
+		m_streamFps = 0;
+		m_streamBitrate = 0;
+		m_streamPreset = 0;
 	}
 
 	void FramebufferStreamer::logFfmpegError(std::string_view message, int errorCode) const

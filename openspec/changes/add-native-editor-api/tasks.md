@@ -22,6 +22,9 @@
 - [x] 3.5 Handle `runtime.seek`.
 - [x] 3.6 Ensure seek/play/pause commands reuse existing `DemoKernel` behavior.
 - [x] 3.7 Handle `runtime.toggle` for robust play/pause transport control.
+- [x] 3.8 Handle `input.mouse.move`, `input.mouse.down`, `input.mouse.up`, and `input.mouse.wheel`.
+- [x] 3.9 Forward remote preview mouse input through Phoenix's existing event path and ImGui.
+- [x] 3.10 Handle `input.key.down` and `input.key.up` for focused preview keyboard input.
 
 ## 4. Section Timeline API
 

@@ -4,12 +4,18 @@
 #include "core/drivers/EditorApiServer.h"
 
 #include "core/DemoKernel.h"
+#include "core/events/KeyEvent.h"
+#include "core/events/MouseEvent.h"
+#include "core/streaming/FramebufferStreamer.h"
 #include "core/utils/Logger.h"
+#include "libs.h"
 
 #include <uwebsockets/App.h>
 
+#include <algorithm>
 #include <cmath>
 #include <format>
+#include <vector>
 
 namespace Phoenix {
 
@@ -20,6 +26,82 @@ namespace Phoenix {
 
 		struct WebSocketData {
 		};
+
+		ImGuiKey glfwKeyToImGuiKey(int32_t key)
+		{
+			if (key >= GLFW_KEY_A && key <= GLFW_KEY_Z)
+				return static_cast<ImGuiKey>(ImGuiKey_A + (key - GLFW_KEY_A));
+			if (key >= GLFW_KEY_0 && key <= GLFW_KEY_9)
+				return static_cast<ImGuiKey>(ImGuiKey_0 + (key - GLFW_KEY_0));
+			if (key >= GLFW_KEY_F1 && key <= GLFW_KEY_F12)
+				return static_cast<ImGuiKey>(ImGuiKey_F1 + (key - GLFW_KEY_F1));
+			if (key >= GLFW_KEY_KP_0 && key <= GLFW_KEY_KP_9)
+				return static_cast<ImGuiKey>(ImGuiKey_Keypad0 + (key - GLFW_KEY_KP_0));
+
+			switch (key) {
+			case GLFW_KEY_TAB: return ImGuiKey_Tab;
+			case GLFW_KEY_LEFT: return ImGuiKey_LeftArrow;
+			case GLFW_KEY_RIGHT: return ImGuiKey_RightArrow;
+			case GLFW_KEY_UP: return ImGuiKey_UpArrow;
+			case GLFW_KEY_DOWN: return ImGuiKey_DownArrow;
+			case GLFW_KEY_PAGE_UP: return ImGuiKey_PageUp;
+			case GLFW_KEY_PAGE_DOWN: return ImGuiKey_PageDown;
+			case GLFW_KEY_HOME: return ImGuiKey_Home;
+			case GLFW_KEY_END: return ImGuiKey_End;
+			case GLFW_KEY_INSERT: return ImGuiKey_Insert;
+			case GLFW_KEY_DELETE: return ImGuiKey_Delete;
+			case GLFW_KEY_BACKSPACE: return ImGuiKey_Backspace;
+			case GLFW_KEY_SPACE: return ImGuiKey_Space;
+			case GLFW_KEY_ENTER: return ImGuiKey_Enter;
+			case GLFW_KEY_ESCAPE: return ImGuiKey_Escape;
+			case GLFW_KEY_APOSTROPHE: return ImGuiKey_Apostrophe;
+			case GLFW_KEY_COMMA: return ImGuiKey_Comma;
+			case GLFW_KEY_MINUS: return ImGuiKey_Minus;
+			case GLFW_KEY_PERIOD: return ImGuiKey_Period;
+			case GLFW_KEY_SLASH: return ImGuiKey_Slash;
+			case GLFW_KEY_SEMICOLON: return ImGuiKey_Semicolon;
+			case GLFW_KEY_EQUAL: return ImGuiKey_Equal;
+			case GLFW_KEY_LEFT_BRACKET: return ImGuiKey_LeftBracket;
+			case GLFW_KEY_BACKSLASH: return ImGuiKey_Backslash;
+			case GLFW_KEY_RIGHT_BRACKET: return ImGuiKey_RightBracket;
+			case GLFW_KEY_GRAVE_ACCENT: return ImGuiKey_GraveAccent;
+			case GLFW_KEY_CAPS_LOCK: return ImGuiKey_CapsLock;
+			case GLFW_KEY_SCROLL_LOCK: return ImGuiKey_ScrollLock;
+			case GLFW_KEY_NUM_LOCK: return ImGuiKey_NumLock;
+			case GLFW_KEY_PRINT_SCREEN: return ImGuiKey_PrintScreen;
+			case GLFW_KEY_PAUSE: return ImGuiKey_Pause;
+			case GLFW_KEY_KP_DECIMAL: return ImGuiKey_KeypadDecimal;
+			case GLFW_KEY_KP_DIVIDE: return ImGuiKey_KeypadDivide;
+			case GLFW_KEY_KP_MULTIPLY: return ImGuiKey_KeypadMultiply;
+			case GLFW_KEY_KP_SUBTRACT: return ImGuiKey_KeypadSubtract;
+			case GLFW_KEY_KP_ADD: return ImGuiKey_KeypadAdd;
+			case GLFW_KEY_KP_ENTER: return ImGuiKey_KeypadEnter;
+			case GLFW_KEY_KP_EQUAL: return ImGuiKey_KeypadEqual;
+			case GLFW_KEY_LEFT_SHIFT: return ImGuiKey_LeftShift;
+			case GLFW_KEY_LEFT_CONTROL: return ImGuiKey_LeftCtrl;
+			case GLFW_KEY_LEFT_ALT: return ImGuiKey_LeftAlt;
+			case GLFW_KEY_LEFT_SUPER: return ImGuiKey_LeftSuper;
+			case GLFW_KEY_RIGHT_SHIFT: return ImGuiKey_RightShift;
+			case GLFW_KEY_RIGHT_CONTROL: return ImGuiKey_RightCtrl;
+			case GLFW_KEY_RIGHT_ALT: return ImGuiKey_RightAlt;
+			case GLFW_KEY_RIGHT_SUPER: return ImGuiKey_RightSuper;
+			case GLFW_KEY_MENU: return ImGuiKey_Menu;
+			default: return ImGuiKey_None;
+			}
+		}
+
+		template <typename T>
+		void addRemoteKeyEventToImGui(const T& event, bool down)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			io.AddKeyEvent(ImGuiMod_Shift, (event.mods & GLFW_MOD_SHIFT) != 0);
+			io.AddKeyEvent(ImGuiMod_Ctrl, (event.mods & GLFW_MOD_CONTROL) != 0);
+			io.AddKeyEvent(ImGuiMod_Alt, (event.mods & GLFW_MOD_ALT) != 0);
+			io.AddKeyEvent(ImGuiMod_Super, (event.mods & GLFW_MOD_SUPER) != 0);
+			const ImGuiKey imguiKey = glfwKeyToImGuiKey(event.key);
+			if (imguiKey != ImGuiKey_None)
+				io.AddKeyEvent(imguiKey, down);
+		}
 	}
 
 	EditorApiServer& EditorApiServer::getInstance()
@@ -43,6 +125,14 @@ namespace Phoenix {
 		m_loop(nullptr),
 		m_app(nullptr),
 		m_listenSocket(nullptr),
+		m_remoteMouseActive(false),
+		m_remoteMouseX(0.0f),
+		m_remoteMouseY(0.0f),
+		m_remoteMouseWheelX(0.0f),
+		m_remoteMouseWheelY(0.0f),
+		m_remoteMouseButtons(),
+		m_remoteMouseReleaseFrames(),
+		m_remoteKeys(),
 		m_lastRuntimePublish(std::chrono::steady_clock::now()),
 		m_port(29100)
 	{
@@ -97,6 +187,7 @@ namespace Phoenix {
 		std::lock_guard lock(m_commandMutex);
 		std::queue<Command> empty;
 		m_commands.swap(empty);
+		clearRemoteKeys();
 
 		Logger::info(LogLevel::high, "Editor API: stopped");
 	}
@@ -130,15 +221,29 @@ namespace Phoenix {
 				ws->subscribe(kRuntimeTopic);
 				Logger::info(LogLevel::high, "Editor API: Cacablu WebSocket connected");
 			},
-			.message = [this](auto*, std::string_view message, uWS::OpCode opCode) {
+			.message = [this](auto* ws, std::string_view message, uWS::OpCode opCode) {
 				if (opCode != uWS::OpCode::TEXT) {
 					enqueueError("invalid-opcode", "Only text WebSocket messages are supported");
+					return;
+				}
+				std::string type;
+				if (extractMessageType(message, type) && type.starts_with("webrtc.")) {
+					std::vector<std::string> deferredSignals;
+					const std::string response = handleWebRtcMessage(message, [this, &deferredSignals](std::string_view signalType, std::string_view payload, std::string_view sdpMid) {
+						if (signalType == "webrtc.ice-candidate")
+							deferredSignals.emplace_back(buildWebRtcCandidateMessage(payload, sdpMid));
+					});
+					if (!response.empty())
+						ws->send(response, uWS::OpCode::TEXT);
+					for (const std::string& signal : deferredSignals)
+						ws->send(signal, uWS::OpCode::TEXT);
 					return;
 				}
 				enqueueMessage(message);
 			},
 			.close = [](auto*, int, std::string_view) {
 				Logger::info(LogLevel::high, "Editor API: Cacablu WebSocket disconnected");
+				EditorApiServer::getInstance().clearRemoteKeys();
 			}
 		});
 
@@ -186,6 +291,61 @@ namespace Phoenix {
 			command.type = CommandType::Seek;
 			command.time = time;
 		}
+		else if (type == "input.mouse.move" || type == "input.mouse.down" || type == "input.mouse.up" || type == "input.mouse.wheel") {
+			float x = 0.0f;
+			float y = 0.0f;
+			if (!extractNumber(message, "x", x) || !extractNumber(message, "y", y) || !std::isfinite(x) || !std::isfinite(y)) {
+				enqueueError("invalid-input", "mouse input requires finite x and y coordinates");
+				return;
+			}
+			if (DEMO->m_framebufferStreamer)
+				DEMO->m_framebufferStreamer->mapPreviewPointToSource(x, y);
+
+			command.x = x;
+			command.y = y;
+
+			if (type == "input.mouse.move") {
+				command.type = CommandType::MouseMove;
+			}
+			else if (type == "input.mouse.down" || type == "input.mouse.up") {
+				int32_t button = 0;
+				if (!extractInteger(message, "button", button) || button < 0 || button >= static_cast<int32_t>(m_remoteMouseButtons.size())) {
+					enqueueError("invalid-input", "mouse button input requires a valid button");
+					return;
+				}
+				command.type = type == "input.mouse.down" ? CommandType::MouseDown : CommandType::MouseUp;
+				command.button = button;
+			}
+			else {
+				float deltaX = 0.0f;
+				float deltaY = 0.0f;
+				if (!extractNumber(message, "deltaX", deltaX) || !extractNumber(message, "deltaY", deltaY) || !std::isfinite(deltaX) || !std::isfinite(deltaY)) {
+					enqueueError("invalid-input", "mouse wheel input requires finite deltaX and deltaY");
+					return;
+				}
+				command.type = CommandType::MouseWheel;
+				command.deltaX = deltaX;
+				command.deltaY = deltaY;
+			}
+		}
+		else if (type == "input.key.down" || type == "input.key.up") {
+			int32_t key = 0;
+			if (!extractInteger(message, "key", key) || key < 0 || key > GLFW_KEY_LAST) {
+				enqueueError("invalid-input", "key input requires a valid GLFW key code");
+				return;
+			}
+
+			int32_t scancode = 0;
+			int32_t mods = 0;
+			extractInteger(message, "scancode", scancode);
+			extractInteger(message, "mods", mods);
+
+			command.type = type == "input.key.down" ? CommandType::KeyDown : CommandType::KeyUp;
+			command.key = key;
+			command.scancode = scancode;
+			command.mods = mods;
+			command.repeat = message.find("\"repeat\":true") != std::string_view::npos;
+		}
 		else {
 			enqueueError("unsupported-message", std::format("Unsupported message type: {}", type));
 			return;
@@ -193,6 +353,54 @@ namespace Phoenix {
 
 		std::lock_guard lock(m_commandMutex);
 		m_commands.emplace(command);
+	}
+
+	std::string EditorApiServer::handleWebRtcMessage(std::string_view message, const WebRtcSignalSender& signalSender)
+	{
+		std::string type;
+		if (!extractMessageType(message, type))
+			return buildErrorMessage("invalid-message", "Missing message type");
+
+		if (!DEMO->m_framebufferStreamer || !DEMO->m_framebufferStreamer->isRunning())
+			return buildErrorMessage("streaming-disabled", "Phoenix WebRTC preview streaming is not enabled");
+
+		if (type == "webrtc.request") {
+			const auto offer = DEMO->m_framebufferStreamer->createOffer([](std::string_view, std::string_view, std::string_view) {});
+			if (offer.sdp.empty())
+				return buildErrorMessage("offer-failed", "Phoenix could not create a WebRTC offer");
+			Logger::info(LogLevel::high, "Editor API: WebRTC offer created for session {}", offer.sessionId);
+			return buildWebRtcOfferMessage(offer.sessionId, offer.sdp);
+		}
+
+		if (type == "webrtc.answer") {
+			std::string sdp;
+			int32_t sessionId = 0;
+			if (!extractString(message, "sdp", sdp) || sdp.empty())
+				return buildErrorMessage("invalid-answer", "webrtc.answer requires SDP");
+			if (!extractInteger(message, "sessionId", sessionId) || sessionId <= 0)
+				return buildErrorMessage("invalid-session", "webrtc.answer requires a sessionId");
+			Logger::info(LogLevel::high, "Editor API: WebRTC answer received for session {}", sessionId);
+			DEMO->m_framebufferStreamer->handleAnswer(sessionId, sdp);
+			return {};
+		}
+
+		if (type == "webrtc.ice-candidate") {
+			std::string candidate;
+			std::string sdpMid;
+			int32_t sessionId = 0;
+			int32_t sdpMLineIndex = -1;
+			if (!extractString(message, "candidate", candidate) || candidate.empty())
+				return {};
+			if (!extractInteger(message, "sessionId", sessionId) || sessionId <= 0)
+				return buildErrorMessage("invalid-session", "webrtc.ice-candidate requires a sessionId");
+			Logger::info(LogLevel::high, "Editor API: WebRTC ICE candidate received for session {}", sessionId);
+			extractString(message, "sdpMid", sdpMid);
+			extractInteger(message, "sdpMLineIndex", sdpMLineIndex);
+			DEMO->m_framebufferStreamer->handleRemoteCandidate(sessionId, candidate, sdpMid, sdpMLineIndex);
+			return {};
+		}
+
+		return buildErrorMessage("unsupported-message", std::format("Unsupported message type: {}", type));
 	}
 
 	void EditorApiServer::enqueueError(std::string_view code, std::string_view message)
@@ -205,6 +413,77 @@ namespace Phoenix {
 			if (m_app)
 				m_app->publish(kRuntimeTopic, payload, uWS::OpCode::TEXT);
 		});
+	}
+
+	void EditorApiServer::applyRemoteInputToImGui()
+	{
+		if ((!m_remoteMouseActive && m_remoteInputEvents.empty()) || !ImGui::GetCurrentContext())
+			return;
+
+#if IMGUI_VERSION_NUM >= 18700
+		GLFWwindow* window = static_cast<GLFWwindow*>(DEMO->GetWindow().GetNativeWindow());
+		if (!window)
+			return;
+
+		for (const RemoteInputEvent& event : m_remoteInputEvents) {
+			if (event.type == CommandType::MouseMove || event.type == CommandType::MouseDown || event.type == CommandType::MouseUp || event.type == CommandType::MouseWheel)
+				ImGui_ImplGlfw_CursorPosCallback(window, event.x, event.y);
+			if (event.type == CommandType::MouseDown)
+				ImGui_ImplGlfw_MouseButtonCallback(window, event.button, GLFW_PRESS, 0);
+			else if (event.type == CommandType::MouseUp)
+				ImGui_ImplGlfw_MouseButtonCallback(window, event.button, GLFW_RELEASE, 0);
+			else if (event.type == CommandType::MouseWheel)
+				ImGui_ImplGlfw_ScrollCallback(window, event.deltaX, event.deltaY);
+			else if (event.type == CommandType::KeyDown)
+				addRemoteKeyEventToImGui(event, true);
+			else if (event.type == CommandType::KeyUp)
+				addRemoteKeyEventToImGui(event, false);
+		}
+
+		m_remoteInputEvents = std::move(m_nextFrameRemoteInputEvents);
+		m_nextFrameRemoteInputEvents.clear();
+		m_remoteMouseWheelX = 0.0f;
+		m_remoteMouseWheelY = 0.0f;
+#else
+		ImGuiIO& io = ImGui::GetIO();
+		io.MousePos = ImVec2(m_remoteMouseX, m_remoteMouseY);
+		for (size_t i = 0; i < m_remoteMouseButtons.size() && i < IM_ARRAYSIZE(io.MouseDown); ++i)
+			io.MouseDown[i] = m_remoteMouseButtons[i];
+		io.MouseWheel += m_remoteMouseWheelY;
+		for (size_t i = 0; i < m_remoteMouseReleaseFrames.size(); ++i) {
+			if (m_remoteMouseReleaseFrames[i] > 0) {
+				--m_remoteMouseReleaseFrames[i];
+				if (m_remoteMouseReleaseFrames[i] == 0)
+					m_remoteMouseButtons[i] = false;
+			}
+		}
+		m_remoteMouseWheelX = 0.0f;
+		m_remoteMouseWheelY = 0.0f;
+#endif
+	}
+
+	bool EditorApiServer::isRemoteKeyPressed(int32_t key) const
+	{
+		if (key < 0 || key >= static_cast<int32_t>(m_remoteKeys.size()))
+			return false;
+
+		std::lock_guard lock(m_remoteKeyMutex);
+		return m_remoteKeys[static_cast<size_t>(key)];
+	}
+
+	void EditorApiServer::clearRemoteKeys()
+	{
+		std::lock_guard lock(m_remoteKeyMutex);
+		m_remoteKeys.fill(false);
+	}
+
+	void EditorApiServer::setRemoteKeyPressed(int32_t key, bool pressed)
+	{
+		if (key < 0 || key >= static_cast<int32_t>(m_remoteKeys.size()))
+			return;
+
+		std::lock_guard lock(m_remoteKeyMutex);
+		m_remoteKeys[static_cast<size_t>(key)] = pressed;
 	}
 
 	void EditorApiServer::processCommands()
@@ -235,6 +514,70 @@ namespace Phoenix {
 			case CommandType::Seek:
 				DEMO->setCurrentTime(command.time);
 				break;
+			case CommandType::MouseMove: {
+				m_remoteMouseActive = true;
+				m_remoteMouseX = command.x;
+				m_remoteMouseY = command.y;
+				m_remoteInputEvents.push_back(command);
+				MouseMovedEvent event(command.x, command.y);
+				DEMO->OnEvent(event);
+				break;
+			}
+			case CommandType::MouseDown: {
+				m_remoteMouseActive = true;
+				m_remoteMouseX = command.x;
+				m_remoteMouseY = command.y;
+				if (command.button >= 0 && command.button < static_cast<int32_t>(m_remoteMouseButtons.size()))
+					m_remoteMouseButtons[command.button] = true;
+				if (command.button >= 0 && command.button < static_cast<int32_t>(m_remoteMouseReleaseFrames.size()))
+					m_remoteMouseReleaseFrames[command.button] = 0;
+				m_remoteInputEvents.push_back(command);
+				MouseMovedEvent moveEvent(command.x, command.y);
+				DEMO->OnEvent(moveEvent);
+				MouseButtonPressedEvent buttonEvent(static_cast<MouseCode>(command.button));
+				DEMO->OnEvent(buttonEvent);
+				break;
+			}
+			case CommandType::MouseUp: {
+				m_remoteMouseActive = true;
+				m_remoteMouseX = command.x;
+				m_remoteMouseY = command.y;
+				if (command.button >= 0 && command.button < static_cast<int32_t>(m_remoteMouseButtons.size()))
+					m_remoteMouseReleaseFrames[command.button] = 1;
+				m_nextFrameRemoteInputEvents.push_back(command);
+				MouseMovedEvent moveEvent(command.x, command.y);
+				DEMO->OnEvent(moveEvent);
+				MouseButtonReleasedEvent buttonEvent(static_cast<MouseCode>(command.button));
+				DEMO->OnEvent(buttonEvent);
+				break;
+			}
+			case CommandType::MouseWheel: {
+				m_remoteMouseActive = true;
+				m_remoteMouseX = command.x;
+				m_remoteMouseY = command.y;
+				m_remoteMouseWheelX += command.deltaX;
+				m_remoteMouseWheelY += command.deltaY;
+				m_remoteInputEvents.push_back(command);
+				MouseMovedEvent moveEvent(command.x, command.y);
+				DEMO->OnEvent(moveEvent);
+				MouseScrolledEvent wheelEvent(command.deltaX, command.deltaY);
+				DEMO->OnEvent(wheelEvent);
+				break;
+			}
+			case CommandType::KeyDown: {
+				setRemoteKeyPressed(command.key, true);
+				m_remoteInputEvents.push_back(command);
+				KeyPressedEvent event(static_cast<KeyCode>(command.key), command.repeat ? 1 : 0);
+				DEMO->OnEvent(event);
+				break;
+			}
+			case CommandType::KeyUp: {
+				setRemoteKeyPressed(command.key, false);
+				m_remoteInputEvents.push_back(command);
+				KeyReleasedEvent event(static_cast<KeyCode>(command.key));
+				DEMO->OnEvent(event);
+				break;
+			}
 			default:
 				break;
 			}
@@ -276,19 +619,50 @@ namespace Phoenix {
 	{
 		return std::format(
 			"{{\"type\":\"error\",\"code\":\"{}\",\"message\":\"{}\"}}",
-			code,
-			message
+			escapeJson(code),
+			escapeJson(message)
+		);
+	}
+
+	std::string EditorApiServer::buildWebRtcAnswerMessage(std::string_view sdp) const
+	{
+		return std::format(
+			"{{\"type\":\"webrtc.answer\",\"sdp\":\"{}\"}}",
+			escapeJson(sdp)
+		);
+	}
+
+	std::string EditorApiServer::buildWebRtcOfferMessage(int32_t sessionId, std::string_view sdp) const
+	{
+		return std::format(
+			"{{\"type\":\"webrtc.offer\",\"sessionId\":{},\"sdp\":\"{}\"}}",
+			sessionId,
+			escapeJson(sdp)
+		);
+	}
+
+	std::string EditorApiServer::buildWebRtcCandidateMessage(std::string_view candidate, std::string_view sdpMid) const
+	{
+		return std::format(
+			"{{\"type\":\"webrtc.ice-candidate\",\"candidate\":\"{}\",\"sdpMid\":\"{}\",\"sdpMLineIndex\":0}}",
+			escapeJson(candidate),
+			escapeJson(sdpMid)
 		);
 	}
 
 	bool EditorApiServer::extractMessageType(std::string_view message, std::string& type)
 	{
-		const std::string_view key = "\"type\"";
-		size_t pos = message.find(key);
+		return extractString(message, "type", type);
+	}
+
+	bool EditorApiServer::extractString(std::string_view message, std::string_view key, std::string& value)
+	{
+		const std::string quotedKey = std::format("\"{}\"", key);
+		size_t pos = message.find(quotedKey);
 		if (pos == std::string_view::npos)
 			return false;
 
-		pos = message.find(':', pos + key.size());
+		pos = message.find(':', pos + quotedKey.size());
 		if (pos == std::string_view::npos)
 			return false;
 
@@ -300,7 +674,29 @@ namespace Phoenix {
 		if (end == std::string_view::npos)
 			return false;
 
-		type.assign(message.substr(pos + 1, end - pos - 1));
+		value.clear();
+		for (size_t i = pos + 1; i < end; ++i) {
+			if (message[i] == '\\' && i + 1 < end) {
+				++i;
+				switch (message[i]) {
+				case 'n':
+					value.push_back('\n');
+					break;
+				case 'r':
+					value.push_back('\r');
+					break;
+				case 't':
+					value.push_back('\t');
+					break;
+				default:
+					value.push_back(message[i]);
+					break;
+				}
+			}
+			else {
+				value.push_back(message[i]);
+			}
+		}
 		return true;
 	}
 
@@ -329,5 +725,43 @@ namespace Phoenix {
 		catch (...) {
 			return false;
 		}
+	}
+
+	bool EditorApiServer::extractInteger(std::string_view message, std::string_view key, int32_t& value)
+	{
+		float numeric = 0;
+		if (!extractNumber(message, key, numeric))
+			return false;
+		value = static_cast<int32_t>(numeric);
+		return true;
+	}
+
+	std::string EditorApiServer::escapeJson(std::string_view value)
+	{
+		std::string escaped;
+		escaped.reserve(value.size());
+		for (const char ch : value) {
+			switch (ch) {
+			case '\\':
+				escaped += "\\\\";
+				break;
+			case '"':
+				escaped += "\\\"";
+				break;
+			case '\n':
+				escaped += "\\n";
+				break;
+			case '\r':
+				escaped += "\\r";
+				break;
+			case '\t':
+				escaped += "\\t";
+				break;
+			default:
+				escaped.push_back(ch);
+				break;
+			}
+		}
+		return escaped;
 	}
 }

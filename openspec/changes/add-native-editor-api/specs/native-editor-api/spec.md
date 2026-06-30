@@ -66,6 +66,29 @@ Phoenix SHALL accept runtime playback commands over WebSocket from Cacablu.
 - **WHEN** Cacablu sends a `runtime.seek` message with a valid target time
 - **THEN** Phoenix moves the demo current time to that target using existing runtime behavior
 
+### Requirement: Remote preview mouse input
+Phoenix SHALL accept mouse input messages over the editor WebSocket so Cacablu can interact with the streamed preview.
+
+#### Scenario: Preview pointer is moved
+- **WHEN** Cacablu sends an `input.mouse.move` message with framebuffer coordinates
+- **THEN** Phoenix forwards the movement through the existing mouse event path
+- **AND** Phoenix makes the position available to ImGui for the next frame
+
+#### Scenario: Preview button is pressed or released
+- **WHEN** Cacablu sends `input.mouse.down` or `input.mouse.up` with framebuffer coordinates and a valid button
+- **THEN** Phoenix forwards the button event through the existing mouse event path
+- **AND** Phoenix forwards the event to ImGui so debug panels and menus can be operated through the preview
+
+#### Scenario: Preview wheel is scrolled
+- **WHEN** Cacablu sends an `input.mouse.wheel` message with framebuffer coordinates and wheel deltas
+- **THEN** Phoenix forwards the scroll event through the existing mouse event path
+- **AND** Phoenix forwards the wheel event to ImGui
+
+#### Scenario: Preview key is pressed or released
+- **WHEN** Cacablu sends `input.key.down` or `input.key.up` with a valid GLFW key code
+- **THEN** Phoenix forwards the key event through the existing keyboard event path
+- **AND** Phoenix forwards the key event to ImGui
+
 ### Requirement: Section snapshot
 Phoenix SHALL expose the current section timeline as structured data for Cacablu.
 

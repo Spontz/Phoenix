@@ -3,6 +3,7 @@
 
 #include "Main.h"
 #include "core/Input/Input.h"
+#include "core/drivers/EditorApiServer.h"
 
 namespace Phoenix {
 
@@ -10,7 +11,7 @@ namespace Phoenix {
 	{
 		auto* window = static_cast<GLFWwindow*>(DEMO->m_Window->GetNativeWindow());
 		auto state = glfwGetKey(window, static_cast<int32_t>(key));
-		return state == GLFW_PRESS || state == GLFW_REPEAT;
+		return state == GLFW_PRESS || state == GLFW_REPEAT || EditorApiServer::getInstance().isRemoteKeyPressed(static_cast<int32_t>(key));
 	}
 
 	bool Input::IsMouseButtonPressed(const MouseCode button)

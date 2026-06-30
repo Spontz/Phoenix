@@ -524,11 +524,11 @@ namespace Phoenix {
 
 			ProcessAndExecuteSectionsLayer();
 			ProcessAndExecuteLayers();
+			ProcessAndExecuteImGUILayer();
 			if (m_framebufferStreamer) {
 				Viewport streamViewport{ 0, 0, m_Window->GetWidth(), m_Window->GetHeight() };
 				m_framebufferStreamer->submitFrame(streamViewport, glfwGetTime());
 			}
-			ProcessAndExecuteImGUILayer();
 
 			// Save the camera, if needed
 			if (m_cameraManager.m_bCapturePosition) {

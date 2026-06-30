@@ -3,6 +3,8 @@
 
 #include "Main.h"
 #include "core/layers/ImGuiLayer.h"
+#include "core/drivers/EditorApiServer.h"
+#include "core/streaming/FramebufferStreamer.h"
 
 namespace Phoenix {
 	
@@ -184,6 +186,7 @@ namespace Phoenix {
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
+		EditorApiServer::getInstance().applyRemoteInputToImGui();
 		ImGui::NewFrame();
 		//ImGuizmo::BeginFrame();
 	}
@@ -639,7 +642,7 @@ namespace Phoenix {
 
 	void ImGuiLayer::drawConfig()
 	{
-		ImVec2 size = ImVec2(static_cast<float>(m_vp.width) / 1.75f, 190.0f);
+		ImVec2 size = ImVec2(static_cast<float>(m_vp.width) / 1.75f, 285.0f);
 		ImVec2 pos = ImVec2(m_vp.width + m_vp.x - size.x, m_vp.height + m_vp.y - size.y);
 		ImGui::SetNextWindowPos(pos, ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(size, ImGuiCond_FirstUseEver);
@@ -658,8 +661,41 @@ namespace Phoenix {
 			ImGui::Checkbox("Draw Y Axis", &m_demo.m_debugDrawAxisY); ImGui::SameLine();
 			ImGui::Checkbox("Draw Z Axis", &m_demo.m_debugDrawAxisZ);
 			ImGui::Checkbox("Enable floor", &m_demo.m_debugEnableFloor);
-			if (ImGui::Checkbox("Enable RTSP streaming", &m_demo.m_enableStreaming)) {
+			if (ImGui::Checkbox("Enable WebRTC preview streaming", &m_demo.m_enableStreaming)) {
 				m_demo.setStreamingEnabled(m_demo.m_enableStreaming);
+			}
+			if (m_demo.m_framebufferStreamer) {
+				FramebufferStreamer::Settings settings = m_demo.m_framebufferStreamer->getSettings();
+				int32_t maxWidth = settings.maxWidth;
+				int32_t maxHeight = settings.maxHeight;
+				int32_t fps = settings.fps;
+				int32_t bitrateMbps = std::max(1, settings.bitrate / 1'000'000);
+				int32_t preset = settings.preset;
+				bool changed = false;
+
+				ImGui::SeparatorText("WebRTC preview");
+				ImGui::SetNextItemWidth(95);
+				changed |= ImGui::DragInt("Max width", &maxWidth, 16.0f, 320, 3840, "%d");
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(95);
+				changed |= ImGui::DragInt("Max height", &maxHeight, 16.0f, 240, 2160, "%d");
+				ImGui::SetNextItemWidth(95);
+				changed |= ImGui::SliderInt("FPS", &fps, 10, 60, "%d");
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(95);
+				changed |= ImGui::SliderInt("Bitrate Mbps", &bitrateMbps, 1, 50, "%d");
+				const char* presets[] = { "ultrafast", "veryfast", "faster" };
+				ImGui::SetNextItemWidth(150);
+				changed |= ImGui::Combo("Encoder preset", &preset, presets, IM_ARRAYSIZE(presets));
+
+				if (changed) {
+					settings.maxWidth = maxWidth;
+					settings.maxHeight = maxHeight;
+					settings.fps = fps;
+					settings.bitrate = bitrateMbps * 1'000'000;
+					settings.preset = preset;
+					m_demo.m_framebufferStreamer->setSettings(settings);
+				}
 			}
 			if (ImGui::SliderFloat("Floor size", &m_demo.m_pRes->m_gridSize, 1, 50)) {
 				m_demo.m_pRes->loadFloor();

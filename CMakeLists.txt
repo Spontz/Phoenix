@@ -39,6 +39,7 @@ find_package(FFMPEG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(kissfft CONFIG REQUIRED)
 find_package(unofficial-uwebsockets CONFIG REQUIRED)
+find_package(LibDataChannel CONFIG REQUIRED)
 
 # Set Startup project
 if(MSVC)
