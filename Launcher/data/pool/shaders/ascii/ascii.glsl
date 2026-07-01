@@ -5,10 +5,13 @@ layout (location = 1) in vec2 aTexCoords;
 
 out vec2 TexCoords;
 
-void main()
-{
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+void main() {
     TexCoords = aTexCoords;
-    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0); 
+    gl_Position = projection * view * model * vec4(aPos.x, -aPos.y, 0.0, 1.0);
 }
 
 #type fragment
@@ -25,18 +28,17 @@ uniform sampler2D screenTexture; // Texture to ascii
 // http://www.thrill-project.com/archiv/coding/bitmap/
 
 float character(float n, vec2 p) // some compilers have the word "char" reserved
-{
+ {
 	p = floor(p*vec2(4.0, -4.0) + 2.5);
 	if (clamp(p.x, 0.0, 4.0) == p.x && clamp(p.y, 0.0, 4.0) == p.y)
-	{
+ {
 		if (int(mod(n/exp2(p.x + 5.0*p.y), 2.0)) == 1) return 1.0;
 	}	
 	return 0.0;
 }
 
-void main(void)
-{
-	vec2 uv = vec2(TexCoords.x, TexCoords.y);
+void main(void) {
+	vec2 uv = vec2(TexCoords.x, -TexCoords.y);
 	uv = uv * iResolution;
 	
 	vec3 col = texture(screenTexture, floor(uv/sample)*sample/iResolution).rgb;

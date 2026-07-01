@@ -15,6 +15,11 @@ Phoenix SHALL enable framebuffer WebRTC preview streaming only when the existing
 - **WHEN** Phoenix starts without the `enableStreaming` argument
 - **THEN** Phoenix does not initialize preview streaming resources
 
+#### Scenario: Browser requests preview while streaming is disabled
+- **WHEN** Cacablu sends a `webrtc.request` message while Phoenix preview streaming is disabled
+- **THEN** Cacablu displays the stable message `Enable WebRTC preview in Phoenix`
+- **AND** Cacablu does not flicker between that message and transient startup text while retrying
+
 #### Scenario: Streaming is toggled from Engine Config
 - **WHEN** the user toggles the streaming checkbox in the ImGui Engine Config panel
 - **THEN** Phoenix starts or stops WebRTC preview streaming to match the checkbox state

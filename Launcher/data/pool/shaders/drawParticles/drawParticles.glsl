@@ -1,34 +1,30 @@
 #type vertex
 #version 440 core
-layout (location = 0) in vec3 Position;
+layout (location = 0) in int Type;
+layout (location = 1) in int ID;
+layout (location = 2) in vec3 InitPosition;
+layout (location = 3) in vec3 Randomness;
+layout (location = 4) in vec4 InitColor;
+layout (location = 5) in float Life;
 
-uniform float gTime;
-uniform mat4 gModel;
-uniform float gNumParticles;
+uniform mat4 m4ViewModel; // view x Model matrix
+uniform float fTime;
 
-out int ID0;
-out vec3 Color0;
-
-#define PI 3.1415926535897932384626433832795
+out VS_OUT
+{
+	flat int 	ID;
+	vec4		Color;
+	vec4		Position;
+} vs_out;
 
 void main(void)
 {
-	ID0 = gl_VertexID;	// Send the vertex ID (=particle ID) to Geometry shader
-	
-	float zero_to_one = gl_VertexID / gNumParticles;
-	float sphere = 2.0* PI * zero_to_one;
-	
-	// Calculate the color of the particle
-	//Color0 = vec3(1.0, 0.5+0.5*sin(gTime), 1.0);
-	//Color0 = vec3(1+sin(((sphere-PI)/2.0)+gTime), 0.0, 0.0);//0.5+0.5*sin(gTime), 1.0);
-	Color0 = vec3(0.5+0.5*sin(sphere+gTime), 0.5+0.5*cos(sphere+gTime), 0.0);//0.5+0.5*sin(gTime), 1.0);
-
-	// Calculate the new position of the particle
-	vec3 new_position = 4*vec3(0.5 * sin(sphere), 0, 0.5 * cos(sphere));
-
-
-	gl_Position = gModel * vec4(new_position, 1.0);
+	vs_out.ID = ID;
+	vs_out.Color = InitColor;
+	vec3 newPos = InitPosition + Randomness;
+	vs_out.Position = m4ViewModel * vec4(newPos, 1.0);
 }
+
 
 #type geometry
 #version 440 core
@@ -37,55 +33,58 @@ layout(points) in;
 layout(triangle_strip) out;
 layout(max_vertices = 4) out;
 
-uniform mat4 gVP;
-uniform vec3 gCameraPos;
+uniform mat4 m4Projection;
 uniform float fParticleSize;
-uniform float fParticlesDrawn;
 
 // Info from the VS
-in vec3 Color0[];
-in int ID0[];
+in VS_OUT
+{
+	flat int	ID;
+	vec4		Color;
+	vec4		Position;
+} gs_in[];
 
-// Info sent to FS: Color and Texture Coords
-out vec3 Color1;
-out vec2 TexCoord;
+// Info sent to FS
+out GS_OUT
+{
+	flat int	ID;
+	vec4		Color;
+	vec2		TexCoord;
+} gs_out;
 
 void main()
 {
-	Color1 = Color0[0];
+	gs_out.ID = gs_in[0].ID;
+	gs_out.Color = gs_in[0].Color;
 
-	if (ID0[0]<fParticlesDrawn) {
-	
-		vec3 Pos = gl_in[0].gl_Position.xyz;
-		vec3 toCamera = normalize(gCameraPos - Pos);
-		vec3 up = vec3(0.0, 1.0, 0.0);
-		vec3 right = cross(toCamera, up) * fParticleSize;
-	
-		Pos -= right;
-		gl_Position = gVP * vec4(Pos, 1.0);
-		TexCoord = vec2(0.0, 0.0);
-		EmitVertex();
+	vec4 P = gs_in[0].Position;
 
-		Pos.y += fParticleSize;
-		gl_Position = gVP * vec4(Pos, 1.0);
-		TexCoord = vec2(0.0, 1.0);
-		EmitVertex();
+	// a: left-bottom 
+	vec2 va = P.xy + vec2(-0.5, -0.5) * fParticleSize;
+	gl_Position = m4Projection * vec4(va, P.zw);
+	gs_out.TexCoord = vec2(0.0, 0.0);
+	EmitVertex();
 
-		Pos.y -= fParticleSize;
-		Pos += right;
-		gl_Position = gVP * vec4(Pos, 1.0);
-		TexCoord = vec2(1.0, 0.0);
-		EmitVertex();
+	// b: left-top
+	vec2 vb = P.xy + vec2(-0.5, 0.5) * fParticleSize;
+	gl_Position = m4Projection * vec4(vb, P.zw);
+	gs_out.TexCoord = vec2(0.0, 1.0);
+	EmitVertex();
 
-		Pos.y += fParticleSize;
-		gl_Position = gVP * vec4(Pos, 1.0);
-		TexCoord = vec2(1.0, 1.0);
-		EmitVertex();
+	// d: right-bottom
+	vec2 vd = P.xy + vec2(0.5, -0.5) * fParticleSize;
+	gl_Position = m4Projection * vec4(vd, P.zw);
+	gs_out.TexCoord = vec2(1.0, 0.0);
+	EmitVertex();
 
-		EndPrimitive();
-	}
+	// c: right-top
+	vec2 vc = P.xy + vec2(0.5, 0.5) * fParticleSize;
+	gl_Position = m4Projection * vec4(vc, P.zw);
+	gs_out.TexCoord = vec2(1.0, 1.0);
+	EmitVertex();
+
+	EndPrimitive();
 }
-
 
 #type fragment
 #version 440 core
@@ -93,11 +92,15 @@ layout (location = 0) out vec4 FragColor;
 
 uniform sampler2D partTexture;
 
-in vec3 Color1;
-in vec2 TexCoord;
+in GS_OUT
+{
+	flat int	ID;
+	vec4		Color;
+	vec2		TexCoord;
+} fs_in;
 
 
 void main(void)
 {
-	FragColor = texture(partTexture, TexCoord) * vec4(Color1.rgb, 1.0f);
+	FragColor = texture(partTexture, fs_in.TexCoord) * fs_in.Color;
 }

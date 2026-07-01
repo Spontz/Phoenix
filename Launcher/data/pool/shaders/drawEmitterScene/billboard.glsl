@@ -1,106 +1,109 @@
 #type vertex
-#version 330
+#version 450 core
 
-layout (location = 0) in vec3 Position;
-layout (location = 2) in vec3 Color;
-layout (location = 4) in int Type;
+layout (location = 0) in int Type;
+layout (location = 1) in vec3 Position;
+layout (location = 3) in vec3 Color;
+
 
 uniform mat4 model;
+uniform mat4 view;
 
-out vec3 Color0;
-flat out int Type0;
+out VS_OUT
+{
+	vec4		Position;
+	vec3		Color;
+	flat int	Type;
+} vs_out;
 
+#define PARTICLE_TYPE_EMITTER 1
+#define PARTICLE_TYPE_SHELL 2
 void main()
 {
-	Color0 = Color;
-	Type0 = Type;
-	gl_Position = model * vec4(Position, 1.0);
+	vs_out.Color = Color;
+	vs_out.Type = Type;
+	
+	if (Type == PARTICLE_TYPE_EMITTER)
+		vs_out.Position = view * model * vec4(Position, 1.0);
+	if (Type == PARTICLE_TYPE_SHELL)
+		vs_out.Position = view * vec4(Position, 1.0);
 }
 
+
 #type geometry
-#version 330
+#version 450 core
 
 layout(points) in;
-layout(triangle_strip) out;
-layout(max_vertices = 4) out;
+layout(triangle_strip, max_vertices = 4) out;
 
-uniform mat4 gVP;
-uniform vec3 gCameraPos;
+uniform mat4 projection;
 uniform float fParticleSize;
 
 // Info from the VS
-in vec3 Color0[];
-flat in int Type0[];
+in VS_OUT
+{
+	vec4		Position;
+	vec3		Color;
+	flat int	Type;
+} gs_in[];
 
 // Info sent to FS
-out vec3 Color1;
-flat out int Type1;
-
-out vec2 TexCoord;
+out GS_OUT
+{
+	vec2		TexCoord;
+	vec3		Color;
+	flat int	Type;
+} gs_out;
 
 void main()
 {
-	Color1 = Color0[0];
-	Type1 = Type0[0];
+	gs_out.Color	= gs_in[0].Color;
+	gs_out.Type		= gs_in[0].Type;
 	
-	vec3 Pos = gl_in[0].gl_Position.xyz;
-	vec3 toCamera = normalize(gCameraPos - Pos);
-	vec3 up = vec3(0.0, 1.0, 0.0);
-	vec3 right = cross(toCamera, up) * fParticleSize;
+	vec4 P = gs_in[0].Position;
 
-	Pos -= right;
-	gl_Position = gVP * vec4(Pos, 1.0);
-	TexCoord = vec2(0.0, 0.0);
+	// a: left-bottom 
+	vec2 va = P.xy + vec2(-0.5, -0.5) * fParticleSize;
+	gl_Position = projection * vec4(va, P.zw);
+	gs_out.TexCoord = vec2(0.0, 0.0);
 	EmitVertex();
 
-	Pos.y += fParticleSize;
-	gl_Position = gVP * vec4(Pos, 1.0);
-	TexCoord = vec2(0.0, 1.0);
+	// b: left-top
+	vec2 vb = P.xy + vec2(-0.5, 0.5) * fParticleSize;
+	gl_Position = projection * vec4(vb, P.zw);
+	gs_out.TexCoord = vec2(0.0, 1.0);
 	EmitVertex();
 
-	Pos.y -= fParticleSize;
-	Pos += right;
-	gl_Position = gVP * vec4(Pos, 1.0);
-	TexCoord = vec2(1.0, 0.0);
+	// d: right-bottom
+	vec2 vd = P.xy + vec2(0.5, -0.5) * fParticleSize;
+	gl_Position = projection * vec4(vd, P.zw);
+	gs_out.TexCoord = vec2(1.0, 0.0);
 	EmitVertex();
 
-	Pos.y += fParticleSize;
-	gl_Position = gVP * vec4(Pos, 1.0);
-	TexCoord = vec2(1.0, 1.0);
+	// c: right-top
+	vec2 vc = P.xy + vec2(0.5, 0.5) * fParticleSize;
+	gl_Position = projection * vec4(vc, P.zw);
+	gs_out.TexCoord = vec2(1.0, 1.0);
 	EmitVertex();
 
 	EndPrimitive();
-}                                                                                   
-
+}
 
 #type fragment
-#version 330
+#version 450 core
 
 uniform sampler2D partTexture;
 
-in vec2 TexCoord;
-in vec3 Color1;
-flat in int Type1;
+in GS_OUT
+{
+	vec2		TexCoord;
+	vec3		Color;
+	flat int	Type;
+} fs_in;
 
 out vec4 FragColor;
 
-
-#define PARTICLE_TYPE_EMITTER 0
-#define PARTICLE_TYPE_SHELL 1
-
 void main()
 {
-	
-//	if (Type1 == PARTICLE_TYPE_SHELL)
-//		discard;
-
-	FragColor = texture(partTexture, TexCoord) * vec4(Color1.rgb, 1.0f);
-
-/*	if ((Color1.r < 0.0) &&
-		(Color1.g < 0.0) &&
-		(Color1.b < 0.0)) {
-	
-		discard;
-    }
-*/
+	FragColor = texture(partTexture, fs_in.TexCoord) * vec4(fs_in.Color.rgb, 1.0f);
 }

@@ -1,8 +1,11 @@
 #include "Main.h"
 #include "core/streaming/FramebufferStreamer.h"
 
+#include "rtc/h264rtppacketizer.hpp"
+#include "rtc/rtcpnackresponder.hpp"
+#include "rtc/rtcpsrreporter.hpp"
+#include "rtc/rtppacketizationconfig.hpp"
 #include "rtc/rtc.hpp"
-#include "rtc/rtp.hpp"
 
 #include <algorithm>
 #include <array>

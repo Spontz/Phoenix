@@ -5,5 +5,5 @@ loop 1
 sound 1
 demo_start 0.0
 demo_end 50
-slave 0
+slave 1
 log_detail 4

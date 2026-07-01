@@ -13,8 +13,14 @@
 #include <uwebsockets/App.h>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 #include <format>
+#include <optional>
+#include <sstream>
 #include <vector>
 
 namespace Phoenix {
@@ -23,9 +29,245 @@ namespace Phoenix {
 		EditorApiServer* kpEditorApiServer = nullptr;
 		constexpr auto kRuntimeTopic = "runtime";
 		constexpr auto kRuntimePublishInterval = std::chrono::milliseconds(33);
+		namespace fs = std::filesystem;
 
 		struct WebSocketData {
 		};
+
+		struct AssetPath {
+			std::string relative;
+			fs::path full;
+		};
+
+		template <typename Response>
+		void writeCors(Response* response)
+		{
+			response
+				->writeHeader("Access-Control-Allow-Origin", "*")
+				->writeHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+				->writeHeader("Access-Control-Allow-Headers", "Content-Type")
+				->writeHeader("Access-Control-Allow-Private-Network", "true")
+				->writeHeader("Content-Type", "application/json");
+		}
+
+		template <typename Response>
+		void sendJson(Response* response, std::string_view status, std::string_view body)
+		{
+			writeCors(response);
+			response->writeStatus(status)->end(body);
+		}
+
+		std::string escapeJsonValue(std::string_view value)
+		{
+			std::string escaped;
+			escaped.reserve(value.size());
+			for (const char ch : value) {
+				switch (ch) {
+				case '\\': escaped += "\\\\"; break;
+				case '"': escaped += "\\\""; break;
+				case '\n': escaped += "\\n"; break;
+				case '\r': escaped += "\\r"; break;
+				case '\t': escaped += "\\t"; break;
+				default: escaped.push_back(ch); break;
+				}
+			}
+			return escaped;
+		}
+
+		std::string buildAssetError(std::string_view code, std::string_view message, std::string_view requestId = {})
+		{
+			return std::format(
+				"{{\"requestId\":\"{}\",\"ok\":false,\"code\":\"{}\",\"message\":\"{}\"}}",
+				escapeJsonValue(requestId),
+				escapeJsonValue(code),
+				escapeJsonValue(message)
+			);
+		}
+
+		std::string normalizeAssetPath(std::string_view rawPath)
+		{
+			std::string path(rawPath);
+			std::replace(path.begin(), path.end(), '\\', '/');
+
+			while (!path.empty() && path.front() == '/')
+				path.erase(path.begin());
+
+			std::vector<std::string> parts;
+			std::stringstream stream(path);
+			std::string part;
+			while (std::getline(stream, part, '/')) {
+				if (part.empty() || part == ".")
+					continue;
+				if (part == ".." || part.find(':') != std::string::npos)
+					return {};
+				parts.push_back(part);
+			}
+
+			if (parts.empty() || (parts[0] != "pool" && parts[0] != "resources"))
+				return {};
+
+			std::string normalized;
+			for (size_t i = 0; i < parts.size(); ++i) {
+				if (i > 0)
+					normalized += '/';
+				normalized += parts[i];
+			}
+			return normalized;
+		}
+
+		std::optional<AssetPath> resolveAssetPath(std::string_view rawPath)
+		{
+			const std::string normalized = normalizeAssetPath(rawPath);
+			if (normalized.empty())
+				return std::nullopt;
+
+			fs::path fullPath = fs::path(DEMO->m_dataFolder) / fs::path(normalized);
+			return AssetPath{
+				.relative = normalized,
+				.full = fullPath.lexically_normal()
+			};
+		}
+
+		std::string bytesToHex(uint32_t value)
+		{
+			constexpr char hex[] = "0123456789abcdef";
+			std::string out(8, '0');
+			for (int i = 7; i >= 0; --i) {
+				out[static_cast<size_t>(i)] = hex[value & 0x0f];
+				value >>= 4;
+			}
+			return out;
+		}
+
+		std::string hashFile(const fs::path& path)
+		{
+			std::ifstream file(path, std::ios::binary);
+			if (!file)
+				return {};
+
+			uint32_t hash = 0x811c9dc5u;
+			char buffer[4096];
+			while (file.read(buffer, sizeof(buffer)) || file.gcount() > 0) {
+				for (std::streamsize i = 0; i < file.gcount(); ++i) {
+					hash ^= static_cast<uint8_t>(buffer[i]);
+					hash *= 0x01000193u;
+				}
+			}
+			return "fnv1a:" + bytesToHex(hash);
+		}
+
+		std::string buildManifest()
+		{
+			const fs::path dataRoot = fs::path(DEMO->m_dataFolder).lexically_normal();
+			std::vector<std::string> entries;
+			std::vector<std::string> errors;
+
+			for (const std::string rootName : { "pool", "resources" }) {
+				const fs::path rootPath = dataRoot / rootName;
+				if (!fs::exists(rootPath)) {
+					errors.push_back(std::format(
+						"{{\"path\":\"{}\",\"message\":\"Missing {} folder\"}}",
+						rootName,
+						rootName
+					));
+					continue;
+				}
+
+				entries.push_back(std::format("{{\"path\":\"{}\",\"kind\":\"directory\"}}", rootName));
+				for (const auto& entry : fs::recursive_directory_iterator(rootPath, fs::directory_options::skip_permission_denied)) {
+					const fs::path relativePath = fs::relative(entry.path(), dataRoot);
+					const std::string relative = relativePath.generic_string();
+					if (entry.is_directory()) {
+						entries.push_back(std::format(
+							"{{\"path\":\"{}\",\"kind\":\"directory\"}}",
+							escapeJsonValue(relative)
+						));
+						continue;
+					}
+
+					if (!entry.is_regular_file())
+						continue;
+
+					const auto fileSize = entry.file_size();
+					const std::string hash = hashFile(entry.path());
+					entries.push_back(std::format(
+						"{{\"path\":\"{}\",\"kind\":\"file\",\"size\":{},\"hash\":\"{}\"}}",
+						escapeJsonValue(relative),
+						fileSize,
+						escapeJsonValue(hash)
+					));
+				}
+			}
+
+			std::string json = "{\"root\":\"phoenix-engine\",\"generatedAt\":\"\",\"entries\":[";
+			for (size_t i = 0; i < entries.size(); ++i) {
+				if (i > 0)
+					json += ',';
+				json += entries[i];
+			}
+			json += "],\"errors\":[";
+			for (size_t i = 0; i < errors.size(); ++i) {
+				if (i > 0)
+					json += ',';
+				json += errors[i];
+			}
+			json += "]}";
+			return json;
+		}
+
+		std::vector<uint8_t> decodeBase64(std::string_view input)
+		{
+			static constexpr unsigned char kInvalid = 255;
+			std::array<unsigned char, 256> table{};
+			table.fill(kInvalid);
+			const std::string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+			for (size_t i = 0; i < chars.size(); ++i)
+				table[static_cast<unsigned char>(chars[i])] = static_cast<unsigned char>(i);
+
+			std::vector<uint8_t> output;
+			uint32_t buffer = 0;
+			int bits = 0;
+			for (const char ch : input) {
+				if (ch == '=')
+					break;
+				const unsigned char value = table[static_cast<unsigned char>(ch)];
+				if (value == kInvalid)
+					continue;
+				buffer = (buffer << 6) | value;
+				bits += 6;
+				if (bits >= 8) {
+					bits -= 8;
+					output.push_back(static_cast<uint8_t>((buffer >> bits) & 0xff));
+				}
+			}
+			return output;
+		}
+
+		bool extractBoolean(std::string_view message, std::string_view key, bool& value)
+		{
+			const std::string quotedKey = std::format("\"{}\"", key);
+			size_t pos = message.find(quotedKey);
+			if (pos == std::string_view::npos)
+				return false;
+
+			pos = message.find(':', pos + quotedKey.size());
+			if (pos == std::string_view::npos)
+				return false;
+
+			const size_t start = message.find_first_not_of(" \t\r\n", pos + 1);
+			if (start == std::string_view::npos)
+				return false;
+
+			if (message.substr(start, 4) == "true") {
+				value = true;
+				return true;
+			}
+			if (message.substr(start, 5) == "false") {
+				value = false;
+				return true;
+			}
+			return false;
+		}
 
 		ImGuiKey glfwKeyToImGuiKey(int32_t key)
 		{
@@ -201,6 +443,7 @@ namespace Phoenix {
 		app.get("/api/health", [this](auto* response, auto*) {
 			response
 				->writeHeader("Access-Control-Allow-Origin", "*")
+				->writeHeader("Access-Control-Allow-Private-Network", "true")
 				->writeHeader("Content-Type", "application/json")
 				->end(std::format(
 					"{{\"status\":\"ok\",\"service\":\"phoenix-editor-api\",\"port\":{}}}",
@@ -208,12 +451,196 @@ namespace Phoenix {
 				));
 		});
 
+		app.get("/api/assets/manifest", [](auto* response, auto*) {
+			sendJson(response, "200 OK", buildManifest());
+		});
+
+		app.get("/api/assets", [](auto* response, auto*) {
+			sendJson(response, "200 OK", buildManifest());
+		});
+
+		app.put("/api/assets/file", [this](auto* response, auto*) {
+			auto body = std::make_shared<std::string>();
+			response->onData([this, response, body](std::string_view chunk, bool last) {
+				body->append(chunk);
+				if (!last)
+					return;
+
+				std::string requestId;
+				std::string path;
+				std::string encoding;
+				std::string content;
+				extractString(*body, "requestId", requestId);
+				if (!extractString(*body, "path", path) || !extractString(*body, "encoding", encoding) || !extractString(*body, "content", content)) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-request", "write file requires path, encoding, and content", requestId));
+					return;
+				}
+				if (encoding != "base64") {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-encoding", "Only base64 content is supported", requestId));
+					return;
+				}
+
+				const auto assetPath = resolveAssetPath(path);
+				if (!assetPath) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-path", "Asset path must be under pool or resources", requestId));
+					return;
+				}
+
+				try {
+					fs::create_directories(assetPath->full.parent_path());
+					const std::vector<uint8_t> bytes = decodeBase64(content);
+					std::ofstream file(assetPath->full, std::ios::binary | std::ios::trunc);
+					if (!file) {
+						sendJson(response, "500 Internal Server Error", buildAssetError("write-failed", "Could not open asset for writing", requestId));
+						return;
+					}
+					file.write(reinterpret_cast<const char*>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+					file.close();
+					if (!file) {
+						sendJson(response, "500 Internal Server Error", buildAssetError("write-failed", "Could not write asset content", requestId));
+						return;
+					}
+					sendJson(response, "200 OK", std::format(
+						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"write-file\",\"entry\":{{\"path\":\"{}\",\"kind\":\"file\",\"size\":{},\"hash\":\"{}\"}}}}",
+						escapeJsonValue(requestId),
+						escapeJsonValue(assetPath->relative),
+						bytes.size(),
+						escapeJsonValue(hashFile(assetPath->full))
+					));
+				}
+				catch (const std::exception& err) {
+					sendJson(response, "500 Internal Server Error", buildAssetError("write-failed", err.what(), requestId));
+				}
+			});
+			response->onAborted([body]() {});
+		});
+
+		app.del("/api/assets/file", [this](auto* response, auto*) {
+			auto body = std::make_shared<std::string>();
+			response->onData([this, response, body](std::string_view chunk, bool last) {
+				body->append(chunk);
+				if (!last)
+					return;
+
+				std::string requestId;
+				std::string path;
+				extractString(*body, "requestId", requestId);
+				if (!extractString(*body, "path", path)) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-request", "delete file requires path", requestId));
+					return;
+				}
+
+				const auto assetPath = resolveAssetPath(path);
+				if (!assetPath) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-path", "Asset path must be under pool or resources", requestId));
+					return;
+				}
+
+				try {
+					std::error_code ec;
+					fs::remove(assetPath->full, ec);
+					if (ec) {
+						sendJson(response, "500 Internal Server Error", buildAssetError("delete-failed", ec.message(), requestId));
+						return;
+					}
+					sendJson(response, "200 OK", std::format(
+						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"delete-file\",\"entry\":{{\"path\":\"{}\",\"kind\":\"file\"}}}}",
+						escapeJsonValue(requestId),
+						escapeJsonValue(assetPath->relative)
+					));
+				}
+				catch (const std::exception& err) {
+					sendJson(response, "500 Internal Server Error", buildAssetError("delete-failed", err.what(), requestId));
+				}
+			});
+			response->onAborted([body]() {});
+		});
+
+		app.post("/api/assets/directory", [this](auto* response, auto*) {
+			auto body = std::make_shared<std::string>();
+			response->onData([this, response, body](std::string_view chunk, bool last) {
+				body->append(chunk);
+				if (!last)
+					return;
+
+				std::string requestId;
+				std::string path;
+				extractString(*body, "requestId", requestId);
+				if (!extractString(*body, "path", path)) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-request", "create directory requires path", requestId));
+					return;
+				}
+
+				const auto assetPath = resolveAssetPath(path);
+				if (!assetPath) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-path", "Asset path must be under pool or resources", requestId));
+					return;
+				}
+
+				try {
+					fs::create_directories(assetPath->full);
+					sendJson(response, "200 OK", std::format(
+						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"create-directory\",\"entry\":{{\"path\":\"{}\",\"kind\":\"directory\"}}}}",
+						escapeJsonValue(requestId),
+						escapeJsonValue(assetPath->relative)
+					));
+				}
+				catch (const std::exception& err) {
+					sendJson(response, "500 Internal Server Error", buildAssetError("create-directory-failed", err.what(), requestId));
+				}
+			});
+			response->onAborted([body]() {});
+		});
+
+		app.del("/api/assets/directory", [this](auto* response, auto*) {
+			auto body = std::make_shared<std::string>();
+			response->onData([this, response, body](std::string_view chunk, bool last) {
+				body->append(chunk);
+				if (!last)
+					return;
+
+				std::string requestId;
+				std::string path;
+				bool recursive = false;
+				extractString(*body, "requestId", requestId);
+				extractBoolean(*body, "recursive", recursive);
+				if (!extractString(*body, "path", path)) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-request", "delete directory requires path", requestId));
+					return;
+				}
+
+				const auto assetPath = resolveAssetPath(path);
+				if (!assetPath) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-path", "Asset path must be under pool or resources", requestId));
+					return;
+				}
+
+				try {
+					std::error_code ec;
+					if (recursive)
+						fs::remove_all(assetPath->full, ec);
+					else
+						fs::remove(assetPath->full, ec);
+					if (ec) {
+						sendJson(response, "500 Internal Server Error", buildAssetError("delete-directory-failed", ec.message(), requestId));
+						return;
+					}
+					sendJson(response, "200 OK", std::format(
+						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"delete-directory\",\"entry\":{{\"path\":\"{}\",\"kind\":\"directory\"}}}}",
+						escapeJsonValue(requestId),
+						escapeJsonValue(assetPath->relative)
+					));
+				}
+				catch (const std::exception& err) {
+					sendJson(response, "500 Internal Server Error", buildAssetError("delete-directory-failed", err.what(), requestId));
+				}
+			});
+			response->onAborted([body]() {});
+		});
+
 		app.options("/*", [](auto* response, auto*) {
-			response
-				->writeHeader("Access-Control-Allow-Origin", "*")
-				->writeHeader("Access-Control-Allow-Methods", "GET, OPTIONS")
-				->writeHeader("Access-Control-Allow-Headers", "Content-Type")
-				->end();
+			writeCors(response);
+			response->end();
 		});
 
 		app.ws<WebSocketData>("/ws", {
