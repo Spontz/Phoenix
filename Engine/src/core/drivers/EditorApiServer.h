@@ -11,6 +11,7 @@
 #include <queue>
 #include <string>
 #include <thread>
+#include <unordered_set>
 #include <vector>
 
 namespace uWS {
@@ -44,7 +45,9 @@ namespace Phoenix {
 			MouseUp,
 			MouseWheel,
 			KeyDown,
-			KeyUp
+			KeyUp,
+			EnableWebRtc,
+			DisableWebRtc
 		};
 
 		struct Command {
@@ -55,6 +58,7 @@ namespace Phoenix {
 			float deltaX;
 			float deltaY;
 			int32_t button;
+			int32_t clientId;
 			int32_t key;
 			int32_t scancode;
 			int32_t mods;
@@ -73,7 +77,7 @@ namespace Phoenix {
 		void enqueueMessage(std::string_view message);
 		void enqueueError(std::string_view code, std::string_view message);
 		void publishEvent(std::string_view payload);
-		std::string handleWebRtcMessage(std::string_view message, const WebRtcSignalSender& signalSender);
+		std::string handleWebRtcMessage(std::string_view message, int32_t clientId, const WebRtcSignalSender& signalSender);
 		void clearRemoteKeys();
 		void setRemoteKeyPressed(int32_t key, bool pressed);
 		void processCommands();
@@ -84,6 +88,7 @@ namespace Phoenix {
 		std::string buildWebRtcOfferMessage(int32_t sessionId, std::string_view sdp) const;
 		std::string buildWebRtcAnswerMessage(std::string_view sdp) const;
 		std::string buildWebRtcCandidateMessage(std::string_view candidate, std::string_view sdpMid) const;
+		std::string buildWebRtcStateMessage(std::string_view state) const;
 
 	public:
 		static bool extractMessageType(std::string_view message, std::string& type);
@@ -103,6 +108,7 @@ namespace Phoenix {
 		void* m_listenSocket;
 		std::mutex m_commandMutex;
 		std::queue<Command> m_commands;
+		std::unordered_set<int32_t> m_webRtcPreviewClients;
 		bool m_remoteMouseActive;
 		float m_remoteMouseX;
 		float m_remoteMouseY;

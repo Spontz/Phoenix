@@ -26,6 +26,7 @@
 #include <queue>
 #include <set>
 #include <sstream>
+#include <atomic>
 #include <vector>
 
 namespace Phoenix {
@@ -37,7 +38,11 @@ namespace Phoenix {
 		namespace fs = std::filesystem;
 
 		struct WebSocketData {
+			int32_t clientId = 0;
+			bool webRtcPreviewRequested = false;
 		};
+
+		std::atomic_int32_t kNextWebSocketClientId = 1;
 
 		struct AssetPath {
 			std::string relative;
@@ -1133,8 +1138,11 @@ namespace Phoenix {
 
 		app.ws<WebSocketData>("/ws", {
 			.open = [](auto* ws) {
+				auto* data = ws->getUserData();
+				data->clientId = kNextWebSocketClientId++;
+				data->webRtcPreviewRequested = false;
 				ws->subscribe(kRuntimeTopic);
-				Logger::info(LogLevel::high, "Editor API: Cacablu WebSocket connected");
+				Logger::info(LogLevel::high, "Editor API: Cacablu WebSocket client {} connected", data->clientId);
 			},
 			.message = [this](auto* ws, std::string_view message, uWS::OpCode opCode) {
 				if (opCode != uWS::OpCode::TEXT) {
@@ -1143,8 +1151,14 @@ namespace Phoenix {
 				}
 				std::string type;
 				if (extractMessageType(message, type) && type.starts_with("webrtc.")) {
+					auto* data = ws->getUserData();
+					if (type == "webrtc.enable")
+						data->webRtcPreviewRequested = true;
+					else if (type == "webrtc.disable")
+						data->webRtcPreviewRequested = false;
+
 					std::vector<std::string> deferredSignals;
-					const std::string response = handleWebRtcMessage(message, [this, &deferredSignals](std::string_view signalType, std::string_view payload, std::string_view sdpMid) {
+					const std::string response = handleWebRtcMessage(message, data->clientId, [this, &deferredSignals](std::string_view signalType, std::string_view payload, std::string_view sdpMid) {
 						if (signalType == "webrtc.ice-candidate")
 							deferredSignals.emplace_back(buildWebRtcCandidateMessage(payload, sdpMid));
 					});
@@ -1156,8 +1170,18 @@ namespace Phoenix {
 				}
 				enqueueMessage(message);
 			},
-			.close = [](auto*, int, std::string_view) {
-				Logger::info(LogLevel::high, "Editor API: Cacablu WebSocket disconnected");
+			.close = [](auto* ws, int, std::string_view) {
+				auto* data = ws->getUserData();
+				Logger::info(LogLevel::high, "Editor API: Cacablu WebSocket client {} disconnected", data->clientId);
+				if (data->webRtcPreviewRequested) {
+					Command command{};
+					command.type = CommandType::DisableWebRtc;
+					command.clientId = data->clientId;
+					{
+						std::lock_guard lock(EditorApiServer::getInstance().m_commandMutex);
+						EditorApiServer::getInstance().m_commands.emplace(command);
+					}
+				}
 				EditorApiServer::getInstance().clearRemoteKeys();
 			}
 		});
@@ -1270,11 +1294,22 @@ namespace Phoenix {
 		m_commands.emplace(command);
 	}
 
-	std::string EditorApiServer::handleWebRtcMessage(std::string_view message, const WebRtcSignalSender& signalSender)
+	std::string EditorApiServer::handleWebRtcMessage(std::string_view message, int32_t clientId, const WebRtcSignalSender& signalSender)
 	{
 		std::string type;
 		if (!extractMessageType(message, type))
 			return buildErrorMessage("invalid-message", "Missing message type");
+
+		if (type == "webrtc.enable" || type == "webrtc.disable") {
+			Command command{};
+			command.type = type == "webrtc.enable" ? CommandType::EnableWebRtc : CommandType::DisableWebRtc;
+			command.clientId = clientId;
+			{
+				std::lock_guard lock(m_commandMutex);
+				m_commands.emplace(command);
+			}
+			return buildWebRtcStateMessage(type == "webrtc.enable" ? "enabling" : "disabling");
+		}
 
 		if (!DEMO->m_framebufferStreamer || !DEMO->m_framebufferStreamer->isRunning())
 			return buildErrorMessage("streaming-disabled", "Phoenix WebRTC preview streaming is not enabled");
@@ -1523,6 +1558,22 @@ namespace Phoenix {
 				DEMO->OnEvent(event);
 				break;
 			}
+			case CommandType::EnableWebRtc:
+				m_webRtcPreviewClients.insert(command.clientId);
+				if (!DEMO->m_enableStreaming)
+					DEMO->setStreamingEnabled(true);
+				publishEvent(buildWebRtcStateMessage("enabled"));
+				break;
+			case CommandType::DisableWebRtc:
+				m_webRtcPreviewClients.erase(command.clientId);
+				if (m_webRtcPreviewClients.empty() && DEMO->m_enableStreaming) {
+					DEMO->setStreamingEnabled(false);
+					publishEvent(buildWebRtcStateMessage("disabled"));
+				}
+				else {
+					publishEvent(buildWebRtcStateMessage(DEMO->m_enableStreaming ? "enabled" : "disabled"));
+				}
+				break;
 			default:
 				break;
 			}
@@ -1592,6 +1643,14 @@ namespace Phoenix {
 			"{{\"type\":\"webrtc.ice-candidate\",\"candidate\":\"{}\",\"sdpMid\":\"{}\",\"sdpMLineIndex\":0}}",
 			escapeJson(candidate),
 			escapeJson(sdpMid)
+		);
+	}
+
+	std::string EditorApiServer::buildWebRtcStateMessage(std::string_view state) const
+	{
+		return std::format(
+			"{{\"type\":\"webrtc.state\",\"state\":\"{}\"}}",
+			escapeJson(state)
 		);
 	}
 
