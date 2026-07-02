@@ -34,6 +34,7 @@ namespace Phoenix {
 		void setSectionsEndTime(std::vector<std::string> const& ids, float value);
 		void setSectionLayer(std::string_view identifier, int32_t value);
 		void clear(); // Clear all sections
+		const std::vector<Section*>& sections() const;
 
 	private:
 		Section* getSection(std::string_view id) const;

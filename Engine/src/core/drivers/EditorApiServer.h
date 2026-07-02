@@ -72,10 +72,12 @@ namespace Phoenix {
 		void runServer();
 		void enqueueMessage(std::string_view message);
 		void enqueueError(std::string_view code, std::string_view message);
+		void publishEvent(std::string_view payload);
 		std::string handleWebRtcMessage(std::string_view message, const WebRtcSignalSender& signalSender);
 		void clearRemoteKeys();
 		void setRemoteKeyPressed(int32_t key, bool pressed);
 		void processCommands();
+		void processSectionReplaceRequests();
 		void publishRuntimeState();
 		std::string buildRuntimeStateMessage() const;
 		std::string buildErrorMessage(std::string_view code, std::string_view message) const;
@@ -83,6 +85,7 @@ namespace Phoenix {
 		std::string buildWebRtcAnswerMessage(std::string_view sdp) const;
 		std::string buildWebRtcCandidateMessage(std::string_view candidate, std::string_view sdpMid) const;
 
+	public:
 		static bool extractMessageType(std::string_view message, std::string& type);
 		static bool extractString(std::string_view message, std::string_view key, std::string& value);
 		static bool extractNumber(std::string_view message, std::string_view key, float& value);

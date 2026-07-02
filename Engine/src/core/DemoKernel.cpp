@@ -530,8 +530,10 @@ namespace Phoenix {
 						pauseDemo();
 					}
 				}
-				// reset section queues
-				m_SectionLayer->ReInitSections();
+				if (m_status & (DemoStatus::REWIND | DemoStatus::FASTFORWARD)) {
+					// reset section queues while time is changing under pause
+					m_SectionLayer->ReInitSections();
+				}
 			}
 
 			// If we have a SeekTime special event, force the Reinit of the sections
@@ -591,6 +593,8 @@ namespace Phoenix {
 	{
 		m_status = DemoStatus::PAUSE;
 		m_frameTime = 0;
+		if (m_sound)
+			m_soundManager.stopAllSounds();
 	}
 
 	void DemoKernel::restartDemo()

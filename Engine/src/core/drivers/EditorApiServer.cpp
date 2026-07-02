@@ -15,11 +15,16 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <condition_variable>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <format>
+#include <iterator>
+#include <memory>
 #include <optional>
+#include <queue>
+#include <set>
 #include <sstream>
 #include <vector>
 
@@ -38,6 +43,38 @@ namespace Phoenix {
 			std::string relative;
 			fs::path full;
 		};
+
+		struct IncomingSection {
+			std::string id;
+			std::string type;
+			float startTime = 0.0f;
+			float endTime = 0.0f;
+			bool enabled = true;
+			int32_t layer = 0;
+			std::string srcBlending;
+			std::string dstBlending;
+			std::string blendingEQ;
+			std::string script;
+			std::string content;
+		};
+
+		struct SectionReplaceResult {
+			std::string status;
+			std::string body;
+			std::string eventPayload;
+		};
+
+		struct SectionReplaceRequest {
+			std::string requestId;
+			std::vector<IncomingSection> sections;
+			SectionReplaceResult result;
+			bool done = false;
+			std::mutex mutex;
+			std::condition_variable condition;
+		};
+
+		std::mutex kSectionReplaceQueueMutex;
+		std::queue<std::shared_ptr<SectionReplaceRequest>> kSectionReplaceQueue;
 
 		template <typename Response>
 		void writeCors(Response* response)
@@ -156,6 +193,66 @@ namespace Phoenix {
 			return "fnv1a:" + bytesToHex(hash);
 		}
 
+		std::string hashString(std::string_view value)
+		{
+			uint32_t hash = 0x811c9dc5u;
+			for (const char ch : value) {
+				hash ^= static_cast<uint8_t>(ch);
+				hash *= 0x01000193u;
+			}
+			return "fnv1a:" + bytesToHex(hash);
+		}
+
+		bool writeFileAtomically(const fs::path& target, const uint8_t* bytes, size_t size, std::string& error)
+		{
+			std::error_code ec;
+			fs::create_directories(target.parent_path(), ec);
+			if (ec) {
+				error = ec.message();
+				return false;
+			}
+
+			const fs::path temporary = target.parent_path() / (target.filename().string() + ".tmp");
+			{
+				std::ofstream file(temporary, std::ios::binary | std::ios::trunc);
+				if (!file) {
+					error = "Could not open temporary file for writing";
+					return false;
+				}
+				file.write(reinterpret_cast<const char*>(bytes), static_cast<std::streamsize>(size));
+				file.close();
+				if (!file) {
+					error = "Could not write temporary file content";
+					fs::remove(temporary, ec);
+					return false;
+				}
+			}
+
+			fs::rename(temporary, target, ec);
+			if (!ec)
+				return true;
+
+			fs::remove(target, ec);
+			ec.clear();
+			fs::rename(temporary, target, ec);
+			if (!ec)
+				return true;
+
+			error = ec.message();
+			fs::remove(temporary, ec);
+			return false;
+		}
+
+		bool writeTextFileAtomically(const fs::path& target, std::string_view content, std::string& error)
+		{
+			return writeFileAtomically(
+				target,
+				reinterpret_cast<const uint8_t*>(content.data()),
+				content.size(),
+				error
+			);
+		}
+
 		std::string buildManifest()
 		{
 			const fs::path dataRoot = fs::path(DEMO->m_dataFolder).lexically_normal();
@@ -267,6 +364,359 @@ namespace Phoenix {
 				return true;
 			}
 			return false;
+		}
+
+		bool isSafeSectionId(std::string_view id)
+		{
+			if (id.empty())
+				return false;
+
+			return std::all_of(id.begin(), id.end(), [](unsigned char ch) {
+				return std::isalnum(ch) || ch == '_' || ch == '-';
+			});
+		}
+
+		std::string decodeBase64Text(std::string_view value)
+		{
+			const std::vector<uint8_t> bytes = decodeBase64(value);
+			return std::string(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+		}
+
+		std::vector<std::string_view> extractObjectArray(std::string_view message, std::string_view key)
+		{
+			std::vector<std::string_view> objects;
+			const std::string quotedKey = std::format("\"{}\"", key);
+			size_t pos = message.find(quotedKey);
+			if (pos == std::string_view::npos)
+				return objects;
+
+			pos = message.find('[', pos + quotedKey.size());
+			if (pos == std::string_view::npos)
+				return objects;
+
+			bool inString = false;
+			bool escaped = false;
+			int depth = 0;
+			size_t objectStart = std::string_view::npos;
+			for (size_t i = pos + 1; i < message.size(); ++i) {
+				const char ch = message[i];
+				if (inString) {
+					if (escaped) {
+						escaped = false;
+						continue;
+					}
+					if (ch == '\\') {
+						escaped = true;
+						continue;
+					}
+					if (ch == '"')
+						inString = false;
+					continue;
+				}
+
+				if (ch == '"') {
+					inString = true;
+					continue;
+				}
+				if (ch == '{') {
+					if (depth == 0)
+						objectStart = i;
+					++depth;
+					continue;
+				}
+				if (ch == '}') {
+					--depth;
+					if (depth == 0 && objectStart != std::string_view::npos) {
+						objects.push_back(message.substr(objectStart, i - objectStart + 1));
+						objectStart = std::string_view::npos;
+					}
+					continue;
+				}
+				if (ch == ']' && depth == 0)
+					break;
+			}
+
+			return objects;
+		}
+
+		std::string formatSectionNumber(float value)
+		{
+			std::ostringstream stream;
+			stream << value;
+			return stream.str();
+		}
+
+		std::string buildSectionContent(const IncomingSection& section)
+		{
+			std::string content = std::format(
+				":::{}\r\nid {}\r\nstart {}\r\nend {}\r\nenabled {}\r\nlayer {}\r\nblend {} {}\r\nblendequation {}\r\n\r\n{}",
+				section.type,
+				section.id,
+				formatSectionNumber(section.startTime),
+				formatSectionNumber(section.endTime),
+				section.enabled ? 1 : 0,
+				section.layer,
+				section.srcBlending,
+				section.dstBlending,
+				section.blendingEQ,
+				section.script
+			);
+			if (!content.ends_with('\n'))
+				content += "\r\n";
+			return content;
+		}
+
+		bool parseIncomingSections(std::string_view body, std::vector<IncomingSection>& sections, std::string& error)
+		{
+			const auto sectionObjects = extractObjectArray(body, "sections");
+			sections.clear();
+			sections.reserve(sectionObjects.size());
+
+			for (const auto sectionBody : sectionObjects) {
+				IncomingSection section;
+				std::string scriptBase64;
+				if (!EditorApiServer::extractString(sectionBody, "id", section.id) ||
+					!EditorApiServer::extractString(sectionBody, "type", section.type) ||
+					!EditorApiServer::extractNumber(sectionBody, "startTime", section.startTime) ||
+					!EditorApiServer::extractNumber(sectionBody, "endTime", section.endTime) ||
+					!EditorApiServer::extractInteger(sectionBody, "layer", section.layer) ||
+					!EditorApiServer::extractString(sectionBody, "srcBlending", section.srcBlending) ||
+					!EditorApiServer::extractString(sectionBody, "dstBlending", section.dstBlending) ||
+					!EditorApiServer::extractString(sectionBody, "blendingEQ", section.blendingEQ) ||
+					!EditorApiServer::extractString(sectionBody, "scriptBase64", scriptBase64) ||
+					!extractBoolean(sectionBody, "enabled", section.enabled)) {
+					error = "Each section requires id, type, timing, layer, blending, enabled, and scriptBase64";
+					return false;
+				}
+
+				if (!isSafeSectionId(section.id)) {
+					error = std::format("Invalid section id: {}", section.id);
+					return false;
+				}
+				if (section.type.empty() || getSectionType(section.type) == SectionType::NOT_FOUND) {
+					error = std::format("Unknown section type: {}", section.type);
+					return false;
+				}
+				if (section.endTime < section.startTime) {
+					error = std::format("Invalid time range for section {}", section.id);
+					return false;
+				}
+
+				section.script = decodeBase64Text(scriptBase64);
+				section.content = buildSectionContent(section);
+				sections.push_back(std::move(section));
+			}
+
+			return true;
+		}
+
+		fs::path sectionFilePath(std::string_view id)
+		{
+			return fs::path(DEMO->m_dataFolder) / (std::string(id) + ".spo");
+		}
+
+		void deleteSectionSpoFiles(const std::set<std::string>& keepIds)
+		{
+			if (!fs::exists(DEMO->m_dataFolder))
+				return;
+
+			std::error_code ec;
+			for (const auto& entry : fs::directory_iterator(DEMO->m_dataFolder, fs::directory_options::skip_permission_denied, ec)) {
+				if (ec)
+					break;
+				if (!entry.is_regular_file() || entry.path().extension() != ".spo")
+					continue;
+				const std::string id = entry.path().stem().string();
+				if (!isSafeSectionId(id) || keepIds.contains(id))
+					continue;
+				fs::remove(entry.path(), ec);
+				if (ec)
+					Logger::error("Editor API: could not delete stale section file {}: {}", entry.path().string(), ec.message());
+			}
+		}
+
+		std::string extractSpoHeaderValue(std::string_view content, std::string_view key)
+		{
+			std::stringstream stream{ std::string(content) };
+			std::string line;
+			const std::string prefix = std::string(key) + " ";
+			while (std::getline(stream, line)) {
+				if (!line.empty() && line.back() == '\r')
+					line.pop_back();
+				if (line.empty())
+					break;
+				if (line.starts_with(prefix))
+					return line.substr(prefix.size());
+			}
+			return {};
+		}
+
+		std::string buildSectionEntryJson(std::string_view id, std::string_view type, float startTime, float endTime, bool enabled, int32_t layer, std::string_view content)
+		{
+			std::string srcBlending;
+			std::string dstBlending;
+			const std::string blend = extractSpoHeaderValue(content, "blend");
+			if (!blend.empty()) {
+				std::stringstream stream(blend);
+				stream >> srcBlending >> dstBlending;
+			}
+			const std::string blendingEQ = extractSpoHeaderValue(content, "blendequation");
+
+			return std::format(
+				"{{\"id\":\"{}\",\"type\":\"{}\",\"startTime\":{},\"endTime\":{},\"enabled\":{},\"layer\":{},\"srcBlending\":\"{}\",\"dstBlending\":\"{}\",\"blendingEQ\":\"{}\",\"contentHash\":\"{}\",\"size\":{}}}",
+				escapeJsonValue(id),
+				escapeJsonValue(type),
+				formatSectionNumber(startTime),
+				formatSectionNumber(endTime),
+				enabled ? "true" : "false",
+				layer,
+				escapeJsonValue(srcBlending),
+				escapeJsonValue(dstBlending),
+				escapeJsonValue(blendingEQ),
+				escapeJsonValue(hashString(content)),
+				content.size()
+			);
+		}
+
+		std::string buildSectionsManifest()
+		{
+			std::vector<std::string> entries;
+			const auto& sections = DEMO->m_sectionManager.sections();
+			entries.reserve(sections.size());
+
+			for (const auto* section : sections) {
+				if (!section)
+					continue;
+				std::string content;
+				const fs::path filePath = sectionFilePath(section->identifier);
+				if (fs::exists(filePath)) {
+					std::ifstream file(filePath, std::ios::binary);
+					content.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+				}
+				entries.push_back(buildSectionEntryJson(
+					section->identifier,
+					section->type_str,
+					section->startTime,
+					section->endTime,
+					section->enabled,
+					section->layer,
+					content
+				));
+			}
+
+			std::string json = "{\"root\":\"phoenix-engine\",\"entries\":[";
+			for (size_t i = 0; i < entries.size(); ++i) {
+				if (i > 0)
+					json += ',';
+				json += entries[i];
+			}
+			json += "]}";
+			return json;
+		}
+
+		std::string buildAssetChanged(std::string_view operation, std::string_view path, std::string_view requestId, std::string_view kind, uintmax_t size = 0, std::string_view hash = {})
+		{
+			std::string entry = std::format(
+				"{{\"path\":\"{}\",\"kind\":\"{}\"",
+				escapeJsonValue(path),
+				escapeJsonValue(kind)
+			);
+			if (kind == "file") {
+				entry += std::format(",\"size\":{}", size);
+				if (!hash.empty())
+					entry += std::format(",\"hash\":\"{}\"", escapeJsonValue(hash));
+			}
+			entry += "}";
+			return std::format(
+				"{{\"type\":\"asset.changed\",\"requestId\":\"{}\",\"operation\":\"{}\",\"path\":\"{}\",\"entry\":{}}}",
+				escapeJsonValue(requestId),
+				escapeJsonValue(operation),
+				escapeJsonValue(path),
+				entry
+			);
+		}
+
+		std::string buildSectionsChanged(std::string_view requestId, size_t count)
+		{
+			return std::format(
+				"{{\"type\":\"section.changed\",\"requestId\":\"{}\",\"operation\":\"replace-all\",\"count\":{}}}",
+				escapeJsonValue(requestId),
+				count
+			);
+		}
+
+		std::string buildFailedSectionsJson(const std::vector<std::string>& failedIds)
+		{
+			std::string json = "[";
+			for (size_t i = 0; i < failedIds.size(); ++i) {
+				if (i > 0)
+					json += ',';
+				json += std::format(
+					"{{\"id\":\"{}\",\"message\":\"Could not load section {}\"}}",
+					escapeJsonValue(failedIds[i]),
+					escapeJsonValue(failedIds[i])
+				);
+			}
+			json += "]";
+			return json;
+		}
+
+		SectionReplaceResult replaceSectionsOnMainThread(const std::vector<IncomingSection>& sections, std::string_view requestId)
+		{
+			std::set<std::string> incomingIds;
+			for (const auto& section : sections) {
+				if (!incomingIds.insert(section.id).second) {
+					return {
+						.status = "400 Bad Request",
+						.body = buildAssetError("duplicate-section", std::format("Duplicate section id: {}", section.id), requestId)
+					};
+				}
+			}
+
+			try {
+				for (const auto& section : sections) {
+					std::string writeError;
+					if (!writeTextFileAtomically(sectionFilePath(section.id), section.content, writeError)) {
+						return {
+							.status = "500 Internal Server Error",
+							.body = buildAssetError("section-write-failed", writeError, requestId)
+						};
+					}
+				}
+
+				deleteSectionSpoFiles(incomingIds);
+				DEMO->m_sectionManager.clear();
+
+				size_t loaded = 0;
+				std::vector<std::string> failedIds;
+				for (const auto& section : sections) {
+					if (DEMO->loadScriptFromNetwork(section.content))
+						++loaded;
+					else
+						failedIds.push_back(section.id);
+				}
+
+				return {
+					.status = "200 OK",
+					.body = std::format(
+						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"replace-all\",\"received\":{},\"loaded\":{},\"failed\":{},\"writtenFiles\":{},\"deletedFiles\":[],\"failedSections\":{},\"manifest\":{}}}",
+						escapeJsonValue(requestId),
+						sections.size(),
+						loaded,
+						failedIds.size(),
+						sections.size(),
+						buildFailedSectionsJson(failedIds),
+						buildSectionsManifest()
+					),
+					.eventPayload = buildSectionsChanged(requestId, sections.size())
+				};
+			}
+			catch (const std::exception& err) {
+				return {
+					.status = "500 Internal Server Error",
+					.body = buildAssetError("section-sync-failed", err.what(), requestId)
+				};
+			}
 		}
 
 		ImGuiKey glfwKeyToImGuiKey(int32_t key)
@@ -401,6 +851,7 @@ namespace Phoenix {
 		if (!m_initialized)
 			return;
 
+		processSectionReplaceRequests();
 		processCommands();
 		publishRuntimeState();
 	}
@@ -487,26 +938,21 @@ namespace Phoenix {
 				}
 
 				try {
-					fs::create_directories(assetPath->full.parent_path());
 					const std::vector<uint8_t> bytes = decodeBase64(content);
-					std::ofstream file(assetPath->full, std::ios::binary | std::ios::trunc);
-					if (!file) {
-						sendJson(response, "500 Internal Server Error", buildAssetError("write-failed", "Could not open asset for writing", requestId));
+					std::string writeError;
+					if (!writeFileAtomically(assetPath->full, bytes.data(), bytes.size(), writeError)) {
+						sendJson(response, "500 Internal Server Error", buildAssetError("write-failed", writeError, requestId));
 						return;
 					}
-					file.write(reinterpret_cast<const char*>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
-					file.close();
-					if (!file) {
-						sendJson(response, "500 Internal Server Error", buildAssetError("write-failed", "Could not write asset content", requestId));
-						return;
-					}
+					const std::string fileHash = hashFile(assetPath->full);
 					sendJson(response, "200 OK", std::format(
 						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"write-file\",\"entry\":{{\"path\":\"{}\",\"kind\":\"file\",\"size\":{},\"hash\":\"{}\"}}}}",
 						escapeJsonValue(requestId),
 						escapeJsonValue(assetPath->relative),
 						bytes.size(),
-						escapeJsonValue(hashFile(assetPath->full))
+						escapeJsonValue(fileHash)
 					));
+					publishEvent(buildAssetChanged("write-file", assetPath->relative, requestId, "file", bytes.size(), fileHash));
 				}
 				catch (const std::exception& err) {
 					sendJson(response, "500 Internal Server Error", buildAssetError("write-failed", err.what(), requestId));
@@ -548,6 +994,7 @@ namespace Phoenix {
 						escapeJsonValue(requestId),
 						escapeJsonValue(assetPath->relative)
 					));
+					publishEvent(buildAssetChanged("delete-file", assetPath->relative, requestId, "file"));
 				}
 				catch (const std::exception& err) {
 					sendJson(response, "500 Internal Server Error", buildAssetError("delete-failed", err.what(), requestId));
@@ -584,6 +1031,7 @@ namespace Phoenix {
 						escapeJsonValue(requestId),
 						escapeJsonValue(assetPath->relative)
 					));
+					publishEvent(buildAssetChanged("create-directory", assetPath->relative, requestId, "directory"));
 				}
 				catch (const std::exception& err) {
 					sendJson(response, "500 Internal Server Error", buildAssetError("create-directory-failed", err.what(), requestId));
@@ -630,10 +1078,50 @@ namespace Phoenix {
 						escapeJsonValue(requestId),
 						escapeJsonValue(assetPath->relative)
 					));
+					publishEvent(buildAssetChanged("delete-directory", assetPath->relative, requestId, "directory"));
 				}
 				catch (const std::exception& err) {
 					sendJson(response, "500 Internal Server Error", buildAssetError("delete-directory-failed", err.what(), requestId));
 				}
+			});
+			response->onAborted([body]() {});
+		});
+
+		app.get("/api/sections/manifest", [](auto* response, auto*) {
+			sendJson(response, "200 OK", buildSectionsManifest());
+		});
+
+		app.put("/api/sections", [this](auto* response, auto*) {
+			auto body = std::make_shared<std::string>();
+			response->onData([this, response, body](std::string_view chunk, bool last) {
+				body->append(chunk);
+				if (!last)
+					return;
+
+				std::string requestId;
+				extractString(*body, "requestId", requestId);
+
+				std::vector<IncomingSection> sections;
+				std::string parseError;
+				if (!parseIncomingSections(*body, sections, parseError)) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-sections", parseError, requestId));
+					return;
+				}
+
+				const auto request = std::make_shared<SectionReplaceRequest>();
+				request->requestId = requestId;
+				request->sections = std::move(sections);
+				{
+					std::lock_guard lock(kSectionReplaceQueueMutex);
+					kSectionReplaceQueue.push(request);
+				}
+
+				std::unique_lock lock(request->mutex);
+				if (!request->condition.wait_for(lock, std::chrono::seconds(30), [&request]() { return request->done; })) {
+					sendJson(response, "504 Gateway Timeout", buildAssetError("section-sync-timeout", "Timed out waiting for Phoenix to apply sections", requestId));
+					return;
+				}
+				sendJson(response, request->result.status, request->result.body);
 			});
 			response->onAborted([body]() {});
 		});
@@ -832,13 +1320,18 @@ namespace Phoenix {
 
 	void EditorApiServer::enqueueError(std::string_view code, std::string_view message)
 	{
+		publishEvent(buildErrorMessage(code, message));
+	}
+
+	void EditorApiServer::publishEvent(std::string_view payload)
+	{
 		if (!m_loop || !m_app)
 			return;
 
-		const std::string payload = buildErrorMessage(code, message);
-		m_loop->defer([this, payload]() {
+		const std::string message(payload);
+		m_loop->defer([this, message]() {
 			if (m_app)
-				m_app->publish(kRuntimeTopic, payload, uWS::OpCode::TEXT);
+				m_app->publish(kRuntimeTopic, message, uWS::OpCode::TEXT);
 		});
 	}
 
@@ -911,6 +1404,31 @@ namespace Phoenix {
 
 		std::lock_guard lock(m_remoteKeyMutex);
 		m_remoteKeys[static_cast<size_t>(key)] = pressed;
+	}
+
+	void EditorApiServer::processSectionReplaceRequests()
+	{
+		while (true) {
+			std::shared_ptr<SectionReplaceRequest> request;
+			{
+				std::lock_guard lock(kSectionReplaceQueueMutex);
+				if (kSectionReplaceQueue.empty())
+					return;
+				request = kSectionReplaceQueue.front();
+				kSectionReplaceQueue.pop();
+			}
+
+			SectionReplaceResult result = replaceSectionsOnMainThread(request->sections, request->requestId);
+			if (!result.eventPayload.empty())
+				publishEvent(result.eventPayload);
+
+			{
+				std::lock_guard lock(request->mutex);
+				request->result = std::move(result);
+				request->done = true;
+			}
+			request->condition.notify_all();
+		}
 	}
 
 	void EditorApiServer::processCommands()

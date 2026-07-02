@@ -5,7 +5,34 @@
 #include "SectionManager.h"
 #include "sections/sections.h"
 
+#include <algorithm>
+#include <cctype>
+#include <filesystem>
+
 namespace Phoenix {
+
+	namespace {
+		bool isSafeSectionFileName(std::string_view id)
+		{
+			if (id.empty())
+				return false;
+
+			return std::all_of(id.begin(), id.end(), [](unsigned char ch) {
+				return std::isalnum(ch) || ch == '_' || ch == '-';
+			});
+		}
+
+		void removeSectionSpoFile(std::string_view id)
+		{
+			if (!DEMO || !isSafeSectionFileName(id))
+				return;
+
+			std::error_code ec;
+			std::filesystem::remove(std::filesystem::path(DEMO->m_dataFolder) / (std::string(id) + ".spo"), ec);
+			if (ec)
+				Logger::error("Section .spo NOT deleted for {}: {}", id, ec.message());
+		}
+	}
 
 	// sections functions references
 	const SectionInfo kSectionInfo[] = {
@@ -157,6 +184,7 @@ namespace Phoenix {
 				int i = getSectionIndex(sectionId);
 				if (i>=0)
 				{
+					removeSectionSpoFile(m_section[i]->identifier);
 					delete m_section[i];
 					m_section.erase(m_section.begin() + i);
 					//Logger::sendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
@@ -270,6 +298,11 @@ namespace Phoenix {
 		m_loadSection.clear();
 		m_execRenderSection.clear();
 		m_execSoundSection.clear();
+	}
+
+	const std::vector<Section*>& SectionManager::sections() const
+	{
+		return m_section;
 	}
 	
 	SectionType getSectionType(std::string_view key)
