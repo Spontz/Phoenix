@@ -16,11 +16,12 @@
 - [ ] 2.7 Restrict Blend Equation choices to Add, Subtract, and Reverse subtract while storing Phoenix-compatible values.
 - [ ] 2.8 Add View menu toggle for displaying bar ids before timeline labels.
 - [ ] 2.9 Implement bar creation from a timeline command or gesture.
-- [ ] 2.10 Implement drag-to-move for changing bar start/end and layer.
+- [ ] 2.10 Implement drag-to-move for changing bar start/end and layer without same-layer overlaps.
 - [ ] 2.11 Implement resize handles for changing bar start or end time.
 - [ ] 2.12 Implement delete for selected bars.
-- [ ] 2.13 Preserve layout stability and prevent label overlap during timeline edits and zoom changes.
-- [ ] 2.14 Render section sync error bars in red while matching Events remain present.
+- [ ] 2.13 Implement undo stack support for committed bar moves.
+- [ ] 2.14 Preserve layout stability and prevent label overlap during timeline edits and zoom changes.
+- [ ] 2.15 Render section sync error bars in red while matching Events remain present.
 
 ## 3. Section Editor, Inspector, And Selection
 
@@ -39,6 +40,7 @@
 - [ ] 4.5 Ensure Cacablu sync progress counters advance only for real processed units, including section manifest checking, and do not reset during one-shot Phoenix requests.
 - [ ] 4.6 Avoid sync loops by distinguishing local timeline edits from runtime state updates.
 - [ ] 4.7 Confirm Phoenix section sync responses include failed section ids/messages and a manifest usable for exact-match checks.
+- [ ] 4.8 Add/confirm Phoenix single-section sync rewrites only the moved bar `.spo` file.
 
 ## 5. Transport Behavior
 
@@ -61,3 +63,5 @@
 - [ ] 6.9 Verify sync modal progress text does not show stale `0/N` and the bar does not reset during one-shot Phoenix requests.
 - [ ] 6.10 Verify Section Editor single-click open, blend equation values, and Apply persistence.
 - [ ] 6.11 Verify View > Display IDs toggles `<id> <name>` labels and changes to Ocultar IDs.
+- [ ] 6.12 Verify moving a selected bar cannot overlap another bar and causes Phoenix to rewrite only the moved bar `.spo`.
+- [ ] 6.13 Verify Edit > Undo restores the previous bar move through the undo stack.

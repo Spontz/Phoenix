@@ -69,9 +69,17 @@ namespace Phoenix {
 			std::string eventPayload;
 		};
 
+		enum class SectionRequestOperation {
+			ReplaceAll,
+			UpdateOne,
+			DeleteMany
+		};
+
 		struct SectionReplaceRequest {
 			std::string requestId;
 			std::vector<IncomingSection> sections;
+			std::vector<std::string> sectionIds;
+			SectionRequestOperation operation = SectionRequestOperation::ReplaceAll;
 			SectionReplaceResult result;
 			bool done = false;
 			std::mutex mutex;
@@ -444,6 +452,52 @@ namespace Phoenix {
 			return objects;
 		}
 
+		std::vector<std::string> extractStringArray(std::string_view message, std::string_view key)
+		{
+			std::vector<std::string> values;
+			const std::string quotedKey = std::format("\"{}\"", key);
+			size_t pos = message.find(quotedKey);
+			if (pos == std::string_view::npos)
+				return values;
+
+			pos = message.find('[', pos + quotedKey.size());
+			if (pos == std::string_view::npos)
+				return values;
+
+			const size_t end = message.find(']', pos + 1);
+			if (end == std::string_view::npos)
+				return values;
+
+			size_t cursor = pos + 1;
+			while (cursor < end) {
+				cursor = message.find('"', cursor);
+				if (cursor == std::string_view::npos || cursor >= end)
+					break;
+				++cursor;
+				std::string value;
+				bool escaped = false;
+				for (; cursor < end; ++cursor) {
+					const char ch = message[cursor];
+					if (escaped) {
+						value.push_back(ch);
+						escaped = false;
+						continue;
+					}
+					if (ch == '\\') {
+						escaped = true;
+						continue;
+					}
+					if (ch == '"')
+						break;
+					value.push_back(ch);
+				}
+				values.push_back(std::move(value));
+				++cursor;
+			}
+
+			return values;
+		}
+
 		std::string formatSectionNumber(float value)
 		{
 			std::ostringstream stream;
@@ -650,6 +704,24 @@ namespace Phoenix {
 			);
 		}
 
+		std::string buildSectionUpdated(std::string_view requestId, std::string_view id)
+		{
+			return std::format(
+				"{{\"type\":\"section.changed\",\"requestId\":\"{}\",\"operation\":\"update-one\",\"id\":\"{}\",\"count\":1}}",
+				escapeJsonValue(requestId),
+				escapeJsonValue(id)
+			);
+		}
+
+		std::string buildSectionsDeleted(std::string_view requestId, size_t count)
+		{
+			return std::format(
+				"{{\"type\":\"section.changed\",\"requestId\":\"{}\",\"operation\":\"delete-many\",\"count\":{}}}",
+				escapeJsonValue(requestId),
+				count
+			);
+		}
+
 		std::string buildFailedSectionsJson(const std::vector<std::string>& failedIds)
 		{
 			std::string json = "[";
@@ -720,6 +792,114 @@ namespace Phoenix {
 				return {
 					.status = "500 Internal Server Error",
 					.body = buildAssetError("section-sync-failed", err.what(), requestId)
+				};
+			}
+		}
+
+		SectionReplaceResult updateSectionOnMainThread(const std::vector<IncomingSection>& sections, std::string_view requestId)
+		{
+			if (sections.size() != 1) {
+				return {
+					.status = "400 Bad Request",
+					.body = buildAssetError("invalid-section-count", "Single section update requires exactly one section", requestId)
+				};
+			}
+
+			const auto& section = sections.front();
+			try {
+				DEMO->m_sectionManager.deleteSections({ section.id });
+				const bool loaded = DEMO->loadScriptFromNetwork(section.content);
+
+				std::string writeError;
+				if (!writeTextFileAtomically(sectionFilePath(section.id), section.content, writeError)) {
+					return {
+						.status = "500 Internal Server Error",
+						.body = buildAssetError("section-write-failed", writeError, requestId)
+					};
+				}
+
+				std::vector<std::string> failedIds;
+				if (!loaded)
+					failedIds.push_back(section.id);
+
+				return {
+					.status = "200 OK",
+					.body = std::format(
+						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"update-one\",\"received\":1,\"loaded\":{},\"failed\":{},\"writtenFiles\":1,\"deletedFiles\":[],\"failedSections\":{},\"manifest\":{}}}",
+						escapeJsonValue(requestId),
+						loaded ? 1 : 0,
+						loaded ? 0 : 1,
+						buildFailedSectionsJson(failedIds),
+						buildSectionsManifest()
+					),
+					.eventPayload = buildSectionUpdated(requestId, section.id)
+				};
+			}
+			catch (const std::exception& err) {
+				return {
+					.status = "500 Internal Server Error",
+					.body = buildAssetError("section-update-failed", err.what(), requestId)
+				};
+			}
+		}
+
+		SectionReplaceResult deleteSectionsOnMainThread(const std::vector<std::string>& sectionIds, std::string_view requestId)
+		{
+			std::set<std::string> ids;
+			for (const auto& id : sectionIds) {
+				if (!isSafeSectionId(id)) {
+					return {
+						.status = "400 Bad Request",
+						.body = buildAssetError("invalid-section-id", std::format("Invalid section id: {}", id), requestId)
+					};
+				}
+				ids.insert(id);
+			}
+
+			try {
+				std::vector<std::string> idsToDelete(ids.begin(), ids.end());
+				DEMO->m_sectionManager.deleteSections(idsToDelete);
+
+				std::vector<std::string> deletedFiles;
+				std::error_code ec;
+				for (const auto& id : ids) {
+					const fs::path filePath = sectionFilePath(id);
+					if (!fs::exists(filePath))
+						continue;
+					fs::remove(filePath, ec);
+					if (ec) {
+						return {
+							.status = "500 Internal Server Error",
+							.body = buildAssetError("section-delete-failed", ec.message(), requestId)
+						};
+					}
+					deletedFiles.push_back(filePath.filename().generic_string());
+				}
+
+				std::string deletedJson = "[";
+				for (size_t i = 0; i < deletedFiles.size(); ++i) {
+					if (i > 0)
+						deletedJson += ',';
+					deletedJson += std::format("\"{}\"", escapeJsonValue(deletedFiles[i]));
+				}
+				deletedJson += "]";
+
+				return {
+					.status = "200 OK",
+					.body = std::format(
+						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"delete-many\",\"received\":{},\"loaded\":0,\"failed\":0,\"writtenFiles\":0,\"deletedFiles\":{},\"failedSections\":[],\"manifest\":{}}}",
+						escapeJsonValue(requestId),
+						ids.size(),
+						deletedJson,
+						buildSectionsManifest()
+					),
+					.eventPayload = buildSectionsDeleted(requestId, ids.size())
+				};
+			}
+			catch (const std::exception& err) {
+				return {
+					.status = "500 Internal Server Error",
+					.body = buildAssetError("section-delete-failed", err.what(), requestId)
 				};
 			}
 		}
@@ -1116,6 +1296,7 @@ namespace Phoenix {
 				const auto request = std::make_shared<SectionReplaceRequest>();
 				request->requestId = requestId;
 				request->sections = std::move(sections);
+				request->operation = SectionRequestOperation::ReplaceAll;
 				{
 					std::lock_guard lock(kSectionReplaceQueueMutex);
 					kSectionReplaceQueue.push(request);
@@ -1124,6 +1305,80 @@ namespace Phoenix {
 				std::unique_lock lock(request->mutex);
 				if (!request->condition.wait_for(lock, std::chrono::seconds(30), [&request]() { return request->done; })) {
 					sendJson(response, "504 Gateway Timeout", buildAssetError("section-sync-timeout", "Timed out waiting for Phoenix to apply sections", requestId));
+					return;
+				}
+				sendJson(response, request->result.status, request->result.body);
+			});
+			response->onAborted([body]() {});
+		});
+
+		app.put("/api/sections/section", [this](auto* response, auto*) {
+			auto body = std::make_shared<std::string>();
+			response->onData([this, response, body](std::string_view chunk, bool last) {
+				body->append(chunk);
+				if (!last)
+					return;
+
+				std::string requestId;
+				extractString(*body, "requestId", requestId);
+
+				std::vector<IncomingSection> sections;
+				std::string parseError;
+				if (!parseIncomingSections(*body, sections, parseError)) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-sections", parseError, requestId));
+					return;
+				}
+				if (sections.size() != 1) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-section-count", "Single section update requires exactly one section", requestId));
+					return;
+				}
+
+				const auto request = std::make_shared<SectionReplaceRequest>();
+				request->requestId = requestId;
+				request->sections = std::move(sections);
+				request->operation = SectionRequestOperation::UpdateOne;
+				{
+					std::lock_guard lock(kSectionReplaceQueueMutex);
+					kSectionReplaceQueue.push(request);
+				}
+
+				std::unique_lock lock(request->mutex);
+				if (!request->condition.wait_for(lock, std::chrono::seconds(30), [&request]() { return request->done; })) {
+					sendJson(response, "504 Gateway Timeout", buildAssetError("section-sync-timeout", "Timed out waiting for Phoenix to apply section", requestId));
+					return;
+				}
+				sendJson(response, request->result.status, request->result.body);
+			});
+			response->onAborted([body]() {});
+		});
+
+		app.del("/api/sections", [this](auto* response, auto*) {
+			auto body = std::make_shared<std::string>();
+			response->onData([this, response, body](std::string_view chunk, bool last) {
+				body->append(chunk);
+				if (!last)
+					return;
+
+				std::string requestId;
+				extractString(*body, "requestId", requestId);
+				auto ids = extractStringArray(*body, "ids");
+				if (ids.empty()) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-section-ids", "delete sections requires ids", requestId));
+					return;
+				}
+
+				const auto request = std::make_shared<SectionReplaceRequest>();
+				request->requestId = requestId;
+				request->sectionIds = std::move(ids);
+				request->operation = SectionRequestOperation::DeleteMany;
+				{
+					std::lock_guard lock(kSectionReplaceQueueMutex);
+					kSectionReplaceQueue.push(request);
+				}
+
+				std::unique_lock lock(request->mutex);
+				if (!request->condition.wait_for(lock, std::chrono::seconds(30), [&request]() { return request->done; })) {
+					sendJson(response, "504 Gateway Timeout", buildAssetError("section-delete-timeout", "Timed out waiting for Phoenix to delete sections", requestId));
 					return;
 				}
 				sendJson(response, request->result.status, request->result.body);
@@ -1453,7 +1708,18 @@ namespace Phoenix {
 				kSectionReplaceQueue.pop();
 			}
 
-			SectionReplaceResult result = replaceSectionsOnMainThread(request->sections, request->requestId);
+			SectionReplaceResult result;
+			switch (request->operation) {
+			case SectionRequestOperation::ReplaceAll:
+				result = replaceSectionsOnMainThread(request->sections, request->requestId);
+				break;
+			case SectionRequestOperation::UpdateOne:
+				result = updateSectionOnMainThread(request->sections, request->requestId);
+				break;
+			case SectionRequestOperation::DeleteMany:
+				result = deleteSectionsOnMainThread(request->sectionIds, request->requestId);
+				break;
+			}
 			if (!result.eventPayload.empty())
 				publishEvent(result.eventPayload);
 

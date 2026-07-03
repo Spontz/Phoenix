@@ -62,6 +62,16 @@ Cacablu SHALL support creating, moving, resizing, deleting, and changing the lay
 - **THEN** Cacablu updates the bar start time, end time, and layer in the loaded project
 - **AND** the bar remains selected after the move
 
+#### Scenario: Bar move would overlap
+- **WHEN** the user drags a selected bar onto another bar in the same layer
+- **THEN** Cacablu blocks the overlapping position
+- **AND** no overlapping bar edit is persisted
+
+#### Scenario: Bar move is undone
+- **WHEN** the user chooses Edit > Undo after a committed bar move
+- **THEN** Cacablu pops the latest move action from the undo stack
+- **AND** restores the bar's previous start time, end time, and layer when that position is valid
+
 #### Scenario: Bar is resized
 - **WHEN** the user resizes a timeline bar
 - **THEN** Cacablu updates the bar start or end time in the loaded project
@@ -105,10 +115,25 @@ Cacablu SHALL synchronize committed timeline bar changes to Phoenix using the ex
 - **THEN** Cacablu schedules a Phoenix section synchronization
 - **AND** Phoenix receives the current project bar snapshot after debouncing intermediate timeline changes
 
+#### Scenario: Bar move is synchronized to disk
+- **WHEN** Phoenix receives a deferred single-section synchronization after a bar move
+- **THEN** Phoenix rewrites only the `.spo` file for the moved bar id with updated timing and layer metadata
+- **AND** Phoenix updates that runtime section without requiring a full section replacement
+
+#### Scenario: Transport follows a bar move
+- **WHEN** the user presses Play immediately after committing a bar move
+- **THEN** Cacablu gives the transport command priority over the deferred section sync
+- **AND** Play is not delayed by section replacement work
+
 #### Scenario: Timeline edit is committed while Phoenix is disconnected
 - **WHEN** the user commits a timeline bar edit and Phoenix is not connected
 - **THEN** Cacablu keeps the local project edit
 - **AND** Cacablu records an event indicating that Phoenix section sync could not be performed
+
+#### Scenario: Project opens while Phoenix is disconnected
+- **WHEN** the user opens a project and Phoenix is not connected
+- **THEN** Cacablu skips initial Phoenix pool and section synchronization
+- **AND** the project loads locally without attempting Phoenix fetch requests
 
 #### Scenario: Phoenix rejects synchronized bars
 - **WHEN** Phoenix returns section sync errors after a timeline edit
