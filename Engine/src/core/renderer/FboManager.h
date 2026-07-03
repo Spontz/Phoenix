@@ -32,6 +32,7 @@ namespace Phoenix {
 		void bindCurrent();
 		void bind_tex(int32_t fbo_num, GLuint texUnit = 0, GLuint attachment = 0);
 		void unbind(bool clearColor, bool clearDepth);
+		void setDefaultFramebuffer(GLuint framebuffer, GLenum drawBuffer);
 		int addFbo(const FboConfig& cfg);
 		void clearFbos();
 		void clearFbosColor();
@@ -42,6 +43,9 @@ namespace Phoenix {
 		int		getInternalFormat(std::string const& name);
 		int		getType(std::string const& name);
 		int		getComponents(std::string const& name);
+
+		GLuint m_defaultFramebuffer;
+		GLenum m_defaultDrawBuffer;
 
 
 		struct FboFormatTable {

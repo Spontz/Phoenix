@@ -12,7 +12,9 @@ namespace Phoenix {
 		mem(0),
 		currentFbo(-1),
 		clearColor(false),
-		clearDepth(false)
+		clearDepth(false),
+		m_defaultFramebuffer(0),
+		m_defaultDrawBuffer(GL_BACK)
 	{
 		fbo.clear();
 	}
@@ -63,11 +65,18 @@ namespace Phoenix {
 		currentFbo = -1;
 		clearColor = newClearColor;
 		clearDepth = newClearDepth;
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_defaultFramebuffer);
+		glDrawBuffer(m_defaultDrawBuffer);
 		// Restore the driver viewport
 		DEMO->m_Window->SetCurrentViewport(DEMO->m_Window->GetFramebufferViewport());
 		if (clearColor)	glClear(GL_COLOR_BUFFER_BIT);
 		if (clearDepth)	glClear(GL_DEPTH_BUFFER_BIT);
+	}
+
+	void FboManager::setDefaultFramebuffer(GLuint framebuffer, GLenum drawBuffer)
+	{
+		m_defaultFramebuffer = framebuffer;
+		m_defaultDrawBuffer = drawBuffer;
 	}
 
 	// Adds a Fbo into the queue, returns the ID of the texture added

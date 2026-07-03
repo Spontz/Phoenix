@@ -5,6 +5,7 @@
 #include "rtc/rtcpnackresponder.hpp"
 #include "rtc/rtcpsrreporter.hpp"
 #include "rtc/rtppacketizationconfig.hpp"
+#include "rtc/rtppacketizer.hpp"
 #include "rtc/rtc.hpp"
 
 #include <algorithm>
@@ -17,7 +18,11 @@
 namespace Phoenix {
 	namespace {
 		constexpr uint8_t kPayloadType = 102;
+		constexpr uint8_t kAudioPayloadType = 0;
 		constexpr uint32_t kVideoSsrc = 1;
+		constexpr uint32_t kAudioSsrc = 2;
+		constexpr uint32_t kPcmuSampleRate = 8000;
+		constexpr uint32_t kPcmuPacketSamples = 160;
 		constexpr auto kGatherTimeout = std::chrono::seconds(2);
 		constexpr std::array<const char*, 3> kEncoderPresets = { "ultrafast", "veryfast", "faster" };
 
@@ -74,6 +79,20 @@ namespace Phoenix {
 			default: return "unknown";
 			}
 		}
+
+		uint8_t linearToMuLaw(float sample)
+		{
+			constexpr int32_t bias = 0x84;
+			constexpr int32_t clip = 32635;
+			const int32_t pcm = std::clamp(static_cast<int32_t>(sample * 32767.0f), -clip, clip);
+			const int32_t sign = pcm < 0 ? 0x80 : 0x00;
+			int32_t magnitude = std::abs(pcm) + bias;
+			int32_t exponent = 7;
+			for (int32_t mask = 0x4000; (magnitude & mask) == 0 && exponent > 0; mask >>= 1)
+				--exponent;
+			const int32_t mantissa = (magnitude >> (exponent + 3)) & 0x0f;
+			return static_cast<uint8_t>(~(sign | (exponent << 4) | mantissa));
+		}
 	}
 
 	class WebRtcPreviewSession final {
@@ -81,10 +100,13 @@ namespace Phoenix {
 		WebRtcPreviewSession()
 			:
 			m_peer(nullptr),
-			m_track(nullptr),
-			m_srReporter(nullptr),
-			m_trackOpen(false),
-			m_trackClosed(false),
+			m_videoTrack(nullptr),
+			m_audioTrack(nullptr),
+			m_videoSrReporter(nullptr),
+			m_audioSrReporter(nullptr),
+			m_videoTrackOpen(false),
+			m_audioTrackOpen(false),
+			m_videoTrackClosed(false),
 			m_answerApplied(false)
 		{
 		}
@@ -97,8 +119,9 @@ namespace Phoenix {
 		std::string createOffer(FramebufferStreamer::SignalCallback signalCallback)
 		{
 			close();
-			m_trackOpen = false;
-			m_trackClosed = false;
+			m_videoTrackOpen = false;
+			m_audioTrackOpen = false;
+			m_videoTrackClosed = false;
 			m_answerApplied = false;
 
 			rtc::Configuration config;
@@ -112,9 +135,10 @@ namespace Phoenix {
 				if (state == rtc::PeerConnection::State::Disconnected ||
 					state == rtc::PeerConnection::State::Failed ||
 					state == rtc::PeerConnection::State::Closed) {
-					m_trackOpen = false;
+					m_videoTrackOpen = false;
+					m_audioTrackOpen = false;
 					if (m_answerApplied)
-						m_trackClosed = true;
+						m_videoTrackClosed = true;
 				}
 			});
 			m_peer->onIceStateChange([](rtc::PeerConnection::IceState state) {
@@ -129,7 +153,7 @@ namespace Phoenix {
 			auto videoDescription = rtc::Description::Video("video-stream", rtc::Description::Direction::SendOnly);
 			videoDescription.addH264Codec(kPayloadType);
 			videoDescription.addSSRC(kVideoSsrc, "video-stream", "phoenix-preview", "video-stream");
-			m_track = m_peer->addTrack(videoDescription);
+			m_videoTrack = m_peer->addTrack(videoDescription);
 
 			auto rtpConfig = std::make_shared<rtc::RtpPacketizationConfig>(
 				kVideoSsrc,
@@ -141,20 +165,43 @@ namespace Phoenix {
 				rtc::NalUnit::Separator::StartSequence,
 				rtpConfig
 			);
-			m_srReporter = std::make_shared<rtc::RtcpSrReporter>(rtpConfig);
-			packetizer->addToChain(m_srReporter);
+			m_videoSrReporter = std::make_shared<rtc::RtcpSrReporter>(rtpConfig);
+			packetizer->addToChain(m_videoSrReporter);
 			packetizer->addToChain(std::make_shared<rtc::RtcpNackResponder>());
-			m_track->setMediaHandler(packetizer);
-			m_track->onOpen([this]() {
-				m_trackOpen = true;
-				m_trackClosed = false;
+			m_videoTrack->setMediaHandler(packetizer);
+			m_videoTrack->onOpen([this]() {
+				m_videoTrackOpen = true;
+				m_videoTrackClosed = false;
 				Logger::info(LogLevel::high, "WebRTC framebuffer preview track opened");
 			});
-			m_track->onClosed([this]() {
-				m_trackOpen = false;
+			m_videoTrack->onClosed([this]() {
+				m_videoTrackOpen = false;
 				if (m_answerApplied)
-					m_trackClosed = true;
+					m_videoTrackClosed = true;
 				Logger::info(LogLevel::high, "WebRTC framebuffer preview track closed");
+			});
+
+			auto audioDescription = rtc::Description::Audio("audio-stream", rtc::Description::Direction::SendOnly);
+			audioDescription.addPCMUCodec(kAudioPayloadType);
+			audioDescription.addSSRC(kAudioSsrc, "audio-stream", "phoenix-preview", "audio-stream");
+			m_audioTrack = m_peer->addTrack(audioDescription);
+			auto audioRtpConfig = std::make_shared<rtc::RtpPacketizationConfig>(
+				kAudioSsrc,
+				"audio-stream",
+				kAudioPayloadType,
+				rtc::PCMURtpPacketizer::DefaultClockRate
+			);
+			auto audioPacketizer = std::make_shared<rtc::PCMURtpPacketizer>(audioRtpConfig);
+			m_audioSrReporter = std::make_shared<rtc::RtcpSrReporter>(audioRtpConfig);
+			audioPacketizer->addToChain(m_audioSrReporter);
+			m_audioTrack->setMediaHandler(audioPacketizer);
+			m_audioTrack->onOpen([this]() {
+				m_audioTrackOpen = true;
+				Logger::info(LogLevel::high, "WebRTC audio preview track opened");
+			});
+			m_audioTrack->onClosed([this]() {
+				m_audioTrackOpen = false;
+				Logger::info(LogLevel::high, "WebRTC audio preview track closed");
 			});
 
 			auto answerPromise = std::make_shared<std::promise<std::string>>();
@@ -218,55 +265,84 @@ namespace Phoenix {
 
 		bool sendSample(const uint8_t* data, size_t size, int64_t pts, int32_t fps)
 		{
-			if (!m_track || size == 0)
+			if (!m_videoTrack || size == 0)
 				return true;
-			if (m_trackClosed)
+			if (m_videoTrackClosed)
 				return false;
-			if (!m_answerApplied || !m_trackOpen || !m_track->isOpen())
+			if (!m_answerApplied || !m_videoTrackOpen || !m_videoTrack->isOpen())
 				return true;
 
 			try {
-				m_track->sendFrame(reinterpret_cast<const rtc::byte*>(data), size, std::chrono::duration<double, std::micro>(
+				m_videoTrack->sendFrame(reinterpret_cast<const rtc::byte*>(data), size, std::chrono::duration<double, std::micro>(
 					(static_cast<double>(pts) / static_cast<double>(std::max(1, fps))) * 1'000'000.0
 				));
 				return true;
 			}
 			catch (const std::exception& err) {
 				Logger::info(LogLevel::high, "WebRTC framebuffer preview send failed: {}", err.what());
-				m_trackOpen = false;
-				m_trackClosed = true;
+				m_videoTrackOpen = false;
+				m_videoTrackClosed = true;
+				return false;
+			}
+		}
+
+		bool sendAudioSample(const uint8_t* data, size_t size, uint32_t timestamp)
+		{
+			if (!m_audioTrack || size == 0)
+				return true;
+			if (!m_answerApplied || !m_audioTrackOpen || !m_audioTrack->isOpen())
+				return true;
+
+			try {
+				m_audioTrack->sendFrame(reinterpret_cast<const rtc::byte*>(data), size, std::chrono::duration<double>(
+					static_cast<double>(timestamp) / static_cast<double>(kPcmuSampleRate)
+				));
+				return true;
+			}
+			catch (const std::exception& err) {
+				Logger::info(LogLevel::high, "WebRTC audio preview send failed: {}", err.what());
+				m_audioTrackOpen = false;
 				return false;
 			}
 		}
 
 		bool isReady() const
 		{
-			return m_track && m_track->isOpen();
+			return m_videoTrack && m_videoTrack->isOpen();
 		}
 
 		void close()
 		{
-			m_trackOpen = false;
-			m_trackClosed = true;
+			m_videoTrackOpen = false;
+			m_audioTrackOpen = false;
+			m_videoTrackClosed = true;
 			m_answerApplied = false;
-			if (m_track) {
-				m_track->close();
-				m_track.reset();
+			if (m_audioTrack) {
+				m_audioTrack->close();
+				m_audioTrack.reset();
+			}
+			if (m_videoTrack) {
+				m_videoTrack->close();
+				m_videoTrack.reset();
 			}
 			if (m_peer) {
 				m_peer->close();
 				m_peer.reset();
 			}
-			m_srReporter.reset();
+			m_audioSrReporter.reset();
+			m_videoSrReporter.reset();
 		}
 
 	private:
 		std::shared_ptr<rtc::PeerConnection> m_peer;
-		std::shared_ptr<rtc::Track> m_track;
-		std::shared_ptr<rtc::RtcpSrReporter> m_srReporter;
+		std::shared_ptr<rtc::Track> m_videoTrack;
+		std::shared_ptr<rtc::Track> m_audioTrack;
+		std::shared_ptr<rtc::RtcpSrReporter> m_videoSrReporter;
+		std::shared_ptr<rtc::RtcpSrReporter> m_audioSrReporter;
 		FramebufferStreamer::SignalCallback m_signalCallback;
-		std::atomic_bool m_trackOpen;
-		std::atomic_bool m_trackClosed;
+		std::atomic_bool m_videoTrackOpen;
+		std::atomic_bool m_audioTrackOpen;
+		std::atomic_bool m_videoTrackClosed;
 		std::atomic_bool m_answerApplied;
 	};
 
@@ -279,6 +355,8 @@ namespace Phoenix {
 		m_streamFailed(false),
 		m_overloadLogged(false),
 		m_clientPlaying(false),
+		m_audioResamplePosition(0.0),
+		m_nextAudioTimestamp(0),
 		m_nextCaptureTime(0.0),
 		m_nextPts(0),
 		m_codecContext(nullptr),
@@ -319,6 +397,9 @@ namespace Phoenix {
 		m_clientPlaying = false;
 		m_nextCaptureTime = 0.0;
 		m_nextPts = 0;
+		m_audioResamplePosition = 0.0;
+		m_nextAudioTimestamp = 0;
+		m_pendingAudioSamples.clear();
 
 		rtc::InitLogger(rtc::LogLevel::Warning);
 
@@ -330,6 +411,11 @@ namespace Phoenix {
 	}
 
 	void FramebufferStreamer::submitFrame(const Viewport& viewport, double nowSeconds)
+	{
+		submitFrameFromFramebuffer(0, GL_BACK, viewport, nowSeconds);
+	}
+
+	void FramebufferStreamer::submitFrameFromFramebuffer(uint32_t framebuffer, uint32_t readBuffer, const Viewport& viewport, double nowSeconds)
 	{
 		if (!m_running || m_stopRequested || m_streamFailed || !m_clientPlaying)
 			return;
@@ -369,7 +455,8 @@ namespace Phoenix {
 		}
 
 		glPixelStorei(GL_PACK_ALIGNMENT, 1);
-		glReadBuffer(GL_BACK);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+		glReadBuffer(static_cast<GLenum>(readBuffer));
 		glReadPixels(viewport.x, viewport.y, frame.sourceWidth, frame.sourceHeight, GL_RGB, GL_UNSIGNED_BYTE, frame.pixels.data());
 
 		{
@@ -382,6 +469,47 @@ namespace Phoenix {
 			m_frames.emplace_back(std::move(frame));
 		}
 		m_queueSignal.notify_one();
+	}
+
+	void FramebufferStreamer::submitAudioSamples(const float* samples, uint32_t frameCount, uint32_t channels, uint32_t sampleRate)
+	{
+		if (!m_running || m_stopRequested || m_streamFailed || !m_clientPlaying)
+			return;
+		if (!samples || frameCount == 0 || channels == 0 || sampleRate == 0)
+			return;
+
+		std::vector<AudioFrame> readyFrames;
+		{
+			std::lock_guard<std::mutex> lock(m_queueMutex);
+			const double step = static_cast<double>(sampleRate) / static_cast<double>(kPcmuSampleRate);
+			double position = m_audioResamplePosition;
+			while (position < static_cast<double>(frameCount)) {
+				const uint32_t frameIndex = std::min(static_cast<uint32_t>(position), frameCount - 1);
+				const float left = samples[static_cast<size_t>(frameIndex) * channels];
+				const float right = channels > 1 ? samples[static_cast<size_t>(frameIndex) * channels + 1] : left;
+				m_pendingAudioSamples.push_back(linearToMuLaw((left + right) * 0.5f));
+				position += step;
+			}
+			m_audioResamplePosition = position - static_cast<double>(frameCount);
+
+			while (m_pendingAudioSamples.size() >= kPcmuPacketSamples) {
+				AudioFrame audioFrame;
+				audioFrame.samples.assign(m_pendingAudioSamples.begin(), m_pendingAudioSamples.begin() + kPcmuPacketSamples);
+				audioFrame.timestamp = m_nextAudioTimestamp;
+				m_nextAudioTimestamp += kPcmuPacketSamples;
+				m_pendingAudioSamples.erase(m_pendingAudioSamples.begin(), m_pendingAudioSamples.begin() + kPcmuPacketSamples);
+				readyFrames.emplace_back(std::move(audioFrame));
+			}
+
+			for (auto& audioFrame : readyFrames) {
+				while (m_audioFrames.size() >= kMaxQueuedAudioFrames)
+					m_audioFrames.pop_front();
+				m_audioFrames.emplace_back(std::move(audioFrame));
+			}
+		}
+
+		if (!readyFrames.empty())
+			m_queueSignal.notify_one();
 	}
 
 	void FramebufferStreamer::shutdown()
@@ -399,6 +527,8 @@ namespace Phoenix {
 		{
 			std::lock_guard<std::mutex> lock(m_queueMutex);
 			m_frames.clear();
+			m_audioFrames.clear();
+			m_pendingAudioSamples.clear();
 		}
 
 		closeStream();
@@ -482,15 +612,29 @@ namespace Phoenix {
 	{
 		while (!m_stopRequested) {
 			Frame frame;
+			AudioFrame audioFrame;
+			bool hasAudioFrame = false;
 			{
 				std::unique_lock<std::mutex> lock(m_queueMutex);
-				m_queueSignal.wait(lock, [&] { return m_stopRequested || (m_clientPlaying && !m_frames.empty()); });
+				m_queueSignal.wait(lock, [&] { return m_stopRequested || (m_clientPlaying && (!m_frames.empty() || !m_audioFrames.empty())); });
 				if (m_stopRequested)
 					break;
-				if (!m_clientPlaying || m_frames.empty())
+				if (!m_clientPlaying || (m_frames.empty() && m_audioFrames.empty()))
 					continue;
-				frame = std::move(m_frames.front());
-				m_frames.pop_front();
+				if (!m_audioFrames.empty()) {
+					audioFrame = std::move(m_audioFrames.front());
+					m_audioFrames.pop_front();
+					hasAudioFrame = true;
+				}
+				else {
+					frame = std::move(m_frames.front());
+					m_frames.pop_front();
+				}
+			}
+
+			if (hasAudioFrame) {
+				sendAudioPacket(audioFrame);
+				continue;
 			}
 
 			if (!encodeFrame(frame)) {
@@ -660,6 +804,35 @@ namespace Phoenix {
 		std::vector<int32_t> failedSessions;
 		for (const auto& [sessionId, session] : sessions) {
 			if (!session->sendSample(packet->data, static_cast<size_t>(packet->size), packet->pts < 0 ? 0 : packet->pts, fps))
+				failedSessions.push_back(sessionId);
+		}
+
+		if (!failedSessions.empty()) {
+			std::lock_guard lock(m_peerMutex);
+			for (const int32_t sessionId : failedSessions)
+				m_sessions.erase(sessionId);
+			m_clientPlaying = !m_sessions.empty();
+		}
+
+		return true;
+	}
+
+	bool FramebufferStreamer::sendAudioPacket(const AudioFrame& frame)
+	{
+		std::vector<std::pair<int32_t, std::shared_ptr<WebRtcPreviewSession>>> sessions;
+		{
+			std::lock_guard lock(m_peerMutex);
+			sessions.reserve(m_sessions.size());
+			for (const auto& [sessionId, session] : m_sessions)
+				sessions.emplace_back(sessionId, session);
+		}
+
+		if (sessions.empty())
+			return true;
+
+		std::vector<int32_t> failedSessions;
+		for (const auto& [sessionId, session] : sessions) {
+			if (!session->sendAudioSample(frame.samples.data(), frame.samples.size(), frame.timestamp))
 				failedSessions.push_back(sessionId);
 		}
 

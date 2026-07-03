@@ -39,6 +39,8 @@ namespace Phoenix {
 
 		bool init();
 		void submitFrame(const Viewport& viewport, double nowSeconds);
+		void submitFrameFromFramebuffer(uint32_t framebuffer, uint32_t readBuffer, const Viewport& viewport, double nowSeconds);
+		void submitAudioSamples(const float* samples, uint32_t frameCount, uint32_t channels, uint32_t sampleRate);
 		void shutdown();
 		Offer createOffer(SignalCallback signalCallback);
 		void handleAnswer(int32_t sessionId, std::string_view sdp);
@@ -49,6 +51,7 @@ namespace Phoenix {
 
 		bool isRunning() const { return m_running; }
 		bool isReady() const { return m_ready; }
+		bool hasClients() const { return m_clientPlaying.load(); }
 		const std::string& getStreamUrl() const { return m_streamUrl; }
 
 	private:
@@ -61,18 +64,24 @@ namespace Phoenix {
 			int64_t pts = 0;
 			int32_t fps = 30;
 		};
+		struct AudioFrame {
+			std::vector<uint8_t> samples;
+			uint32_t timestamp = 0;
+		};
 
 		void workerLoop();
 		bool openEncoder(int32_t width, int32_t height, int32_t fps, int32_t bitrate, int32_t preset);
 		void closePeer();
 		bool encodeFrame(const Frame& frame);
 		bool sendEncodedPacket(const struct AVPacket* packet, int32_t fps);
+		bool sendAudioPacket(const AudioFrame& frame);
 		void closeStream();
 		void logFfmpegError(std::string_view message, int errorCode) const;
 		static int interruptCallback(void* opaque);
 
 	private:
 		static constexpr size_t kMaxQueuedFrames = 1;
+		static constexpr size_t kMaxQueuedAudioFrames = 50;
 
 		std::string m_streamUrl;
 		std::atomic_bool m_running;
@@ -86,6 +95,10 @@ namespace Phoenix {
 		std::mutex m_queueMutex;
 		std::condition_variable m_queueSignal;
 		std::deque<Frame> m_frames;
+		std::deque<AudioFrame> m_audioFrames;
+		std::vector<uint8_t> m_pendingAudioSamples;
+		double m_audioResamplePosition;
+		uint32_t m_nextAudioTimestamp;
 		double m_nextCaptureTime;
 		int64_t m_nextPts;
 

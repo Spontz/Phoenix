@@ -438,8 +438,8 @@ namespace Phoenix
 	void Window::glfwWindowSizeCallback(GLFWwindow* p_glfw_window, int width, int height) // TODO: Impementar el resizing
 	{
 		WindowData& data = *(WindowData*)glfwGetWindowUserPointer(p_glfw_window);
-		data.WindowProperties.Width = width;
-		data.WindowProperties.Height = height;
+		if (width < 320 || height < 240)
+			return;
 
 		WindowResizeEvent event(width, height);
 		data.EventCallback(event);

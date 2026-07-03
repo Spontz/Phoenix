@@ -7,6 +7,8 @@
 #include <string_view>
 #include <vector>
 #include <memory>
+#include <functional>
+#include <mutex>
 
 #include <kiss_fft.h>
 #include <kiss_fftr.h>
@@ -38,6 +40,7 @@ namespace Phoenix {
 
 		void playDevice();
 		void stopDevice();
+		void setStreamingAudioSink(std::function<bool(const float*, uint32_t, uint32_t, uint32_t)> sink);
 
 		void stopAllSounds();
 
@@ -61,6 +64,8 @@ namespace Phoenix {
 
 		uint32_t		m_channels;
 		uint32_t		m_sampleRate;
+		std::mutex		m_streamingAudioSinkMutex;
+		std::function<bool(const float*, uint32_t, uint32_t, uint32_t)> m_streamingAudioSink;
 	
 		// FFT capture and analysis
 		kiss_fftr_cfg	m_fftcfg;

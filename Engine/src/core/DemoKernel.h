@@ -158,6 +158,9 @@ namespace Phoenix {
 		void ProcessAndExecuteSectionsLayer();	// Process and Execute (render) the layer with all the sections
 		void ProcessAndExecuteLayers();			// Process and Execute (render) the other layers that may be added by other apps
 		void ProcessAndExecuteImGUILayer();		// Process and Execute (render) the layer with the ImGUI debug info
+		void ProcessAndStreamMinimizedFrame();
+		bool EnsureStreamingFramebuffer(uint32_t width, uint32_t height);
+		void DestroyStreamingFramebuffer();
 
 		void InitControlVars(); // Init control vars
 
@@ -204,6 +207,11 @@ namespace Phoenix {
 		// Resources
 		Resource* m_pRes;
 		std::unique_ptr<FramebufferStreamer> m_framebufferStreamer;
+		GLuint m_streamFramebuffer;
+		GLuint m_streamColorAttachment;
+		GLuint m_streamDepthAttachment;
+		uint32_t m_streamFramebufferWidth;
+		uint32_t m_streamFramebufferHeight;
 
 		// Frame time stats
 		float m_demoRunTime;		// seconds ellapsed since 0.0 <- demo init

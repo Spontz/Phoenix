@@ -202,6 +202,12 @@ namespace Phoenix {
 			ma_device_stop(m_pDevice);
 	}
 
+	void SoundManager::setStreamingAudioSink(std::function<bool(const float*, uint32_t, uint32_t, uint32_t)> sink)
+	{
+		std::lock_guard lock(m_streamingAudioSinkMutex);
+		m_streamingAudioSink = std::move(sink);
+	}
+
 	void SoundManager::stopAllSounds()
 	{
 		for (auto const& m_sound : sound) {
@@ -296,6 +302,17 @@ namespace Phoenix {
 					mySound->stopSound();
 				}
 			}
+		}
+
+		std::function<bool(const float*, uint32_t, uint32_t, uint32_t)> streamingAudioSink;
+		{
+			std::lock_guard lock(p_sm->m_streamingAudioSinkMutex);
+			streamingAudioSink = p_sm->m_streamingAudioSink;
+		}
+		if (streamingAudioSink) {
+			const bool sentToPreview = streamingAudioSink(pOutputF32, frameCount, p_sm->m_channels, p_sm->m_sampleRate);
+			if (sentToPreview)
+				memset(pOutputF32, 0, sizeof(float) * frameCount * p_sm->m_channels);
 		}
 
 		// Fill the sampleBuffer for the FFT analysis

@@ -27,6 +27,7 @@
 #include <set>
 #include <sstream>
 #include <atomic>
+#include <unordered_map>
 #include <vector>
 
 namespace Phoenix {
@@ -89,6 +90,21 @@ namespace Phoenix {
 		std::mutex kSectionReplaceQueueMutex;
 		std::queue<std::shared_ptr<SectionReplaceRequest>> kSectionReplaceQueue;
 
+		struct SectionSyncStatus {
+			std::string requestId;
+			std::string operation;
+			std::string phase;
+			std::string message;
+			size_t current = 0;
+			size_t total = 0;
+			size_t loaded = 0;
+			size_t failed = 0;
+			bool done = false;
+		};
+
+		std::mutex kSectionSyncStatusMutex;
+		std::unordered_map<std::string, SectionSyncStatus> kSectionSyncStatuses;
+
 		template <typename Response>
 		void writeCors(Response* response)
 		{
@@ -131,6 +147,56 @@ namespace Phoenix {
 				escapeJsonValue(requestId),
 				escapeJsonValue(code),
 				escapeJsonValue(message)
+			);
+		}
+
+		void updateSectionSyncStatus(
+			std::string_view requestId,
+			std::string_view operation,
+			std::string_view phase,
+			size_t current,
+			size_t total,
+			size_t loaded,
+			size_t failed,
+			bool done,
+			std::string_view message)
+		{
+			if (requestId.empty())
+				return;
+
+			std::lock_guard lock(kSectionSyncStatusMutex);
+			kSectionSyncStatuses[std::string(requestId)] = SectionSyncStatus{
+				.requestId = std::string(requestId),
+				.operation = std::string(operation),
+				.phase = std::string(phase),
+				.message = std::string(message),
+				.current = current,
+				.total = total,
+				.loaded = loaded,
+				.failed = failed,
+				.done = done
+			};
+		}
+
+		std::string buildSectionSyncStatusJson(std::string_view requestId)
+		{
+			std::lock_guard lock(kSectionSyncStatusMutex);
+			const auto it = kSectionSyncStatuses.find(std::string(requestId));
+			if (it == kSectionSyncStatuses.end())
+				return buildAssetError("section-sync-status-not-found", "Section sync status was not found", requestId);
+
+			const auto& status = it->second;
+			return std::format(
+				"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"{}\",\"phase\":\"{}\",\"current\":{},\"total\":{},\"loaded\":{},\"failed\":{},\"done\":{},\"message\":\"{}\"}}",
+				escapeJsonValue(status.requestId),
+				escapeJsonValue(status.operation),
+				escapeJsonValue(status.phase),
+				status.current,
+				status.total,
+				status.loaded,
+				status.failed,
+				status.done ? "true" : "false",
+				escapeJsonValue(status.message)
 			);
 		}
 
@@ -740,9 +806,13 @@ namespace Phoenix {
 
 		SectionReplaceResult replaceSectionsOnMainThread(const std::vector<IncomingSection>& sections, std::string_view requestId)
 		{
+			const size_t totalSteps = sections.size() * 2;
+			updateSectionSyncStatus(requestId, "replace-all", "validating", 0, totalSteps, 0, 0, false, "Validating sections...");
+
 			std::set<std::string> incomingIds;
 			for (const auto& section : sections) {
 				if (!incomingIds.insert(section.id).second) {
+					updateSectionSyncStatus(requestId, "replace-all", "error", 0, totalSteps, 0, 1, true, std::format("Duplicate section id: {}", section.id));
 					return {
 						.status = "400 Bad Request",
 						.body = buildAssetError("duplicate-section", std::format("Duplicate section id: {}", section.id), requestId)
@@ -751,28 +821,39 @@ namespace Phoenix {
 			}
 
 			try {
+				size_t written = 0;
 				for (const auto& section : sections) {
+					updateSectionSyncStatus(requestId, "replace-all", "writing", written, totalSteps, 0, 0, false, std::format("Writing section {}...", section.id));
 					std::string writeError;
 					if (!writeTextFileAtomically(sectionFilePath(section.id), section.content, writeError)) {
+						updateSectionSyncStatus(requestId, "replace-all", "error", written, totalSteps, 0, 1, true, writeError);
 						return {
 							.status = "500 Internal Server Error",
 							.body = buildAssetError("section-write-failed", writeError, requestId)
 						};
 					}
+					++written;
+					updateSectionSyncStatus(requestId, "replace-all", "writing", written, totalSteps, 0, 0, false, std::format("Wrote section {}", section.id));
 				}
 
+				updateSectionSyncStatus(requestId, "replace-all", "clearing", written, totalSteps, 0, 0, false, "Replacing Phoenix sections...");
 				deleteSectionSpoFiles(incomingIds);
 				DEMO->m_sectionManager.clear();
 
 				size_t loaded = 0;
 				std::vector<std::string> failedIds;
+				size_t processed = 0;
 				for (const auto& section : sections) {
+					updateSectionSyncStatus(requestId, "replace-all", "loading", written + processed, totalSteps, loaded, failedIds.size(), false, std::format("Loading section {}...", section.id));
 					if (DEMO->loadScriptFromNetwork(section.content))
 						++loaded;
 					else
 						failedIds.push_back(section.id);
+					++processed;
+					updateSectionSyncStatus(requestId, "replace-all", "loading", written + processed, totalSteps, loaded, failedIds.size(), false, std::format("Loaded {}/{} sections", loaded, sections.size()));
 				}
 
+				updateSectionSyncStatus(requestId, "replace-all", failedIds.empty() ? "complete" : "error", totalSteps, totalSteps, loaded, failedIds.size(), true, failedIds.empty() ? "Phoenix sections sync complete." : "Phoenix sections sync finished with issues.");
 				return {
 					.status = "200 OK",
 					.body = std::format(
@@ -789,6 +870,7 @@ namespace Phoenix {
 				};
 			}
 			catch (const std::exception& err) {
+				updateSectionSyncStatus(requestId, "replace-all", "error", 0, totalSteps, 0, 1, true, err.what());
 				return {
 					.status = "500 Internal Server Error",
 					.body = buildAssetError("section-sync-failed", err.what(), requestId)
@@ -1274,6 +1356,13 @@ namespace Phoenix {
 
 		app.get("/api/sections/manifest", [](auto* response, auto*) {
 			sendJson(response, "200 OK", buildSectionsManifest());
+		});
+
+		app.get("/api/sections/status/:requestId", [](auto* response, auto* request) {
+			const std::string_view requestId = request->getParameter(0);
+			const std::string body = buildSectionSyncStatusJson(requestId);
+			const bool ok = body.find("\"ok\":true") != std::string::npos;
+			sendJson(response, ok ? "200 OK" : "404 Not Found", body);
 		});
 
 		app.put("/api/sections", [this](auto* response, auto*) {

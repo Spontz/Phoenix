@@ -199,6 +199,9 @@ namespace Phoenix {
 
 	bool DemoKernel::OnWindowResize(WindowResizeEvent& e)
 	{
+		if (e.GetWidth() < 320 || e.GetHeight() < 240)
+			return true;
+
 		if (!m_WindowResizing) {
 			m_WindowResizing = true;
 			m_windowWidth = static_cast<uint32_t>(std::max(e.GetWidth(), 1));
@@ -315,6 +318,11 @@ namespace Phoenix {
 		m_exitDemo(false),
 		m_pRes(nullptr),
 		m_framebufferStreamer(nullptr),
+		m_streamFramebuffer(0),
+		m_streamColorAttachment(0),
+		m_streamDepthAttachment(0),
+		m_streamFramebufferWidth(0),
+		m_streamFramebufferHeight(0),
 		m_overrideWindowConfigParams(false),
 		m_windowPosX(30),
 		m_windowPosY(30),
@@ -331,6 +339,7 @@ namespace Phoenix {
 
 	DemoKernel::~DemoKernel()
 	{
+		DestroyStreamingFramebuffer();
 		delete m_pRes;
 	}
 
@@ -544,12 +553,18 @@ namespace Phoenix {
 			// Check if demo should be ended or should be restarted
 			checkDemoEnd();
 
-			ProcessAndExecuteSectionsLayer();
-			ProcessAndExecuteLayers();
-			ProcessAndExecuteImGUILayer();
-			if (m_framebufferStreamer) {
-				Viewport streamViewport{ 0, 0, m_Window->GetWidth(), m_Window->GetHeight() };
-				m_framebufferStreamer->submitFrame(streamViewport, glfwGetTime());
+			const bool windowIconified = glfwGetWindowAttrib(static_cast<GLFWwindow*>(m_Window->GetNativeWindow()), GLFW_ICONIFIED) == GLFW_TRUE;
+			if (m_framebufferStreamer && m_framebufferStreamer->hasClients() && windowIconified) {
+				ProcessAndStreamMinimizedFrame();
+			}
+			else {
+				ProcessAndExecuteSectionsLayer();
+				ProcessAndExecuteLayers();
+				ProcessAndExecuteImGUILayer();
+				if (m_framebufferStreamer) {
+					Viewport streamViewport{ 0, 0, m_Window->GetWidth(), m_Window->GetHeight() };
+					m_framebufferStreamer->submitFrame(streamViewport, glfwGetTime());
+				}
 			}
 
 			// Save the camera, if needed
@@ -625,14 +640,28 @@ namespace Phoenix {
 			if (!m_framebufferStreamer) {
 				m_framebufferStreamer = std::make_unique<FramebufferStreamer>();
 				m_framebufferStreamer->init();
+				if (m_sound) {
+					m_soundManager.setStreamingAudioSink([this](const float* samples, uint32_t frameCount, uint32_t channels, uint32_t sampleRate) {
+						if (m_framebufferStreamer && m_framebufferStreamer->hasClients()) {
+							m_framebufferStreamer->submitAudioSamples(samples, frameCount, channels, sampleRate);
+							return true;
+						}
+						return false;
+					});
+				}
 			}
 			return;
 		}
+
+		if (m_sound)
+			m_soundManager.setStreamingAudioSink(nullptr);
 
 		if (m_framebufferStreamer) {
 			m_framebufferStreamer->shutdown();
 			m_framebufferStreamer.reset();
 		}
+
+		DestroyStreamingFramebuffer();
 	}
 
 	void DemoKernel::setStartTime(float theTime)
@@ -997,6 +1026,83 @@ namespace Phoenix {
 				layer->OnImGuiRender();			// Update the ImGui components (if any)
 		}
 		m_ImGuiLayer->End();
+	}
+
+	bool DemoKernel::EnsureStreamingFramebuffer(uint32_t width, uint32_t height)
+	{
+		width = std::max(2u, width & ~1u);
+		height = std::max(2u, height & ~1u);
+		if (m_streamFramebuffer && m_streamFramebufferWidth == width && m_streamFramebufferHeight == height)
+			return true;
+
+		DestroyStreamingFramebuffer();
+
+		glCreateFramebuffers(1, &m_streamFramebuffer);
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_streamColorAttachment);
+		glBindTexture(GL_TEXTURE_2D, m_streamColorAttachment);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_streamDepthAttachment);
+		glBindTexture(GL_TEXTURE_2D, m_streamDepthAttachment);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, m_streamFramebuffer);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_streamColorAttachment, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_streamDepthAttachment, 0);
+		const GLenum drawBuffer = GL_COLOR_ATTACHMENT0;
+		glDrawBuffers(1, &drawBuffer);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+			Logger::error("Could not create WebRTC offscreen framebuffer");
+			DestroyStreamingFramebuffer();
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			return false;
+		}
+
+		m_streamFramebufferWidth = width;
+		m_streamFramebufferHeight = height;
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		return true;
+	}
+
+	void DemoKernel::DestroyStreamingFramebuffer()
+	{
+		if (m_streamColorAttachment) {
+			glDeleteTextures(1, &m_streamColorAttachment);
+			m_streamColorAttachment = 0;
+		}
+		if (m_streamDepthAttachment) {
+			glDeleteTextures(1, &m_streamDepthAttachment);
+			m_streamDepthAttachment = 0;
+		}
+		if (m_streamFramebuffer) {
+			glDeleteFramebuffers(1, &m_streamFramebuffer);
+			m_streamFramebuffer = 0;
+		}
+		m_streamFramebufferWidth = 0;
+		m_streamFramebufferHeight = 0;
+	}
+
+	void DemoKernel::ProcessAndStreamMinimizedFrame()
+	{
+		if (!m_framebufferStreamer || !EnsureStreamingFramebuffer(m_Window->GetWidth(), m_Window->GetHeight()))
+			return;
+
+		m_fboManager.setDefaultFramebuffer(m_streamFramebuffer, GL_COLOR_ATTACHMENT0);
+		ProcessAndExecuteSectionsLayer();
+		ProcessAndExecuteLayers();
+		ProcessAndExecuteImGUILayer();
+
+		Viewport streamViewport{ 0, 0, m_streamFramebufferWidth, m_streamFramebufferHeight };
+		m_framebufferStreamer->submitFrameFromFramebuffer(m_streamFramebuffer, GL_COLOR_ATTACHMENT0, streamViewport, glfwGetTime());
+
+		m_fboManager.setDefaultFramebuffer(0, GL_BACK);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDrawBuffer(GL_BACK);
 	}
 
 	void DemoKernel::InitControlVars()
