@@ -48,7 +48,7 @@ Phoenix SHALL use the existing native editor WebSocket endpoint for WebRTC previ
 - **THEN** Phoenix sends an error message without stopping the engine
 
 ### Requirement: Preview video track
-Phoenix SHALL send the final framebuffer as an H.264 WebRTC video track to the connected Cacablu preview peer.
+Phoenix SHALL send the final framebuffer as an H.264 WebRTC video track to each connected Cacablu preview peer.
 
 #### Scenario: Preview connects
 - **WHEN** Cacablu completes WebRTC negotiation with Phoenix
@@ -57,6 +57,28 @@ Phoenix SHALL send the final framebuffer as an H.264 WebRTC video track to the c
 #### Scenario: No preview peer is connected
 - **WHEN** streaming is enabled but no WebRTC peer is ready
 - **THEN** Phoenix continues rendering normally and avoids unnecessary network sends
+
+#### Scenario: Multiple preview peers connect
+- **WHEN** more than one Cacablu client completes WebRTC negotiation
+- **THEN** Phoenix keeps each preview session independent
+- **AND** all connected clients can receive the same live feed without stopping the others
+
+### Requirement: Preview audio track
+Phoenix SHALL send the mixed demo audio as a WebRTC audio track alongside the preview video.
+
+#### Scenario: Preview audio connects
+- **WHEN** a Cacablu preview peer is receiving the WebRTC preview
+- **THEN** Phoenix sends the mixed demo audio on a WebRTC audio track
+- **AND** Cacablu can attach that audio track to the same preview media element as the video
+
+#### Scenario: Local audio is redirected to preview
+- **WHEN** at least one preview peer is receiving audio
+- **THEN** Phoenix keeps mixing audio internally for timing and FFT analysis
+- **AND** Phoenix mutes the local playback buffer so the audio is heard from Cacablu rather than Phoenix's local output
+
+#### Scenario: No preview peer receives audio
+- **WHEN** preview streaming is enabled but no preview peer is actively receiving audio
+- **THEN** Phoenix preserves normal local audio playback behavior
 
 ### Requirement: Frame capture source
 Phoenix SHALL capture the final demo framebuffer image intended for presentation, not an arbitrary intermediate FBO and not debug ImGui overlays.
@@ -68,6 +90,11 @@ Phoenix SHALL capture the final demo framebuffer image intended for presentation
 #### Scenario: Debug UI is enabled
 - **WHEN** local debug ImGui overlays are enabled
 - **THEN** the WebRTC preview contains the demo framebuffer without the debug overlay UI
+
+#### Scenario: Window is minimized
+- **WHEN** Phoenix is minimized while at least one preview peer is active
+- **THEN** Phoenix captures preview video from a private offscreen framebuffer instead of the minimized window backbuffer
+- **AND** the private streaming framebuffer does not appear in or interfere with the demo FBO list
 
 ### Requirement: Bounded render impact
 Phoenix MUST avoid unbounded blocking of the render loop due to WebRTC preview streaming.

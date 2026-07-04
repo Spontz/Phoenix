@@ -19,8 +19,8 @@ Cacablu SHALL allow users to select bars from the timeline and expose the select
 #### Scenario: Bar is selected
 - **WHEN** the user single-clicks a timeline bar
 - **THEN** Cacablu records that bar as the current selection
-- **AND** the Section Editor opens or reinitializes on the right side
-- **AND** repeated single-clicks on the same bar still initialize the Section Editor if needed
+- **AND** the Bar Editor opens or reinitializes on the right side
+- **AND** repeated single-clicks on the same bar still initialize the Bar Editor if needed
 
 #### Scenario: Bar ids are displayed
 - **WHEN** the user enables View > Display IDs
@@ -32,19 +32,19 @@ Cacablu SHALL allow users to select bars from the timeline and expose the select
 - **THEN** Cacablu clears the bar selection
 - **AND** selected-bar panels no longer show stale bar-specific state
 
-### Requirement: Section Editor bar properties
-Cacablu SHALL provide a Section Editor for selected timeline bars and persist applied bar property changes to the loaded project.
+### Requirement: Bar Editor bar properties
+Cacablu SHALL provide a Bar Editor for selected timeline bars and persist applied bar property changes to the loaded project.
 
-#### Scenario: Section Editor opens for a selected bar
+#### Scenario: Bar Editor opens for a selected bar
 - **WHEN** the user single-clicks a timeline bar
-- **THEN** Section Editor shows Bar Type, Script Template, Save Template, script editor, Blend Source, Blend Destination, Blend Equation, and Apply controls
+- **THEN** Bar Editor shows Bar Type, Script Template, Save Template, script editor, Blend Source, Blend Destination, Blend Equation, and Apply controls
 
 #### Scenario: Blend equation is edited
 - **WHEN** the user opens the Blend Equation selector
 - **THEN** Cacablu shows `Add`, `Subtract`, and `Reverse subtract`
 - **AND** applied values are stored in the Phoenix-compatible section format
 
-#### Scenario: Section Editor changes are applied
+#### Scenario: Bar Editor changes are applied
 - **WHEN** the user changes script or blend settings and selects Apply
 - **THEN** Cacablu updates the selected bar in the active project session
 - **AND** subsequent section synchronization uses the applied values

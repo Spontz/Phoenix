@@ -74,6 +74,7 @@ namespace Phoenix {
 				{"gl_stencil",				SectionVar::TYPE_BOOL,			&DEMO->m_Window->m_Data.WindowProperties.Stencil		},
 				{"gl_vsync",				SectionVar::TYPE_BOOL,			&DEMO->m_Window->m_Data.WindowProperties.VSync			},
 				{"gl_multisample",			SectionVar::TYPE_BOOL,			&DEMO->m_Window->m_Data.WindowProperties.Multisampling	},
+				{"gl_colorDepth",			SectionVar::TYPE_INT,			&DEMO->m_Window->m_Data.WindowProperties.ColorDepth		},
 
 				{"fbo_0_ratio",				SectionVar::TYPE_INT,			&DEMO->m_Window->fboConfig[0].ratio	},
 				{"fbo_0_format",			SectionVar::TYPE_STRING,		&DEMO->m_Window->fboConfig[0].format	},

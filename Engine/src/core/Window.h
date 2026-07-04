@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <array>
 #include <sstream>
 #include <memory>
 
@@ -30,6 +31,7 @@ namespace Phoenix {
 		bool		Fullscreen;
 		bool		Multisampling;
 		bool		Stencil;
+		uint32_t	ColorDepth;
 
 		WindowProps()
 			:
@@ -41,7 +43,8 @@ namespace Phoenix {
 			VSync(false),
 			Fullscreen(false),
 			Multisampling(false),
-			Stencil(false)
+			Stencil(false),
+			ColorDepth(32)
 		{
 		}
 	};
@@ -95,6 +98,7 @@ namespace Phoenix {
 
 		uint32_t GetWidth() const { return m_Data.WindowProperties.Width; }
 		uint32_t GetHeight() const { return m_Data.WindowProperties.Height; }
+		const WindowProps& GetWindowProperties() const { return m_Data.WindowProperties; }
 
 		// Fbo configuration
 		FboConfig		fboConfig[FBO_BUFFERS];
@@ -109,6 +113,7 @@ namespace Phoenix {
 
 		// FBO Management
 		void	InitFbos();
+		bool	ApplyGraphicsConfig(const WindowProps& properties, const std::array<FboConfig, FBO_BUFFERS>& genericFbos, std::string& error);
 		 
 		// Viewport management
 		ViewportExprTK	m_currentViewportExprTK; // Viewport variables for ExprTk

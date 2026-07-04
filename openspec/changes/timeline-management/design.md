@@ -44,7 +44,7 @@ The timeline must remain usable when Phoenix is disconnected, and panels must be
 
    Rationale: inspector opening and selection-driven UI are already centralized. Extending that pattern avoids a parallel selection system.
 
-5. Section Editor is a Cacablu-side panel, not a Phoenix-side editor.
+5. Bar Editor is a Cacablu-side panel, not a Phoenix-side editor.
 
    Rationale: Phoenix already accepts complete section payloads and persists `.spo` files through the section sync API. Cacablu owns the right-side editor controls: Bar Type, Script Template, Save Template, script body, blend source, blend destination, blend equation, and Apply.
 

@@ -11,7 +11,8 @@ The RTSP stream is useful for VLC, but browsers cannot display it directly witho
 - Remove the active RTSP streaming capability/specification.
 - Keep the existing `enableStreaming` runtime switch, but make it enable WebRTC preview streaming.
 - Reuse the existing native editor WebSocket endpoint for WebRTC signaling.
-- Stream Phoenix's final framebuffer as H.264 WebRTC video when a browser peer is connected.
+- Stream Phoenix's final framebuffer as H.264 WebRTC video when one or more browser peers are connected.
+- Stream Phoenix's mixed demo audio alongside the video preview and mute Phoenix's local audio output while preview clients are receiving audio.
 - Update Cacablu Preview to create a browser `RTCPeerConnection` and render the remote video track.
 
 ## Non-goals
@@ -19,5 +20,4 @@ The RTSP stream is useful for VLC, but browsers cannot display it directly witho
 - No changes to the existing TCP slave/editor ports.
 - No section or asset administration changes.
 - No TURN/STUN service requirement for the first localhost preview implementation.
-- No audio streaming.
-- No multi-viewer or remote-network optimization beyond a single browser preview peer.
+- No remote-network optimization beyond localhost editor preview.

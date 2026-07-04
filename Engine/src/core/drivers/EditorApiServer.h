@@ -80,6 +80,7 @@ namespace Phoenix {
 		std::string handleWebRtcMessage(std::string_view message, int32_t clientId, const WebRtcSignalSender& signalSender);
 		void clearRemoteKeys();
 		void setRemoteKeyPressed(int32_t key, bool pressed);
+		void processGraphicsConfigRequests();
 		void processCommands();
 		void processSectionReplaceRequests();
 		void publishRuntimeState();

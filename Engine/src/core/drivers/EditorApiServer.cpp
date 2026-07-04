@@ -90,6 +90,53 @@ namespace Phoenix {
 		std::mutex kSectionReplaceQueueMutex;
 		std::queue<std::shared_ptr<SectionReplaceRequest>> kSectionReplaceQueue;
 
+		struct GraphicsContextConfig {
+			int32_t colorDepth = 32;
+			uint32_t width = 640;
+			uint32_t height = 480;
+			bool fullscreen = false;
+			bool vsync = false;
+			int32_t targetFps = 60;
+		};
+
+		struct GraphicsFboConfig {
+			int32_t index = 0;
+			int32_t ratio = 0;
+			std::string format;
+			uint32_t width = 0;
+			uint32_t height = 0;
+			int32_t attachments = 0;
+			std::string filter;
+		};
+
+		struct GraphicsConfig {
+			std::string requestId;
+			GraphicsContextConfig context;
+			std::array<GraphicsFboConfig, FBO_BUFFERS> fbos;
+		};
+
+		struct ValidationDetail {
+			std::string path;
+			std::string message;
+		};
+
+		struct GraphicsApplyResult {
+			std::string status;
+			std::string body;
+			std::string eventPayload;
+		};
+
+		struct GraphicsConfigRequest {
+			GraphicsConfig config;
+			GraphicsApplyResult result;
+			bool done = false;
+			std::mutex mutex;
+			std::condition_variable condition;
+		};
+
+		std::mutex kGraphicsConfigQueueMutex;
+		std::queue<std::shared_ptr<GraphicsConfigRequest>> kGraphicsConfigQueue;
+
 		struct SectionSyncStatus {
 			std::string requestId;
 			std::string operation;
@@ -564,6 +611,333 @@ namespace Phoenix {
 			return values;
 		}
 
+		std::optional<std::string_view> extractObject(std::string_view message, std::string_view key)
+		{
+			const std::string quotedKey = std::format("\"{}\"", key);
+			size_t pos = message.find(quotedKey);
+			if (pos == std::string_view::npos)
+				return std::nullopt;
+
+			pos = message.find('{', pos + quotedKey.size());
+			if (pos == std::string_view::npos)
+				return std::nullopt;
+
+			bool inString = false;
+			bool escaped = false;
+			int depth = 0;
+			for (size_t i = pos; i < message.size(); ++i) {
+				const char ch = message[i];
+				if (inString) {
+					if (escaped) {
+						escaped = false;
+						continue;
+					}
+					if (ch == '\\') {
+						escaped = true;
+						continue;
+					}
+					if (ch == '"')
+						inString = false;
+					continue;
+				}
+				if (ch == '"') {
+					inString = true;
+					continue;
+				}
+				if (ch == '{') {
+					++depth;
+					continue;
+				}
+				if (ch == '}') {
+					--depth;
+					if (depth == 0)
+						return message.substr(pos, i - pos + 1);
+				}
+			}
+
+			return std::nullopt;
+		}
+
+		std::string formatGraphicsNumber(float value)
+		{
+			std::ostringstream stream;
+			stream << value;
+			return stream.str();
+		}
+
+		bool isSupportedColorDepth(int32_t value)
+		{
+			return value == 16 || value == 24 || value == 32;
+		}
+
+		bool isSupportedFboFormat(std::string_view value)
+		{
+			static const std::set<std::string> formats = {
+				"RGB",
+				"RGBA",
+				"RGB_16F",
+				"RGBA_16F",
+				"RGB_32F",
+				"RGBA_32F",
+				"RG_16F",
+				"DEPTH",
+				"DEPTH_16F",
+				"DEPTH_32F"
+			};
+			return formats.contains(std::string(value));
+		}
+
+		void addValidationDetail(std::vector<ValidationDetail>& details, std::string_view path, std::string_view message)
+		{
+			details.push_back({
+				.path = std::string(path),
+				.message = std::string(message)
+			});
+		}
+
+		std::string buildValidationDetailsJson(const std::vector<ValidationDetail>& details)
+		{
+			std::string json = "[";
+			for (size_t i = 0; i < details.size(); ++i) {
+				if (i > 0)
+					json += ',';
+				json += std::format(
+					"{{\"path\":\"{}\",\"message\":\"{}\"}}",
+					escapeJsonValue(details[i].path),
+					escapeJsonValue(details[i].message)
+				);
+			}
+			json += "]";
+			return json;
+		}
+
+		std::string buildGraphicsError(std::string_view code, std::string_view message, std::string_view requestId, const std::vector<ValidationDetail>& details = {})
+		{
+			return std::format(
+				"{{\"requestId\":\"{}\",\"ok\":false,\"code\":\"{}\",\"message\":\"{}\",\"details\":{}}}",
+				escapeJsonValue(requestId),
+				escapeJsonValue(code),
+				escapeJsonValue(message),
+				buildValidationDetailsJson(details)
+			);
+		}
+
+		std::string buildGraphicsConfigJson(const GraphicsConfig& config)
+		{
+			std::string fbosJson = "[";
+			for (uint32_t i = 0; i < FBO_BUFFERS; ++i) {
+				if (i > 0)
+					fbosJson += ',';
+				const auto& fbo = config.fbos[i];
+				fbosJson += std::format(
+					"{{\"index\":{},\"ratio\":{},\"format\":\"{}\",\"width\":{},\"height\":{},\"attachments\":{},\"filter\":\"{}\"}}",
+					fbo.index,
+					fbo.ratio > 0 ? std::to_string(fbo.ratio) : "null",
+					escapeJsonValue(fbo.format),
+					fbo.width > 0 ? std::to_string(fbo.width) : "null",
+					fbo.height > 0 ? std::to_string(fbo.height) : "null",
+					fbo.attachments,
+					escapeJsonValue(fbo.filter)
+				);
+			}
+			fbosJson += "]";
+
+			return std::format(
+				"{{\"context\":{{\"colorDepth\":{},\"width\":{},\"height\":{},\"fullscreen\":{},\"vsync\":{},\"targetFps\":{}}},\"fbos\":{}}}",
+				config.context.colorDepth,
+				config.context.width,
+				config.context.height,
+				config.context.fullscreen ? "true" : "false",
+				config.context.vsync ? "true" : "false",
+				config.context.targetFps,
+				fbosJson
+			);
+		}
+
+		GraphicsConfig captureCurrentGraphicsConfig()
+		{
+			GraphicsConfig config;
+			const auto& props = DEMO->m_Window->GetWindowProperties();
+			config.context.colorDepth = static_cast<int32_t>(props.ColorDepth);
+			config.context.width = props.Width;
+			config.context.height = props.Height;
+			config.context.fullscreen = props.Fullscreen;
+			config.context.vsync = props.VSync;
+			config.context.targetFps = props.VSync ? 60 : 0;
+
+			for (uint32_t i = 0; i < FBO_BUFFERS; ++i) {
+				const auto& source = DEMO->m_Window->fboConfig[i];
+				auto& target = config.fbos[i];
+				target.index = static_cast<int32_t>(i);
+				target.ratio = source.ratio;
+				target.format = source.format;
+				target.width = source.ratio == 0 ? static_cast<uint32_t>(std::max(0.0f, source.width)) : 0;
+				target.height = source.ratio == 0 ? static_cast<uint32_t>(std::max(0.0f, source.height)) : 0;
+				target.attachments = source.numColorAttachments;
+				target.filter = source.useBilinearFilter ? "bilinear" : "none";
+			}
+
+			return config;
+		}
+
+		std::string buildGraphicsSuccess(std::string_view requestId, const GraphicsConfig& config, bool restartRequired = false)
+		{
+			return std::format(
+				"{{\"requestId\":\"{}\",\"ok\":true,\"config\":{},\"warnings\":{}}}",
+				escapeJsonValue(requestId),
+				buildGraphicsConfigJson(config),
+				restartRequired ? "[{\"code\":\"restart-required\",\"message\":\"Some graphics settings require restarting Phoenix to fully apply.\"}]" : "[]"
+			);
+		}
+
+		std::string buildGraphicsSpo(const GraphicsConfig& config)
+		{
+			std::string content;
+			const float aspect = config.context.height > 0
+				? static_cast<float>(config.context.width) / static_cast<float>(config.context.height)
+				: 1.0f;
+
+			content += std::format("gl_fullscreen {}\r\n", config.context.fullscreen ? 1 : 0);
+			content += std::format("gl_width {}\r\n", config.context.width);
+			content += std::format("gl_height {}\r\n", config.context.height);
+			content += std::format("gl_aspect {}\r\n", formatGraphicsNumber(aspect));
+			content += std::format("gl_vsync {}\r\n", config.context.vsync ? 1 : 0);
+			content += std::format("gl_colorDepth {}\r\n\r\n", config.context.colorDepth);
+
+			for (uint32_t i = 0; i < FBO_BUFFERS; ++i) {
+				const auto& fbo = config.fbos[i];
+				if (i < 20) {
+					content += std::format("fbo_{}_ratio {}\r\n", i, fbo.ratio);
+				}
+				else {
+					content += std::format("fbo_{}_width {}\r\n", i, fbo.width);
+					content += std::format("fbo_{}_height {}\r\n", i, fbo.height);
+				}
+				content += std::format("fbo_{}_format {}\r\n", i, fbo.format);
+				content += std::format("fbo_{}_colorAttachments {}\r\n", i, fbo.attachments);
+				content += std::format("fbo_{}_useFilter {}\r\n\r\n", i, fbo.filter == "bilinear" ? 1 : 0);
+			}
+
+			return content;
+		}
+
+		bool validateGraphicsConfig(const GraphicsConfig& config, std::vector<ValidationDetail>& details)
+		{
+			if (!isSupportedColorDepth(config.context.colorDepth))
+				addValidationDetail(details, "context.colorDepth", "Color depth must be 16, 24, or 32.");
+			if (config.context.width == 0)
+				addValidationDetail(details, "context.width", "Width must be a positive integer.");
+			if (config.context.height == 0)
+				addValidationDetail(details, "context.height", "Height must be a positive integer.");
+			if (config.context.vsync && config.context.targetFps <= 0)
+				addValidationDetail(details, "context.targetFps", "Target FPS must be positive when V-sync is enabled.");
+
+			std::array<bool, FBO_BUFFERS> seen{};
+			for (uint32_t i = 0; i < FBO_BUFFERS; ++i) {
+				const auto& fbo = config.fbos[i];
+				const std::string prefix = std::format("fbos[{}]", i);
+				if (fbo.index < 0 || fbo.index >= static_cast<int32_t>(FBO_BUFFERS)) {
+					addValidationDetail(details, prefix + ".index", "FBO index must be between 0 and 24.");
+				}
+				else if (seen[static_cast<size_t>(fbo.index)]) {
+					addValidationDetail(details, prefix + ".index", "FBO index must be unique.");
+				}
+				else {
+					seen[static_cast<size_t>(fbo.index)] = true;
+				}
+
+				if (fbo.index != static_cast<int32_t>(i))
+					addValidationDetail(details, prefix + ".index", "FBO rows must be ordered by index.");
+				if (!isSupportedFboFormat(fbo.format))
+					addValidationDetail(details, prefix + ".format", "Unsupported FBO format.");
+				if (fbo.attachments <= 0)
+					addValidationDetail(details, prefix + ".attachments", "Attachments must be a positive integer.");
+				if (fbo.filter != "bilinear" && fbo.filter != "none")
+					addValidationDetail(details, prefix + ".filter", "Filter must be bilinear or none.");
+
+				if (i < 20) {
+					if (fbo.ratio <= 0)
+						addValidationDetail(details, prefix + ".ratio", "Ratio must be a positive integer.");
+				}
+				else {
+					if (fbo.width == 0)
+						addValidationDetail(details, prefix + ".width", "Width must be a positive integer.");
+					if (fbo.height == 0)
+						addValidationDetail(details, prefix + ".height", "Height must be a positive integer.");
+				}
+			}
+
+			return details.empty();
+		}
+
+		bool parseGraphicsConfig(std::string_view body, GraphicsConfig& config, std::vector<ValidationDetail>& details)
+		{
+			EditorApiServer::extractString(body, "requestId", config.requestId);
+
+			const auto context = extractObject(body, "context");
+			if (!context) {
+				addValidationDetail(details, "context", "Graphics context is required.");
+				return false;
+			}
+
+			int32_t width = 0;
+			int32_t height = 0;
+			if (!EditorApiServer::extractInteger(*context, "colorDepth", config.context.colorDepth))
+				addValidationDetail(details, "context.colorDepth", "Color depth is required.");
+			if (!EditorApiServer::extractInteger(*context, "width", width))
+				addValidationDetail(details, "context.width", "Width is required.");
+			if (!EditorApiServer::extractInteger(*context, "height", height))
+				addValidationDetail(details, "context.height", "Height is required.");
+			if (!extractBoolean(*context, "fullscreen", config.context.fullscreen))
+				addValidationDetail(details, "context.fullscreen", "Fullscreen is required.");
+			if (!extractBoolean(*context, "vsync", config.context.vsync))
+				addValidationDetail(details, "context.vsync", "V-sync is required.");
+			EditorApiServer::extractInteger(*context, "targetFps", config.context.targetFps);
+			if (width > 0)
+				config.context.width = static_cast<uint32_t>(width);
+			if (height > 0)
+				config.context.height = static_cast<uint32_t>(height);
+
+			const auto fboObjects = extractObjectArray(body, "fbos");
+			if (fboObjects.size() != FBO_BUFFERS) {
+				addValidationDetail(details, "fbos", "Graphics config must contain exactly 25 FBO rows.");
+				return false;
+			}
+
+			for (uint32_t i = 0; i < FBO_BUFFERS; ++i) {
+				auto& fbo = config.fbos[i];
+				const auto fboBody = fboObjects[i];
+				const std::string prefix = std::format("fbos[{}]", i);
+				int32_t parsedWidth = 0;
+				int32_t parsedHeight = 0;
+				if (!EditorApiServer::extractInteger(fboBody, "index", fbo.index))
+					addValidationDetail(details, prefix + ".index", "FBO index is required.");
+				if (!EditorApiServer::extractString(fboBody, "format", fbo.format))
+					addValidationDetail(details, prefix + ".format", "FBO format is required.");
+				if (!EditorApiServer::extractInteger(fboBody, "attachments", fbo.attachments))
+					addValidationDetail(details, prefix + ".attachments", "Attachment count is required.");
+				if (!EditorApiServer::extractString(fboBody, "filter", fbo.filter))
+					addValidationDetail(details, prefix + ".filter", "Filter is required.");
+
+				if (i < 20) {
+					if (!EditorApiServer::extractInteger(fboBody, "ratio", fbo.ratio))
+						addValidationDetail(details, prefix + ".ratio", "Ratio is required.");
+				}
+				else {
+					if (!EditorApiServer::extractInteger(fboBody, "width", parsedWidth))
+						addValidationDetail(details, prefix + ".width", "Width is required.");
+					if (!EditorApiServer::extractInteger(fboBody, "height", parsedHeight))
+						addValidationDetail(details, prefix + ".height", "Height is required.");
+					if (parsedWidth > 0)
+						fbo.width = static_cast<uint32_t>(parsedWidth);
+					if (parsedHeight > 0)
+						fbo.height = static_cast<uint32_t>(parsedHeight);
+				}
+			}
+
+			return validateGraphicsConfig(config, details);
+		}
+
 		std::string formatSectionNumber(float value)
 		{
 			std::ostringstream stream;
@@ -986,6 +1360,80 @@ namespace Phoenix {
 			}
 		}
 
+		std::array<FboConfig, FBO_BUFFERS> toWindowFbos(const GraphicsConfig& config)
+		{
+			std::array<FboConfig, FBO_BUFFERS> fbos;
+			for (uint32_t i = 0; i < FBO_BUFFERS; ++i) {
+				const auto& source = config.fbos[i];
+				auto& target = fbos[i];
+				target.format = source.format;
+				target.ratio = i < 20 ? source.ratio : 0;
+				target.width = i >= 20 ? static_cast<float>(source.width) : 0.0f;
+				target.height = i >= 20 ? static_cast<float>(source.height) : 0.0f;
+				target.numColorAttachments = source.attachments;
+				target.useBilinearFilter = source.filter == "bilinear";
+			}
+			return fbos;
+		}
+
+		WindowProps toWindowProps(const GraphicsConfig& config)
+		{
+			WindowProps properties = DEMO->m_Window->GetWindowProperties();
+			properties.ColorDepth = static_cast<uint32_t>(config.context.colorDepth);
+			properties.Width = config.context.width;
+			properties.Height = config.context.height;
+			properties.AspectRatio = config.context.height > 0
+				? static_cast<float>(config.context.width) / static_cast<float>(config.context.height)
+				: properties.AspectRatio;
+			properties.Fullscreen = config.context.fullscreen;
+			properties.VSync = config.context.vsync;
+			return properties;
+		}
+
+		fs::path graphicsFilePath()
+		{
+			return fs::path(DEMO->m_dataFolder) / "config" / "graphics.spo";
+		}
+
+		std::string buildGraphicsChanged(std::string_view requestId)
+		{
+			return std::format(
+				"{{\"type\":\"graphics.changed\",\"requestId\":\"{}\"}}",
+				escapeJsonValue(requestId)
+			);
+		}
+
+		GraphicsApplyResult applyGraphicsOnMainThread(const GraphicsConfig& config)
+		{
+			const GraphicsConfig previous = captureCurrentGraphicsConfig();
+			std::string applyError;
+			if (!DEMO->m_Window->ApplyGraphicsConfig(toWindowProps(config), toWindowFbos(config), applyError)) {
+				return {
+					.status = "500 Internal Server Error",
+					.body = buildGraphicsError("graphics-apply-failed", applyError, config.requestId)
+				};
+			}
+
+			std::string writeError;
+			if (!writeTextFileAtomically(graphicsFilePath(), buildGraphicsSpo(config), writeError)) {
+				std::string rollbackError;
+				DEMO->m_Window->ApplyGraphicsConfig(toWindowProps(previous), toWindowFbos(previous), rollbackError);
+				return {
+					.status = "500 Internal Server Error",
+					.body = buildGraphicsError("graphics-write-failed", writeError, config.requestId)
+				};
+			}
+
+			const bool restartRequired = config.context.fullscreen != previous.context.fullscreen ||
+				config.context.colorDepth != previous.context.colorDepth;
+
+			return {
+				.status = "200 OK",
+				.body = buildGraphicsSuccess(config.requestId, captureCurrentGraphicsConfig(), restartRequired),
+				.eventPayload = buildGraphicsChanged(config.requestId)
+			};
+		}
+
 		ImGuiKey glfwKeyToImGuiKey(int32_t key)
 		{
 			if (key >= GLFW_KEY_A && key <= GLFW_KEY_Z)
@@ -1118,6 +1566,7 @@ namespace Phoenix {
 		if (!m_initialized)
 			return;
 
+		processGraphicsConfigRequests();
 		processSectionReplaceRequests();
 		processCommands();
 		publishRuntimeState();
@@ -1350,6 +1799,49 @@ namespace Phoenix {
 				catch (const std::exception& err) {
 					sendJson(response, "500 Internal Server Error", buildAssetError("delete-directory-failed", err.what(), requestId));
 				}
+			});
+			response->onAborted([body]() {});
+		});
+
+		app.get("/api/graphics", [](auto* response, auto*) {
+			if (!DEMO || !DEMO->m_Window) {
+				sendJson(response, "503 Service Unavailable", buildGraphicsError("graphics-unavailable", "Phoenix graphics state is not initialized.", {}));
+				return;
+			}
+
+			sendJson(response, "200 OK", std::format(
+				"{{\"requestId\":\"\",\"ok\":true,\"config\":{},\"warnings\":[]}}",
+				buildGraphicsConfigJson(captureCurrentGraphicsConfig())
+			));
+		});
+
+		app.put("/api/graphics", [this](auto* response, auto*) {
+			auto body = std::make_shared<std::string>();
+			response->onData([this, response, body](std::string_view chunk, bool last) {
+				body->append(chunk);
+				if (!last)
+					return;
+
+				GraphicsConfig config;
+				std::vector<ValidationDetail> details;
+				if (!parseGraphicsConfig(*body, config, details)) {
+					sendJson(response, "400 Bad Request", buildGraphicsError("invalid-graphics-config", "Invalid graphics configuration.", config.requestId, details));
+					return;
+				}
+
+				const auto request = std::make_shared<GraphicsConfigRequest>();
+				request->config = std::move(config);
+				{
+					std::lock_guard lock(kGraphicsConfigQueueMutex);
+					kGraphicsConfigQueue.push(request);
+				}
+
+				std::unique_lock lock(request->mutex);
+				if (!request->condition.wait_for(lock, std::chrono::seconds(30), [&request]() { return request->done; })) {
+					sendJson(response, "504 Gateway Timeout", buildGraphicsError("graphics-apply-timeout", "Timed out waiting for Phoenix to apply graphics settings.", request->config.requestId));
+					return;
+				}
+				sendJson(response, request->result.status, request->result.body);
 			});
 			response->onAborted([body]() {});
 		});
@@ -1783,6 +2275,41 @@ namespace Phoenix {
 
 		std::lock_guard lock(m_remoteKeyMutex);
 		m_remoteKeys[static_cast<size_t>(key)] = pressed;
+	}
+
+	void EditorApiServer::processGraphicsConfigRequests()
+	{
+		while (true) {
+			std::shared_ptr<GraphicsConfigRequest> request;
+			{
+				std::lock_guard lock(kGraphicsConfigQueueMutex);
+				if (kGraphicsConfigQueue.empty())
+					return;
+				request = kGraphicsConfigQueue.front();
+				kGraphicsConfigQueue.pop();
+			}
+
+			GraphicsApplyResult result;
+			if (!DEMO || !DEMO->m_Window) {
+				result = {
+					.status = "503 Service Unavailable",
+					.body = buildGraphicsError("graphics-unavailable", "Phoenix graphics state is not initialized.", request->config.requestId)
+				};
+			}
+			else {
+				result = applyGraphicsOnMainThread(request->config);
+			}
+
+			if (!result.eventPayload.empty())
+				publishEvent(result.eventPayload);
+
+			{
+				std::lock_guard lock(request->mutex);
+				request->result = std::move(result);
+				request->done = true;
+			}
+			request->condition.notify_all();
+		}
 	}
 
 	void EditorApiServer::processSectionReplaceRequests()

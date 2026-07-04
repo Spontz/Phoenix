@@ -10,9 +10,9 @@
 - [ ] 2.1 Keep Timeline openable and empty when no project is loaded.
 - [ ] 2.2 Render timeline clips from project bars after project load without default placeholder layers.
 - [ ] 2.3 Implement timeline bar selection and empty-space deselection.
-- [ ] 2.4 Open/reinitialize Section Editor on single-clicking a timeline bar, including the same selected bar.
-- [ ] 2.5 Implement Section Editor controls: Bar Type, Script Template, Save Template, code editor, Blend Source, Blend Destination, Blend Equation, and Apply.
-- [ ] 2.6 Persist Section Editor Apply changes to script, blend source, blend destination, and blend equation.
+- [ ] 2.4 Open/reinitialize Bar Editor on single-clicking a timeline bar, including the same selected bar.
+- [ ] 2.5 Implement Bar Editor controls: Bar Type, Script Template, Save Template, code editor, Blend Source, Blend Destination, Blend Equation, and Apply.
+- [ ] 2.6 Persist Bar Editor Apply changes to script, blend source, blend destination, and blend equation.
 - [ ] 2.7 Restrict Blend Equation choices to Add, Subtract, and Reverse subtract while storing Phoenix-compatible values.
 - [ ] 2.8 Add View menu toggle for displaying bar ids before timeline labels.
 - [ ] 2.9 Implement bar creation from a timeline command or gesture.
@@ -23,12 +23,12 @@
 - [ ] 2.14 Preserve layout stability and prevent label overlap during timeline edits and zoom changes.
 - [ ] 2.15 Render section sync error bars in red while matching Events remain present.
 
-## 3. Section Editor, Inspector, And Selection
+## 3. Bar Editor, Inspector, And Selection
 
 - [ ] 3.1 Extend app selection state to represent selected timeline bars.
-- [ ] 3.2 Use Section Editor as the primary selected-bar property editor.
+- [ ] 3.2 Use Bar Editor as the primary selected-bar property editor.
 - [ ] 3.3 Keep Inspector from treating timeline bars as resource files.
-- [ ] 3.4 Keep timeline selection, Section Editor state, Inspector state, and Events panel behavior consistent after bar deletion.
+- [ ] 3.4 Keep timeline selection, Bar Editor state, Inspector state, and Events panel behavior consistent after bar deletion.
 - [ ] 3.5 Keep Events text compact enough for dense section diagnostics.
 
 ## 4. Phoenix Synchronization
@@ -61,7 +61,7 @@
 - [ ] 6.7 Verify Phoenix sync errors identify the affected bar ids in Events.
 - [ ] 6.8 Verify section sync error bars appear red in the timeline.
 - [ ] 6.9 Verify sync modal progress text does not show stale `0/N` and the bar does not reset during one-shot Phoenix requests.
-- [ ] 6.10 Verify Section Editor single-click open, blend equation values, and Apply persistence.
+- [ ] 6.10 Verify Bar Editor single-click open, blend equation values, and Apply persistence.
 - [ ] 6.11 Verify View > Display IDs toggles `<id> <name>` labels and changes to Ocultar IDs.
 - [ ] 6.12 Verify moving a selected bar cannot overlap another bar and causes Phoenix to rewrite only the moved bar `.spo`.
 - [ ] 6.13 Verify Edit > Undo restores the previous bar move through the undo stack.

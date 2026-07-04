@@ -23,4 +23,4 @@ Cacablu needs first-class timeline editing so project bars can be created, selec
 
 - Cacablu timeline panel, timeline state model, project database session, inspector selection state, Events panel integration, and Phoenix section sync client.
 - Phoenix section sync API behavior is reused; no new Phoenix runtime section protocol is expected for this change unless timeline edits expose a missing contract.
-- Cacablu owns Section Editor UI, real local sync progress, compact Events rendering, red error styling, and playhead glow behavior.
+- Cacablu owns Bar Editor UI, real local sync progress, compact Events rendering, red error styling, and playhead glow behavior.
