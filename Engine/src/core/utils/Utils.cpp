@@ -6,8 +6,21 @@
 #include <iomanip>
 #include <filesystem>
 #include <io.h>
+#include <mutex>
+#include <unordered_map>
 
 namespace Phoenix {
+
+	namespace {
+		std::mutex kRuntimeTextOverrideMutex;
+		std::unordered_map<std::string, std::string> kRuntimeTextOverrides;
+
+		std::string normalizeOverridePath(std::string_view fileName)
+		{
+			std::filesystem::path path(fileName);
+			return path.lexically_normal().generic_string();
+		}
+	}
 
 	bool Utils::checkFileExists(std::string_view fileName) {
 		return std::filesystem::exists(fileName);
@@ -15,6 +28,13 @@ namespace Phoenix {
 
 	std::string Utils::readASCIIFile(std::string_view fileName) 
 	{
+		{
+			std::lock_guard lock(kRuntimeTextOverrideMutex);
+			const auto it = kRuntimeTextOverrides.find(normalizeOverridePath(fileName));
+			if (it != kRuntimeTextOverrides.end())
+				return it->second;
+		}
+
 		std::string result;
 		std::ifstream file(fileName.data(), std::ios::in | std::ios::binary);
 		if (file.good()) {
@@ -47,6 +67,24 @@ namespace Phoenix {
 
 		return result;
 		*/
+	}
+
+	void Utils::setRuntimeTextOverride(std::string_view fileName, std::string_view content)
+	{
+		std::lock_guard lock(kRuntimeTextOverrideMutex);
+		kRuntimeTextOverrides[normalizeOverridePath(fileName)] = std::string(content);
+	}
+
+	void Utils::clearRuntimeTextOverride(std::string_view fileName)
+	{
+		std::lock_guard lock(kRuntimeTextOverrideMutex);
+		kRuntimeTextOverrides.erase(normalizeOverridePath(fileName));
+	}
+
+	void Utils::clearRuntimeTextOverrides()
+	{
+		std::lock_guard lock(kRuntimeTextOverrideMutex);
+		kRuntimeTextOverrides.clear();
 	}
 
 	bool Utils::appendIntoASCIIFile(std::string_view fileName, std::string_view message)

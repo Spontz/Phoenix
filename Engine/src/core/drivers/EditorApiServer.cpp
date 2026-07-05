@@ -8,6 +8,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/streaming/FramebufferStreamer.h"
 #include "core/utils/Logger.h"
+#include "core/utils/Utils.h"
 #include "libs.h"
 
 #include <uwebsockets/App.h>
@@ -17,6 +18,7 @@
 #include <cmath>
 #include <condition_variable>
 #include <cstdint>
+#include <cctype>
 #include <filesystem>
 #include <fstream>
 #include <format>
@@ -28,6 +30,7 @@
 #include <sstream>
 #include <atomic>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace Phoenix {
@@ -90,6 +93,45 @@ namespace Phoenix {
 		std::mutex kSectionReplaceQueueMutex;
 		std::queue<std::shared_ptr<SectionReplaceRequest>> kSectionReplaceQueue;
 
+		enum class AssetImpactOperation {
+			Preview,
+			Write,
+			Delete,
+			DeleteDirectory
+		};
+
+		struct AssetImpactSection {
+			std::string id;
+			std::string type;
+			std::string message;
+		};
+
+		struct AssetImpactResult {
+			std::vector<AssetImpactSection> reloadedSections;
+			std::vector<AssetImpactSection> deactivatedSections;
+			std::vector<AssetImpactSection> failedSections;
+		};
+
+		struct AssetImpactRequest {
+			std::string requestId;
+			std::string path;
+			fs::path fullPath;
+			std::string content;
+			AssetImpactOperation operation = AssetImpactOperation::Preview;
+			AssetImpactResult result;
+			bool done = false;
+			std::mutex mutex;
+			std::condition_variable condition;
+		};
+
+		std::mutex kAssetImpactQueueMutex;
+		std::queue<std::shared_ptr<AssetImpactRequest>> kAssetImpactQueue;
+		std::mutex kSectionDependencyMutex;
+		std::unordered_map<std::string, std::string> kSectionScriptsById;
+		std::unordered_map<std::string, std::string> kSectionTypesById;
+		std::unordered_map<std::string, std::unordered_set<std::string>> kSectionAssetsById;
+		std::unordered_map<std::string, std::unordered_set<std::string>> kAssetSectionsByPath;
+
 		struct GraphicsContextConfig {
 			int32_t colorDepth = 32;
 			uint32_t width = 640;
@@ -136,6 +178,36 @@ namespace Phoenix {
 
 		std::mutex kGraphicsConfigQueueMutex;
 		std::queue<std::shared_ptr<GraphicsConfigRequest>> kGraphicsConfigQueue;
+
+		struct DemoSettings {
+			std::string requestId;
+			std::string demoName;
+			bool loop = true;
+			bool sound = true;
+			bool debugGrid = false;
+			int32_t logDetail = 1;
+			float demoStart = 0.0f;
+			float demoEnd = 0.0f;
+			bool debug = true;
+			bool slave = true;
+		};
+
+		struct DemoSettingsApplyResult {
+			std::string status;
+			std::string body;
+			std::string eventPayload;
+		};
+
+		struct DemoSettingsRequest {
+			DemoSettings settings;
+			DemoSettingsApplyResult result;
+			bool done = false;
+			std::mutex mutex;
+			std::condition_variable condition;
+		};
+
+		std::mutex kDemoSettingsQueueMutex;
+		std::queue<std::shared_ptr<DemoSettingsRequest>> kDemoSettingsQueue;
 
 		struct SectionSyncStatus {
 			std::string requestId;
@@ -948,18 +1020,20 @@ namespace Phoenix {
 		std::string buildSectionContent(const IncomingSection& section)
 		{
 			std::string content = std::format(
-				":::{}\r\nid {}\r\nstart {}\r\nend {}\r\nenabled {}\r\nlayer {}\r\nblend {} {}\r\nblendequation {}\r\n\r\n{}",
+				":::{}\r\nid {}\r\nstart {}\r\nend {}\r\nenabled {}\r\nlayer {}\r\n",
 				section.type,
 				section.id,
 				formatSectionNumber(section.startTime),
 				formatSectionNumber(section.endTime),
 				section.enabled ? 1 : 0,
-				section.layer,
-				section.srcBlending,
-				section.dstBlending,
-				section.blendingEQ,
-				section.script
+				section.layer
 			);
+			if (!section.srcBlending.empty() && !section.dstBlending.empty())
+				content += std::format("blend {} {}\r\n", section.srcBlending, section.dstBlending);
+			if (!section.blendingEQ.empty())
+				content += std::format("blendequation {}\r\n", section.blendingEQ);
+			content += "\r\n";
+			content += section.script;
 			if (!content.ends_with('\n'))
 				content += "\r\n";
 			return content;
@@ -1178,6 +1252,224 @@ namespace Phoenix {
 			return json;
 		}
 
+		std::string normalizeDependencyCandidate(std::string_view value)
+		{
+			const std::string normalized = normalizeAssetPath(value);
+			return normalized;
+		}
+
+		std::unordered_set<std::string> extractAssetDependencies(std::string_view content)
+		{
+			std::unordered_set<std::string> dependencies;
+			const std::array<std::string_view, 2> roots = { "pool/", "resources/" };
+
+			for (const auto root : roots) {
+				size_t position = content.find(root);
+				while (position != std::string_view::npos) {
+					size_t end = position;
+					while (end < content.size()) {
+						const char ch = content[end];
+						if (std::isspace(static_cast<unsigned char>(ch)) || ch == '"' || ch == '\'' || ch == ';' || ch == ')' || ch == '(' || ch == ',' || ch == ']' || ch == '[' || ch == '{' || ch == '}')
+							break;
+						++end;
+					}
+
+					const std::string dependency = normalizeDependencyCandidate(content.substr(position, end - position));
+					if (!dependency.empty())
+						dependencies.insert(dependency);
+					position = content.find(root, end);
+				}
+			}
+
+			return dependencies;
+		}
+
+		void removeSectionDependencyIndexLocked(std::string_view id)
+		{
+			const std::string sectionId(id);
+			const auto existing = kSectionAssetsById.find(sectionId);
+			if (existing != kSectionAssetsById.end()) {
+				for (const auto& asset : existing->second) {
+					const auto reverse = kAssetSectionsByPath.find(asset);
+					if (reverse == kAssetSectionsByPath.end())
+						continue;
+					reverse->second.erase(sectionId);
+					if (reverse->second.empty())
+						kAssetSectionsByPath.erase(reverse);
+				}
+			}
+			kSectionAssetsById.erase(sectionId);
+			kSectionScriptsById.erase(sectionId);
+			kSectionTypesById.erase(sectionId);
+		}
+
+		void updateSectionDependencyIndex(const IncomingSection& section)
+		{
+			std::lock_guard lock(kSectionDependencyMutex);
+			removeSectionDependencyIndexLocked(section.id);
+			kSectionScriptsById[section.id] = section.content;
+			kSectionTypesById[section.id] = section.type;
+
+			const auto dependencies = extractAssetDependencies(section.content);
+			if (dependencies.empty())
+				return;
+
+			auto& indexedDependencies = kSectionAssetsById[section.id];
+			for (const auto& dependency : dependencies) {
+				indexedDependencies.insert(dependency);
+				kAssetSectionsByPath[dependency].insert(section.id);
+			}
+		}
+
+		void clearSectionDependencyIndex()
+		{
+			std::lock_guard lock(kSectionDependencyMutex);
+			kSectionScriptsById.clear();
+			kSectionTypesById.clear();
+			kSectionAssetsById.clear();
+			kAssetSectionsByPath.clear();
+		}
+
+		std::vector<std::string> sectionIdsForAsset(std::string_view assetPath)
+		{
+			std::lock_guard lock(kSectionDependencyMutex);
+			std::vector<std::string> ids;
+			const auto direct = kAssetSectionsByPath.find(std::string(assetPath));
+			if (direct != kAssetSectionsByPath.end())
+				ids.insert(ids.end(), direct->second.begin(), direct->second.end());
+
+			for (const auto& [asset, sections] : kAssetSectionsByPath) {
+				if (asset.size() <= assetPath.size() || !asset.starts_with(assetPath) || asset[assetPath.size()] != '/')
+					continue;
+				ids.insert(ids.end(), sections.begin(), sections.end());
+			}
+
+			std::sort(ids.begin(), ids.end());
+			ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
+			return ids;
+		}
+
+		std::optional<std::string> scriptForSection(std::string_view id)
+		{
+			std::lock_guard lock(kSectionDependencyMutex);
+			const auto it = kSectionScriptsById.find(std::string(id));
+			if (it == kSectionScriptsById.end())
+				return std::nullopt;
+			return it->second;
+		}
+
+		std::string typeForSection(std::string_view id)
+		{
+			std::lock_guard lock(kSectionDependencyMutex);
+			const auto it = kSectionTypesById.find(std::string(id));
+			return it == kSectionTypesById.end() ? "" : it->second;
+		}
+
+		std::string buildImpactSectionsJson(const std::vector<AssetImpactSection>& sections)
+		{
+			std::string json = "[";
+			for (size_t i = 0; i < sections.size(); ++i) {
+				if (i > 0)
+					json += ',';
+				json += std::format(
+					"{{\"id\":\"{}\",\"type\":\"{}\",\"message\":\"{}\"}}",
+					escapeJsonValue(sections[i].id),
+					escapeJsonValue(sections[i].type),
+					escapeJsonValue(sections[i].message)
+				);
+			}
+			json += "]";
+			return json;
+		}
+
+		std::string buildAssetOperationResponse(
+			std::string_view requestId,
+			std::string_view operation,
+			std::string_view path,
+			bool persisted,
+			std::string_view entryJson,
+			const AssetImpactResult& impact
+		)
+		{
+			return std::format(
+				"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"{}\",\"path\":\"{}\",\"persisted\":{},\"entry\":{},\"reloadedSections\":{},\"deactivatedSections\":{},\"failedSections\":{}}}",
+				escapeJsonValue(requestId),
+				escapeJsonValue(operation),
+				escapeJsonValue(path),
+				persisted ? "true" : "false",
+				entryJson.empty() ? "null" : std::string(entryJson),
+				buildImpactSectionsJson(impact.reloadedSections),
+				buildImpactSectionsJson(impact.deactivatedSections),
+				buildImpactSectionsJson(impact.failedSections)
+			);
+		}
+
+		AssetImpactResult previewOrReloadAssetOnMainThread(std::string_view assetPath, const fs::path& fullPath, std::string_view content, bool usePreviewContent)
+		{
+			AssetImpactResult impact;
+			if (usePreviewContent)
+				Utils::setRuntimeTextOverride(fullPath.generic_string(), content);
+
+			const auto ids = sectionIdsForAsset(assetPath);
+			for (const auto& id : ids) {
+				const auto script = scriptForSection(id);
+				const std::string type = typeForSection(id);
+				if (!script) {
+					impact.failedSections.push_back({ id, type, "Section script was not indexed." });
+					continue;
+				}
+
+				DEMO->m_sectionManager.removeSectionsFromRuntime({ id });
+				const bool loaded = DEMO->loadScriptFromNetwork(*script);
+				if (loaded) {
+					impact.reloadedSections.push_back({ id, type, "Reloaded after asset change." });
+				}
+				else {
+					impact.failedSections.push_back({ id, type, "Could not reload section after asset change." });
+					DEMO->m_sectionManager.removeSectionsFromRuntime({ id });
+				}
+			}
+
+			return impact;
+		}
+
+		AssetImpactResult deactivateSectionsForAssetOnMainThread(std::string_view assetPath)
+		{
+			AssetImpactResult impact;
+			const auto ids = sectionIdsForAsset(assetPath);
+			for (const auto& id : ids) {
+				const std::string type = typeForSection(id);
+				DEMO->m_sectionManager.removeSectionsFromRuntime({ id });
+				impact.deactivatedSections.push_back({ id, type, "Deactivated because a required asset is unavailable." });
+			}
+			return impact;
+		}
+
+		AssetImpactResult runAssetImpactRequest(
+			std::string_view requestId,
+			std::string_view path,
+			const fs::path& fullPath,
+			AssetImpactOperation operation,
+			std::string_view content = {}
+		)
+		{
+			const auto request = std::make_shared<AssetImpactRequest>();
+			request->requestId = requestId;
+			request->path = path;
+			request->fullPath = fullPath;
+			request->operation = operation;
+			request->content = content;
+
+			{
+				std::lock_guard lock(kAssetImpactQueueMutex);
+				kAssetImpactQueue.push(request);
+			}
+
+			std::unique_lock lock(request->mutex);
+			request->condition.wait(lock, [&request]() { return request->done; });
+			return request->result;
+		}
+
 		SectionReplaceResult replaceSectionsOnMainThread(const std::vector<IncomingSection>& sections, std::string_view requestId)
 		{
 			const size_t totalSteps = sections.size() * 2;
@@ -1213,6 +1505,8 @@ namespace Phoenix {
 				updateSectionSyncStatus(requestId, "replace-all", "clearing", written, totalSteps, 0, 0, false, "Replacing Phoenix sections...");
 				deleteSectionSpoFiles(incomingIds);
 				DEMO->m_sectionManager.clear();
+				clearSectionDependencyIndex();
+				Utils::clearRuntimeTextOverrides();
 
 				size_t loaded = 0;
 				std::vector<std::string> failedIds;
@@ -1223,6 +1517,7 @@ namespace Phoenix {
 						++loaded;
 					else
 						failedIds.push_back(section.id);
+					updateSectionDependencyIndex(section);
 					++processed;
 					updateSectionSyncStatus(requestId, "replace-all", "loading", written + processed, totalSteps, loaded, failedIds.size(), false, std::format("Loaded {}/{} sections", loaded, sections.size()));
 				}
@@ -1265,6 +1560,7 @@ namespace Phoenix {
 			try {
 				DEMO->m_sectionManager.deleteSections({ section.id });
 				const bool loaded = DEMO->loadScriptFromNetwork(section.content);
+				updateSectionDependencyIndex(section);
 
 				std::string writeError;
 				if (!writeTextFileAtomically(sectionFilePath(section.id), section.content, writeError)) {
@@ -1315,6 +1611,11 @@ namespace Phoenix {
 			try {
 				std::vector<std::string> idsToDelete(ids.begin(), ids.end());
 				DEMO->m_sectionManager.deleteSections(idsToDelete);
+				{
+					std::lock_guard lock(kSectionDependencyMutex);
+					for (const auto& id : idsToDelete)
+						removeSectionDependencyIndexLocked(id);
+				}
 
 				std::vector<std::string> deletedFiles;
 				std::error_code ec;
@@ -1431,6 +1732,190 @@ namespace Phoenix {
 				.status = "200 OK",
 				.body = buildGraphicsSuccess(config.requestId, captureCurrentGraphicsConfig(), restartRequired),
 				.eventPayload = buildGraphicsChanged(config.requestId)
+			};
+		}
+
+		int32_t normalizeLogDetail(int32_t value)
+		{
+			return value == 4 ? 3 : value;
+		}
+
+		std::string trimCopy(std::string_view value)
+		{
+			size_t start = 0;
+			while (start < value.size() && std::isspace(static_cast<unsigned char>(value[start])))
+				++start;
+
+			size_t end = value.size();
+			while (end > start && std::isspace(static_cast<unsigned char>(value[end - 1])))
+				--end;
+
+			return std::string(value.substr(start, end - start));
+		}
+
+		DemoSettings captureCurrentDemoSettings()
+		{
+			DemoSettings settings;
+			settings.demoName = DEMO->m_demoName;
+			settings.loop = DEMO->m_loop;
+			settings.sound = DEMO->m_sound;
+			settings.debugGrid = DEMO->m_debugEnableGrid || DEMO->m_debugEnableFloor;
+			settings.logDetail = normalizeLogDetail(static_cast<int32_t>(DEMO->m_logLevel));
+			settings.demoStart = DEMO->m_demoStartTime;
+			settings.demoEnd = DEMO->m_demoEndTime;
+			settings.debug = DEMO->m_debug;
+			settings.slave = DEMO->m_slaveMode;
+			return settings;
+		}
+
+		std::string buildLogDetailOptionsJson()
+		{
+			return "[{\"label\":\"None\",\"value\":0},{\"label\":\"Essential\",\"value\":1},{\"label\":\"Normal\",\"value\":2},{\"label\":\"Verbose\",\"value\":3}]";
+		}
+
+		std::string buildDemoSettingsJson(const DemoSettings& settings)
+		{
+			return std::format(
+				"{{\"demoName\":\"{}\",\"loop\":{},\"sound\":{},\"debugGrid\":{},\"logDetail\":{},\"demoStart\":{},\"demoEnd\":{},\"debug\":{},\"slave\":{}}}",
+				escapeJsonValue(settings.demoName),
+				settings.loop ? "true" : "false",
+				settings.sound ? "true" : "false",
+				settings.debugGrid ? "true" : "false",
+				normalizeLogDetail(settings.logDetail),
+				formatGraphicsNumber(settings.demoStart),
+				formatGraphicsNumber(settings.demoEnd),
+				settings.debug ? "true" : "false",
+				settings.slave ? "true" : "false"
+			);
+		}
+
+		std::string buildDemoSettingsSuccess(std::string_view requestId, const DemoSettings& settings)
+		{
+			return std::format(
+				"{{\"requestId\":\"{}\",\"ok\":true,\"settings\":{},\"logDetailOptions\":{},\"path\":\"config/control.spo\",\"warnings\":[]}}",
+				escapeJsonValue(requestId),
+				buildDemoSettingsJson(settings),
+				buildLogDetailOptionsJson()
+			);
+		}
+
+		std::string buildDemoSettingsReadResponse()
+		{
+			return std::format(
+				"{{\"requestId\":\"\",\"ok\":true,\"settings\":{},\"logDetailOptions\":{},\"warnings\":[]}}",
+				buildDemoSettingsJson(captureCurrentDemoSettings()),
+				buildLogDetailOptionsJson()
+			);
+		}
+
+		std::string buildDemoSettingsError(std::string_view code, std::string_view message, std::string_view requestId, const std::vector<ValidationDetail>& details = {})
+		{
+			return std::format(
+				"{{\"requestId\":\"{}\",\"ok\":false,\"code\":\"{}\",\"message\":\"{}\",\"details\":{}}}",
+				escapeJsonValue(requestId),
+				escapeJsonValue(code),
+				escapeJsonValue(message),
+				buildValidationDetailsJson(details)
+			);
+		}
+
+		bool validateDemoSettings(const DemoSettings& settings, std::vector<ValidationDetail>& details)
+		{
+			if (settings.demoName.empty())
+				addValidationDetail(details, "demoName", "Demo name is required.");
+			if (!std::isfinite(settings.demoEnd) || settings.demoEnd < 0.0f)
+				addValidationDetail(details, "demoEnd", "Demo end must be a non-negative number.");
+			if (settings.logDetail < 0 || settings.logDetail > 3)
+				addValidationDetail(details, "logDetail", "Log detail must be between 0 and 3.");
+			return details.empty();
+		}
+
+		bool parseDemoSettings(std::string_view body, DemoSettings& settings, std::vector<ValidationDetail>& details)
+		{
+			EditorApiServer::extractString(body, "requestId", settings.requestId);
+			if (!EditorApiServer::extractString(body, "demoName", settings.demoName)) {
+				addValidationDetail(details, "demoName", "Demo name is required.");
+			}
+			else {
+				settings.demoName = trimCopy(settings.demoName);
+			}
+			if (!extractBoolean(body, "loop", settings.loop))
+				addValidationDetail(details, "loop", "Loop flag is required.");
+			if (!extractBoolean(body, "sound", settings.sound))
+				addValidationDetail(details, "sound", "Sound flag is required.");
+			if (!extractBoolean(body, "debugGrid", settings.debugGrid))
+				addValidationDetail(details, "debugGrid", "Debug grid flag is required.");
+			if (!EditorApiServer::extractInteger(body, "logDetail", settings.logDetail))
+				addValidationDetail(details, "logDetail", "Log detail is required.");
+			if (!EditorApiServer::extractNumber(body, "demoEnd", settings.demoEnd))
+				addValidationDetail(details, "demoEnd", "Demo end is required.");
+
+			settings.demoStart = 0.0f;
+			settings.debug = true;
+			settings.slave = true;
+			return details.empty() && validateDemoSettings(settings, details);
+		}
+
+		fs::path demoControlFilePath()
+		{
+			return fs::path(DEMO->m_dataFolder) / "config" / "control.spo";
+		}
+
+		std::string buildDemoControlSpo(const DemoSettings& settings)
+		{
+			std::string content;
+			content += std::format("demo_name {}\r\n", settings.demoName);
+			content += "debug 1\r\n";
+			content += std::format("debugEnableGrid {}\r\n", settings.debugGrid ? 1 : 0);
+			content += std::format("loop {}\r\n", settings.loop ? 1 : 0);
+			content += std::format("sound {}\r\n", settings.sound ? 1 : 0);
+			content += "demo_start 0.0\r\n";
+			content += std::format("demo_end {}\r\n", formatGraphicsNumber(settings.demoEnd));
+			content += "slave 1\r\n";
+			content += std::format("log_detail {}\r\n", normalizeLogDetail(settings.logDetail));
+			return content;
+		}
+
+		std::string buildDemoSettingsChanged(std::string_view requestId)
+		{
+			return std::format(
+				"{{\"type\":\"demo-settings.changed\",\"requestId\":\"{}\"}}",
+				escapeJsonValue(requestId)
+			);
+		}
+
+		DemoSettingsApplyResult applyDemoSettingsOnMainThread(const DemoSettings& settings)
+		{
+			DEMO->m_demoName = settings.demoName;
+			if (DEMO->m_Window)
+				DEMO->m_Window->SetTitle(settings.demoName);
+			DEMO->m_debug = true;
+			DEMO->m_debugEnableGrid = settings.debugGrid;
+			DEMO->m_debugEnableFloor = settings.debugGrid;
+			DEMO->m_loop = settings.loop;
+			DEMO->m_sound = settings.sound;
+			DEMO->m_soundManager.playDevice();
+			DEMO->m_soundManager.setMasterVolume(settings.sound ? 1.0f : 0.0f);
+			if (!settings.sound)
+				DEMO->m_soundManager.stopAllSounds();
+			DEMO->m_demoStartTime = 0.0f;
+			DEMO->m_demoEndTime = settings.demoEnd;
+			DEMO->m_slaveMode = true;
+			DEMO->m_logLevel = static_cast<LogLevel>(normalizeLogDetail(settings.logDetail));
+			Logger::setLogLevel(DEMO->m_logLevel);
+
+			std::string writeError;
+			if (!writeTextFileAtomically(demoControlFilePath(), buildDemoControlSpo(settings), writeError)) {
+				return {
+					.status = "500 Internal Server Error",
+					.body = buildDemoSettingsError("demo-settings-write-failed", writeError, settings.requestId)
+				};
+			}
+
+			return {
+				.status = "200 OK",
+				.body = buildDemoSettingsSuccess(settings.requestId, captureCurrentDemoSettings()),
+				.eventPayload = buildDemoSettingsChanged(settings.requestId)
 			};
 		}
 
@@ -1567,7 +2052,9 @@ namespace Phoenix {
 			return;
 
 		processGraphicsConfigRequests();
+		processDemoSettingsRequests();
 		processSectionReplaceRequests();
+		processAssetImpactRequests();
 		processCommands();
 		publishRuntimeState();
 	}
@@ -1626,6 +2113,56 @@ namespace Phoenix {
 			sendJson(response, "200 OK", buildManifest());
 		});
 
+		app.put("/api/assets/preview", [this](auto* response, auto*) {
+			auto body = std::make_shared<std::string>();
+			response->onData([this, response, body](std::string_view chunk, bool last) {
+				body->append(chunk);
+				if (!last)
+					return;
+
+				std::string requestId;
+				std::string path;
+				std::string encoding;
+				std::string content;
+				extractString(*body, "requestId", requestId);
+				if (!extractString(*body, "path", path) || !extractString(*body, "encoding", encoding) || !extractString(*body, "content", content)) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-request", "preview file requires path, encoding, and content", requestId));
+					return;
+				}
+				if (encoding != "utf-8") {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-asset-content", "Only utf-8 preview content is supported", requestId));
+					return;
+				}
+
+				const auto assetPath = resolveAssetPath(path);
+				if (!assetPath) {
+					sendJson(response, "400 Bad Request", buildAssetError("invalid-asset-path", "Asset path must be under pool or resources", requestId));
+					return;
+				}
+
+				try {
+					const auto impact = runAssetImpactRequest(requestId, assetPath->relative, assetPath->full, AssetImpactOperation::Preview, content);
+					sendJson(response, "200 OK", buildAssetOperationResponse(
+						requestId,
+						"preview-asset",
+						assetPath->relative,
+						false,
+						std::format("{{\"path\":\"{}\",\"kind\":\"file\",\"size\":{},\"hash\":\"{}\"}}",
+							escapeJsonValue(assetPath->relative),
+							content.size(),
+							escapeJsonValue(hashString(content))
+						),
+						impact
+					));
+					publishEvent(buildAssetChanged("preview-asset", assetPath->relative, requestId, "file", content.size(), hashString(content)));
+				}
+				catch (const std::exception& err) {
+					sendJson(response, "500 Internal Server Error", buildAssetError("asset-preview-failed", err.what(), requestId));
+				}
+			});
+			response->onAborted([body]() {});
+		});
+
 		app.put("/api/assets/file", [this](auto* response, auto*) {
 			auto body = std::make_shared<std::string>();
 			response->onData([this, response, body](std::string_view chunk, bool last) {
@@ -1661,12 +2198,18 @@ namespace Phoenix {
 						return;
 					}
 					const std::string fileHash = hashFile(assetPath->full);
-					sendJson(response, "200 OK", std::format(
-						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"write-file\",\"entry\":{{\"path\":\"{}\",\"kind\":\"file\",\"size\":{},\"hash\":\"{}\"}}}}",
-						escapeJsonValue(requestId),
-						escapeJsonValue(assetPath->relative),
-						bytes.size(),
-						escapeJsonValue(fileHash)
+					const auto impact = runAssetImpactRequest(requestId, assetPath->relative, assetPath->full, AssetImpactOperation::Write);
+					sendJson(response, "200 OK", buildAssetOperationResponse(
+						requestId,
+						"write-file",
+						assetPath->relative,
+						true,
+						std::format("{{\"path\":\"{}\",\"kind\":\"file\",\"size\":{},\"hash\":\"{}\"}}",
+							escapeJsonValue(assetPath->relative),
+							bytes.size(),
+							escapeJsonValue(fileHash)
+						),
+						impact
 					));
 					publishEvent(buildAssetChanged("write-file", assetPath->relative, requestId, "file", bytes.size(), fileHash));
 				}
@@ -1705,10 +2248,14 @@ namespace Phoenix {
 						sendJson(response, "500 Internal Server Error", buildAssetError("delete-failed", ec.message(), requestId));
 						return;
 					}
-					sendJson(response, "200 OK", std::format(
-						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"delete-file\",\"entry\":{{\"path\":\"{}\",\"kind\":\"file\"}}}}",
-						escapeJsonValue(requestId),
-						escapeJsonValue(assetPath->relative)
+					const auto impact = runAssetImpactRequest(requestId, assetPath->relative, assetPath->full, AssetImpactOperation::Delete);
+					sendJson(response, "200 OK", buildAssetOperationResponse(
+						requestId,
+						"delete-file",
+						assetPath->relative,
+						true,
+						std::format("{{\"path\":\"{}\",\"kind\":\"file\"}}", escapeJsonValue(assetPath->relative)),
+						impact
 					));
 					publishEvent(buildAssetChanged("delete-file", assetPath->relative, requestId, "file"));
 				}
@@ -1789,10 +2336,14 @@ namespace Phoenix {
 						sendJson(response, "500 Internal Server Error", buildAssetError("delete-directory-failed", ec.message(), requestId));
 						return;
 					}
-					sendJson(response, "200 OK", std::format(
-						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"delete-directory\",\"entry\":{{\"path\":\"{}\",\"kind\":\"directory\"}}}}",
-						escapeJsonValue(requestId),
-						escapeJsonValue(assetPath->relative)
+					const auto impact = runAssetImpactRequest(requestId, assetPath->relative, assetPath->full, AssetImpactOperation::DeleteDirectory);
+					sendJson(response, "200 OK", buildAssetOperationResponse(
+						requestId,
+						"delete-directory",
+						assetPath->relative,
+						true,
+						std::format("{{\"path\":\"{}\",\"kind\":\"directory\"}}", escapeJsonValue(assetPath->relative)),
+						impact
 					));
 					publishEvent(buildAssetChanged("delete-directory", assetPath->relative, requestId, "directory"));
 				}
@@ -1839,6 +2390,46 @@ namespace Phoenix {
 				std::unique_lock lock(request->mutex);
 				if (!request->condition.wait_for(lock, std::chrono::seconds(30), [&request]() { return request->done; })) {
 					sendJson(response, "504 Gateway Timeout", buildGraphicsError("graphics-apply-timeout", "Timed out waiting for Phoenix to apply graphics settings.", request->config.requestId));
+					return;
+				}
+				sendJson(response, request->result.status, request->result.body);
+			});
+			response->onAborted([body]() {});
+		});
+
+		app.get("/api/demo-settings", [](auto* response, auto*) {
+			if (!DEMO) {
+				sendJson(response, "503 Service Unavailable", buildDemoSettingsError("demo-settings-unavailable", "Phoenix demo state is not initialized.", {}));
+				return;
+			}
+
+			sendJson(response, "200 OK", buildDemoSettingsReadResponse());
+		});
+
+		app.put("/api/demo-settings", [this](auto* response, auto*) {
+			auto body = std::make_shared<std::string>();
+			response->onData([this, response, body](std::string_view chunk, bool last) {
+				body->append(chunk);
+				if (!last)
+					return;
+
+				DemoSettings settings;
+				std::vector<ValidationDetail> details;
+				if (!parseDemoSettings(*body, settings, details)) {
+					sendJson(response, "400 Bad Request", buildDemoSettingsError("invalid-demo-settings", "Invalid demo settings.", settings.requestId, details));
+					return;
+				}
+
+				const auto request = std::make_shared<DemoSettingsRequest>();
+				request->settings = std::move(settings);
+				{
+					std::lock_guard lock(kDemoSettingsQueueMutex);
+					kDemoSettingsQueue.push(request);
+				}
+
+				std::unique_lock lock(request->mutex);
+				if (!request->condition.wait_for(lock, std::chrono::seconds(30), [&request]() { return request->done; })) {
+					sendJson(response, "504 Gateway Timeout", buildDemoSettingsError("demo-settings-apply-timeout", "Timed out waiting for Phoenix to apply demo settings.", request->settings.requestId));
 					return;
 				}
 				sendJson(response, request->result.status, request->result.body);
@@ -2312,6 +2903,41 @@ namespace Phoenix {
 		}
 	}
 
+	void EditorApiServer::processDemoSettingsRequests()
+	{
+		while (true) {
+			std::shared_ptr<DemoSettingsRequest> request;
+			{
+				std::lock_guard lock(kDemoSettingsQueueMutex);
+				if (kDemoSettingsQueue.empty())
+					return;
+				request = kDemoSettingsQueue.front();
+				kDemoSettingsQueue.pop();
+			}
+
+			DemoSettingsApplyResult result;
+			if (!DEMO) {
+				result = {
+					.status = "503 Service Unavailable",
+					.body = buildDemoSettingsError("demo-settings-unavailable", "Phoenix demo state is not initialized.", request->settings.requestId)
+				};
+			}
+			else {
+				result = applyDemoSettingsOnMainThread(request->settings);
+			}
+
+			if (!result.eventPayload.empty())
+				publishEvent(result.eventPayload);
+
+			{
+				std::lock_guard lock(request->mutex);
+				request->result = std::move(result);
+				request->done = true;
+			}
+			request->condition.notify_all();
+		}
+	}
+
 	void EditorApiServer::processSectionReplaceRequests()
 	{
 		while (true) {
@@ -2338,6 +2964,43 @@ namespace Phoenix {
 			}
 			if (!result.eventPayload.empty())
 				publishEvent(result.eventPayload);
+
+			{
+				std::lock_guard lock(request->mutex);
+				request->result = std::move(result);
+				request->done = true;
+			}
+			request->condition.notify_all();
+		}
+	}
+
+	void EditorApiServer::processAssetImpactRequests()
+	{
+		while (true) {
+			std::shared_ptr<AssetImpactRequest> request;
+			{
+				std::lock_guard lock(kAssetImpactQueueMutex);
+				if (kAssetImpactQueue.empty())
+					return;
+				request = kAssetImpactQueue.front();
+				kAssetImpactQueue.pop();
+			}
+
+			AssetImpactResult result;
+			switch (request->operation) {
+			case AssetImpactOperation::Preview:
+				result = previewOrReloadAssetOnMainThread(request->path, request->fullPath, request->content, true);
+				break;
+			case AssetImpactOperation::Write:
+				Utils::clearRuntimeTextOverride(request->fullPath.generic_string());
+				result = previewOrReloadAssetOnMainThread(request->path, request->fullPath, {}, false);
+				break;
+			case AssetImpactOperation::Delete:
+			case AssetImpactOperation::DeleteDirectory:
+				Utils::clearRuntimeTextOverride(request->fullPath.generic_string());
+				result = deactivateSectionsForAssetOnMainThread(request->path);
+				break;
+			}
 
 			{
 				std::lock_guard lock(request->mutex);

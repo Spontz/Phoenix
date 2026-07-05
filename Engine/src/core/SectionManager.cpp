@@ -32,6 +32,29 @@ namespace Phoenix {
 			if (ec)
 				Logger::error("Section .spo NOT deleted for {}: {}", id, ec.message());
 		}
+
+		void removeQueuedSectionIndex(std::vector<int32_t>& queue, int32_t removedIndex)
+		{
+			queue.erase(std::remove(queue.begin(), queue.end(), removedIndex), queue.end());
+			for (auto& index : queue) {
+				if (index > removedIndex)
+					--index;
+			}
+		}
+
+		void removeQueuedSectionIndex(std::vector<std::pair<int32_t, int32_t>>& queue, int32_t removedIndex)
+		{
+			queue.erase(
+				std::remove_if(queue.begin(), queue.end(), [removedIndex](const auto& entry) {
+					return entry.second == removedIndex;
+				}),
+				queue.end()
+			);
+			for (auto& entry : queue) {
+				if (entry.second > removedIndex)
+					--entry.second;
+			}
+		}
 	}
 
 	// sections functions references
@@ -187,6 +210,9 @@ namespace Phoenix {
 					removeSectionSpoFile(m_section[i]->identifier);
 					delete m_section[i];
 					m_section.erase(m_section.begin() + i);
+					removeQueuedSectionIndex(m_loadSection, i);
+					removeQueuedSectionIndex(m_execRenderSection, i);
+					removeQueuedSectionIndex(m_execSoundSection, i);
 					//Logger::sendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 				}
 				else {
@@ -196,6 +222,34 @@ namespace Phoenix {
 			}
 			else {
 				Logger::error("Section NOT deleted: {}", sectionId);
+				failed = true;
+			}
+
+		return failed;
+	}
+
+	bool SectionManager::removeSectionsFromRuntime(std::vector<std::string> const& ids)
+	{
+		bool failed = false;
+
+		for (auto const& sectionId : ids)
+			if (getSection(sectionId)) {
+				int i = getSectionIndex(sectionId);
+				if (i >= 0)
+				{
+					delete m_section[i];
+					m_section.erase(m_section.begin() + i);
+					removeQueuedSectionIndex(m_loadSection, i);
+					removeQueuedSectionIndex(m_execRenderSection, i);
+					removeQueuedSectionIndex(m_execSoundSection, i);
+				}
+				else {
+					Logger::error("Section NOT removed from runtime: {}", sectionId);
+					failed = true;
+				}
+			}
+			else {
+				Logger::error("Section NOT removed from runtime: {}", sectionId);
 				failed = true;
 			}
 

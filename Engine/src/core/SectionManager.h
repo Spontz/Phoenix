@@ -29,6 +29,7 @@ namespace Phoenix {
 		int32_t addSection(SectionType type, std::string_view dataSource, bool enabled);
 		void toggleSections(std::vector<std::string> const& ids);
 		bool deleteSections(std::vector<std::string> const& ids);
+		bool removeSectionsFromRuntime(std::vector<std::string> const& ids);
 		void updateSection(std::string_view id, std::string_view script);
 		void setSectionsStartTime(std::vector<std::string> const& ids, float value);
 		void setSectionsEndTime(std::vector<std::string> const& ids, float value);

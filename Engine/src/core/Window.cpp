@@ -135,6 +135,13 @@ namespace Phoenix
 			glfwSetWindowPos(m_GLFWindow, x, y);
 	}
 
+	void Window::SetTitle(std::string const& title)
+	{
+		m_Data.WindowProperties.Title = title;
+		if (m_GLFWindow)
+			glfwSetWindowTitle(m_GLFWindow, m_Data.WindowProperties.Title.c_str());
+	}
+
 	void Window::SetWindowSize(uint32_t width, uint32_t height)
 	{
 		if (m_GLFWindow)

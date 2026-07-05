@@ -660,6 +660,7 @@ namespace Phoenix {
 			ImGui::Checkbox("Draw X Axis", &m_demo.m_debugDrawAxisX); ImGui::SameLine();
 			ImGui::Checkbox("Draw Y Axis", &m_demo.m_debugDrawAxisY); ImGui::SameLine();
 			ImGui::Checkbox("Draw Z Axis", &m_demo.m_debugDrawAxisZ);
+			ImGui::Checkbox("Enable grid", &m_demo.m_debugEnableGrid);
 			ImGui::Checkbox("Enable floor", &m_demo.m_debugEnableFloor);
 			if (ImGui::Checkbox("Enable WebRTC preview streaming", &m_demo.m_enableStreaming)) {
 				m_demo.setStreamingEnabled(m_demo.m_enableStreaming);

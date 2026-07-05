@@ -104,6 +104,7 @@ namespace Phoenix {
 		FboConfig		fboConfig[FBO_BUFFERS];
 
 		// Window attributes
+		void SetTitle(std::string const& title);
 		void SetWindowPos(int x, int y);
 		void SetWindowSize(uint32_t width, uint32_t height);
 		void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; };

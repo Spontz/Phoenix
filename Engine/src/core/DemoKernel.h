@@ -178,6 +178,7 @@ namespace Phoenix {
 		bool m_loop;
 		bool m_sound;
 		float m_debugFontSize;
+		bool m_debugEnableGrid;
 		bool m_debugEnableAxis;
 		bool m_debugEnableFloor;
 

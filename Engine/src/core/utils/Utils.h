@@ -11,6 +11,9 @@ namespace Phoenix {
 
 		static bool						checkFileExists(std::string_view filename);									// Check if file exists
 		static std::string				readASCIIFile(std::string_view filename);									// Read an ASCII file contents
+		static void						setRuntimeTextOverride(std::string_view filename, std::string_view content);
+		static void						clearRuntimeTextOverride(std::string_view filename);
+		static void						clearRuntimeTextOverrides();
 		static bool						appendIntoASCIIFile(std::string_view filename, std::string_view message);	// Append message to file
 		static std::vector<std::string>	getFilepathsFromFolder(std::string folderPath, std::string extension);		// Get filePaths for a given folder and extension
 

@@ -81,8 +81,10 @@ namespace Phoenix {
 		void clearRemoteKeys();
 		void setRemoteKeyPressed(int32_t key, bool pressed);
 		void processGraphicsConfigRequests();
+		void processDemoSettingsRequests();
 		void processCommands();
 		void processSectionReplaceRequests();
+		void processAssetImpactRequests();
 		void publishRuntimeState();
 		std::string buildRuntimeStateMessage() const;
 		std::string buildErrorMessage(std::string_view code, std::string_view message) const;

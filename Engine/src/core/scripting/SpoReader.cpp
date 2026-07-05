@@ -58,6 +58,7 @@ namespace Phoenix {
 				{"demo_name",				SectionVar::TYPE_STRING,		&DEMO->m_demoName			},
 				{"debug",					SectionVar::TYPE_BOOL,			&DEMO->m_debug				},
 				{"debugFontSize",			SectionVar::TYPE_FLOAT,			&DEMO->m_debugFontSize		},
+				{"debugEnableGrid",			SectionVar::TYPE_BOOL,			&DEMO->m_debugEnableGrid	},
 				{"debugEnableFloor",		SectionVar::TYPE_BOOL,			&DEMO->m_debugEnableFloor	},
 				{"debugEnableAxis",			SectionVar::TYPE_BOOL,			&DEMO->m_debugEnableAxis	},
 				{"loop",					SectionVar::TYPE_BOOL,			&DEMO->m_loop				},

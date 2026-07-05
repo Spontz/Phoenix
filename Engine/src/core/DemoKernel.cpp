@@ -295,6 +295,7 @@ namespace Phoenix {
 		m_debug(false),
 		m_logLevel(LogLevel::high),
 #endif
+		m_debugEnableGrid(false),
 		m_debugEnableAxis(false),
 		m_debugEnableFloor(false),
 		m_debugDrawAxisX(true),
@@ -415,16 +416,18 @@ namespace Phoenix {
 
 		Logger::info(LogLevel::med, "OpenGL environment created");
 
-		// initialize sound driver
-		if (m_sound) {
-			if (m_soundManager.init()) {
-				m_soundManager.playDevice();
-				Logger::info(LogLevel::med, "Sound Manager inited");
-				m_soundManager.enumerateDevices();
-			}
-			else
-				Logger::error("Could not init Sound Manager");
+		// Initialize the sound driver even when the demo starts muted. Sound
+		// sections still need a valid manager while loading their assets.
+		if (m_soundManager.init()) {
+			m_soundManager.playDevice();
+			m_soundManager.setMasterVolume(m_sound ? 1.0f : 0.0f);
+			if (!m_sound)
+				m_soundManager.stopAllSounds();
+			Logger::info(LogLevel::med, "Sound Manager inited");
+			m_soundManager.enumerateDevices();
 		}
+		else
+			Logger::error("Could not init Sound Manager");
 
 		// Show versions
 		Logger::info(LogLevel::med, "Component versions:");
@@ -720,11 +723,9 @@ namespace Phoenix {
 		delete m_pRes;
 		m_pRes = nullptr;
 
-		if (m_sound) {
-			Logger::info(LogLevel::low, "Stopping sound playback...");
-			m_soundManager.stopDevice();	// Stop device playback
-			m_soundManager.clearSounds();	// Clear all sounds
-		}
+		Logger::info(LogLevel::low, "Stopping sound playback...");
+		m_soundManager.stopDevice();	// Stop device playback
+		m_soundManager.clearSounds();	// Clear all sounds
 
 		m_shaderManager.clear();	// Clear shaders
 	}
@@ -1001,7 +1002,7 @@ namespace Phoenix {
 				m_pRes->drawAxis(m_debugDrawAxisX, m_debugDrawAxisY, m_debugDrawAxisZ);
 			}
 			// Show floor grid only if we are in Debug
-			if (m_debug && m_debugEnableFloor) {
+			if (m_debug && (m_debugEnableFloor || m_debugEnableGrid)) {
 				PX_PROFILE_SCOPE("SectionsLayer::DrawFloor (debug)");
 				m_cameraManager.setInternalCameraAsActive();
 				m_pRes->drawFloor();
