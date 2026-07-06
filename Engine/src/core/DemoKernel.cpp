@@ -347,14 +347,12 @@ namespace Phoenix {
 
 	void DemoKernel::getArguments(int32_t argc, char* argv[])
 	{
-		bool dataFolderOverridden = false;
 		std::vector <std::string> sources;
 		for (int i = 1; i < argc; ++i) {
 			std::string arg = argv[i];
 			if (arg == "-datafolder") {
 				if (i + 1 < argc) { // Make sure there is another argument
 					m_dataFolder = argv[++i];
-					dataFolderOverridden = true;
 				}
 				else {
 					std::cout << "-datafolder option requires the path to a folder." << std::endl;
@@ -386,23 +384,6 @@ namespace Phoenix {
 			else {
 				sources.emplace_back(argv[i]);
 			}
-		}
-
-		if (!dataFolderOverridden && argc > 0 && argv[0]) {
-			const auto executablePath = std::filesystem::absolute(argv[0]);
-			const auto executableFolder = executablePath.parent_path();
-			const auto repoLauncherData = executableFolder / ".." / ".." / ".." / "Launcher" / "data";
-
-			if (std::filesystem::exists(repoLauncherData)) {
-				m_dataFolder = repoLauncherData.lexically_normal().string();
-			}
-			else {
-				m_dataFolder = (executableFolder / "data").string();
-			}
-		}
-
-		if (!m_dataFolder.empty() && m_dataFolder.back() != '/' && m_dataFolder.back() != '\\') {
-			m_dataFolder += "/";
 		}
 	}
 
