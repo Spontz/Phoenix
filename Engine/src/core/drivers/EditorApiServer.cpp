@@ -184,7 +184,7 @@ namespace Phoenix {
 			std::string demoName;
 			bool loop = true;
 			bool sound = true;
-			bool debugGrid = false;
+			bool debugFloor = false;
 			int32_t logDetail = 1;
 			float demoStart = 0.0f;
 			float demoEnd = 0.0f;
@@ -1759,7 +1759,7 @@ namespace Phoenix {
 			settings.demoName = DEMO->m_demoName;
 			settings.loop = DEMO->m_loop;
 			settings.sound = DEMO->m_sound;
-			settings.debugGrid = DEMO->m_debugEnableGrid || DEMO->m_debugEnableFloor;
+			settings.debugFloor = DEMO->m_debugEnableFloor;
 			settings.logDetail = normalizeLogDetail(static_cast<int32_t>(DEMO->m_logLevel));
 			settings.demoStart = DEMO->m_demoStartTime;
 			settings.demoEnd = DEMO->m_demoEndTime;
@@ -1776,11 +1776,11 @@ namespace Phoenix {
 		std::string buildDemoSettingsJson(const DemoSettings& settings)
 		{
 			return std::format(
-				"{{\"demoName\":\"{}\",\"loop\":{},\"sound\":{},\"debugGrid\":{},\"logDetail\":{},\"demoStart\":{},\"demoEnd\":{},\"debug\":{},\"slave\":{}}}",
+				"{{\"demoName\":\"{}\",\"loop\":{},\"sound\":{},\"debugFloor\":{},\"logDetail\":{},\"demoStart\":{},\"demoEnd\":{},\"debug\":{},\"slave\":{}}}",
 				escapeJsonValue(settings.demoName),
 				settings.loop ? "true" : "false",
 				settings.sound ? "true" : "false",
-				settings.debugGrid ? "true" : "false",
+				settings.debugFloor ? "true" : "false",
 				normalizeLogDetail(settings.logDetail),
 				formatGraphicsNumber(settings.demoStart),
 				formatGraphicsNumber(settings.demoEnd),
@@ -1843,8 +1843,8 @@ namespace Phoenix {
 				addValidationDetail(details, "loop", "Loop flag is required.");
 			if (!extractBoolean(body, "sound", settings.sound))
 				addValidationDetail(details, "sound", "Sound flag is required.");
-			if (!extractBoolean(body, "debugGrid", settings.debugGrid))
-				addValidationDetail(details, "debugGrid", "Debug grid flag is required.");
+			if (!extractBoolean(body, "debugFloor", settings.debugFloor))
+				addValidationDetail(details, "debugFloor", "Debug floor flag is required.");
 			if (!EditorApiServer::extractInteger(body, "logDetail", settings.logDetail))
 				addValidationDetail(details, "logDetail", "Log detail is required.");
 			if (!EditorApiServer::extractNumber(body, "demoEnd", settings.demoEnd))
@@ -1866,7 +1866,7 @@ namespace Phoenix {
 			std::string content;
 			content += std::format("demo_name {}\r\n", settings.demoName);
 			content += "debug 1\r\n";
-			content += std::format("debugEnableGrid {}\r\n", settings.debugGrid ? 1 : 0);
+			content += std::format("debugEnableFloor {}\r\n", settings.debugFloor ? 1 : 0);
 			content += std::format("loop {}\r\n", settings.loop ? 1 : 0);
 			content += std::format("sound {}\r\n", settings.sound ? 1 : 0);
 			content += "demo_start 0.0\r\n";
@@ -1890,8 +1890,7 @@ namespace Phoenix {
 			if (DEMO->m_Window)
 				DEMO->m_Window->SetTitle(settings.demoName);
 			DEMO->m_debug = true;
-			DEMO->m_debugEnableGrid = settings.debugGrid;
-			DEMO->m_debugEnableFloor = settings.debugGrid;
+			DEMO->m_debugEnableFloor = settings.debugFloor;
 			DEMO->m_loop = settings.loop;
 			DEMO->m_sound = settings.sound;
 			DEMO->m_soundManager.playDevice();

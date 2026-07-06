@@ -51,8 +51,8 @@ namespace Phoenix {
 		void loadLights();
 
 	public:
-		float m_gridSize;
-		int32_t m_gridSlices;
+		float m_floorSize;
+		int32_t m_floorSlices;
 
 		DemoKernel& m_demo;
 

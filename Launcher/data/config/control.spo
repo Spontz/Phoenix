@@ -1,6 +1,6 @@
 demo_name Spontz - We are not back
 debug 1
-debugEnableGrid 1
+debugEnableFloor 1
 loop 1
 sound 0
 demo_start 0.0

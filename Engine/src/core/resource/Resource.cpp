@@ -54,8 +54,8 @@ namespace Phoenix {
 	Resource::Resource()
 		:
 		m_demo(*DEMO),
-		m_gridSize(10.0f),
-		m_gridSlices(10)
+		m_floorSize(10.0f),
+		m_floorSlices(10)
 	{
 	}
 
@@ -252,27 +252,27 @@ namespace Phoenix {
 		std::vector<uint32_t> indices;
 
 		float start = 0;
-		float step = 1.0f / static_cast<float>(m_gridSlices);
+		float step = 1.0f / static_cast<float>(m_floorSlices);
 
 
-		vertices.reserve((m_gridSlices + 1) * 2);
+		vertices.reserve((m_floorSlices + 1) * 2);
 
-		for (int j = 0; j <= m_gridSlices; ++j) {
-			for (int i = 0; i <= m_gridSlices; ++i) {
-				float x = m_gridSize * (start + static_cast<float>(i) * step);
+		for (int j = 0; j <= m_floorSlices; ++j) {
+			for (int i = 0; i <= m_floorSlices; ++i) {
+				float x = m_floorSize * (start + static_cast<float>(i) * step);
 				float y = 0;
-				float z = m_gridSize * (start + static_cast<float>(j) * step);
+				float z = m_floorSize * (start + static_cast<float>(j) * step);
 				vertices.emplace_back(glm::vec3(x, y, z));
 			}
 		}
 
-		indices.reserve((m_gridSlices * 2) * 8);
+		indices.reserve((m_floorSlices * 2) * 8);
 
-		for (int j = 0; j < m_gridSlices; ++j) {
-			for (int i = 0; i < m_gridSlices; ++i) {
+		for (int j = 0; j < m_floorSlices; ++j) {
+			for (int i = 0; i < m_floorSlices; ++i) {
 
-				int row1 = j * (m_gridSlices + 1);
-				int row2 = (j + 1) * (m_gridSlices + 1);
+				int row1 = j * (m_floorSlices + 1);
+				int row2 = (j + 1) * (m_floorSlices + 1);
 
 				indices.emplace_back(row1 + i);
 				indices.emplace_back(row1 + i + 1);
@@ -441,7 +441,7 @@ namespace Phoenix {
 		VP = projection * view;
 
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-m_gridSize / 2.0f, -0.01f, -m_gridSize / 2.0f));
+		model = glm::translate(model, glm::vec3(-m_floorSize / 2.0f, -0.01f, -m_floorSize / 2.0f));
 		MVP = VP * model;
 
 		drawGrid(glm::vec3(0.2, 0.2, 0.2), &MVP);

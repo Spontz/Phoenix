@@ -660,8 +660,14 @@ namespace Phoenix {
 			ImGui::Checkbox("Draw X Axis", &m_demo.m_debugDrawAxisX); ImGui::SameLine();
 			ImGui::Checkbox("Draw Y Axis", &m_demo.m_debugDrawAxisY); ImGui::SameLine();
 			ImGui::Checkbox("Draw Z Axis", &m_demo.m_debugDrawAxisZ);
-			ImGui::Checkbox("Enable grid", &m_demo.m_debugEnableGrid);
 			ImGui::Checkbox("Enable floor", &m_demo.m_debugEnableFloor);
+			if (ImGui::SliderFloat("Floor size", &m_demo.m_pRes->m_floorSize, 1, 50)) {
+				m_demo.m_pRes->loadFloor();
+			}
+
+			if (ImGui::SliderInt("Floor slices", &m_demo.m_pRes->m_floorSlices, 1, 100)) {
+				m_demo.m_pRes->loadFloor();
+			}
 			if (ImGui::Checkbox("Enable WebRTC preview streaming", &m_demo.m_enableStreaming)) {
 				m_demo.setStreamingEnabled(m_demo.m_enableStreaming);
 			}
@@ -697,13 +703,6 @@ namespace Phoenix {
 					settings.preset = preset;
 					m_demo.m_framebufferStreamer->setSettings(settings);
 				}
-			}
-			if (ImGui::SliderFloat("Floor size", &m_demo.m_pRes->m_gridSize, 1, 50)) {
-				m_demo.m_pRes->loadFloor();
-			}
-
-			if (ImGui::SliderInt("Floor slices", &m_demo.m_pRes->m_gridSlices, 1, 100)) {
-				m_demo.m_pRes->loadFloor();
 			}
 		}
 		ImGui::End();

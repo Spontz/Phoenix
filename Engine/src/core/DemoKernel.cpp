@@ -295,7 +295,6 @@ namespace Phoenix {
 		m_debug(false),
 		m_logLevel(LogLevel::high),
 #endif
-		m_debugEnableGrid(false),
 		m_debugEnableAxis(false),
 		m_debugEnableFloor(false),
 		m_debugDrawAxisX(true),
@@ -1002,7 +1001,7 @@ namespace Phoenix {
 				m_pRes->drawAxis(m_debugDrawAxisX, m_debugDrawAxisY, m_debugDrawAxisZ);
 			}
 			// Show floor grid only if we are in Debug
-			if (m_debug && (m_debugEnableFloor || m_debugEnableGrid)) {
+			if (m_debug && m_debugEnableFloor) {
 				PX_PROFILE_SCOPE("SectionsLayer::DrawFloor (debug)");
 				m_cameraManager.setInternalCameraAsActive();
 				m_pRes->drawFloor();
