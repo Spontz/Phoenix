@@ -1,130 +1,117 @@
 #type vertex
-#version 450 core
+#version 330
 
-layout (location = 0) in int Type;
-layout (location = 1) in vec3 Position;
-layout (location = 2) in vec3 Velocity;
-layout (location = 3) in vec3 Color;
-layout (location = 4) in float Age;
+layout (location = 0) in vec3 Position;
+layout (location = 1) in vec3 Velocity;
+layout (location = 2) in vec3 Color;
+layout (location = 3) in float Age;
+layout (location = 4) in int Type;
 
-out VS_OUT
-{
-	flat int		Type;
-	vec3			Position;
-	vec3			Velocity;
-	vec3			Color;
-	float			Age;
-} vs_out;
+out vec3 Position0;
+out vec3 Velocity0;
+out vec3 Color0;
+out float Age0;
+out int Type0;
 
 void main()
 {
-	vs_out.Type = Type;
-	vs_out.Position = Position;
-	vs_out.Velocity = Velocity;
-	vs_out.Color = Color;
-	vs_out.Age = Age;
+	Position0 = Position;
+	Velocity0 = Velocity;
+	Color0 = Color;
+	Age0 = Age;
+	Type0 = Type;
 }
 
 #type geometry
-#version 450 core
+#version 330
 
 layout(points) in;
 layout(points) out;
-layout(max_vertices = 254) out;
+layout(max_vertices = 30) out;
 
 // Info from the VS
-in VS_OUT
-{
-	flat int	Type;
-	vec3		Position;
-	vec3		Velocity;
-	vec3		Color;
-	float		Age;
-} gs_in[];
+in vec3 Position0[];
+in vec3 Velocity0[];
+in vec3 Color0[];
+in float Age0[];
+in int Type0[];
 
 // Info sent to FS
-flat out int	o_Type;
-out vec3		o_Position;
-out vec3		o_Velocity;
-out vec3		o_Color;
-out float		o_Age;
+out vec3 Position1;
+out vec3 Velocity1;
+out vec3 Color1;
+out float Age1;
+out int Type1;
 
-#define PARTICLE_TYPE_EMITTER 1
-#define PARTICLE_TYPE_SHELL 2
+//uniform float gDeltaTimeMillis;
+uniform float gDeltaTime;
+uniform float gTime;
+uniform vec3 force;
+uniform sampler1D gRandomTexture;
+uniform float fEmissionTime;
+uniform float fParticleLifetime;
 
-uniform mat4 u_m4Model;
-uniform float u_fDeltaTime;
-uniform float u_fTime;
-uniform vec3 u_v3Force;
-uniform vec3 u_v3Color;
-uniform sampler1D u_iRandomTexture;
-uniform float u_fEmissionTime;
-uniform float u_fParticleLifetime;
-uniform float u_fRamndomness;
+#define PARTICLE_TYPE_EMITTER 0
+#define PARTICLE_TYPE_SHELL 1
 
 // Get a random number, used for calculate the new direction
 vec3 GetRandomDir(float TexCoord)
 {
-	vec3 Dir = texture(u_iRandomTexture, TexCoord).xyz;
+	vec3 Dir = texture(gRandomTexture, TexCoord).xyz;
 	Dir -= vec3(0.5, 0.5, 0.5); // Since all tex coordinates goes from 0 to 1, we substract 0.5 so all values will go betweel -0.5 and 0.5
 	return Dir;
 }
 
 void main()
 {
-    float Age = gs_in[0].Age + u_fDeltaTime; // Increment the age of the particle
-	vec3 DeltaP = gs_in[0].Velocity * u_fDeltaTime; // Position Delta: xDelta = v*t
-	
-	if (gs_in[0].Type == PARTICLE_TYPE_EMITTER) {
-		// If it's time to create a new particle shell...
-		if (Age >= u_fEmissionTime) {
-			o_Type = PARTICLE_TYPE_SHELL;
-			o_Position = vec3(u_m4Model*vec4(gs_in[0].Position + DeltaP, 1.0));
-			//o_Velocity = gs_in[0].Velocity + u_fRamndomness*GetRandomDir(gs_in[0].Color.x);
-			o_Velocity = gs_in[0].Velocity + u_fRamndomness*GetRandomDir(u_v3Color.x);
-			o_Color = u_v3Color;				//Apply the global color
-			//o_Color = gs_in[0].Color;			//Apply the same color as the emitter
-			o_Age = Age;
-			
+    float Age = Age0[0] + gDeltaTime; // Increment the age of the particle
+	vec3 DeltaP = gDeltaTime * Velocity0[0]; // Position Delta: xDelta = v*t
+
+	// Draw the emitter
+	if (Type0[0] == PARTICLE_TYPE_EMITTER) {
+		// If it's time to create a new particle...
+		if (Age >= fEmissionTime) {
+			Type1 = PARTICLE_TYPE_SHELL;
+			Position1 = Position0[0];// + vec3(0.5*sin(gTime), 0,0);
+			float randomNum = (Position0[0].x + Position0[0].y + Position0[0].z); 
+			Velocity1 = Velocity0[0] + GetRandomDir(gDeltaTime);
+			Color1 = Color0[0];
+			Age1 = 0.0;
 			EmitVertex();
 			EndPrimitive();	// Generate a new particle from the launcher position
 			Age = 0.0;		// Set the age of the emitter to 0, so it can generate new particles later
-		}
-		// Draw the Emitter
-		o_Type = PARTICLE_TYPE_EMITTER;
-		o_Position = gs_in[0].Position;
-		o_Velocity = gs_in[0].Velocity;
-		o_Color = u_v3Color; // Apply the global Color
-		o_Age = Age;
-		
+		}	
+		Type1 = PARTICLE_TYPE_EMITTER;
+		Position1 = Position0[0];// + DeltaP;
+		Velocity1 = Velocity0[0];
+		Color1 = Color0[0];
+		Age1 = Age;
 		EmitVertex();
 		EndPrimitive();		// Generate the emitter
     }
-
-	vec3 DeltaV = u_v3Force * u_fDeltaTime; // vDelta = accel*tDetla
-
+	
 	// If its a normal particle...
-	if (gs_in[0].Type == PARTICLE_TYPE_SHELL) {
-
+	else {
+		vec3 DeltaV = force * gDeltaTime; // vDelta = accel*tDetla
+		
 		// If the is still alive, we update the values...
-		if (Age < u_fParticleLifetime) {
+		if (Age < fParticleLifetime) {
+			Type1 = PARTICLE_TYPE_SHELL;
+			Position1 = Position0[0] + DeltaP;// + DeltaP; // x = x0 + xDelta
+			Velocity1 = Velocity0[0] + DeltaV; // v = v0 + vDelta
+			Color1 = Color0[0] - vec3(1.0, 1.0, 1.0)*gDeltaTime/fParticleLifetime;
 
-			o_Type = PARTICLE_TYPE_SHELL;
-			o_Position = gs_in[0].Position + DeltaP; // x = x0 + xDelta
-			o_Velocity = gs_in[0].Velocity + DeltaV; // v = v0 + vDelta
-			o_Color = gs_in[0].Color - vec3(1.0)*(u_fDeltaTime/u_fParticleLifetime);
-			o_Age = Age;
-			
+			Age1 = Age;
+
 			EmitVertex();
 			EndPrimitive(); // Update the particle status and position
 		}
 	}
-
 }
 
 
 #type fragment
-#version 450 core
+#version 330
 
 void main()
 {
