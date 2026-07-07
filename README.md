@@ -43,7 +43,7 @@ Start-Process `
 
 `Launcher_WD\data\config\control.spo` must contain `slave 1` for the editor API to listen on `127.0.0.1:29100`.
 
-# Screenshots (because is cool)
+# Screenshots
 
 <p align="center">
   <img src="img/engine.png">
