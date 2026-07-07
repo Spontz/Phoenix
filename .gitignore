@@ -2,8 +2,4 @@
 /phoenix_vs*
 /build
 demo_log.txt
-/Launcher_WD/data/pool
-/Launcher_WD/data/*.spo
-/Launcher_WD/data/config/control.spo
-/Launcher_WD/data*
-/Launcher_WD/*.*
+/Launcher/data/pool
