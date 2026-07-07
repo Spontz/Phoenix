@@ -30,6 +30,19 @@ Phoenix uses the following libs:
 
 Please run 00_bootstrap.bat, this will download all required dependecies and create the vs2022 project, then compile the project usign Visual Studio. Feel free to contact any of us if you need further assistance.
 
+## Debug launch with Cacablu
+
+When launching the Debug build outside Visual Studio, always use the same working directory configured by CMake and pass the matching data folder explicitly:
+
+```powershell
+Start-Process `
+  -FilePath ".\phoenix_vs2026\Launcher\Debug\Phoenix.exe" `
+  -WorkingDirectory ".\Launcher_WD" `
+  -ArgumentList "-datafolder `".\Launcher_WD\data`""
+```
+
+`Launcher_WD\data\config\control.spo` must contain `slave 1` for the editor API to listen on `127.0.0.1:29100`.
+
 # Screenshots (because is cool)
 
 <p align="center">
