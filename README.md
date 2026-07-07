@@ -37,11 +37,11 @@ When launching the Debug build outside Visual Studio, always use the same workin
 ```powershell
 Start-Process `
   -FilePath ".\phoenix_vs2026\Launcher\Debug\Phoenix.exe" `
-  -WorkingDirectory ".\Launcher_WD" `
-  -ArgumentList "-datafolder `".\Launcher_WD\data`""
+  -WorkingDirectory ".\Launcher" `
+  -ArgumentList "-datafolder `".\Launcher\data`""
 ```
 
-`Launcher_WD\data\config\control.spo` must contain `slave 1` for the editor API to listen on `127.0.0.1:29100`.
+`Launcher\data\config\control.spo` must contain `slave 1` for the editor API to listen on `127.0.0.1:29100`.
 
 # Screenshots
 
