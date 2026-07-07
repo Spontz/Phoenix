@@ -3,4 +3,5 @@
 /build
 demo_log.txt
 /Launcher/data/pool
+/Launcher/data/*.*
 /Launcher_WD*
