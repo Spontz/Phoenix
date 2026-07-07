@@ -1,7 +1,6 @@
 /vcpkg
 /phoenix_vs*
-/Launcher_WD
-/launcher_WD
+/Launcher_WD/pool
 /build
 demo_log.txt
 /Launcher/data
