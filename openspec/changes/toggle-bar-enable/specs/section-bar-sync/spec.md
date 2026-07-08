@@ -7,6 +7,7 @@ Cacablu SHALL serialize enabled database bars into Phoenix-compatible section pa
 - **WHEN** Cacablu prepares an enabled bar for Phoenix
 - **THEN** the payload includes the bar id, type, start time, end time, enabled flag, layer, source blend factor, destination blend factor, blend equation, and raw script text
 - **AND** empty or whitespace-only bar type is treated as unconfigured and is not sent to Phoenix
+- **AND** script line endings are normalized before transmission so Phoenix receives line-delimited section commands regardless of the SQLite text/blob newline style
 - **AND** the canonical text is equivalent to a root `.spo` section with `:::<type>`, `id`, `start`, `end`, `enabled`, `layer`, `blend`, `blendequation`, a blank line, and the script body
 
 #### Scenario: Disabled bar is omitted
@@ -76,3 +77,11 @@ Cacablu SHALL exclude disabled project bars from initial project-open section sy
 - **WHEN** Cacablu opens a project containing a disabled bar with an unsupported Phoenix section type
 - **THEN** Cacablu does not send that bar to Phoenix
 - **AND** Cacablu does not create an unsupported-section error event for that disabled bar
+
+### Requirement: Section load order
+Cacablu SHALL send enabled project bars to Phoenix in layer order.
+
+#### Scenario: Sections are sent by layer
+- **WHEN** Cacablu prepares a full project section replacement for Phoenix
+- **THEN** enabled bars are ordered by ascending layer before they are sent
+- **AND** bars within the same layer are ordered deterministically by start time, end time, and id

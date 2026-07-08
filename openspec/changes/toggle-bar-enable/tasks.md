@@ -35,3 +35,4 @@
 - [x] 5.4 Add tests for Phoenix sync calls: delete on disable, update on enable, and no request while disconnected.
 - [x] 5.5 Add tests that undo restores enabled values and triggers the matching Phoenix sync side effects when connected.
 - [x] 5.6 Run Cacablu typecheck and relevant unit tests.
+- [x] 5.7 Verify project-open section sync sends bars by layer and normalizes script line endings before Phoenix parsing.
