@@ -78,6 +78,7 @@ Phoenix SHALL provide an editor API operation that updates one runtime section a
 - **THEN** Phoenix replaces the runtime section for id `17`
 - **AND** Phoenix rewrites `<active-data-folder>/17.spo`
 - **AND** Phoenix leaves unrelated runtime sections and root `.spo` files intact
+- **AND** the success response identifies only section id `17` as affected
 
 #### Scenario: Single section update fails to load
 - **WHEN** Phoenix receives a syntactically valid single-section update whose section cannot load

@@ -216,12 +216,10 @@ namespace Phoenix {
 					//Logger::sendEditor("Section %d [layer: %d id: %s type: %s] deleted", i, ds->layer, ds->identifier.c_str(), ds->type_str.c_str());
 				}
 				else {
-					Logger::error("Section NOT deleted: {}", sectionId);
 					failed = true;
 				}
 			}
 			else {
-				Logger::error("Section NOT deleted: {}", sectionId);
 				failed = true;
 			}
 
@@ -352,6 +350,11 @@ namespace Phoenix {
 		m_loadSection.clear();
 		m_execRenderSection.clear();
 		m_execSoundSection.clear();
+	}
+
+	bool SectionManager::hasSection(std::string_view id) const
+	{
+		return getSection(id) != nullptr;
 	}
 
 	const std::vector<Section*>& SectionManager::sections() const

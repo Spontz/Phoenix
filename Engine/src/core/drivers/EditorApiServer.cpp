@@ -1187,6 +1187,54 @@ namespace Phoenix {
 			return json;
 		}
 
+		std::string buildSectionsManifestForIds(const std::set<std::string>& ids)
+		{
+			std::vector<std::string> entries;
+			const auto& sections = DEMO->m_sectionManager.sections();
+			entries.reserve(ids.size());
+
+			for (const auto* section : sections) {
+				if (!section || !ids.contains(section->identifier))
+					continue;
+				std::string content;
+				const fs::path filePath = sectionFilePath(section->identifier);
+				if (fs::exists(filePath)) {
+					std::ifstream file(filePath, std::ios::binary);
+					content.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+				}
+				entries.push_back(buildSectionEntryJson(
+					section->identifier,
+					section->type_str,
+					section->startTime,
+					section->endTime,
+					section->enabled,
+					section->layer,
+					content
+				));
+			}
+
+			std::string json = "{\"root\":\"phoenix-engine\",\"entries\":[";
+			for (size_t i = 0; i < entries.size(); ++i) {
+				if (i > 0)
+					json += ',';
+				json += entries[i];
+			}
+			json += "]}";
+			return json;
+		}
+
+		std::string buildJsonStringArray(const std::vector<std::string>& values)
+		{
+			std::string json = "[";
+			for (size_t i = 0; i < values.size(); ++i) {
+				if (i > 0)
+					json += ',';
+				json += std::format("\"{}\"", escapeJsonValue(values[i]));
+			}
+			json += "]";
+			return json;
+		}
+
 		std::string buildAssetChanged(std::string_view operation, std::string_view path, std::string_view requestId, std::string_view kind, uintmax_t size = 0, std::string_view hash = {})
 		{
 			std::string entry = std::format(
@@ -1526,12 +1574,13 @@ namespace Phoenix {
 				return {
 					.status = "200 OK",
 					.body = std::format(
-						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"replace-all\",\"received\":{},\"loaded\":{},\"failed\":{},\"writtenFiles\":{},\"deletedFiles\":[],\"failedSections\":{},\"manifest\":{}}}",
+						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"replace-all\",\"received\":{},\"loaded\":{},\"failed\":{},\"writtenFiles\":{},\"deletedFiles\":[],\"affectedIds\":{},\"failedSections\":{},\"manifest\":{}}}",
 						escapeJsonValue(requestId),
 						sections.size(),
 						loaded,
 						failedIds.size(),
 						sections.size(),
+						buildJsonStringArray(std::vector<std::string>(incomingIds.begin(), incomingIds.end())),
 						buildFailedSectionsJson(failedIds),
 						buildSectionsManifest()
 					),
@@ -1558,7 +1607,8 @@ namespace Phoenix {
 
 			const auto& section = sections.front();
 			try {
-				DEMO->m_sectionManager.deleteSections({ section.id });
+				if (DEMO->m_sectionManager.hasSection(section.id))
+					DEMO->m_sectionManager.deleteSections({ section.id });
 				const bool loaded = DEMO->loadScriptFromNetwork(section.content);
 				updateSectionDependencyIndex(section);
 
@@ -1577,12 +1627,13 @@ namespace Phoenix {
 				return {
 					.status = "200 OK",
 					.body = std::format(
-						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"update-one\",\"received\":1,\"loaded\":{},\"failed\":{},\"writtenFiles\":1,\"deletedFiles\":[],\"failedSections\":{},\"manifest\":{}}}",
+						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"update-one\",\"received\":1,\"loaded\":{},\"failed\":{},\"writtenFiles\":1,\"deletedFiles\":[],\"affectedIds\":[\"{}\"],\"failedSections\":{},\"manifest\":{}}}",
 						escapeJsonValue(requestId),
 						loaded ? 1 : 0,
 						loaded ? 0 : 1,
+						escapeJsonValue(section.id),
 						buildFailedSectionsJson(failedIds),
-						buildSectionsManifest()
+						buildSectionsManifestForIds({ section.id })
 					),
 					.eventPayload = buildSectionUpdated(requestId, section.id)
 				};
@@ -1644,10 +1695,11 @@ namespace Phoenix {
 				return {
 					.status = "200 OK",
 					.body = std::format(
-						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"delete-many\",\"received\":{},\"loaded\":0,\"failed\":0,\"writtenFiles\":0,\"deletedFiles\":{},\"failedSections\":[],\"manifest\":{}}}",
+						"{{\"requestId\":\"{}\",\"ok\":true,\"operation\":\"delete-many\",\"received\":{},\"loaded\":0,\"failed\":0,\"writtenFiles\":0,\"deletedFiles\":{},\"affectedIds\":{},\"failedSections\":[],\"manifest\":{}}}",
 						escapeJsonValue(requestId),
 						ids.size(),
 						deletedJson,
+						buildJsonStringArray(idsToDelete),
 						buildSectionsManifest()
 					),
 					.eventPayload = buildSectionsDeleted(requestId, ids.size())
