@@ -385,6 +385,9 @@ namespace Phoenix {
 				sources.emplace_back(argv[i]);
 			}
 		}
+
+		if (!m_dataFolder.empty() && m_dataFolder.back() != '/' && m_dataFolder.back() != '\\')
+			m_dataFolder += "/";
 	}
 
 	bool DemoKernel::initDemo()

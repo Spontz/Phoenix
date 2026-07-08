@@ -10,7 +10,11 @@
 namespace Phoenix {
 
 	constexpr std::string_view kOutputFile("demo_log.txt");
+	constexpr size_t kMaxRecentEntries = 512;
 	std::ofstream Logger::kOutputStream;
+	uint64_t Logger::kNextRecentSequence = 1;
+	std::mutex Logger::kRecentMutex;
+	std::deque<Logger::RecentEntry> Logger::kRecentEntries;
 	uint32_t kIndent = 0;
 
 	LogLevel Logger::kLogLevel = LogLevel::high;
@@ -62,6 +66,24 @@ namespace Phoenix {
 			kOutputStream.flush();
 			kOutputStream.close();
 		}
+	}
+
+	std::vector<Logger::RecentEntry> Logger::getRecentEntries()
+	{
+		std::lock_guard lock(kRecentMutex);
+		return { kRecentEntries.begin(), kRecentEntries.end() };
+	}
+
+	void Logger::rememberRecent(const std::string_view severity, const std::string_view message)
+	{
+		std::lock_guard lock(kRecentMutex);
+		kRecentEntries.push_back(RecentEntry{
+			.sequence = kNextRecentSequence++,
+			.severity = std::string(severity),
+			.message = std::string(message),
+		});
+		while (kRecentEntries.size() > kMaxRecentEntries)
+			kRecentEntries.pop_front();
 	}
 
 }

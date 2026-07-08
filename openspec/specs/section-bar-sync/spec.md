@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+Define how Cacablu project bars are represented as Phoenix runtime sections, compared through the editor API, synchronized during project load, updated individually after edits, and persisted as root `.spo` files in Phoenix's active `data` folder.
+
+## Requirements
 
 ### Requirement: Engine section manifest
 Phoenix SHALL expose a manifest of the current runtime sections so Cacablu can compare them with project database bars.
@@ -40,7 +43,7 @@ Cacablu SHALL serialize database bars into Phoenix-compatible section payloads.
 #### Scenario: Bar is serialized
 - **WHEN** Cacablu prepares a bar for Phoenix
 - **THEN** the payload includes the bar id, type, start time, end time, enabled flag, layer, source blend factor, destination blend factor, blend equation, and raw script text
-- **AND** empty or whitespace-only bar type is serialized as `section`
+- **AND** empty or whitespace-only bar type is treated as unconfigured and is not sent to Phoenix
 - **AND** the canonical text is equivalent to a root `.spo` section with `:::<type>`, `id`, `start`, `end`, `enabled`, `layer`, `blend`, `blendequation`, a blank line, and the script body
 
 #### Scenario: Invalid bar payload is rejected
@@ -66,6 +69,20 @@ Phoenix SHALL provide an editor API operation that atomically replaces the runti
 - **WHEN** Phoenix is not running the editor API in slave mode
 - **THEN** no browser section replacement endpoint is available
 - **AND** standalone Phoenix behavior remains unchanged
+
+### Requirement: Single section update API
+Phoenix SHALL provide an editor API operation that updates one runtime section and its root `.spo` file without requiring a full section replacement.
+
+#### Scenario: Single section update succeeds
+- **WHEN** Phoenix receives a valid single-section update for section id `17`
+- **THEN** Phoenix replaces the runtime section for id `17`
+- **AND** Phoenix rewrites `<active-data-folder>/17.spo`
+- **AND** Phoenix leaves unrelated runtime sections and root `.spo` files intact
+
+#### Scenario: Single section update fails to load
+- **WHEN** Phoenix receives a syntactically valid single-section update whose section cannot load
+- **THEN** Phoenix returns a structured response that identifies section id `17` as failed
+- **AND** the received section content remains available on disk for further editor correction
 
 ### Requirement: Section file persistence
 Phoenix SHALL persist received editor sections as root `.spo` files in the active `data` folder.

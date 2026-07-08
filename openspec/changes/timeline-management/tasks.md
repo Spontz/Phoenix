@@ -12,7 +12,7 @@
 - [ ] 2.3 Implement timeline bar selection and empty-space deselection.
 - [ ] 2.4 Open/reinitialize Bar Editor on single-clicking a timeline bar, including the same selected bar.
 - [ ] 2.5 Implement Bar Editor controls: Bar Type, Script Template, Save Template, code editor, Blend Source, Blend Destination, Blend Equation, and Apply.
-- [ ] 2.6 Persist Bar Editor Apply changes to script, blend source, blend destination, and blend equation.
+- [ ] 2.6 Persist Bar Editor Apply changes to name, type, script, timing, blend source, blend destination, and blend equation while preserving valid non-time edits if time fields are invalid.
 - [ ] 2.7 Restrict Blend Equation choices to Add, Subtract, and Reverse subtract while storing Phoenix-compatible values.
 - [ ] 2.8 Add View menu toggle for displaying bar ids before timeline labels.
 - [ ] 2.9 Implement bar creation from a timeline command or gesture.
@@ -21,7 +21,7 @@
 - [ ] 2.12 Implement delete for selected bars.
 - [ ] 2.13 Implement undo stack support for committed bar moves.
 - [ ] 2.14 Preserve layout stability and prevent label overlap during timeline edits and zoom changes.
-- [ ] 2.15 Render section sync error bars in red while matching Events remain present.
+- [ ] 2.15 Render section sync error bars in red from tracked section-error ids until successful resync or project reset clears them.
 
 ## 3. Bar Editor, Inspector, And Selection
 
@@ -35,7 +35,7 @@
 
 - [ ] 4.1 Add a debounced timeline edit sync scheduler that reuses project bar to Phoenix section sync.
 - [ ] 4.2 Skip Phoenix sync when no project is loaded or when Phoenix is disconnected.
-- [ ] 4.3 Record disconnected sync attempts as Events without rolling back local edits.
+- [ ] 4.3 Skip disconnected sync attempts without rolling back local edits or recording synthetic disconnected-sync Events.
 - [ ] 4.4 Record Phoenix section sync validation/load errors as Events with bar ids.
 - [ ] 4.5 Ensure Cacablu sync progress counters advance only for real processed units, including section manifest checking, and do not reset during one-shot Phoenix requests.
 - [ ] 4.6 Avoid sync loops by distinguishing local timeline edits from runtime state updates.
@@ -57,7 +57,7 @@
 - [ ] 6.3 Verify create, move, resize, layer change, and delete persist to the project database.
 - [ ] 6.4 Verify invalid edits are clamped or rejected before persistence.
 - [ ] 6.5 Verify timeline edits trigger debounced Phoenix section sync when connected.
-- [ ] 6.6 Verify timeline edits remain local and produce Events when Phoenix is disconnected.
+- [ ] 6.6 Verify timeline edits remain local and do not send Phoenix requests when Phoenix is disconnected.
 - [ ] 6.7 Verify Phoenix sync errors identify the affected bar ids in Events.
 - [ ] 6.8 Verify section sync error bars appear red in the timeline.
 - [ ] 6.9 Verify sync modal progress text does not show stale `0/N` and the bar does not reset during one-shot Phoenix requests.

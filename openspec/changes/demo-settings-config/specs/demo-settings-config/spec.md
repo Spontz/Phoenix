@@ -32,7 +32,7 @@ Phoenix SHALL persist accepted demo settings to `data/config/control.spo`.
 - **GIVEN** Phoenix accepts demo settings
 - **WHEN** persistence runs
 - **THEN** Phoenix SHALL create `data/config` if needed
-- **AND** Phoenix SHALL write `control.spo` with `demo_name`, `debug`, `debugEnableGrid`, `loop`, `sound`, `demo_start`, `demo_end`, `slave`, and `log_detail`.
+- **AND** Phoenix SHALL write `control.spo` with `demo_name`, `debug`, `debugEnableFloor`, `loop`, `sound`, `demo_start`, `demo_end`, `slave`, and `log_detail`.
 
 #### Scenario: Persist calculated demo end
 
@@ -67,8 +67,8 @@ Phoenix SHALL apply accepted demo settings to the running engine state.
 - **WHEN** Phoenix accepts them
 - **THEN** the running engine SHALL use the new loop and sound enabled state without Cacablu writing files directly.
 
-#### Scenario: Apply debug grid and log detail
+#### Scenario: Apply debug floor and log detail
 
-- **GIVEN** valid settings change `debugGrid` or `logDetail`
+- **GIVEN** valid settings change `debugFloor` or `logDetail`
 - **WHEN** Phoenix accepts them
-- **THEN** Phoenix SHALL apply the debug grid flag and logger detail level to the running engine.
+- **THEN** Phoenix SHALL apply the debug floor flag and logger detail level to the running engine.

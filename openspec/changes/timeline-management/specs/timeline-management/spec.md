@@ -13,6 +13,11 @@ Cacablu SHALL keep the timeline empty when no project is loaded and populate it 
 - **THEN** the Timeline panel shows one clip per project bar
 - **AND** each clip uses the bar id, type, layer, start time, and end time from the project database
 
+#### Scenario: Timeline opens after project load
+- **WHEN** Cacablu opens the Timeline panel after the project database is already open
+- **THEN** the Timeline panel immediately loads clips from the active project session
+- **AND** the user does not need to reopen the project to see bars
+
 ### Requirement: Timeline bar selection
 Cacablu SHALL allow users to select bars from the timeline and expose the selected bar to other editor panels.
 
@@ -48,6 +53,16 @@ Cacablu SHALL provide a Bar Editor for selected timeline bars and persist applie
 - **WHEN** the user changes script or blend settings and selects Apply
 - **THEN** Cacablu updates the selected bar in the active project session
 - **AND** subsequent section synchronization uses the applied values
+
+#### Scenario: Bar Editor keeps local edits after Phoenix error
+- **WHEN** the user applies Bar Editor changes and Phoenix rejects or fails to load the section
+- **THEN** Cacablu keeps the applied local bar values available when the user selects away and returns to the bar
+- **AND** Cacablu marks the affected bar id as having a section sync error
+
+#### Scenario: Bar Editor applies valid fields despite invalid time
+- **WHEN** edited start or end time fields are invalid
+- **THEN** Cacablu preserves the bar's previous valid time range
+- **AND** Cacablu still applies valid non-time fields such as name, type, script, and blend metadata
 
 ### Requirement: Timeline bar editing
 Cacablu SHALL support creating, moving, resizing, deleting, and changing the layer of project bars from the timeline.
@@ -128,12 +143,17 @@ Cacablu SHALL synchronize committed timeline bar changes to Phoenix using the ex
 #### Scenario: Timeline edit is committed while Phoenix is disconnected
 - **WHEN** the user commits a timeline bar edit and Phoenix is not connected
 - **THEN** Cacablu keeps the local project edit
-- **AND** Cacablu records an event indicating that Phoenix section sync could not be performed
+- **AND** Cacablu does not send a Phoenix request
 
 #### Scenario: Project opens while Phoenix is disconnected
 - **WHEN** the user opens a project and Phoenix is not connected
 - **THEN** Cacablu skips initial Phoenix pool and section synchronization
 - **AND** the project loads locally without attempting Phoenix fetch requests
+- **AND** Cacablu does not create disconnected-sync error events for that skipped initial sync
+
+#### Scenario: Phoenix connects after project open
+- **WHEN** Phoenix connects after Cacablu already has a project loaded with pending Phoenix sync
+- **THEN** Cacablu prompts the user before loading that project into Phoenix
 
 #### Scenario: Phoenix rejects synchronized bars
 - **WHEN** Phoenix returns section sync errors after a timeline edit
@@ -151,8 +171,8 @@ Cacablu SHALL synchronize committed timeline bar changes to Phoenix using the ex
 - **AND** one-shot Phoenix HTTP requests do not display stale partial counters or reset the progress bar to zero
 
 #### Scenario: Timeline displays section errors
-- **WHEN** Cacablu has error Events with known bar ids from section sync
-- **THEN** matching timeline bars are colored red until those Events are cleared
+- **WHEN** Cacablu has tracked section error ids from section sync or asset impact responses
+- **THEN** matching timeline bars are colored red until those ids are cleared by successful resync or project reset
 
 ### Requirement: Timeline playback controls
 Cacablu SHALL keep timeline transport controls usable with the current Phoenix connection state.

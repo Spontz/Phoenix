@@ -2,6 +2,5 @@
 /phoenix_vs*
 /build
 demo_log.txt
-/Launcher/data/pool
-/Launcher/data/*.*
+/Launcher/data*
 /Launcher_WD*

@@ -13,6 +13,7 @@ namespace Phoenix {
 
 		// Output to file
 		const auto s = formatMsg("Info", vformat(msg, std::make_format_args(args...)));
+		rememberRecent("info", s);
 		kOutputStream << s;
 
 		// Output to Visual Studio
@@ -30,6 +31,7 @@ namespace Phoenix {
 			return;
 
 		const auto s = formatMsg("Info", vformat(msg, std::make_format_args(args...)));
+		rememberRecent("info", s);
 		
 		// Output to Visual Studio
 #if defined(_DEBUG) && defined(WIN32)
@@ -48,6 +50,7 @@ namespace Phoenix {
 			return;
 
 		const auto s = formatMsg("Error", vformat(msg, std::make_format_args(args...)));
+		rememberRecent("error", s);
 
 		// Output to file
 		kOutputStream << s;

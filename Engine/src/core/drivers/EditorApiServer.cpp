@@ -2104,6 +2104,24 @@ namespace Phoenix {
 				));
 		});
 
+		app.get("/api/logs/recent", [](auto* response, auto*) {
+			const auto entries = Logger::getRecentEntries();
+			std::string body = "{\"entries\":[";
+			for (size_t index = 0; index < entries.size(); ++index) {
+				const auto& entry = entries[index];
+				if (index > 0)
+					body += ",";
+				body += std::format(
+					"{{\"sequence\":{},\"severity\":\"{}\",\"message\":\"{}\"}}",
+					entry.sequence,
+					escapeJsonValue(entry.severity),
+					escapeJsonValue(entry.message)
+				);
+			}
+			body += "]}";
+			sendJson(response, "200 OK", body);
+		});
+
 		app.get("/api/assets/manifest", [](auto* response, auto*) {
 			sendJson(response, "200 OK", buildManifest());
 		});

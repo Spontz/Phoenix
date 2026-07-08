@@ -7,7 +7,7 @@ Phoenix already reads these variables through `SpoReader`:
 ```text
 demo_name
 debug
-debugEnableGrid
+debugEnableFloor
 loop
 sound
 demo_start
@@ -44,7 +44,7 @@ Response:
     "demoName": "Phoenix demo engine",
     "loop": true,
     "sound": true,
-    "debugGrid": true,
+    "debugFloor": true,
     "logDetail": 1,
     "demoStart": 0,
     "demoEnd": 50,
@@ -72,7 +72,7 @@ Request:
   "demoName": "My demo",
   "loop": true,
   "sound": true,
-  "debugGrid": true,
+  "debugFloor": true,
   "logDetail": 1,
   "demoEnd": 120
 }
@@ -102,7 +102,7 @@ Phoenix writes `data/config/control.spo` using this order:
 ```text
 demo_name <demoName>
 debug 1
-debugEnableGrid <0|1>
+debugEnableFloor <0|1>
 loop <0|1>
 sound <0|1>
 demo_start 0.0
@@ -131,7 +131,7 @@ On accepted settings Phoenix updates:
 - `m_demoName`
 - `m_loop`
 - `m_soundManager` or equivalent sound enabled flag exposed through existing control variables
-- `m_debugEnableGrid`
+- `m_debugEnableFloor`
 - `m_demoStartTime`
 - `m_demoEndTime`
 - `m_slaveMode`
