@@ -182,6 +182,13 @@ Cacablu SHALL keep timeline transport controls usable with the current Phoenix c
 - **THEN** Cacablu sends the matching runtime command to Phoenix
 - **AND** timeline playhead state follows Phoenix runtime state when available
 
+#### Scenario: Space toggles playback from focused timeline
+- **GIVEN** Phoenix is connected
+- **AND** focus is inside the Timeline panel but not in a text input, select, button, contenteditable element, or textbox role
+- **WHEN** the user presses Space
+- **THEN** Cacablu SHALL prevent the default page scroll
+- **AND** Cacablu SHALL send `runtime.toggle` to Phoenix.
+
 #### Scenario: Phoenix is disconnected
 - **WHEN** the user opens the Timeline panel while Phoenix is disconnected
 - **THEN** Cacablu keeps the panel open

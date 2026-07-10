@@ -82,6 +82,7 @@ namespace Phoenix {
 		void setRemoteKeyPressed(int32_t key, bool pressed);
 		void processGraphicsConfigRequests();
 		void processDemoSettingsRequests();
+		void processRuntimeLoopRequests();
 		void processCommands();
 		void processSectionReplaceRequests();
 		void processAssetImpactRequests();
