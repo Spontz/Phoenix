@@ -3355,7 +3355,26 @@ namespace Phoenix {
 		if (pos == std::string_view::npos)
 			return false;
 
-		const size_t end = message.find('"', pos + 1);
+		// Find the closing quote, skipping escaped characters (e.g. \").
+		// A naive find('"', pos + 1) truncates the content at the first
+		// escaped quote inside the string (e.g. shaders with #include "x").
+		size_t end = std::string_view::npos;
+		bool escaped = false;
+		for (size_t i = pos + 1; i < message.size(); ++i) {
+			const char ch = message[i];
+			if (escaped) {
+				escaped = false;
+				continue;
+			}
+			if (ch == '\\') {
+				escaped = true;
+				continue;
+			}
+			if (ch == '"') {
+				end = i;
+				break;
+			}
+		}
 		if (end == std::string_view::npos)
 			return false;
 
@@ -3372,6 +3391,12 @@ namespace Phoenix {
 					break;
 				case 't':
 					value.push_back('\t');
+					break;
+				case '"':
+					value.push_back('"');
+					break;
+				case '\\':
+					value.push_back('\\');
 					break;
 				default:
 					value.push_back(message[i]);

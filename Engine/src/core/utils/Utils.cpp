@@ -28,7 +28,6 @@ namespace Phoenix {
 
 	std::string Utils::readASCIIFile(std::string_view fileName) 
 	{
-		// Código de mierda de la puta IA... hace que falle todo si hay unas comillas en el shader
 		{
 			std::lock_guard lock(kRuntimeTextOverrideMutex);
 			const auto it = kRuntimeTextOverrides.find(normalizeOverridePath(fileName));
