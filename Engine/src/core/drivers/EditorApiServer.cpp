@@ -215,23 +215,6 @@ namespace Phoenix {
 			float endTime = 0.0f;
 		};
 
-		struct RuntimeLoopApplyResult {
-			std::string status;
-			std::string body;
-			std::string eventPayload;
-		};
-
-		struct RuntimeLoopRequest {
-			RuntimeLoopSettings settings;
-			RuntimeLoopApplyResult result;
-			bool done = false;
-			std::mutex mutex;
-			std::condition_variable condition;
-		};
-
-		std::mutex kRuntimeLoopQueueMutex;
-		std::queue<std::shared_ptr<RuntimeLoopRequest>> kRuntimeLoopQueue;
-
 		struct SectionSyncStatus {
 			std::string requestId;
 			std::string operation;
@@ -261,9 +244,8 @@ namespace Phoenix {
 		template <typename Response>
 		void sendJson(Response* response, std::string_view status, std::string_view body)
 		{
-			response->writeStatus(status);
 			writeCors(response);
-			response->end(body);
+			response->writeStatus(status)->end(body);
 		}
 
 		std::string escapeJsonValue(std::string_view value)
@@ -2015,50 +1997,6 @@ namespace Phoenix {
 			);
 		}
 
-		std::string buildRuntimeLoopChanged(const RuntimeLoopSettings& settings)
-		{
-			return std::format(
-				"{{\"type\":\"runtime.loop.changed\",\"requestId\":\"{}\",\"startTime\":{},\"endTime\":{}}}",
-				escapeJsonValue(settings.requestId),
-				formatGraphicsNumber(settings.startTime),
-				formatGraphicsNumber(settings.endTime)
-			);
-		}
-
-		bool validateRuntimeLoopSettings(const RuntimeLoopSettings& settings, std::vector<ValidationDetail>& details)
-		{
-			if (!std::isfinite(settings.startTime))
-				addValidationDetail(details, "startTime", "Loop start time must be a finite number.");
-			if (!std::isfinite(settings.endTime))
-				addValidationDetail(details, "endTime", "Loop end time must be a finite number.");
-			if (std::isfinite(settings.startTime) && std::isfinite(settings.endTime) && settings.endTime <= settings.startTime)
-				addValidationDetail(details, "endTime", "Loop end time must be greater than loop start time.");
-			return details.empty();
-		}
-
-		bool parseRuntimeLoopSettings(std::string_view body, RuntimeLoopSettings& settings, std::vector<ValidationDetail>& details)
-		{
-			EditorApiServer::extractString(body, "requestId", settings.requestId);
-			if (!EditorApiServer::extractNumber(body, "startTime", settings.startTime))
-				addValidationDetail(details, "startTime", "Loop start time is required.");
-			if (!EditorApiServer::extractNumber(body, "endTime", settings.endTime))
-				addValidationDetail(details, "endTime", "Loop end time is required.");
-			return details.empty() && validateRuntimeLoopSettings(settings, details);
-		}
-
-		RuntimeLoopApplyResult applyRuntimeLoopOnMainThread(const RuntimeLoopSettings& settings)
-		{
-			DEMO->m_loop = true;
-			DEMO->m_demoStartTime = settings.startTime;
-			DEMO->m_demoEndTime = settings.endTime;
-
-			return {
-				.status = "200 OK",
-				.body = buildRuntimeLoopSuccess(settings),
-				.eventPayload = buildRuntimeLoopChanged(settings)
-			};
-		}
-
 		ImGuiKey glfwKeyToImGuiKey(int32_t key)
 		{
 			if (key >= GLFW_KEY_A && key <= GLFW_KEY_Z)
@@ -2193,7 +2131,6 @@ namespace Phoenix {
 
 		processGraphicsConfigRequests();
 		processDemoSettingsRequests();
-		processRuntimeLoopRequests();
 		processSectionReplaceRequests();
 		processAssetImpactRequests();
 		processCommands();
@@ -2605,24 +2542,27 @@ namespace Phoenix {
 
 				RuntimeLoopSettings settings;
 				std::vector<ValidationDetail> details;
-				if (!parseRuntimeLoopSettings(*body, settings, details)) {
+				extractString(*body, "requestId", settings.requestId);
+				if (!extractNumber(*body, "startTime", settings.startTime) || !std::isfinite(settings.startTime))
+					addValidationDetail(details, "startTime", "Loop start time must be a finite number.");
+				if (!extractNumber(*body, "endTime", settings.endTime) || !std::isfinite(settings.endTime))
+					addValidationDetail(details, "endTime", "Loop end time must be a finite number.");
+				if (details.empty() && settings.endTime <= settings.startTime)
+					addValidationDetail(details, "endTime", "Loop end time must be greater than loop start time.");
+				if (!details.empty()) {
 					sendJson(response, "400 Bad Request", buildRuntimeLoopError("invalid-runtime-loop", "Invalid runtime loop interval.", settings.requestId, details));
 					return;
 				}
 
-				const auto request = std::make_shared<RuntimeLoopRequest>();
-				request->settings = std::move(settings);
+				Command command{};
+				command.type = CommandType::SetLoop;
+				command.time = settings.startTime;
+				command.endTime = settings.endTime;
 				{
-					std::lock_guard lock(kRuntimeLoopQueueMutex);
-					kRuntimeLoopQueue.push(request);
+					std::lock_guard lock(m_commandMutex);
+					m_commands.push(command);
 				}
-
-				std::unique_lock lock(request->mutex);
-				if (!request->condition.wait_for(lock, std::chrono::seconds(30), [&request]() { return request->done; })) {
-					sendJson(response, "504 Gateway Timeout", buildRuntimeLoopError("runtime-loop-apply-timeout", "Timed out waiting for Phoenix to apply runtime loop.", request->settings.requestId));
-					return;
-				}
-				sendJson(response, request->result.status, request->result.body);
+				sendJson(response, "200 OK", buildRuntimeLoopSuccess(settings));
 			});
 			response->onAborted([body]() {});
 		});
@@ -3128,41 +3068,6 @@ namespace Phoenix {
 		}
 	}
 
-	void EditorApiServer::processRuntimeLoopRequests()
-	{
-		while (true) {
-			std::shared_ptr<RuntimeLoopRequest> request;
-			{
-				std::lock_guard lock(kRuntimeLoopQueueMutex);
-				if (kRuntimeLoopQueue.empty())
-					return;
-				request = kRuntimeLoopQueue.front();
-				kRuntimeLoopQueue.pop();
-			}
-
-			RuntimeLoopApplyResult result;
-			if (!DEMO) {
-				result = {
-					.status = "503 Service Unavailable",
-					.body = buildRuntimeLoopError("runtime-loop-unavailable", "Phoenix demo state is not initialized.", request->settings.requestId)
-				};
-			}
-			else {
-				result = applyRuntimeLoopOnMainThread(request->settings);
-			}
-
-			if (!result.eventPayload.empty())
-				publishEvent(result.eventPayload);
-
-			{
-				std::lock_guard lock(request->mutex);
-				request->result = std::move(result);
-				request->done = true;
-			}
-			request->condition.notify_all();
-		}
-	}
-
 	void EditorApiServer::processSectionReplaceRequests()
 	{
 		while (true) {
@@ -3262,6 +3167,12 @@ namespace Phoenix {
 					DEMO->playDemo();
 				break;
 			case CommandType::Seek:
+				DEMO->setCurrentTime(command.time);
+				break;
+			case CommandType::SetLoop:
+				DEMO->m_loop = true;
+				DEMO->m_demoStartTime = command.time;
+				DEMO->m_demoEndTime = command.endTime;
 				DEMO->setCurrentTime(command.time);
 				break;
 			case CommandType::MouseMove: {

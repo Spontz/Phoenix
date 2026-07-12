@@ -40,6 +40,7 @@ namespace Phoenix {
 			Pause,
 			Toggle,
 			Seek,
+			SetLoop,
 			MouseMove,
 			MouseDown,
 			MouseUp,
@@ -53,6 +54,7 @@ namespace Phoenix {
 		struct Command {
 			CommandType type;
 			float time;
+			float endTime;
 			float x;
 			float y;
 			float deltaX;
@@ -82,7 +84,6 @@ namespace Phoenix {
 		void setRemoteKeyPressed(int32_t key, bool pressed);
 		void processGraphicsConfigRequests();
 		void processDemoSettingsRequests();
-		void processRuntimeLoopRequests();
 		void processCommands();
 		void processSectionReplaceRequests();
 		void processAssetImpactRequests();
