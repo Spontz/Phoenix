@@ -11,6 +11,21 @@
 
 namespace Phoenix {
 
+	// In-memory text file override system.
+	// kRuntimeTextOverrides maps a normalized file path to replacement content.
+	// When readASCIIFile() is called, it checks this map first; if the path is
+	// present, the stored content is returned instead of reading from disk.
+	//
+	// This enables the editor hot-reload pipeline: EditorApiServer registers a
+	// preview of an edited asset (shader, .spo script, spline, etc.) here via
+	// setRuntimeTextOverride(), then triggers a reload. The engine picks up the
+	// previewed content transparently, without writing to disk. When the edit
+	// is committed (written to file) or discarded, clearRuntimeTextOverride()
+	// removes the entry so subsequent reads fall back to the real file.
+	//
+	// All access is guarded by kRuntimeTextOverrideMutex. Both the map and the
+	// mutex live in an anonymous namespace so they have internal linkage and
+	// are only reachable through the Utils static methods declared in Utils.h.
 	namespace {
 		std::mutex kRuntimeTextOverrideMutex;
 		std::unordered_map<std::string, std::string> kRuntimeTextOverrides;
@@ -26,8 +41,12 @@ namespace Phoenix {
 		return std::filesystem::exists(fileName);
 	}
 
-	std::string Utils::readASCIIFile(std::string_view fileName) 
+	std::string Utils::readASCIIFile(std::string_view fileName)
 	{
+		// Check the in-memory override map first. If an override is registered
+		// for this path, return its content instead of reading from disk.
+		// This is used by the editor hot-reload pipeline (EditorApiServer) to
+		// preview unsaved asset edits without touching the real file.
 		{
 			std::lock_guard lock(kRuntimeTextOverrideMutex);
 			const auto it = kRuntimeTextOverrides.find(normalizeOverridePath(fileName));
