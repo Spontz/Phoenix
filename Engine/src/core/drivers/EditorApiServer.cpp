@@ -1130,7 +1130,7 @@ namespace Phoenix {
 			return {};
 		}
 
-		std::string buildSectionEntryJson(std::string_view id, std::string_view type, float startTime, float endTime, bool enabled, int32_t layer, std::string_view content)
+		std::string buildSectionEntryJson(std::string_view id, std::string_view type, float startTime, float endTime, bool enabled, int32_t layer, bool loaded, std::string_view content)
 		{
 			std::string srcBlending;
 			std::string dstBlending;
@@ -1142,7 +1142,7 @@ namespace Phoenix {
 			const std::string blendingEQ = extractSpoHeaderValue(content, "blendequation");
 
 			return std::format(
-				"{{\"id\":\"{}\",\"type\":\"{}\",\"startTime\":{},\"endTime\":{},\"enabled\":{},\"layer\":{},\"srcBlending\":\"{}\",\"dstBlending\":\"{}\",\"blendingEQ\":\"{}\",\"contentHash\":\"{}\",\"size\":{}}}",
+				"{{\"id\":\"{}\",\"type\":\"{}\",\"startTime\":{},\"endTime\":{},\"enabled\":{},\"layer\":{},\"srcBlending\":\"{}\",\"dstBlending\":\"{}\",\"blendingEQ\":\"{}\",\"contentHash\":\"{}\",\"size\":{},\"loaded\":{}}}",
 				escapeJsonValue(id),
 				escapeJsonValue(type),
 				formatSectionNumber(startTime),
@@ -1153,7 +1153,8 @@ namespace Phoenix {
 				escapeJsonValue(dstBlending),
 				escapeJsonValue(blendingEQ),
 				escapeJsonValue(hashString(content)),
-				content.size()
+				content.size(),
+				loaded ? "true" : "false"
 			);
 		}
 
@@ -1179,6 +1180,7 @@ namespace Phoenix {
 					section->endTime,
 					section->enabled,
 					section->layer,
+					section->loaded != 0,
 					content
 				));
 			}
@@ -1215,6 +1217,7 @@ namespace Phoenix {
 					section->endTime,
 					section->enabled,
 					section->layer,
+					section->loaded != 0,
 					content
 				));
 			}
@@ -2423,6 +2426,7 @@ namespace Phoenix {
 				}
 
 				try {
+					const auto impact = runAssetImpactRequest(requestId, assetPath->relative, assetPath->full, AssetImpactOperation::DeleteDirectory);
 					std::error_code ec;
 					if (recursive)
 						fs::remove_all(assetPath->full, ec);
@@ -2432,7 +2436,6 @@ namespace Phoenix {
 						sendJson(response, "500 Internal Server Error", buildAssetError("delete-directory-failed", ec.message(), requestId));
 						return;
 					}
-					const auto impact = runAssetImpactRequest(requestId, assetPath->relative, assetPath->full, AssetImpactOperation::DeleteDirectory);
 					sendJson(response, "200 OK", buildAssetOperationResponse(
 						requestId,
 						"delete-directory",
@@ -3126,9 +3129,16 @@ namespace Phoenix {
 				result = previewOrReloadAssetOnMainThread(request->path, request->fullPath, {}, false);
 				break;
 			case AssetImpactOperation::Delete:
+				Utils::clearRuntimeTextOverride(request->fullPath.generic_string());
+				result = deactivateSectionsForAssetOnMainThread(request->path);
+				break;
 			case AssetImpactOperation::DeleteDirectory:
 				Utils::clearRuntimeTextOverride(request->fullPath.generic_string());
 				result = deactivateSectionsForAssetOnMainThread(request->path);
+				if (request->path == "pool") {
+					// VideoManager keeps shared ownership after sections are removed, which keeps media files open on Windows.
+					DEMO->m_videoManager.clear();
+				}
 				break;
 			}
 
