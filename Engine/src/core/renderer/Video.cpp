@@ -48,12 +48,14 @@ namespace Phoenix {
 
 		if (!loaded()) {
 			Logger::info(LogLevel::low, "Video: Video not loaded");
-			throw std::exception();
+			return;
+			//throw std::exception();
 		}
 
 		if (m_bStopWorkerThread) {
 			Logger::info(LogLevel::low, "Video: Worker thread stop already requested");
-			throw std::exception();
+			return;
+			//throw std::exception();
 		}
 
 		m_bStopWorkerThread = true;
