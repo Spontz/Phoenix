@@ -21,7 +21,7 @@ Phoenix SHALL expose an editor API endpoint that accepts an asset payload for ru
 
 ### Requirement: Asset Impact Responses
 
-Phoenix SHALL report which sections were reloaded, deactivated, or failed after every editor-driven asset preview, write, delete, unpublish, or move operation.
+Phoenix SHALL find every loaded section that depends on the affected asset and report which of those sections were reloaded, deactivated, or failed after every editor-driven asset preview, write, delete, unpublish, or move operation.
 
 #### Scenario: Report successful dependent reloads
 
@@ -37,6 +37,14 @@ Phoenix SHALL report which sections were reloaded, deactivated, or failed after 
 - **WHEN** Phoenix processes the asset operation
 - **THEN** the response SHALL include section `17` in `failedSections`
 - **AND** section `17` SHALL be inactive until it is successfully reloaded later.
+
+#### Scenario: Reload every section that uses an edited shader
+
+- **GIVEN** several loaded sections reference the same GLSL asset
+- **WHEN** Cacablu previews or saves edited content for that asset
+- **THEN** Phoenix SHALL attempt to reload every dependent section before completing the asset operation
+- **AND** the response SHALL report an individual outcome for every dependent section
+- **AND** Cacablu SHALL mark and notify every section whose reload failed.
 
 ### Requirement: Section Dependency Tracking
 
@@ -78,3 +86,54 @@ Phoenix SHALL deactivate sections that depend on an asset that is deleted, unpub
 - **THEN** Phoenix SHALL deactivate section `17`
 - **AND** Phoenix SHALL include section `17` in `deactivatedSections`
 - **AND** section `17` SHALL NOT execute until a later operation restores the asset or updates the section.
+
+### Requirement: GLSL failures are reported in Cacablu Events
+
+Cacablu SHALL report structured asset-impact failures and newly produced Phoenix compilation or linking errors after connected GLSL Preview and Save operations.
+
+#### Scenario: Preview produces a shader compilation error
+
+- **GIVEN** Phoenix is connected and the selected GLSL asset is used by a loaded section
+- **AND** the user introduces invalid GLSL content
+- **WHEN** the user invokes Preview
+- **THEN** Cacablu SHALL add the new Phoenix compiler or linker diagnostic to Events as an error
+- **AND** Cacablu SHALL mark every dependent section returned in `failedSections` as erroneous
+- **AND** existing Events notification behavior SHALL expose the unread error without activating the Events panel in front of the current panel.
+
+#### Scenario: Save produces a shader compilation error
+
+- **GIVEN** Phoenix is connected and a GLSL Save persists content that cannot reload a dependent section
+- **WHEN** Phoenix completes or rejects the persisted asset operation
+- **THEN** Cacablu SHALL record the new Phoenix diagnostic in Events
+- **AND** SHALL retain the locally persisted shader according to the existing Save behavior.
+
+#### Scenario: Structured impact reports a failed or deactivated section
+
+- **WHEN** an asset operation returns entries in `failedSections` or `deactivatedSections`
+- **THEN** Cacablu SHALL add an error Event for every failed section and a warning Event for every deactivated section
+- **AND** each Event SHALL retain its section ID as the subject.
+
+#### Scenario: Earlier Phoenix errors exist
+
+- **GIVEN** Phoenix's recent-log buffer contains errors from before the GLSL operation
+- **WHEN** Cacablu captures logs for Preview or Save
+- **THEN** Cacablu SHALL add only log entries produced after that operation began.
+
+### Requirement: Repaired GLSL clears resolved section failures
+
+Phoenix and Cacablu SHALL treat a successful dependent-section reload after a GLSL failure as recovery of that section.
+
+#### Scenario: Repair shader after a failed reload
+
+- **GIVEN** an earlier invalid GLSL preview left a dependent section inactive and marked as erroneous
+- **WHEN** the user repairs the GLSL and previews or saves it again
+- **THEN** Phoenix SHALL accept that the old runtime section is already absent
+- **AND** Phoenix SHALL attempt to load the repaired section without emitting a removal error
+- **AND** the successful section SHALL appear in `reloadedSections`.
+
+#### Scenario: Cacablu receives successful repaired sections
+
+- **WHEN** an asset-impact response includes previously failed section IDs in `reloadedSections`
+- **THEN** Cacablu SHALL clear those section IDs from its Timeline error state
+- **AND** Cacablu SHALL remove the resolved Phoenix asset and log Events associated with those sections
+- **AND** sections still present in `failedSections` or `deactivatedSections` SHALL remain erroneous.

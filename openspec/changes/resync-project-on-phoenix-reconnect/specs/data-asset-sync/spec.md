@@ -31,6 +31,14 @@ Cacablu SHALL synchronize enabled project pool files to Phoenix when a project o
 - **AND** any Phoenix pool path, size, or hash differs from the enabled project assets
 - **THEN** Cacablu deletes the managed Phoenix pool recursively
 - **AND** Cacablu recreates it and uploads every enabled project asset from the current project snapshot.
+- **AND** Phoenix does not reload dependent sections for each individual bulk upload
+- **AND** Cacablu replaces sections only after the complete pool snapshot is present.
+
+#### Scenario: A bulk pool file fails to upload
+- **WHEN** Phoenix fails or disconnects while Cacablu uploads a project pool file
+- **THEN** Cacablu reports the first failed path and its error
+- **AND** the current synchronization generation remains pending
+- **AND** Cacablu does not treat the incomplete Phoenix pool as synchronized.
 
 #### Scenario: Initial sync is cancelled
 - **WHEN** the user cancels the initial project pool synchronization
@@ -43,7 +51,11 @@ Cacablu SHALL fully replace content it owns without deleting Phoenix bootstrap c
 
 #### Scenario: Reconnect synchronization clears differing managed content
 - **WHEN** reconnect asset comparison finds differing content
-- **THEN** Cacablu clears enabled-project asset destinations through scoped Phoenix APIs
+- **THEN** Phoenix deactivates every runtime section before deleting the complete pool, including startup-loaded sections not present in the editor dependency index
+- **AND** Phoenix releases cached video ownership before filesystem deletion
+- **AND** Phoenix stops the audio callback and releases cached sound decoders before filesystem deletion
+- **AND** no media handle owned by Phoenix prevents recursive pool deletion on Windows
+- **AND** Cacablu clears enabled-project asset destinations through scoped Phoenix APIs
 - **AND** stale managed files from an earlier project version are removed.
 
 #### Scenario: Phoenix-owned bootstrap content is present

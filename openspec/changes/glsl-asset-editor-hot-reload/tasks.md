@@ -24,3 +24,13 @@
 - [ ] T013 Verify persisted writes clear preview overrides and reload dependent sections.
 - [ ] T014 Verify delete/unpublish deactivates dependent sections and reports their IDs.
 - [ ] T015 Verify invalid paths cannot escape `data` or target `config`.
+
+## Phase 5: GLSL Error Notifications
+
+- [x] T016 Convert failed and deactivated asset-impact entries into subject-linked Cacablu Events while preserving section error markers.
+- [x] T017 Capture Phoenix's recent-log baseline before connected GLSL Preview/Save operations and record newly produced compiler/linker errors after success or failure.
+- [x] T018 Add focused unit coverage for structured impact Events from multiple dependent sections, prior-log suppression, detailed diagnostics, subject inference, and rejected operations.
+- [x] T019 Verify through the real GLSL Monaco panel that Preview exposes a Phoenix shader error without changing editor text or bringing Events to the foreground.
+- [x] T020 Make Phoenix asset reload tolerate a section already absent after an earlier failed load without emitting `Section NOT removed from runtime`.
+- [x] T021 Clear resolved section error IDs and scoped Phoenix asset/log Events for `reloadedSections`, while preserving current failed/deactivated sections.
+- [x] T022 Add unit and real-panel regression coverage for multiple sections transitioning from shader failure to successful repair.

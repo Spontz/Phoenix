@@ -12,6 +12,7 @@
 - [x] 1.10 Add regression coverage for exact-match progress, stale files surviving cleanup, and a non-matching rebuilt manifest.
 - [x] 1.11 Expose Phoenix runtime load state in section manifest entries and require explicit `loaded: true` before Cacablu skips an ordinary section replacement.
 - [x] 1.12 Add regression coverage for matching loaded sections, matching failed sections, and legacy manifests without runtime load state.
+- [x] 1.13 Deactivate startup-loaded runtime sections before complete pool deletion, suppress per-file section reload during reconstruction, and propagate the first failed asset write instead of accepting an incomplete generation.
 
 ## 2. Reconnect Synchronization Coordinator
 
@@ -29,6 +30,7 @@
 - [x] 3.2 Reuse the existing scoped Phoenix directory API without broadening its active-data-root confinement or path traversal surface.
 - [x] 3.3 Ensure full section replacement removes stale editor-published root `.spo` files before recreating the current project snapshot.
 - [x] 3.4 Deactivate dependent sections and release cached video handles before Phoenix recursively deletes the managed pool on Windows.
+- [x] 3.5 Stop the audio device and release cached sound decoder handles before Phoenix recursively deletes the managed pool on Windows.
 
 ## 4. Integration Verification
 
@@ -46,3 +48,6 @@
 - [x] 4.12 Defer error-triggered Events creation during project opening until Timeline is restored, include newly tracked section-error ids, and verify the real load ordering.
 - [x] 4.13 Explicitly select the notification-aware Dockview tab component for Events and verify the rendered red indicator in a browser.
 - [x] 4.14 Track the red Events indicator as an unread-error notification and clear it when the Events panel becomes active without clearing error data.
+- [x] 4.15 Reproduce the attached project's video upload without a mid-sync section reload, then verify a second identical open skips all pool files.
+- [x] 4.16 Normalize Phoenix section-sync work units to the outgoing section count so a 340-section synchronization displays `340/340`, with focused regression coverage.
+- [x] 4.17 Rebuild Phoenix and verify through the real asset API that a pool containing cached streamed audio can be deleted recursively on Windows.

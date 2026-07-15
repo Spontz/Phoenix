@@ -39,6 +39,12 @@ Cacablu SHALL synchronize project database bars to Phoenix runtime sections when
 - **THEN** Cacablu completes the asset and project-settings phases before requesting section replacement
 - **AND** section scripts that reference published assets can resolve current files from Phoenix's active `data` folder.
 
+#### Scenario: Section synchronization reports the real section count
+- **GIVEN** Cacablu sends 340 sections to Phoenix
+- **WHEN** Phoenix reports separate internal writing and loading work for those sections
+- **THEN** Cacablu displays synchronization progress with a total of 340
+- **AND** the completed progress is `340/340`, not `680/680`.
+
 ### Requirement: Invalid bars do not abort project loading
 Cacablu SHALL round section start/end times to three decimal places, validate each enabled project bar before sending a section batch, and isolate bar-level failures from valid sections.
 

@@ -9,6 +9,8 @@ Cacablu needs a shader editing workflow that can preview GLSL changes in Phoenix
 - Track which loaded sections depend on `pool` and `resources` assets so Phoenix can report the exact section IDs that were reloaded, deactivated, or failed.
 - Make shader text assets, including `.glsl`, resolvable from an in-memory override while previewing.
 - Return structured asset impact responses that Cacablu can show in Events without alerts.
+- Capture Phoenix compilation and linking logs produced by GLSL Preview and Save operations and surface them immediately in Cacablu Events.
+- Recover cleanly after a shader is repaired by accepting already-inactive sections during reload and clearing resolved section errors in Cacablu.
 
 ## Capabilities
 
@@ -27,3 +29,4 @@ Cacablu needs a shader editing workflow that can preview GLSL changes in Phoenix
 - Runtime asset resolution for shader/text assets.
 - Section loading, dependency indexing, reload, and deactivation behavior.
 - Existing persisted asset write/delete endpoints used by Cacablu.
+- Cacablu GLSL editor log capture, asset-impact event conversion, and Events notifications.

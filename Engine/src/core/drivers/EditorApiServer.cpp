@@ -1476,7 +1476,9 @@ namespace Phoenix {
 					continue;
 				}
 
-				DEMO->m_sectionManager.removeSectionsFromRuntime({ id });
+				// A previous failed reload leaves the section intentionally absent from runtime.
+				if (DEMO->m_sectionManager.hasSection(id))
+					DEMO->m_sectionManager.removeSectionsFromRuntime({ id });
 				const bool loaded = DEMO->loadScriptFromNetwork(*script);
 				if (loaded) {
 					impact.reloadedSections.push_back({ id, type, "Reloaded after asset change." });
@@ -1498,6 +1500,20 @@ namespace Phoenix {
 				const std::string type = typeForSection(id);
 				DEMO->m_sectionManager.removeSectionsFromRuntime({ id });
 				impact.deactivatedSections.push_back({ id, type, "Deactivated because a required asset is unavailable." });
+			}
+			return impact;
+		}
+
+		AssetImpactResult deactivateAllSectionsOnMainThread()
+		{
+			AssetImpactResult impact;
+			std::vector<std::pair<std::string, std::string>> sections;
+			for (const auto* section : DEMO->m_sectionManager.sections())
+				sections.emplace_back(section->identifier, section->type_str);
+
+			for (const auto& [id, type] : sections) {
+				DEMO->m_sectionManager.removeSectionsFromRuntime({ id });
+				impact.deactivatedSections.push_back({ id, type, "Deactivated because the Pool is being replaced." });
 			}
 			return impact;
 		}
@@ -2273,7 +2289,9 @@ namespace Phoenix {
 				std::string path;
 				std::string encoding;
 				std::string content;
+				bool reloadSections = true;
 				extractString(*body, "requestId", requestId);
+				extractBoolean(*body, "reloadSections", reloadSections);
 				if (!extractString(*body, "path", path) || !extractString(*body, "encoding", encoding) || !extractString(*body, "content", content)) {
 					sendJson(response, "400 Bad Request", buildAssetError("invalid-request", "write file requires path, encoding, and content", requestId));
 					return;
@@ -2297,7 +2315,10 @@ namespace Phoenix {
 						return;
 					}
 					const std::string fileHash = hashFile(assetPath->full);
-					const auto impact = runAssetImpactRequest(requestId, assetPath->relative, assetPath->full, AssetImpactOperation::Write);
+					AssetImpactResult impact;
+					// Full pool synchronization replaces every section after all assets are present, so it suppresses partial-state reloads.
+					if (reloadSections)
+						impact = runAssetImpactRequest(requestId, assetPath->relative, assetPath->full, AssetImpactOperation::Write);
 					sendJson(response, "200 OK", buildAssetOperationResponse(
 						requestId,
 						"write-file",
@@ -3134,10 +3155,17 @@ namespace Phoenix {
 				break;
 			case AssetImpactOperation::DeleteDirectory:
 				Utils::clearRuntimeTextOverride(request->fullPath.generic_string());
-				result = deactivateSectionsForAssetOnMainThread(request->path);
 				if (request->path == "pool") {
-					// VideoManager keeps shared ownership after sections are removed, which keeps media files open on Windows.
+					// Startup sections are not dependency-indexed, so replacing the whole Pool must deactivate every runtime section.
+					result = deactivateAllSectionsOnMainThread();
+					// Miniaudio decoders keep their source files open on Windows, so stop the audio callback and release cached sounds before deleting the Pool.
+					DEMO->m_soundManager.stopDevice();
+					DEMO->m_soundManager.clearSounds();
+					DEMO->m_soundManager.playDevice();
 					DEMO->m_videoManager.clear();
+				}
+				else {
+					result = deactivateSectionsForAssetOnMainThread(request->path);
 				}
 				break;
 			}
