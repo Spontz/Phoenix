@@ -1,0 +1,123 @@
+#type vertex
+#version 450 core
+layout (location = 0) in int Type;
+layout (location = 1) in int ID;
+layout (location = 2) in vec3 InitPosition;	// Source position
+layout (location = 3) in vec3 Randomness;	// Destination position
+layout (location = 4) in vec4 InitColor;
+layout (location = 5) in float Life;
+
+uniform mat4 m4ViewModel; // view x Model matrix
+uniform float fProgress;	// Morphing progress in [0, 1]
+uniform float fDuration;	// Total duration of the morphing
+uniform int iNumParticles;	// Total number of particles
+uniform float fEasing;		// Easing factor: 0.0 = linear, >0 = ease-in-out strength
+
+out VS_OUT
+{
+	vec4	Color;
+	vec4	Position;
+} vs_out;
+
+#define PARTICLE_TYPE_SHELL 2
+
+// Easing function: t in [0,1], k is the easing strength (0 = linear)
+float easeInOut(float t, float k)
+{
+	// Smoothstep-like ease in/out: blend between linear and smoothstep by k
+	float s = k;
+	float smoothT = s * t * t * (3.0 - 2.0 * t) + (1.0 - s) * t;
+	return clamp(smoothT, 0.0, 1.0);
+}
+
+void main(void)
+{
+	vec3 sourcePos = InitPosition;
+	vec3 destPos = Randomness;
+
+	float t = clamp(fProgress, 0.0, 1.0);
+	float easedT = easeInOut(t, fEasing);
+
+	vec3 finalPosition = mix(sourcePos, destPos, easedT);
+
+	// Color: fade from source color to a destination color based on progress
+	vec4 finalColor = InitColor;
+
+	vs_out.Color = finalColor;
+	vs_out.Position = m4ViewModel * vec4(finalPosition, 1.0);
+}
+
+
+#type geometry
+#version 450 core
+
+layout(points) in;
+layout(triangle_strip) out;
+layout(max_vertices = 4) out;
+
+uniform mat4 m4Projection;
+uniform float fParticleSize;
+
+// Info from the VS
+in VS_OUT
+{
+	vec4	Color;
+	vec4	Position;
+} gs_in[];
+
+// Info sent to FS
+out GS_OUT
+{
+	vec2	TexCoord;
+	vec4	Color;
+} gs_out;
+
+void main()
+{
+	gs_out.Color = gs_in[0].Color;
+
+	vec4 P = gs_in[0].Position;
+
+	// a: left-bottom 
+	vec2 va = P.xy + vec2(-0.5, -0.5) * fParticleSize;
+	gl_Position = m4Projection * vec4(va, P.zw);
+	gs_out.TexCoord = vec2(0.0, 0.0);
+	EmitVertex();
+
+	// b: left-top
+	vec2 vb = P.xy + vec2(-0.5, 0.5) * fParticleSize;
+	gl_Position = m4Projection * vec4(vb, P.zw);
+	gs_out.TexCoord = vec2(0.0, 1.0);
+	EmitVertex();
+
+	// d: right-bottom
+	vec2 vd = P.xy + vec2(0.5, -0.5) * fParticleSize;
+	gl_Position = m4Projection * vec4(vd, P.zw);
+	gs_out.TexCoord = vec2(1.0, 0.0);
+	EmitVertex();
+
+	// c: right-top
+	vec2 vc = P.xy + vec2(0.5, 0.5) * fParticleSize;
+	gl_Position = m4Projection * vec4(vc, P.zw);
+	gs_out.TexCoord = vec2(1.0, 1.0);
+	EmitVertex();
+
+	EndPrimitive();
+}
+
+#type fragment
+#version 450 core
+layout (location = 0) out vec4 FragColor;
+
+uniform sampler2D partTexture;
+
+in GS_OUT
+{
+	vec2		TexCoord;
+	vec4		Color;
+} fs_in;
+
+void main(void)
+{
+	FragColor = texture(partTexture, fs_in.TexCoord) * fs_in.Color;
+}

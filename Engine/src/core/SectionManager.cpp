@@ -86,6 +86,7 @@ namespace Phoenix {
 		{"drawEmitterScene",				SectionType::DrawEmitterScene, instance_drawEmitterScene},
 		{"drawEmitterSceneEx",				SectionType::DrawEmitterSceneEx, instance_drawEmitterSceneEx},
 		{"drawEmitterSpline",				SectionType::DrawEmitterSpline, instance_drawEmitterSpline},
+		{"drawParticleMorphing",			SectionType::DrawParticleMorphing, instance_drawParticleMorphing},
 		{"sound",							SectionType::Sound, instance_sound},
 		{"setExpression",					SectionType::SetExpression, instance_setExpression},
 		{"fboBind",							SectionType::FboBind, instance_fboBind},
