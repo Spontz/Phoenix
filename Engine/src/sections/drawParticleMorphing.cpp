@@ -3,6 +3,9 @@
 #include "core/drivers/mathdriver.h"
 #include "core/renderer/ShaderVars.h"
 
+#include <algorithm>
+#include <random>
+
 namespace Phoenix {
 
 	class sDrawParticleMorphing final : public Section {
@@ -20,8 +23,10 @@ namespace Phoenix {
 
 	private:
 		// 3D Scenes (source and destination)
-		SP_Model m_pModelSource;
-		SP_Model m_pModelDest;
+		SP_Model	m_pModelSource;
+		int			m_iModelSourceUniqueVerticesNum = 0;
+		SP_Model	m_pModelDest;
+		int			m_iModelDestUniqueVerticesNum = 0;
 
 		// Particle engine variables
 		int				m_iNumParticles = 0;
@@ -76,39 +81,82 @@ namespace Phoenix {
 		return verts;
 	}
 
-	// Deterministic uniform sampling of a vertex list into exactly 'count' points.
-	// - If count <= source.size(): pick a uniform subset using a deterministic stride (no duplicates).
-	// - If count >  source.size(): interpolate linearly between consecutive vertices to fill the gap.
-	static std::vector<glm::vec3> sampleUniform(const std::vector<glm::vec3>& source, size_t count)
+	struct SurfaceTriangle
 	{
-		std::vector<glm::vec3> out;
-		out.reserve(count);
-		const size_t srcSize = source.size();
-		if (srcSize == 0 || count == 0)
-			return out;
+		glm::vec3 a;
+		glm::vec3 b;
+		glm::vec3 c;
+		float area;
+	};
 
-		if (count <= srcSize) {
-			// Uniform subset: deterministic stride so points are evenly spread
-			for (size_t i = 0; i < count; i++) {
-				// Map i in [0, count) to a vertex index in [0, srcSize)
-				size_t idx = (i * srcSize) / count;
-				if (idx >= srcSize) idx = srcSize - 1;
-				out.push_back(source[idx]);
+	static std::vector<SurfaceTriangle> collectSurfaceTriangles(const SP_Model& model)
+	{
+		std::vector<SurfaceTriangle> triangles;
+		if (!model)
+			return triangles;
+
+		constexpr float minTriangleArea = 1e-8f;
+		for (const auto& mesh : model->meshes) {
+			const auto& vertices = mesh->getVertices();
+			const auto& indices = mesh->getIndices();
+			for (size_t i = 0; i + 2 < indices.size(); i += 3) {
+				const unsigned int indexA = indices[i];
+				const unsigned int indexB = indices[i + 1];
+				const unsigned int indexC = indices[i + 2];
+				if (indexA >= vertices.size() || indexB >= vertices.size() || indexC >= vertices.size())
+					continue;
+
+				const glm::vec3& a = vertices[indexA].Position;
+				const glm::vec3& b = vertices[indexB].Position;
+				const glm::vec3& c = vertices[indexC].Position;
+				const float area = 0.5f * glm::length(glm::cross(b - a, c - a));
+				if (area > minTriangleArea)
+					triangles.push_back({ a, b, c, area });
 			}
 		}
-		else {
-			// Interpolate to generate more points than available vertices
-			for (size_t i = 0; i < count; i++) {
-				float t = (float)i / (float)(count - 1); // [0, 1]
-				float fpos = t * (float)(srcSize - 1);
-				size_t a = (size_t)fpos;
-				if (a >= srcSize - 1) a = srcSize - 2;
-				float frac = fpos - (float)a;
-				glm::vec3 p = glm::mix(source[a], source[a + 1], frac);
-				out.push_back(p);
-			}
+
+		return triangles;
+	}
+
+	// Keeps the ordered unique-vertex prefix intact, then fills only the surplus with
+	// deterministic, area-weighted points in triangle interiors.
+	static bool sampleVertexFirst(const SP_Model& model, const std::vector<glm::vec3>& vertices, size_t count, std::vector<glm::vec3>& out)
+	{
+		out.clear();
+		out.reserve(count);
+		if (vertices.empty() || count == 0)
+			return false;
+
+		const size_t vertexCount = std::min(count, vertices.size());
+		out.insert(out.end(), vertices.begin(), vertices.begin() + vertexCount);
+		if (out.size() == count)
+			return true;
+
+		const std::vector<SurfaceTriangle> triangles = collectSurfaceTriangles(model);
+		if (triangles.empty())
+			return false;
+
+		std::vector<float> triangleAreas;
+		triangleAreas.reserve(triangles.size());
+		for (const auto& triangle : triangles)
+			triangleAreas.push_back(triangle.area);
+
+		std::mt19937 randomGenerator(static_cast<uint32_t>(0x5D12F3A7u ^ count));
+		std::discrete_distribution<size_t> triangleDistribution(triangleAreas.begin(), triangleAreas.end());
+		constexpr float barycentricEpsilon = 1e-6f;
+		std::uniform_real_distribution<float> randomUnit(barycentricEpsilon, 1.0f - barycentricEpsilon);
+
+		while (out.size() < count) {
+			const SurfaceTriangle& triangle = triangles[triangleDistribution(randomGenerator)];
+			const float sqrtU = glm::sqrt(randomUnit(randomGenerator));
+			const float v = randomUnit(randomGenerator);
+			const float weightA = 1.0f - sqrtU;
+			const float weightB = sqrtU * (1.0f - v);
+			const float weightC = sqrtU * v;
+			out.push_back(weightA * triangle.a + weightB * triangle.b + weightC * triangle.c);
 		}
-		return out;
+
+		return true;
 	}
 
 	bool sDrawParticleMorphing::load()
@@ -158,7 +206,9 @@ namespace Phoenix {
 
 		// Collect all unique vertices from both scenes
 		std::vector<glm::vec3> srcVerts = collectUniqueVertices(m_pModelSource);
+		m_iModelSourceUniqueVerticesNum = static_cast<int>(srcVerts.size());
 		std::vector<glm::vec3> dstVerts = collectUniqueVertices(m_pModelDest);
+		m_iModelDestUniqueVerticesNum = static_cast<int>(dstVerts.size());
 
 		if (srcVerts.empty()) {
 			Logger::error("Draw Particle Morphing [{}]: No vertices found in the source model", identifier);
@@ -169,9 +219,18 @@ namespace Phoenix {
 			return false;
 		}
 
-		// Sample uniformly and independently on both source and destination
-		std::vector<glm::vec3> srcSamples = sampleUniform(srcVerts, (size_t)m_iNumParticles);
-		std::vector<glm::vec3> dstSamples = sampleUniform(dstVerts, (size_t)m_iNumParticles);
+		// Sample source and destination independently, preserving their vertex prefixes.
+		std::vector<glm::vec3> srcSamples;
+		if (!sampleVertexFirst(m_pModelSource, srcVerts, static_cast<size_t>(m_iNumParticles), srcSamples)) {
+			Logger::error("Draw Particle Morphing [{}]: Source model has no valid triangles for {} fallback particles", identifier, m_iNumParticles - static_cast<int>(srcVerts.size()));
+			return false;
+		}
+
+		std::vector<glm::vec3> dstSamples;
+		if (!sampleVertexFirst(m_pModelDest, dstVerts, static_cast<size_t>(m_iNumParticles), dstSamples)) {
+			Logger::error("Draw Particle Morphing [{}]: Destination model has no valid triangles for {} fallback particles", identifier, m_iNumParticles - static_cast<int>(dstVerts.size()));
+			return false;
+		}
 
 		// Load particle positioning expression
 		m_pExprPosition = new MathDriver(this);
@@ -284,10 +343,12 @@ namespace Phoenix {
 	{
 		std::stringstream ss;
 		ss << "Source model: " << (m_pModelSource ? m_pModelSource->filename : "nullptr") << std::endl;
+		ss << " Vert. num: " << m_iModelSourceUniqueVerticesNum << std::endl;
 		ss << "Destination model: " << (m_pModelDest ? m_pModelDest->filename : "nullptr") << std::endl;
+		ss << " Vert. num: " << m_iModelDestUniqueVerticesNum << std::endl;
 		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Num Particles: " << m_iNumParticles << std::endl;
-		ss << "Duration: " << m_fDuration << std::endl;
+		ss << "Duration (s): " << m_fDuration << std::endl;
 		ss << "Memory Used: " << std::format("{:.1f}", m_pParticleMesh->getMemUsedInMb()) << " Mb" << std::endl;
 		debugStatic = ss.str();
 	}

@@ -1,5 +1,5 @@
 ## Purpose
-Define a new Phoenix runtime section type `drawParticleMorphing` that morphs a particle cloud between two 3D scenes. During load, the section analyzes two loaded 3D models (source and destination) and generates a uniform distribution of a user-specified number of particles across the surface of each model, producing matching source and destination position buffers. During execution, the section renders the particles transitioning from the source positions to the destination positions, driven by the section's normalized run time. The transition curve is exposed to the shader through uniforms so that the easing can be customized (linear, ease-in, ease-out, or any arbitrary curve) without changing the section code.
+Define a new Phoenix runtime section type `drawParticleMorphing` that morphs a particle cloud between two 3D scenes. During load, the section analyzes two loaded 3D models (source and destination), places particles on their ordered unique vertices first, and generates any remaining positions inside the models' triangles, producing matching source and destination position buffers. During execution, the section renders the particles transitioning from the source positions to the destination positions, driven by the section's normalized run time. The transition curve is exposed to the shader through uniforms so that the easing can be customized (linear, ease-in, ease-out, or any arbitrary curve) without changing the section code.
 
 ## Requirements
 
@@ -49,37 +49,38 @@ The section SHALL load both the source and destination 3D scenes through the exi
 - **WHEN** either the source or destination model has zero unique vertices across all its meshes
 - **THEN** the section fails to load and logs that the offending model has no geometry to sample
 
-### Requirement: Uniform particle distribution
-The section SHALL generate exactly the requested number of particle positions distributed uniformly across the surface of each model, computed independently for the source and destination models because they may have completely different vertex counts and topology.
+### Requirement: Vertex-first particle distribution
+The section SHALL generate exactly the requested number of particle positions for each model, computed independently for the source and destination models because they may have completely different vertex counts and topology. It SHALL place particles on the model's unique vertices first, preserving their traversal order. Only when the requested count exceeds the available unique vertex count SHALL it generate the remaining positions as pseudo-random points in the interiors of the model's triangles.
 
 #### Scenario: Source and destination vertex counts differ
 - **WHEN** the source and destination models have different numbers of unique vertices, different mesh counts, or different topology
 - **THEN** the section still produces exactly the requested number of positions for the source model and exactly the requested number of positions for the destination model
 - **AND** the distribution on each model is computed independently from the other model, so the vertex count or geometry of one model never constrains the distribution of the other
-- **AND** the resulting morph visually preserves the shape of both models because the particle cloud evenly covers each surface
+- **AND** the resulting morph uses the vertex-first distribution of each model without allowing the vertex count or topology of one model to affect the other
 
 #### Scenario: Particle count fits the available unique vertices
 - **WHEN** the requested particle count is less than or equal to the total number of unique vertices of a model
-- **THEN** the section selects a uniform subset of the unique vertices of that model as particle positions
-- **AND** the selection is deterministic for a given model and particle count so that repeated loads produce the same distribution
+- **THEN** particle position `i` is the position of unique vertex `i` in the model traversal order, for every `i` from zero to the requested particle count minus one
+- **AND** no triangle-surface positions are generated
 
 #### Scenario: Particle count exceeds the available unique vertices
 - **WHEN** the requested particle count is greater than the total number of unique vertices of a model
-- **THEN** the section generates additional positions by interpolating or jittering across the existing unique vertices so that the total number of positions equals the requested particle count
-- **AND** the generated positions remain on or near the model surface
-- **AND** the generation is deterministic for a given model and particle count
+- **THEN** the first positions are the model's complete ordered unique-vertex list
+- **AND** the section generates exactly the remaining positions as pseudo-random samples over the interiors of the model's triangles so that the total number of positions equals the requested particle count
+- **AND** each additional position is sampled with barycentric coordinates that can cover the complete triangle area and is not generated by interpolation along a triangle edge
+- **AND** the pseudo-random generation is deterministic for a given model and particle count
 
 #### Scenario: Source and destination buffers are aligned by index
 - **WHEN** the source and destination position buffers are generated
 - **THEN** both buffers contain exactly the requested number of positions
 - **AND** the index `i` in the source buffer corresponds to the index `i` in the destination buffer, so that particle `i` morphs from `source[i]` to `destination[i]`
-- **AND** the pairing by index is arbitrary with respect to vertex identity (since the models are unrelated) but uniform in coverage, so the morph appears as an even flow of particles between the two shapes rather than a stretch between corresponding vertices
+- **AND** the pairing by index is arbitrary with respect to vertex identity because the models are unrelated
 
-#### Scenario: Distribution is uniform across all meshes of a model
+#### Scenario: Distribution accounts for all meshes of a model
 - **WHEN** a model contains multiple meshes
-- **THEN** the particle distribution accounts for all meshes of that model
-- **AND** the number of particles assigned to each mesh is proportional to that mesh's contribution to the total unique vertex count so that no mesh is over- or under-sampled relative to its geometry
-- **AND** this proportional allocation is applied independently to the source and to the destination model
+- **THEN** the ordered unique-vertex list contains the vertices of every mesh in model traversal order
+- **AND** any additional triangle-surface samples can be generated from triangles in every mesh
+- **AND** this process is applied independently to the source and to the destination model
 
 ### Requirement: Particle mesh initialization
 The section SHALL build a `ParticleMesh` from the generated source and destination positions.

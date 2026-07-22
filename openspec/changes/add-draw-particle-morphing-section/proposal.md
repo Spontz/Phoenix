@@ -6,7 +6,7 @@ Phoenix already has particle-based sections (`drawParticlesScene`, `drawParticle
 
 - Add a new Phoenix section type `drawParticleMorphing` registered in `kSectionInfo` with a new `SectionType::DrawParticleMorphing` enum value and an `instance_drawParticleMorphing` factory function.
 - Add the section implementation `Engine/src/sections/drawParticleMorphing.cpp` following the `drawParticlesScene` pattern but loading two models (source and destination) and generating a uniform particle distribution on each.
-- Generate exactly the requested number of particle positions per model, computed independently for source and destination, with deterministic uniform sampling that handles both the case where the count fits the unique vertices (uniform subset) and the case where it exceeds them (interpolation/jitter on the surface).
+- Generate exactly the requested number of particle positions per model, computed independently for source and destination: use the ordered unique vertices first, then deterministically sample triangle interiors when more positions are required.
 - Build a `ParticleMesh` where each particle's `InitPosition` is the source position and `Randomness` is the destination position, so the shader can morph between them through the existing randomness attribute.
 - Expose built-in transition uniforms `fProgress` (normalized run time in `[0,1]`), `fDuration`, and `iNumParticles`, plus any user-declared uniforms through `ShaderVars`, so the transition curve (linear, ease-in, ease-out, bounce, stepped, or arbitrary) is fully controlled from the shader without section code changes.
 - Add the section shader folder `Launcher/data/resources/shaders/sections/drawParticleMorphing/` with a default morphing shader that mixes `InitPosition` and `Randomness` using `fProgress` and a user easing uniform.
@@ -23,8 +23,9 @@ Phoenix already has particle-based sections (`drawParticlesScene`, `drawParticle
 
 - `Engine/src/core/Section.h`: add `DrawParticleMorphing` to the `SectionType` enum.
 - `Engine/src/sections/sections.h`: declare `Section* instance_drawParticleMorphing();`.
-- `Engine/src/sections/drawParticleMorphing.cpp`: new section implementation (load/init/exec/warmExec/loadDebugStatic/debug/destructor).
+- `Engine/src/sections/drawParticleMorphing.cpp`: section implementation with vertex-first and triangle-interior sampling.
+- `Engine/src/core/renderer/Mesh.h` and `Engine/src/core/renderer/Mesh.cpp`: read-only accessors for indexed mesh geometry used during triangle sampling.
 - `Engine/src/core/SectionManager.cpp`: add the `kSectionInfo` entry and the `getSectionType` mapping for `drawParticleMorphing`.
 - `Launcher/data/resources/shaders/sections/drawParticleMorphing/`: new shader folder with the default morphing shader and its uniform declarations.
 - Demo authoring: new `:::drawParticleMorphing` section type usable in demo scripts and editor-published `.spo` files.
-- No changes to existing sections, the `ParticleMesh` class, the `ModelManager`, or the `ShaderManager`; the section reuses them as-is.
+- No changes to existing sections, the `ParticleMesh` class, the `ModelManager`, or the `ShaderManager`; the section reuses them as-is. `Mesh` only gains read-only geometry accessors for this sampler.
