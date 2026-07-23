@@ -1,1 +1,0 @@
-phoenix_vs2026\Launcher\Debug\Phoenix.exe -datafolder .\Launcher\data
