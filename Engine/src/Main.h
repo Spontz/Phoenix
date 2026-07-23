@@ -10,7 +10,7 @@
 #pragma warning(disable: 4100)
 
 static constexpr uint32_t PHOENIX_MAJOR_VERSION = 4;
-static constexpr uint32_t PHOENIX_MINOR_VERSION = 0;
+static constexpr uint32_t PHOENIX_MINOR_VERSION = 1;
 static constexpr uint32_t PHOENIX_BUILD_VERSION = 0;
 
 static constexpr uint32_t FBO_BUFFERS = 25;

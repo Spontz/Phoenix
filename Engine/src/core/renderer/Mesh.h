@@ -90,6 +90,10 @@ constexpr uint32_t NUM_BONES_PER_VERTEX = 4; // Number of Bones per Vertex
 		// Get Material
 		Material* getMaterial();
 
+		// Read-only geometry access for CPU-side surface sampling.
+		const std::vector<Vertex>& getVertices() const;
+		const std::vector<unsigned int>& getIndices() const;
+
 	private:
 		// initializes all the buffer objects/arrays
 		void setupMesh();
