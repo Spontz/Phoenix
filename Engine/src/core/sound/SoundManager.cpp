@@ -136,6 +136,7 @@ namespace Phoenix {
 	SP_Sound SoundManager::addSound(const std::string_view filePath)
 	{
 		SP_Sound p_sound;
+		std::lock_guard lock(m_soundListMutex);
 
 		// check if sound is already loaded, then we just retrieve the ID of our sound
 		for (auto const& m_sound : sound) {
@@ -171,6 +172,7 @@ namespace Phoenix {
 
 	SP_Sound SoundManager::getSoundbyID(uint32_t id)
 	{
+		std::lock_guard lock(m_soundListMutex);
 		if (id >= sound.size())
 			return nullptr;
 		else
@@ -179,6 +181,7 @@ namespace Phoenix {
 
 	void SoundManager::clearSounds()
 	{
+		std::lock_guard lock(m_soundListMutex);
 		sound.clear();
 		m_LoadedSounds = 0;
 	}
@@ -210,7 +213,13 @@ namespace Phoenix {
 
 	void SoundManager::stopAllSounds()
 	{
-		for (auto const& m_sound : sound) {
+		std::vector<SP_Sound> soundsSnapshot;
+		{
+			std::lock_guard lock(m_soundListMutex);
+			soundsSnapshot = sound;
+		}
+
+		for (auto const& m_sound : soundsSnapshot) {
 			m_sound->stopSound();
 		}
 	}
@@ -244,50 +253,6 @@ namespace Phoenix {
 		ma_context_uninit(&context);
 	}
 
-	ma_uint32 SoundManager::read_and_mix_pcm_frames_f32(ma_decoder* pDecoder, float volume, float* pOutputF32, float* pOutputFFTF32, ma_uint32 frameCount)
-	{
-		// The way mixing works is that we just read into a temporary buffer, then take the contents of that buffer and mix it with the
-		// contents of the output buffer by simply adding the samples together. You could also clip the samples to -1..+1, but I'm not
-		//doing that in this example.
-		ma_result result;
-		std::vector<float> temp(SAMPLE_STORAGE);
-		ma_uint32 tempCapInFrames = SAMPLE_STORAGE / CHANNEL_COUNT;
-		ma_uint32 totalFramesRead = 0;
-
-		while (totalFramesRead < frameCount) {
-			ma_uint64 iSample;
-			ma_uint64 iOutputSample;
-			ma_uint64 framesReadThisIteration;
-			ma_uint32 totalFramesRemaining = frameCount - totalFramesRead;
-			ma_uint32 framesToReadThisIteration = tempCapInFrames;
-			if (framesToReadThisIteration > totalFramesRemaining) {
-				framesToReadThisIteration = totalFramesRemaining;
-			}
-
-			result = ma_decoder_read_pcm_frames(pDecoder, temp.data(), framesToReadThisIteration, &framesReadThisIteration);
-			if (result != MA_SUCCESS || framesReadThisIteration == 0) {
-				break;
-			}
-
-
-			/* Mix the frames together. */
-			for (iSample = 0; iSample < framesReadThisIteration * CHANNEL_COUNT; ++iSample) {
-				iOutputSample = totalFramesRead * CHANNEL_COUNT + iSample;
-				pOutputF32[iOutputSample] += temp[iSample] * volume;
-				pOutputFFTF32[iOutputSample] += temp[iSample];
-			}
-
-			totalFramesRead += (ma_uint32)framesReadThisIteration;
-
-			if (framesReadThisIteration < (ma_uint32)framesToReadThisIteration) {
-				break;  /* Reached EOF. */
-			}
-		}
-
-		return totalFramesRead;
-	}
-
-
 	void SoundManager::dataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount)
 	{
 		(void)pInput; // added to avoid compiler warnings. It does nothing.
@@ -295,13 +260,19 @@ namespace Phoenix {
 		SoundManager* p_sm = (SoundManager*)pDevice->pUserData;
 		memset(p_sm->m_pOutputFFTF32, 0, sizeof(float) * SAMPLE_STORAGE);
 
-		for (auto const& mySound : (p_sm->sound)) {
-			if (mySound->status == Sound::State::Playing) {
-				ma_uint32 framesRead = read_and_mix_pcm_frames_f32(mySound->getDecoder(), mySound->volume, pOutputF32, p_sm->m_pOutputFFTF32, frameCount);
-				if (framesRead < frameCount) {
-					mySound->stopSound();
-				}
-			}
+		std::vector<SP_Sound> soundsSnapshot;
+		{
+			std::lock_guard lock(p_sm->m_soundListMutex);
+			soundsSnapshot = p_sm->sound;
+		}
+
+		for (auto const& mySound : soundsSnapshot) {
+			if (!mySound->isPlaying())
+				continue;
+
+			const ma_uint32 framesRead = mySound->mixFrames(pOutputF32, p_sm->m_pOutputFFTF32, frameCount, p_sm->m_channels);
+			if (framesRead < frameCount)
+				mySound->stopSound();
 		}
 
 		std::function<bool(const float*, uint32_t, uint32_t, uint32_t)> streamingAudioSink;

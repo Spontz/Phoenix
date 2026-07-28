@@ -47,7 +47,6 @@ namespace Phoenix {
 		void enumerateDevices();
 
 	private:
-		static ma_uint32 read_and_mix_pcm_frames_f32(ma_decoder* pDecoder, float volume, float* pOutputF32, float* pOutputFFTF32, ma_uint32 frameCount);
 		static void dataCallback (ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount);
 		void destroyDevice();
 	
@@ -64,6 +63,7 @@ namespace Phoenix {
 
 		uint32_t		m_channels;
 		uint32_t		m_sampleRate;
+		std::mutex		m_soundListMutex;
 		std::mutex		m_streamingAudioSinkMutex;
 		std::function<bool(const float*, uint32_t, uint32_t, uint32_t)> m_streamingAudioSink;
 	

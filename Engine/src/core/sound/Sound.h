@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <mutex>
 
 namespace Phoenix {
 
@@ -36,6 +37,8 @@ namespace Phoenix {
 		bool stopSound();
 		bool restartSound();
 		void seekSound(float second);
+		bool isPlaying();
+		ma_uint32 mixFrames(float* pOutputF32, float* pOutputFFTF32, ma_uint32 frameCount, ma_uint32 channels);
 		ma_decoder* getDecoder();
 		std::string getStatusStr();		// Gets Status in string
 
@@ -49,6 +52,7 @@ namespace Phoenix {
 
 	private:
 		ma_decoder		*m_pDecoder;	// Internal miniaudio decoder
+		std::mutex		m_mutex;
 
 	};
 }
