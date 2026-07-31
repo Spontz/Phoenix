@@ -4,7 +4,24 @@
 #include "main.h"
 #include "core/sound/SoundManager.h"
 
+#include <algorithm>
+#include <array>
+#include <cmath>
+
 namespace Phoenix {
+
+	namespace {
+		float normalizeBandPower(float power)
+		{
+			if (!std::isfinite(power) || power <= 0.0f)
+				return 0.0f;
+
+			constexpr float dbFloor = -60.0f;
+			const float rms = std::sqrt(power);
+			const float dbfs = 20.0f * std::log10(rms);
+			return std::clamp((dbfs - dbFloor) / -dbFloor, 0.0f, 1.0f);
+		}
+	}
 
 	SoundManager::SoundManager()
 		:
@@ -15,7 +32,6 @@ namespace Phoenix {
 		m_pSampleBuf(nullptr),
 		m_pFFTBuffer(nullptr),
 		m_pFFTFrequencies(nullptr),
-		m_pEnergy(nullptr),
 		m_forceLoad(false)
 	{
 		sound.clear();
@@ -41,8 +57,6 @@ namespace Phoenix {
 			free(m_pFFTBuffer);
 		if (m_pFFTFrequencies)
 			free(m_pFFTFrequencies);
-		if (m_pEnergy)
-			free(m_pEnergy);
 	}
 
 	void SoundManager::destroyDevice()
@@ -88,11 +102,6 @@ namespace Phoenix {
 		m_pOutputFFTF32 = (float*)malloc(sizeof(float) * SAMPLE_STORAGE);
 		if (m_pOutputFFTF32)
 			memset(m_pOutputFFTF32, 0, sizeof(float) * SAMPLE_STORAGE);
-
-		// BEAT buffer
-		m_pEnergy = (float*)malloc(sizeof(float) * FFT_SIZE);
-		if (m_pEnergy)
-			memset(m_pEnergy, 0, sizeof(float) * FFT_SIZE);
 
 		// Allocate space for structure
 		m_pDevice = (ma_device*)malloc(sizeof(ma_device));
@@ -184,6 +193,7 @@ namespace Phoenix {
 		std::lock_guard lock(m_soundListMutex);
 		sound.clear();
 		m_LoadedSounds = 0;
+		resetBeatDetection();
 	}
 
 	std::string SoundManager::getVersion()
@@ -222,6 +232,20 @@ namespace Phoenix {
 		for (auto const& m_sound : soundsSnapshot) {
 			m_sound->stopSound();
 		}
+		resetBeatDetection();
+	}
+
+	void SoundManager::resetBeatDetection()
+	{
+		{
+			std::lock_guard lock(m_fftSampleMutex);
+			if (m_pSampleBuf)
+				memset(m_pSampleBuf, 0, sizeof(float) * FFT_SIZE * 2);
+		}
+		m_fBeatBaseline = 0.0f;
+		m_beatBaselineInitialized = false;
+		m_beatArmed = true;
+		m_fBeat = 0.0f;
 	}
 
 	void SoundManager::enumerateDevices()
@@ -292,12 +316,15 @@ namespace Phoenix {
 		// Just rotate the buffer; copy existing, append new - https://github.com/Gargaj/Bonzomatic/blob/master/src/platform_common/FFT.cpp
 		const float* samples = (const float*)p_sm->m_pOutputFFTF32;
 		if (samples) {
-			float* p_sample = p_sm->m_pSampleBuf;
-			for (uint32_t i = frameCount; i < (FFT_SIZE * 2); i++) {
-				*(p_sample++) = p_sm->m_pSampleBuf[i];
-			}
-			for (uint32_t i = 0; i < frameCount; i++) {
-				*(p_sample++) = (samples[i * 2] + samples[i * 2 + 1]) / 2.0f * p_sm->m_fAmplification;
+			std::unique_lock lock(p_sm->m_fftSampleMutex, std::try_to_lock);
+			if (lock.owns_lock()) {
+				float* p_sample = p_sm->m_pSampleBuf;
+				for (uint32_t i = frameCount; i < (FFT_SIZE * 2); i++) {
+					*(p_sample++) = p_sm->m_pSampleBuf[i];
+				}
+				for (uint32_t i = 0; i < frameCount; i++) {
+					*(p_sample++) = (samples[i * 2] + samples[i * 2 + 1]) / 2.0f * p_sm->m_fAmplification;
+				}
 			}
 		}
 	}
@@ -308,14 +335,26 @@ namespace Phoenix {
 			return false;
 		}
 
+		std::array<float, FFT_SIZE * 2> samples;
+		{
+			std::lock_guard lock(m_fftSampleMutex);
+			std::copy_n(m_pSampleBuf, samples.size(), samples.begin());
+		}
+
 		kiss_fft_cpx out[FFT_SIZE + 1];			// FFT complex output
-		kiss_fftr(m_fftcfg, m_pSampleBuf, out);
+		kiss_fftr(m_fftcfg, samples.data(), out);
 
 
-		m_fLowFreqSum = 0.0f;
-		m_fMidFreqSum = 0.0f;
-		m_fHighFreqSum = 0.0f;
-		m_fBeat = 0.0f;
+		m_fLowFreqLevel = 0.0f;
+		m_fMidFreqLevel = 0.0f;
+		m_fHighFreqLevel = 0.0f;
+		float beatMagnitude = 0.0f;
+		float lowBandPower = 0.0f;
+		float midBandPower = 0.0f;
+		float highBandPower = 0.0f;
+
+		constexpr float fftLength = static_cast<float>(FFT_SIZE * 2);
+		constexpr float inverseFftLengthSquared = 1.0f / (fftLength * fftLength);
 
 		for (uint32_t i = 0; i < FFT_SIZE; i++)
 		{
@@ -323,57 +362,69 @@ namespace Phoenix {
 			static const float scaling = 1.0f / static_cast<float>(FFT_SIZE);
 			m_pFFTBuffer[i] = 2.0f * sqrtf(out[i].r * out[i].r + out[i].i * out[i].i) * scaling;
 
-			// Calculate the maximum value of the Low, Medium and High frequencies
+			if (i == 0)
+				continue;
+
+			const float magnitudeSquared = out[i].r * out[i].r + out[i].i * out[i].i;
+			const float power = 2.0f * magnitudeSquared * inverseFftLengthSquared;
+
 			if (m_pFFTFrequencies[i] <= m_lowFreqMax) {
-				m_fLowFreqSum += m_pFFTBuffer[i];
+				lowBandPower += power;
+				beatMagnitude += m_pFFTBuffer[i];
 			}
 			else if (m_pFFTFrequencies[i] <= m_midFreqMax) {
-				m_fMidFreqSum += m_pFFTBuffer[i];
+				midBandPower += power;
 			}
 			else {
-				m_fHighFreqSum += m_pFFTBuffer[i];
+				highBandPower += power;
 			}
 		}
 
-		// Calculate the BEAT
-		float instant = 0;	// Instant
-		float avg = 0;		// Average energy
-		
-		for (uint32_t i = 0; i < FFT_SIZE; i++)
-			instant += m_pFFTBuffer[i]/2.0f;
-		
-		// calculate average energy in last samples
-		for (uint32_t i = 0; i < FFT_SIZE; i++) {
-			avg += m_pEnergy[i];
-		}
-		avg /= (float)m_iPosition;
+		const float nyquistMagnitudeSquared =
+			out[FFT_SIZE].r * out[FFT_SIZE].r +
+			out[FFT_SIZE].i * out[FFT_SIZE].i;
+		highBandPower += nyquistMagnitudeSquared * inverseFftLengthSquared;
 
-		// instant sample is a beat?
-		if ((instant / avg) > m_fBeatRatio) {
-			m_fIntensity = 1.0f;
-		}
-		else if (m_fIntensity > 0) {
-			m_fIntensity -= m_fFadeOut * frameTime;
-			if (m_fIntensity < 0) m_fIntensity = 0;
+		m_fLowFreqLevel = normalizeBandPower(lowBandPower);
+		m_fMidFreqLevel = normalizeBandPower(midBandPower);
+		m_fHighFreqLevel = normalizeBandPower(highBandPower);
+
+		const float safeFrameTime = std::isfinite(frameTime) ? std::clamp(frameTime, 0.0f, 0.25f) : 0.0f;
+		const float fadeOut = std::max(m_fFadeOut, 0.0f);
+		m_fBeat = std::clamp(m_fBeat - fadeOut * safeFrameTime, 0.0f, 1.0f);
+
+		if (!std::isfinite(beatMagnitude))
+			beatMagnitude = 0.0f;
+
+		constexpr float silenceThreshold = 0.000001f;
+		constexpr float baselineResponseSeconds = 1.0f;
+		const float baselineBlend = 1.0f - std::exp(-safeFrameTime / baselineResponseSeconds);
+
+		// Seed the baseline from one valid window so startup silence cannot generate a beat.
+		if (!m_beatBaselineInitialized) {
+			if (beatMagnitude > silenceThreshold) {
+				m_fBeatBaseline = beatMagnitude;
+				m_beatBaselineInitialized = true;
+			}
+			return true;
 		}
 
-		// updated kernel shared variable
-		// to be used by kernel itself or another sections
-		m_fBeat += m_fIntensity;
-		if (m_fBeat > 1.0)
+		const float baseline = std::max(m_fBeatBaseline, silenceThreshold);
+		const float attackRatio = std::max(m_fBeatRatio, silenceThreshold);
+		const float rearmRatio = attackRatio * 0.8f;
+		const float magnitudeRatio = beatMagnitude / baseline;
+
+		if (m_beatArmed && magnitudeRatio > attackRatio) {
 			m_fBeat = 1.0f;
+			m_beatArmed = false;
+		}
+		else if (!m_beatArmed && magnitudeRatio < rearmRatio) {
+			m_beatArmed = true;
+		}
 
-		// update energy buffer
-		if (m_iPosition < FFT_SIZE) {
-			m_pEnergy[m_iPosition - 1] = instant;
-			m_iPosition++;
-		}
-		else {
-			for (uint32_t i = 1; i < FFT_SIZE; i++) {
-				m_pEnergy[i - 1] = m_pEnergy[i];
-			}
-			m_pEnergy[FFT_SIZE - 1] = instant;
-		}
+		m_fBeatBaseline += (beatMagnitude - m_fBeatBaseline) * baselineBlend;
+		if (!std::isfinite(m_fBeatBaseline) || m_fBeatBaseline < 0.0f)
+			m_fBeatBaseline = 0.0f;
 
 		return true;
 	}
