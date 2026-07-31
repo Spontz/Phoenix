@@ -12,23 +12,39 @@ This engine would not exist without inspiration obtained from the following sour
 * Etay Meiri / OGL Dev site: https://ogldev.org/
 * jmorton06 / Lumos engine: https://github.com/jmorton06/Lumos
 
-Phoenix uses the following libs:
+Phoenix currently uses the following libraries and frameworks:
 
-* GLFW: OpenGL multiplatform library - https://github.com/glfw/glfw
-* GLAD: OpenGL Extension manager - https://glad.dav1d.de
-* GLM: OpenGL mathematics - https://github.com/g-truc/glm
-* MiniAudio: Audio playback - https://miniaud.io
-* KissFFT: FFT Analysis - https://github.com/mborgerding/kissfft
-* Assimp: 3d asset loading - https://github.com/assimp/assimp
-* STB: bitmap loading - https://github.com/nothings/stb
-* Exprtk: mathematical expression evaluator - https://github.com/ArashPartow/exprtk
-* FFMpeg: Video decoder - https://github.com/FFmpeg/FFmpeg
-* Dear ImGUI: graphical user interface - https://github.com/ocornut/imgui
-* dyad.c: networking - https://github.com/rxi/dyad
+* OpenGL: GPU rendering backend used by Engine and Launcher. https://www.opengl.org/
+* GLFW: window creation, OpenGL context, and input handling. https://github.com/glfw/glfw
+* GLAD: OpenGL function loader used to access runtime driver APIs. https://glad.dav1d.de
+* GLM: math types and operations (vectors, matrices, transforms, quaternions). https://github.com/g-truc/glm
+* Dear ImGui: in-engine/editor debug and tooling UI. https://github.com/ocornut/imgui
+* Assimp: import of 3D assets and scene data. https://github.com/assimp/assimp
+* stb (stb_image): image loading for textures and cubemaps. https://github.com/nothings/stb
+* FFmpeg: video decoding and encoding pipeline (playback + streaming support). https://github.com/FFmpeg/FFmpeg
+* miniaudio: audio playback/runtime audio backend. https://miniaud.io
+* kissfft: FFT analysis utilities used by audio/reactive workflows. https://github.com/mborgerding/kissfft
+* exprtk: runtime math expression parsing/evaluation used by section scripting. https://github.com/ArashPartow/exprtk
+* uWebSockets: HTTP/WebSocket server for the editor API bridge (Cacablu <-> Phoenix). https://github.com/uNetworking/uWebSockets
+* LibDataChannel: WebRTC transport stack used by framebuffer streaming. https://github.com/paullouisageneau/libdatachannel
+* dyad.c: lightweight legacy networking module still present in the codebase. https://github.com/rxi/dyad
 
 ## Instructions (Windows)
 
-Please run 00_bootstrap.bat, this will download all required dependecies and create the vs2022 project, then compile the project usign Visual Studio. Feel free to contact any of us if you need further assistance.
+Use one of these bootstrap scripts depending on your situation:
+
+* `00_bootstrap_install.bat` (first-time setup / clean setup)
+  * Deletes the local `vcpkg` folder.
+  * Clones `microsoft/vcpkg` again.
+  * Bootstraps vcpkg and installs all required third-party libraries.
+  * Recreates the `phoenix_vs2026` CMake build folder and generates the Visual Studio 2026 solution.
+
+* `00_bootstrap_update.bat` (existing setup / dependency refresh)
+  * Reuses the existing `vcpkg` folder.
+  * Runs `vcpkg update` and reinstalls required third-party libraries.
+  * Recreates the `phoenix_vs2026` CMake build folder and regenerates the Visual Studio 2026 solution.
+
+After running either script, open the generated solution in `phoenix_vs2026` and build with Visual Studio.
 
 ## Debug launch with Cacablu
 
