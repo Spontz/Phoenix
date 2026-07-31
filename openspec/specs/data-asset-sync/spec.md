@@ -1,4 +1,8 @@
-## ADDED Requirements
+## Purpose
+
+Define how Cacablu and Phoenix compare, synchronize, mutate, and safely persist project assets within Phoenix's active `data` folder.
+
+## Requirements
 
 ### Requirement: Engine data asset manifest
 Phoenix SHALL expose a manifest of the active engine `data` folder for the `pool` and `resources` subtrees.

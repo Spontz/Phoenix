@@ -70,15 +70,12 @@ constexpr uint32_t NUM_BONES_PER_VERTEX = 4; // Number of Bones per Vertex
 	public:
 
 		Mesh(
-			const aiScene* pScene,
 			std::string nodeName,
 			const aiMesh* pMesh,
 			std::vector<Vertex> vertices,
 			std::vector<unsigned int> indices,
-			const aiMaterial* pMaterial,
-			const glm::mat4& nodeGlobalTransform,
-			std::string directory,
-			std::string filename
+			const Material& material,
+			const glm::mat4& nodeGlobalTransform
 		);
 
 	public:

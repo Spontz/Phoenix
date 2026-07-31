@@ -12,6 +12,7 @@
 #include <sstream>
 #include <iostream>
 #include <map>
+#include <utility>
 #include <vector>
 
 namespace Phoenix {
@@ -175,6 +176,11 @@ namespace Phoenix {
 		filename = filepath.substr(filepath.find_last_of('/') + 1, filepath.length());
 		Logger::info(LogLevel::low, "Loading Model: {}", filename);
 
+		m_materials.clear();
+		m_materials.resize(m_pScene->mNumMaterials);
+		for (unsigned int i = 0; i < m_pScene->mNumMaterials; ++i)
+			m_materials[i].Load(m_pScene->mMaterials[i], m_pScene, directory, filename);
+
 		// Get transformation matrix for nodes (vertices relative to bones)
 		m_matGlobalInverseTransform = mat4_cast(m_pScene->mRootNode->mTransformation);
 		m_matGlobalInverseTransform = glm::inverse(m_matGlobalInverseTransform);
@@ -245,7 +251,7 @@ namespace Phoenix {
 			// the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 			Logger::info(LogLevel::low, "Reading node name: {}", node->mName.data);
-			meshes.emplace_back(processMesh(node->mName.data, mesh, scene, nodeGlobalTransform));
+			meshes.emplace_back(processMesh(node->mName.data, mesh, nodeGlobalTransform));
 		}
 		// after we've processed all of the meshes (if any) we then recursively process each of the children nodes
 		for (unsigned int i = 0; i < node->mNumChildren; i++)
@@ -255,7 +261,7 @@ namespace Phoenix {
 	}
 
 
-	SP_Mesh Model::processMesh(std::string nodeName, aiMesh* mesh, const aiScene* scene, const glm::mat4& nodeGlobalTransform)
+	SP_Mesh Model::processMesh(std::string nodeName, aiMesh* mesh, const glm::mat4& nodeGlobalTransform)
 	{
 		// data to fill
 		std::vector<Vertex> vertices;
@@ -376,20 +382,14 @@ namespace Phoenix {
 			}
 		}
 
-		// Process materials
-		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
 		// return a mesh object created from the extracted mesh data
 		return std::make_shared<Mesh>(
-			scene,
 			nodeName,
 			mesh,
-			vertices,
-			indices,
-			material,
-			nodeGlobalTransform,
-			directory,
-			filename
+			std::move(vertices),
+			std::move(indices),
+			m_materials[mesh->mMaterialIndex],
+			nodeGlobalTransform
 			);
 	}
 
