@@ -101,9 +101,21 @@ namespace Phoenix {
 	{
 		for (const auto& spMesh : m_pModel->meshes)
 		{
+			std::vector<glm::mat4> finalInstanceMatrices;
+			const glm::mat4 meshNodeTransform = spMesh->m_matNodeGlobal;
+
+			if (!m_pModel->playAnimation) {
+				finalInstanceMatrices.resize(m_amount);
+				for (uint32_t i = 0; i < m_amount; ++i)
+					finalInstanceMatrices[i] = m_pModelMatrix[i] * meshNodeTransform;
+			}
+
 			// Update matrices buffers to GPU
 			const auto& VBs = spMesh->m_VertexArray->getVertexBuffers();
-			VBs[m_vBufferMM_ID]->SetData(&m_pModelMatrix[0], m_amount * sizeof(glm::mat4));
+			if (!m_pModel->playAnimation)
+				VBs[m_vBufferMM_ID]->SetData(finalInstanceMatrices.data(), m_amount * sizeof(glm::mat4));
+			else
+				VBs[m_vBufferMM_ID]->SetData(&m_pModelMatrix[0], m_amount * sizeof(glm::mat4));
 			VBs[m_vBufferMM_ID]->Unbind();
 		}
 	}

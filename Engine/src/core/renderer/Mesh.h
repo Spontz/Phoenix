@@ -76,6 +76,7 @@ constexpr uint32_t NUM_BONES_PER_VERTEX = 4; // Number of Bones per Vertex
 			std::vector<Vertex> vertices,
 			std::vector<unsigned int> indices,
 			const aiMaterial* pMaterial,
+			const glm::mat4& nodeGlobalTransform,
 			std::string directory,
 			std::string filename
 		);
@@ -112,6 +113,7 @@ constexpr uint32_t NUM_BONES_PER_VERTEX = 4; // Number of Bones per Vertex
 		std::vector<UniqueVertex>	m_uniqueVertices;	// Unique vertices
 		glm::mat4					m_matModel;				// Model Matrix for positioning the mesh
 		glm::mat4					m_matPrevModel;			// Previous model Matrix for positioning the mesh (useful for effects like motion blur)
+		glm::mat4					m_matNodeGlobal;		// Global transform coming from Assimp node hierarchy
 		std::string					m_nodeName;
 		uint32_t					m_numVertices;
 		uint32_t					m_numFaces;

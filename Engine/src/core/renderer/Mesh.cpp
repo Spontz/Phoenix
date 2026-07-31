@@ -38,12 +38,14 @@ namespace Phoenix {
 		std::vector<Vertex> vertices,
 		std::vector<unsigned int> indices,
 		const aiMaterial* pMaterial,
+		const glm::mat4& nodeGlobalTransform,
 		std::string directory,
 		std::string filename
 	)
 		:
 		m_matModel(glm::mat4(1.0f)),
 		m_matPrevModel(glm::mat4(1.0f)),
+		m_matNodeGlobal(nodeGlobalTransform),
 		m_nodeName(nodeName),
 		m_pMesh(pMesh),
 		m_vertices(vertices),
@@ -65,23 +67,25 @@ namespace Phoenix {
 		if (!m_uniqueVertices.empty())
 			m_uniqueVertices.clear();
 
-		
+		const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(m_matNodeGlobal)));
 
 		// Loads the unique vertices list
 		bool vertexFound = false;
 		for (auto& vertex : m_vertices) {
+			const glm::vec3 transformedPosition = glm::vec3(m_matNodeGlobal * glm::vec4(vertex.Position, 1.0f));
+			const glm::vec3 transformedNormal = glm::normalize(normalMatrix * vertex.Normal);
 			vertexFound = false;
 			for (auto& uniqueVertex : m_uniqueVertices) {
-				if (vertex.Position == uniqueVertex.Position) {
+				if (transformedPosition == uniqueVertex.Position) {
 					vertexFound = true;
 				}
 			}
 			if (vertexFound == false) {
 				//UniqueVertex newUniqueVertex;
 				UniqueVertex newUniqueVertex;
-				newUniqueVertex.Position = vertex.Position;
-				newUniqueVertex.Normal = vertex.Normal;
-				newUniqueVertex.PositionPolar = glm::polar(vertex.Position);
+				newUniqueVertex.Position = transformedPosition;
+				newUniqueVertex.Normal = transformedNormal;
+				newUniqueVertex.PositionPolar = glm::polar(transformedPosition);
 				m_uniqueVertices.emplace_back(newUniqueVertex);
 			}
 		}

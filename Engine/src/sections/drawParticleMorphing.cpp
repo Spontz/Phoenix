@@ -100,6 +100,7 @@ namespace Phoenix {
 		for (const auto& mesh : model->meshes) {
 			const auto& vertices = mesh->getVertices();
 			const auto& indices = mesh->getIndices();
+			const glm::mat4 nodeTransform = mesh->m_matNodeGlobal;
 			for (size_t i = 0; i + 2 < indices.size(); i += 3) {
 				const unsigned int indexA = indices[i];
 				const unsigned int indexB = indices[i + 1];
@@ -107,9 +108,9 @@ namespace Phoenix {
 				if (indexA >= vertices.size() || indexB >= vertices.size() || indexC >= vertices.size())
 					continue;
 
-				const glm::vec3& a = vertices[indexA].Position;
-				const glm::vec3& b = vertices[indexB].Position;
-				const glm::vec3& c = vertices[indexC].Position;
+				const glm::vec3 a = glm::vec3(nodeTransform * glm::vec4(vertices[indexA].Position, 1.0f));
+				const glm::vec3 b = glm::vec3(nodeTransform * glm::vec4(vertices[indexB].Position, 1.0f));
+				const glm::vec3 c = glm::vec3(nodeTransform * glm::vec4(vertices[indexC].Position, 1.0f));
 				const float area = 0.5f * glm::length(glm::cross(b - a, c - a));
 				if (area > minTriangleArea)
 					triangles.push_back({ a, b, c, area });

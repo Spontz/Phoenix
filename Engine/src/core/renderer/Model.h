@@ -38,8 +38,8 @@ namespace Phoenix {
 		void getStats();
 
 		// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
-		void processNode(aiNode* node, const aiScene* scene);
-		SP_Mesh processMesh(std::string nodeName, aiMesh* mesh, const aiScene* scene);
+		void processNode(aiNode* node, const aiScene* scene, const glm::mat4& parentTransform);
+		SP_Mesh processMesh(std::string nodeName, aiMesh* mesh, const aiScene* scene, const glm::mat4& nodeGlobalTransform);
 
 		// Process the scene cameras
 		void processCameras(const aiScene* scene);

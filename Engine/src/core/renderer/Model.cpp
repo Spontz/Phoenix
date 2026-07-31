@@ -179,7 +179,7 @@ namespace Phoenix {
 		m_matGlobalInverseTransform = mat4_cast(m_pScene->mRootNode->mTransformation);
 		m_matGlobalInverseTransform = glm::inverse(m_matGlobalInverseTransform);
 		// process ASSIMP's root node recursively
-		processNode(m_pScene->mRootNode, m_pScene);
+		processNode(m_pScene->mRootNode, m_pScene, glm::mat4(1.0f));
 
 		// Get the cameras
 		processCameras(m_pScene);
@@ -233,8 +233,11 @@ namespace Phoenix {
 	}
 
 	// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any)
-	void Model::processNode(aiNode* node, const aiScene* scene)
+	void Model::processNode(aiNode* node, const aiScene* scene, const glm::mat4& parentTransform)
 	{
+		const glm::mat4 nodeLocalTransform = mat4_cast(node->mTransformation);
+		const glm::mat4 nodeGlobalTransform = parentTransform * nodeLocalTransform;
+
 		// process each mesh located at the current node
 		for (unsigned int i = 0; i < node->mNumMeshes; i++)
 		{
@@ -242,17 +245,17 @@ namespace Phoenix {
 			// the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 			Logger::info(LogLevel::low, "Reading node name: {}", node->mName.data);
-			meshes.emplace_back(processMesh(node->mName.data, mesh, scene));
+			meshes.emplace_back(processMesh(node->mName.data, mesh, scene, nodeGlobalTransform));
 		}
 		// after we've processed all of the meshes (if any) we then recursively process each of the children nodes
 		for (unsigned int i = 0; i < node->mNumChildren; i++)
 		{
-			processNode(node->mChildren[i], scene);
+			processNode(node->mChildren[i], scene, nodeGlobalTransform);
 		}
 	}
 
 
-	SP_Mesh Model::processMesh(std::string nodeName, aiMesh* mesh, const aiScene* scene)
+	SP_Mesh Model::processMesh(std::string nodeName, aiMesh* mesh, const aiScene* scene, const glm::mat4& nodeGlobalTransform)
 	{
 		// data to fill
 		std::vector<Vertex> vertices;
@@ -384,6 +387,7 @@ namespace Phoenix {
 			vertices,
 			indices,
 			material,
+			nodeGlobalTransform,
 			directory,
 			filename
 			);
@@ -391,8 +395,12 @@ namespace Phoenix {
 
 	void Model::setMeshesModelTransform()
 	{
-		for (auto& mesh : meshes)
-			mesh->m_matModel = m_matBaseModel;
+		for (auto& mesh : meshes) {
+			if (playAnimation)
+				mesh->m_matModel = m_matBaseModel;
+			else
+				mesh->m_matModel = m_matBaseModel * mesh->m_matNodeGlobal;
+		}
 	}
 
 	/////////////// Bones calculations
