@@ -4,6 +4,7 @@
 #include "core/renderer/ShaderVars.h"
 
 #include <algorithm>
+#include <iomanip>
 #include <random>
 
 namespace Phoenix {
@@ -30,7 +31,7 @@ namespace Phoenix {
 
 		// Particle engine variables
 		int				m_iNumParticles = 0;
-		float			m_fDuration = 0;
+		float			m_fDuration = 0.0f;
 		ParticleMesh*	m_pParticleMesh = nullptr;
 		SP_Shader		m_pShader = nullptr;
 
@@ -167,9 +168,9 @@ namespace Phoenix {
 		// strings[0] = source scene model
 		// strings[1] = destination scene model
 		// shaderBlock[0] = shader
-		// expressionRun = positioning expression (tx,ty,tz,rx,ry,rz,sx,sy,sz)
+		// expressionRun = optional positioning expression (tx,ty,tz,rx,ry,rz,sx,sy,sz)
 		if ((param.size() != 2) || (strings.size() != 2) || (shaderBlock.size() != 1)) {
-			Logger::error("Draw Particle Morphing [{}]: 2 params (NumParticles & Duration), 2 strings (source & dest scene), 1 shader and 1 expression needed", identifier);
+			Logger::error("Draw Particle Morphing [{}]: Contract mismatch. Expected 2 params (NumParticles, MorphingDuration), 2 strings (SourceModel, DestinationModel) and 1 shader block", identifier);
 			return false;
 		}
 
@@ -184,8 +185,8 @@ namespace Phoenix {
 			Logger::error("Draw Particle Morphing [{}]: Number of particles must be greater than 0", identifier);
 			return false;
 		}
-		if (m_fDuration <= 0) {
-			Logger::error("Draw Particle Morphing [{}]: Duration must be greater than 0", identifier);
+		if (m_fDuration <= 0.0f) {
+			Logger::error("Draw Particle Morphing [{}]: Morphing duration must be greater than 0", identifier);
 			return false;
 		}
 
@@ -197,8 +198,14 @@ namespace Phoenix {
 		// Load source and destination models
 		m_pModelSource = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[0]);
 		m_pModelDest = m_demo.m_modelManager.addModel(m_demo.m_dataFolder + strings[1]);
-		if (!m_pModelSource || !m_pModelDest)
+		if (!m_pModelSource) {
+			Logger::error("Draw Particle Morphing [{}]: Failed to load source model '{}'", identifier, strings[0]);
 			return false;
+		}
+		if (!m_pModelDest) {
+			Logger::error("Draw Particle Morphing [{}]: Failed to load destination model '{}'", identifier, strings[1]);
+			return false;
+		}
 
 		// Load unique vertices for both models
 		m_pModelSource->loadUniqueVertices();
@@ -346,10 +353,11 @@ namespace Phoenix {
 		ss << " Vert. num: " << m_iModelSourceUniqueVerticesNum << std::endl;
 		ss << "Destination model: " << (m_pModelDest ? m_pModelDest->filename : "nullptr") << std::endl;
 		ss << " Vert. num: " << m_iModelDestUniqueVerticesNum << std::endl;
-		ss << "Expression is: " << (m_pExprPosition->isValid() ? "Valid" : "Faulty or Empty") << std::endl;
+		ss << "Expression is: " << ((m_pExprPosition && m_pExprPosition->isValid()) ? "Valid" : "Faulty or Empty") << std::endl;
 		ss << "Num Particles: " << m_iNumParticles << std::endl;
 		ss << "Duration (s): " << m_fDuration << std::endl;
-		ss << "Memory Used: " << std::format("{:.1f}", m_pParticleMesh->getMemUsedInMb()) << " Mb" << std::endl;
+		const float memUsedMb = m_pParticleMesh ? m_pParticleMesh->getMemUsedInMb() : 0.0f;
+		ss << "Memory Used: " << std::fixed << std::setprecision(1) << memUsedMb << " Mb" << std::endl;
 		debugStatic = ss.str();
 	}
 
