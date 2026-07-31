@@ -26,11 +26,11 @@ namespace Phoenix {
 			SymbolTable.add_variable(varNum, DEMO->m_fVar[i]);
 		}
 
-		// Track beats
+		// Audio analysis
 		SymbolTable.add_variable("beat", DEMO->m_soundManager.m_fBeat);
-		SymbolTable.add_variable("high_freq_sum", DEMO->m_soundManager.m_fHighFreqSum);
-		SymbolTable.add_variable("mid_freq_sum", DEMO->m_soundManager.m_fMidFreqSum);
-		SymbolTable.add_variable("low_freq_sum", DEMO->m_soundManager.m_fLowFreqSum);
+		SymbolTable.add_variable("high_freq_level", DEMO->m_soundManager.m_fHighFreqLevel);
+		SymbolTable.add_variable("mid_freq_level", DEMO->m_soundManager.m_fMidFreqLevel);
+		SymbolTable.add_variable("low_freq_level", DEMO->m_soundManager.m_fLowFreqLevel);
 
 
 		// Camera values

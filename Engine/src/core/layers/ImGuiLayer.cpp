@@ -635,7 +635,7 @@ namespace Phoenix {
 			ImGui::PlotHistogram(" ", m_demo.m_soundManager.m_spectrogram.getSpectogramData(), plotSamples, 0, "Spectrum analyzer", 0.0, 1.0, ImVec2(win.x - 10, win.y - 80)); // For spectogram display
 
 			ImGui::Text("Beat: %.3f", m_demo.m_soundManager.m_fBeat);
-			ImGui::Text("Frequencies Magnitudes: Low (%.3f), Mid (%.3f), High (%.3f)", m_demo.m_soundManager.m_fLowFreqSum, m_demo.m_soundManager.m_fMidFreqSum, m_demo.m_soundManager.m_fHighFreqSum);
+			ImGui::Text("Frequency levels: Low (%.3f), Mid (%.3f), High (%.3f)", m_demo.m_soundManager.m_fLowFreqLevel, m_demo.m_soundManager.m_fMidFreqLevel, m_demo.m_soundManager.m_fHighFreqLevel);
 		}
 		ImGui::End();
 	}

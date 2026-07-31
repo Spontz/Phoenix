@@ -49,9 +49,10 @@ namespace Phoenix {
 	private:
 		static void dataCallback (ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount);
 		void destroyDevice();
+		void resetBeatDetection();
 	
 	public:
-		bool performFFT(float currentTime);
+		bool performFFT(float frameTime);
 		void fillSpectrogram();	// Fill spectrum FFT analysis, we should fill this only if we are in debug mode
 
 	private:
@@ -65,6 +66,7 @@ namespace Phoenix {
 		uint32_t		m_sampleRate;
 		std::mutex		m_soundListMutex;
 		std::mutex		m_streamingAudioSinkMutex;
+		std::mutex		m_fftSampleMutex;
 		std::function<bool(const float*, uint32_t, uint32_t, uint32_t)> m_streamingAudioSink;
 	
 		// FFT capture and analysis
@@ -78,9 +80,9 @@ namespace Phoenix {
 		float			m_midFreqMax = 2000.0f;		// Mid frequency max value: Adjustable parameter
 
 		// BEAT detection
-		float*			m_pEnergy;					// Energy buffer
-		uint32_t		m_iPosition = 1;			// Position
-		float			m_fIntensity = 0;			// Intensity
+		float			m_fBeatBaseline = 0.0f;
+		bool			m_beatBaselineInitialized = false;
+		bool			m_beatArmed = true;
 	public:
 		float			m_fBeatRatio = 1.4f;		// Beat Ratio: Adjustable parameter
 		float			m_fFadeOut = 4.0f;			// Fade Out: Adjustable parameter
@@ -91,9 +93,9 @@ namespace Phoenix {
 		float*			m_pFFTFrequencies;		// FFT frequencies analyzed, size is: FFT_SIZE
 	public:
 		float*			m_pFFTBuffer;			// FFT magnitues, size is: FFT_SIZE
-		float			m_fLowFreqSum = 0.0f;
-		float			m_fMidFreqSum = 0.0f;
-		float			m_fHighFreqSum = 0.0f;
+		float			m_fLowFreqLevel = 0.0f;
+		float			m_fMidFreqLevel = 0.0f;
+		float			m_fHighFreqLevel = 0.0f;
 
 	public:
 		bool					m_forceLoad;	// Force sound loading each time we add a sound (should be enabled when working on slave mode)

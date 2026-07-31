@@ -539,6 +539,12 @@ namespace Phoenix {
 			// Check if demo should be ended or should be restarted
 			checkDemoEnd();
 
+			// Update audio-reactive values before sections evaluate their expressions.
+			if (m_sound && (m_status & DemoStatus::PLAY)) {
+				if (m_soundManager.performFFT(m_realFrameTime) && m_debug)
+					m_soundManager.fillSpectrogram();
+			}
+
 			const bool windowIconified = glfwGetWindowAttrib(static_cast<GLFWwindow*>(m_Window->GetNativeWindow()), GLFW_ICONIFIED) == GLFW_TRUE;
 			if (m_framebufferStreamer && m_framebufferStreamer->hasClients() && windowIconified) {
 				ProcessAndStreamMinimizedFrame();
@@ -565,13 +571,6 @@ namespace Phoenix {
 			// Process Input keys to control Internal Camera
 			OnProcessInput(m_realFrameTime);
 
-			// Generate FFT analysis, calculate beat and magnitures, based on the sound output
-			if (m_sound && (m_status & DemoStatus::PLAY)) {
-				m_soundManager.performFFT(m_realFrameTime);
-				if (m_debug)
-					m_soundManager.fillSpectrogram();
-			}
-			
 			// Update network driver
 			if (m_slaveMode) {
 				NetDriver::getInstance().update();
