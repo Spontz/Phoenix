@@ -5,3 +5,7 @@ demo_log.txt
 /Launcher/data/pool*
 /Launcher_WD*
 *.spo
+/.agents
+/.claude
+/.codex
+/.github
