@@ -110,8 +110,11 @@ namespace Phoenix {
 			m_currentAnimation = a;
 			m_animDuration = m_pScene->mAnimations[m_currentAnimation]->mDuration; // Load anim duration
 		}
-		else
+		// Sections call this once per frame, so report each invalid value only once
+		else if (m_lastInvalidAnimation != a) {
+			m_lastInvalidAnimation = a;
 			Logger::error("The animation number [{}] is not available in the file [{}]", a, filename);
+		}
 	}
 
 	void Model::setCamera(unsigned int c)
@@ -123,7 +126,11 @@ namespace Phoenix {
 		else {
 			useCamera = false;
 			m_currentCamera = 0;
-			Logger::error("The camera number [{}] is not available in the file [{}]", c, filename);
+			// Sections call this once per frame, so report each invalid value only once
+			if (m_lastInvalidCamera != c) {
+				m_lastInvalidCamera = c;
+				Logger::error("The camera number [{}] is not available in the file [{}]", c, filename);
+			}
 		}
 	}
 
@@ -419,10 +426,25 @@ namespace Phoenix {
 
 	void Model::boneTransform(float timeInSeconds)
 	{
+		// Without a valid duration the fmod below is a division by zero and yields NaN,
+		// which would propagate into every bone transformation
+		if (m_animDuration <= 0.0) {
+			// Called once per frame, so report each offending animation only once
+			if (m_lastInvalidAnimDuration != m_currentAnimation) {
+				m_lastInvalidAnimDuration = m_currentAnimation;
+				Logger::error("The animation number [{}] of the file [{}] has no valid duration, bone transformations will not be computed", m_currentAnimation, filename);
+			}
+			return;
+		}
+
 		float TicksPerSecond = (float)(m_pScene->mAnimations[m_currentAnimation]->mTicksPerSecond != 0 ?
 			m_pScene->mAnimations[m_currentAnimation]->mTicksPerSecond : 25.0f);
 		float TimeInTicks = timeInSeconds * TicksPerSecond;
 		float AnimationTime = (float)fmod(TimeInTicks, m_animDuration);
+		// fmod keeps the sign of the dividend, and the time comes from a script expression
+		// that is not guaranteed to be positive, so wrap it back into [0, m_animDuration)
+		if (AnimationTime < 0.0f)
+			AnimationTime += (float)m_animDuration;
 
 		ReadNodeHeirarchy(AnimationTime, m_pScene->mRootNode, glm::mat4(1.0f));
 
@@ -508,44 +530,54 @@ namespace Phoenix {
 	// Bone position formulas
 	unsigned int Model::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
+		assert(pNodeAnim->mNumPositionKeys >= 2);
+
 		for (unsigned int i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
 		{
 			if (AnimationTime < (float)pNodeAnim->mPositionKeys[i + 1].mTime) {
 				return i;
 			}
 		}
-		assert(0);
-		return 0;
+		// The time is past the last key of this channel: hold the last valid segment.
+		// Callers only reach this point when mNumPositionKeys >= 2
+		return pNodeAnim->mNumPositionKeys - 2;
 	}
 
 	unsigned int Model::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
-		assert(pNodeAnim->mNumRotationKeys > 0);
+		assert(pNodeAnim->mNumRotationKeys >= 2);
 
 		for (unsigned int i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++) {
 			if (AnimationTime < (float)pNodeAnim->mRotationKeys[i + 1].mTime) {
 				return i;
 			}
 		}
-		assert(0);
-		return 0;
+		// The time is past the last key of this channel: hold the last valid segment.
+		// Callers only reach this point when mNumRotationKeys >= 2
+		return pNodeAnim->mNumRotationKeys - 2;
 	}
 
 	unsigned int Model::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
-		assert(pNodeAnim->mNumScalingKeys > 0);
+		assert(pNodeAnim->mNumScalingKeys >= 2);
 
 		for (unsigned int i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++) {
 			if (AnimationTime < (float)pNodeAnim->mScalingKeys[i + 1].mTime) {
 				return i;
 			}
 		}
-		assert(0);
-		return 0;
+		// The time is past the last key of this channel: hold the last valid segment.
+		// Callers only reach this point when mNumScalingKeys >= 2
+		return pNodeAnim->mNumScalingKeys - 2;
 	}
 
 	void Model::CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
+		if (pNodeAnim->mNumPositionKeys == 0) {
+			Out = aiVector3D(0.0f, 0.0f, 0.0f);
+			return;
+		}
+
 		if (pNodeAnim->mNumPositionKeys == 1) {
 			Out = pNodeAnim->mPositionKeys[0].mValue;
 			return;
@@ -555,8 +587,11 @@ namespace Phoenix {
 		unsigned int NextPositionIndex = (PositionIndex + 1);
 		assert(NextPositionIndex < pNodeAnim->mNumPositionKeys);
 		float DeltaTime = (float)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
-		float Factor = (AnimationTime - (float)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
-		assert(Factor >= 0.0f && Factor <= 1.0f);
+		// A channel can start after the animation start or end before its end, so hold the
+		// boundary key instead of extrapolating. Keys sharing a timestamp give DeltaTime 0
+		float Factor = 0.0f;
+		if (DeltaTime > 0.0f)
+			Factor = glm::clamp((AnimationTime - (float)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime, 0.0f, 1.0f);
 		const aiVector3D& Start = pNodeAnim->mPositionKeys[PositionIndex].mValue;
 		const aiVector3D& End = pNodeAnim->mPositionKeys[NextPositionIndex].mValue;
 		aiVector3D Delta = End - Start;
@@ -565,6 +600,11 @@ namespace Phoenix {
 
 	void Model::CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
+		if (pNodeAnim->mNumRotationKeys == 0) {
+			Out = aiQuaternion(1.0f, 0.0f, 0.0f, 0.0f);
+			return;
+		}
+
 		// we need at least two values to interpolate...
 		if (pNodeAnim->mNumRotationKeys == 1) {
 			Out = pNodeAnim->mRotationKeys[0].mValue;
@@ -575,8 +615,11 @@ namespace Phoenix {
 		unsigned int NextRotationIndex = (RotationIndex + 1);
 		assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
 		float DeltaTime = (float)(pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime);
-		float Factor = (AnimationTime - (float)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
-		assert(Factor >= 0.0f && Factor <= 1.0f);
+		// A channel can start after the animation start or end before its end, so hold the
+		// boundary key instead of extrapolating. Keys sharing a timestamp give DeltaTime 0
+		float Factor = 0.0f;
+		if (DeltaTime > 0.0f)
+			Factor = glm::clamp((AnimationTime - (float)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime, 0.0f, 1.0f);
 		const aiQuaternion& StartRotationQ = pNodeAnim->mRotationKeys[RotationIndex].mValue;
 		const aiQuaternion& EndRotationQ = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
 		aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
@@ -590,6 +633,11 @@ namespace Phoenix {
 
 	void Model::CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
+		if (pNodeAnim->mNumScalingKeys == 0) {
+			Out = aiVector3D(1.0f, 1.0f, 1.0f);
+			return;
+		}
+
 		if (pNodeAnim->mNumScalingKeys == 1) {
 			Out = pNodeAnim->mScalingKeys[0].mValue;
 			return;
@@ -599,8 +647,11 @@ namespace Phoenix {
 		unsigned int NextScalingIndex = (ScalingIndex + 1);
 		assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
 		float DeltaTime = (float)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
-		float Factor = (AnimationTime - (float)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
-		assert(Factor >= 0.0f && Factor <= 1.0f);
+		// A channel can start after the animation start or end before its end, so hold the
+		// boundary key instead of extrapolating. Keys sharing a timestamp give DeltaTime 0
+		float Factor = 0.0f;
+		if (DeltaTime > 0.0f)
+			Factor = glm::clamp((AnimationTime - (float)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime, 0.0f, 1.0f);
 		const aiVector3D& Start = pNodeAnim->mScalingKeys[ScalingIndex].mValue;
 		const aiVector3D& End = pNodeAnim->mScalingKeys[NextScalingIndex].mValue;
 		aiVector3D Delta = End - Start;

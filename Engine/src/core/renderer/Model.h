@@ -10,6 +10,8 @@
 #include "core/renderer/Shader.h"
 #include "core/renderer/Camera.h"
 
+#include <optional>
+
 namespace Phoenix {
 
 	class Model;
@@ -103,5 +105,9 @@ namespace Phoenix {
 		unsigned int						m_currentAnimation;			// Current Animation
 		double								m_animDuration;				// Animation duration in seconds
 		bool								m_bLoadedUniqueVertices;	// Have we loaded the unique vertices for each mesh?
+		// Last values already reported to the log, to avoid flooding it from the per-frame setters
+		std::optional<unsigned int>			m_lastInvalidAnimation;
+		std::optional<unsigned int>			m_lastInvalidCamera;
+		std::optional<unsigned int>			m_lastInvalidAnimDuration;
 	};
 }
