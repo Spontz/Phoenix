@@ -59,21 +59,54 @@ namespace Phoenix {
 		filepath = "";
 	}
 
-	void Model::Draw(SP_Shader shader, float currentTime, uint32_t startTexUnit)
+	void Model::PreCalc(float currentTime)
 	{
-		// Load the model transformation on all sub-meshes
-		setMeshesModelTransform();
+		// Resolve the animated state of the model: node hierarchy walk, bone transformations,
+		// per-mesh animated transforms and the view matrix of every camera in the model file.
+		// No GPU work is issued here, and no previous-frame matrix is advanced.
+		if (playAnimation && m_pScene && m_pScene->HasAnimations())
+			boneTransform(currentTime);
 
-		// Set the Bones transformations and send the Bones info to the Shader (gBones uniform)
-		if (playAnimation)
-			setBoneTransformations(shader, currentTime);
+		// Capture the selected model camera so sections can feed it to their expressions
+		resolveModelCamera();
+	}
 
-		// If we use camera, override the matrix view for the camera view
-		if (useCamera) {
-			if ((m_currentCamera >= 0) && (m_currentCamera < m_camera.size())) {
-				m_matView = m_camera[m_currentCamera]->getView();
-			}
-		}
+	void Model::resolveModelCamera()
+	{
+		m_modelCamera = ModelCameraState();
+
+		if (!useCamera || m_currentCamera >= m_camera.size())
+			return;
+
+		Camera* pCamera = m_camera[m_currentCamera];
+		if (!pCamera)
+			return;
+
+		m_modelCamera.valid = true;
+		m_modelCamera.view = pCamera->getView();
+		m_modelCamera.position = pCamera->getPosition();
+		m_modelCamera.front = pCamera->getFront();
+		m_modelCamera.up = pCamera->getUpVector();
+		m_modelCamera.yaw = pCamera->getYaw();
+		m_modelCamera.pitch = pCamera->getPitch();
+		m_modelCamera.roll = pCamera->getRoll();
+		m_modelCamera.fov = pCamera->getFov();
+	}
+
+	void Model::uploadBoneTransforms(SP_Shader shader)
+	{
+		if (playAnimation && m_pScene && m_pScene->HasAnimations() && !m_boneTransforms.empty())
+			shader->setValue("gBones", m_boneTransforms[0], (GLsizei)m_boneTransforms.size());
+	}
+
+	void Model::Draw(SP_Shader shader, uint32_t startTexUnit)
+	{
+		// If we use camera, override the matrix view with the camera resolved by PreCalc
+		if (m_modelCamera.valid)
+			m_matView = m_modelCamera.view;
+
+		// Send the Bones info to the Shader (gBones uniform), computed during PreCalc
+		uploadBoneTransforms(shader);
 
 		// Send the matrices
 		shader->setValue("projection", m_matProjection);// TODO: Not to be stored here: What happens if we are drawing multiple instances of the same object?
@@ -85,6 +118,11 @@ namespace Phoenix {
 
 		// Then, send the model matrice of each mesh and draw them
 		for (auto& mesh : meshes) {
+			// Compose the final model matrix from the base transform given by the section and the
+			// node transform resolved for this frame. Keeping these separate lets a single PreCalc
+			// serve every draw of this model, even when the base transform changes per instance.
+			mesh->m_matModel = m_matBaseModel * (playAnimation ? mesh->m_matNodeAnimated : mesh->m_matNodeGlobal);
+
 			// Send model matrix
 			shader->setValue("model", mesh->m_matModel);
 			m_matMVP = m_matProjection * m_matView * mesh->m_matModel;
@@ -211,15 +249,27 @@ namespace Phoenix {
 		{
 			aiCamera* aiCam = m_pScene->mCameras[i];
 
-			//glm::vec3 cam_pos = glm::vec3(aiCam->mPosition.x, aiCam->mPosition.y, aiCam->mPosition.z);
-			//glm::vec3 cam_lookAt = glm::vec3(aiCam->mLookAt.x, aiCam->mLookAt.y, aiCam->mLookAt.z);
-			//glm::vec3 cam_up = glm::vec3(aiCam->mUp.x, aiCam->mUp.y, aiCam->mUp.z);
-			// TODO: Read FOV, YAW and PITCH
+			const glm::vec3 cam_pos = vec3_cast(aiCam->mPosition);
+			const glm::vec3 cam_lookAt = vec3_cast(aiCam->mLookAt);	// Direction the camera looks at
+			const glm::vec3 cam_up = vec3_cast(aiCam->mUp);
 
-			aiMatrix4x4 mat;
-			aiCam->GetCameraMatrix(mat);
-			Camera* cam = new CameraRawMatrix(mat4_cast(mat));
+			// Build the view matrix ourselves instead of using aiCamera::GetCameraMatrix: Assimp
+			// stores the look direction as the +Z axis, while OpenGL (and the animated camera path
+			// in ReadNodeHeirarchy, which uses the inverse of the node transform) looks down -Z.
+			// Using the Assimp matrix directly would make the camera face backwards.
+			Camera* cam = new CameraRawMatrix(glm::lookAt(cam_pos, cam_pos + cam_lookAt, cam_up));
 			cam->TypeStr = aiCam->mName.C_Str();
+
+			// Assimp reports the *half* horizontal field of view, while the engine stores the
+			// full vertical one (in degrees), as expected by glm::perspective
+			if (aiCam->mHorizontalFOV > 0.0f) {
+				const float halfFovH = aiCam->mHorizontalFOV;
+				const float halfFovV = (aiCam->mAspect > 0.0f)
+					? glm::atan(glm::tan(halfFovH) / aiCam->mAspect)
+					: halfFovH;
+				cam->setFov(glm::degrees(2.0f * halfFovV));
+			}
+
 			m_camera.emplace_back(cam);
 		}
 	}
@@ -400,30 +450,8 @@ namespace Phoenix {
 			);
 	}
 
-	void Model::setMeshesModelTransform()
-	{
-		for (auto& mesh : meshes) {
-			if (playAnimation)
-				mesh->m_matModel = m_matBaseModel;
-			else
-				mesh->m_matModel = m_matBaseModel * mesh->m_matNodeGlobal;
-		}
-	}
-
 	/////////////// Bones calculations
 	// TODO: Do a Bones Class, with all this calculations
-	void Model::setBoneTransformations(SP_Shader shader, float currentTime)
-	{
-		// TODO: Hacer que los Transforms sea una propiedad de cada uno del Bone, asi no se tiene q hacer
-		// Resize ni cosas raras, y asi ya tenemos un vector de transformaciones de tamaño fijo
-		if (m_pScene->HasAnimations()) {
-			boneTransform(currentTime);
-			if (m_boneTransforms.size() > 0)
-				shader->setValue("gBones", m_boneTransforms[0], (GLsizei)m_boneTransforms.size());
-		}
-	}
-
-
 	void Model::boneTransform(float timeInSeconds)
 	{
 		// Without a valid duration the fmod below is a division by zero and yields NaN,
@@ -497,18 +525,12 @@ namespace Phoenix {
 		glm::mat4 GlobalTransformation = ParentTransform * NodeTransformation;
 
 
-		// Now we need to apply the Matrix to the corresponding object
+		// Store the animated node transform of the corresponding mesh.
+		// This is an assignment, not an accumulation: the result must stay independent of
+		// m_matBaseModel so a single precalculation can serve every draw of this model.
 		for (unsigned int i = 0; i < m_statNumMeshes; i++) {
 			if (NodeName == meshes[i]->m_nodeName) {
-				meshes[i]->m_matModel *= m_matGlobalInverseTransform * GlobalTransformation;
-				/*Logger::info(LogLevel::low, "Aqui toca guardar la matriz, para el objeto: %s, que es la mesh: %boneIndex [time: %.3f]", NodeName.c_str(), boneIndex, AnimationTime);
-				glm::mat4 M = GlobalTransformation;
-				Logger::info(LogLevel::low, "M: [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f], [%.2f, %.2f, %.2f, %.2f]",
-					M[0][0], M[0][1], M[0][2], M[0][3],
-					M[1][0], M[1][1], M[1][2], M[1][3],
-					M[2][0], M[2][1], M[2][2], M[2][3],
-					M[3][0], M[3][1], M[3][2], M[3][3]);
-					*/
+				meshes[i]->m_matNodeAnimated = m_matGlobalInverseTransform * GlobalTransformation;
 			}
 		}
 

@@ -95,7 +95,12 @@ namespace Phoenix {
 		const glm::mat4 getProjection() override;
 		const glm::mat4 getView() override;
 
-		void setViewMatrix(glm::mat4 const& matrix) override { m_Matrix = matrix; };
+		void setViewMatrix(glm::mat4 const& matrix) override;
+
+	private:
+		// Recovers position, basis vectors and Euler angles from the view matrix, so the
+		// inherited camera state is meaningful instead of reporting constructor defaults
+		void decomposeViewMatrix();
 
 	private:
 		glm::mat4 m_Matrix; // Matrix: used for scenes with a saved matrix

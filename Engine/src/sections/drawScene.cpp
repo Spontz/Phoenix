@@ -152,7 +152,7 @@ namespace Phoenix {
 		setRenderStatesStart();
 		EvalBlendingStart();
 
-		// Evaluate the expression
+		// Evaluate the expression, so we get the animation time and the camera to use
 		m_pExprPosition->executeFormula();
 
 		// Set model properties
@@ -163,6 +163,15 @@ namespace Phoenix {
 			m_pModel->useCamera = false;
 		else
 			m_pModel->setCamera((unsigned int)m_fCameraNumber);
+
+		// Precalculate the animated state of the model: this resolves the animation, the bone
+		// transformations and the camera stored inside the model file, without drawing anything
+		m_pModel->PreCalc(m_fAnimationTime);
+
+		// Publish the model camera and evaluate the expression again, so the placement values can
+		// react to the camera movement resolved above within this same frame
+		m_pExprPosition->setModelCamera(*m_pModel);
+		m_pExprPosition->executeFormula();
 
 		// Load shader
 		m_pShader->use();
@@ -208,7 +217,7 @@ namespace Phoenix {
 		// Set the other shader variable values
 		m_pVars->setValues();
 
-		m_pModel->Draw(m_pShader, m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
+		m_pModel->Draw(m_pShader, static_cast<uint32_t>(m_pVars->sampler2D.size()));
 
 		glUseProgram(0);
 

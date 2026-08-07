@@ -44,6 +44,7 @@ namespace Phoenix {
 		m_matModel(glm::mat4(1.0f)),
 		m_matPrevModel(glm::mat4(1.0f)),
 		m_matNodeGlobal(nodeGlobalTransform),
+		m_matNodeAnimated(glm::mat4(1.0f)),
 		m_nodeName(std::move(nodeName)),
 		m_pMesh(pMesh),
 		m_vertices(std::move(vertices)),

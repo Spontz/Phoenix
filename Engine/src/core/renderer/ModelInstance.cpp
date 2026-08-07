@@ -70,10 +70,19 @@ namespace Phoenix {
 		m_amount = 0;
 	}
 
-	void ModelInstance::drawInstanced(SP_Shader shader, float currentTime, uint32_t startTexUnit)
+	void ModelInstance::PreCalc(float currentTime)
 	{
-		if (m_pModel->playAnimation)
-			m_pModel->setBoneTransformations(shader, currentTime);
+		// Resolve the animated state of the model, which is shared by every instance.
+		// The per-instance matrix buffer stays owned by updateMatrices(), which sections already
+		// call after the expression that positions the instances - uploading it here as well
+		// would push the same buffer to the GPU twice per frame.
+		m_pModel->PreCalc(currentTime);
+	}
+
+	void ModelInstance::drawInstanced(SP_Shader shader, uint32_t startTexUnit)
+	{
+		// Send the Bones info to the Shader (gBones uniform), computed during PreCalc
+		m_pModel->uploadBoneTransforms(shader);
 
 		for (const auto& spMesh : m_pModel->meshes) {
 			spMesh->setMaterialShaderVars(shader, startTexUnit);

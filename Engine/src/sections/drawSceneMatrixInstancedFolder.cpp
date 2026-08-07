@@ -247,6 +247,27 @@ namespace Phoenix {
 		setRenderStatesStart();
 		EvalBlendingStart();
 
+		// Evaluate the expression first, so we get the animation time for this frame
+		m_pExprPosition->executeFormula();
+
+		// Precalculate the animated state of every model instance once for the whole frame
+		for (const auto& modelInstance : m_pModelInstance) {
+			modelInstance->m_pModel->playAnimation = m_bPlayAnimation;
+			if (modelInstance->m_pModel->playAnimation)
+				modelInstance->m_pModel->setAnimation(m_iAnimationNumber);
+
+			modelInstance->PreCalc(m_fAnimationTime);
+		}
+
+		// Publish the camera of the first model that exposes one, so the expressions below can
+		// react to it
+		for (const auto& modelInstance : m_pModelInstance) {
+			if (modelInstance->m_pModel->getModelCamera().valid) {
+				m_pExprPosition->setModelCamera(*(modelInstance->m_pModel));
+				break;
+			}
+		}
+
 		// Load shader
 		m_pShader->use();
 
@@ -266,7 +287,7 @@ namespace Phoenix {
 		// Set the other shader variable values
 		m_pVars->setValues();
 
-		// Evaluate the expression
+		// Evaluate the expression, now with the model camera available
 		m_pExprPosition->executeFormula();
 
 		// Update Matrices with objects positions, if required
@@ -277,11 +298,7 @@ namespace Phoenix {
 
 		// Draw Objects
 		for (const auto& modelInstance : m_pModelInstance) {
-			modelInstance->m_pModel->playAnimation = m_bPlayAnimation;
-			if (modelInstance->m_pModel->playAnimation)
-				modelInstance->m_pModel->setAnimation(m_iAnimationNumber);
-
-			modelInstance->drawInstanced(m_pShader, m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
+			modelInstance->drawInstanced(m_pShader, static_cast<uint32_t>(m_pVars->sampler2D.size()));
 		}
 
 		// For MotionBlur: store the previous matrix

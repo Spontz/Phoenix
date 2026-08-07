@@ -21,16 +21,43 @@ namespace Phoenix {
 	class Model final
 	{
 	public:
+		// State of the model camera resolved by the precalculation phase.
+		// Sections read this between PreCalc() and their expression evaluation.
+		struct ModelCameraState final {
+			bool		valid = false;					// Is a model camera currently selected and available?
+			glm::mat4	view = glm::mat4(1.0f);			// View matrix of the resolved camera
+			glm::vec3	position = glm::vec3(0.0f);
+			glm::vec3	front = glm::vec3(0.0f, 0.0f, -1.0f);
+			glm::vec3	up = glm::vec3(0.0f, 1.0f, 0.0f);
+			float		yaw = 0.0f;
+			float		pitch = 0.0f;
+			float		roll = 0.0f;
+			float		fov = 0.0f;
+		};
+
+	public:
 		Model();
 		~Model();
 
 	public:
 		// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
 		bool Load(std::string_view path);
-		// draws the model, and thus all its meshes
-		void Draw(SP_Shader shader, float currentTime, uint32_t startTexUnit = 0);
+		// Precalculation phase: resolves the animated state of the model (node hierarchy, bone
+		// transformations, per-mesh animated transforms and model camera views) for the given
+		// playback time. Issues no GPU work, so sections can read the result - notably the model
+		// camera - before evaluating their expressions and drawing.
+		// Must be called before Draw() on every frame the model is rendered.
+		void PreCalc(float currentTime);
+		// draws the model, and thus all its meshes, using the state resolved by PreCalc()
+		void Draw(SP_Shader shader, uint32_t startTexUnit = 0);
+		// Render-phase helper: uploads the bone transformations resolved by PreCalc() to the
+		// shader (gBones uniform). Performs no computation.
+		void uploadBoneTransforms(SP_Shader shader);
 		void setAnimation(unsigned int a);
 		void setCamera(unsigned int c);
+
+		// Camera resolved by the last PreCalc() call
+		const ModelCameraState& getModelCamera() const { return m_modelCamera; }
 
 		// Load unique vertices
 		void loadUniqueVertices();
@@ -46,12 +73,10 @@ namespace Phoenix {
 		// Process the scene cameras
 		void processCameras(const aiScene* scene);
 
-		// Set mesh transformations
-		void setMeshesModelTransform();
+		// Capture the state of the currently selected model camera
+		void resolveModelCamera();
 
 		// Bones Calculations
-	public:
-		void setBoneTransformations(SP_Shader shader, float currentTime); // Hack for ModelInstance:: TODO: Make it private again
 	private:
 		void boneTransform(float timeInSeconds);
 		// Bones Transformations
@@ -103,6 +128,7 @@ namespace Phoenix {
 		uint32_t							m_numBones;
 		unsigned int						m_currentCamera;			// Current Camera
 		unsigned int						m_currentAnimation;			// Current Animation
+		ModelCameraState					m_modelCamera;				// Model camera state resolved by PreCalc()
 		double								m_animDuration;				// Animation duration in seconds
 		bool								m_bLoadedUniqueVertices;	// Have we loaded the unique vertices for each mesh?
 		// Last values already reported to the log, to avoid flooding it from the per-frame setters

@@ -45,8 +45,14 @@ namespace Phoenix {
 		uint32_t						m_vBufferMM_ID;			// Vertex buffer ID where the InstanceModelMatrix are stored, all meshes of the model will store the InstanceModelMatrix in the same Id, so only one ID neds to be stored
 
 	public:
+		// Precalculation phase: resolves the animated state of the underlying model, shared by
+		// every instance. Issues no draw call, so sections can read the model camera before
+		// evaluating their expressions.
+		// Must be called before drawInstanced() on every frame the instances are rendered.
+		void PreCalc(float currentTime);
+		// Uploads the per-instance model matrices to the GPU
 		void updateMatrices();
-		void drawInstanced(SP_Shader shader, float currentTime, uint32_t startTexUnit = 0);
+		void drawInstanced(SP_Shader shader, uint32_t startTexUnit = 0);
 		void copyMatrices(int instance);
 	};
 

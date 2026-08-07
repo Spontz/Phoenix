@@ -111,6 +111,7 @@ constexpr uint32_t NUM_BONES_PER_VERTEX = 4; // Number of Bones per Vertex
 		glm::mat4					m_matModel;				// Model Matrix for positioning the mesh
 		glm::mat4					m_matPrevModel;			// Previous model Matrix for positioning the mesh (useful for effects like motion blur)
 		glm::mat4					m_matNodeGlobal;		// Global transform coming from Assimp node hierarchy
+		glm::mat4					m_matNodeAnimated;		// Animated node transform, computed by the Model precalculation phase (independent of the section base model matrix)
 		std::string					m_nodeName;
 		uint32_t					m_numVertices;
 		uint32_t					m_numFaces;

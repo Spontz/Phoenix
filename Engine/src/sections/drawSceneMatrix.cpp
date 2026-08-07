@@ -208,6 +208,16 @@ namespace Phoenix {
 		if (m_pModel->playAnimation)
 			m_pModel->setAnimation(m_iAnimationNumber);
 
+		// Evaluate the expression first, so we get the animation time for this frame
+		m_pExprPosition->executeFormula();
+
+		// Precalculate the animated state once for the whole frame: the result is independent of
+		// the per-instance base matrix, so every instance below reuses it
+		m_pModel->PreCalc(m_fAnimationTime);
+
+		// Publish the model camera, so the expressions evaluated below can react to it
+		m_pExprPosition->setModelCamera(*m_pModel);
+
 		// Load shader
 		m_pShader->use();
 
@@ -229,7 +239,7 @@ namespace Phoenix {
 		// Set the other shader variable values
 		m_pVars->setValues();
 
-		// Evaluate the expression
+		// Evaluate the expression, now with the model camera available
 		m_pExprPosition->executeFormula();
 
 		// Update Matrices with instance positions, if required
@@ -256,7 +266,7 @@ namespace Phoenix {
 				// For MotionBlur, we send the previous model matrix
 				m_pShader->setValue("prev_model", m_pmPrevModel[instance]);
 
-				m_pModel->Draw(m_pShader, m_fAnimationTime, static_cast<uint32_t>(m_pVars->sampler2D.size()));
+				m_pModel->Draw(m_pShader, static_cast<uint32_t>(m_pVars->sampler2D.size()));
 
 				instance++;
 				m_fCurrInsID = (float)instance;

@@ -340,7 +340,7 @@ namespace Phoenix {
 	{
 		Type = CameraType::RAW_MATRIX;
 		TypeStr = "Raw Matrix";
-		m_Matrix = matrix;
+		setViewMatrix(matrix);
 	}
 
 	const glm::mat4 CameraRawMatrix::getProjection()
@@ -356,6 +356,61 @@ namespace Phoenix {
 	const glm::mat4 CameraRawMatrix::getView()
 	{
 		return m_Matrix;
+	}
+
+	void CameraRawMatrix::setViewMatrix(glm::mat4 const& matrix)
+	{
+		m_Matrix = matrix;
+		decomposeViewMatrix();
+	}
+
+	void CameraRawMatrix::decomposeViewMatrix()
+	{
+		// The view matrix maps world space into camera space, so its inverse is the camera
+		// world matrix: its translation is the camera position and its basis columns are the
+		// camera axes. OpenGL cameras look down their local -Z.
+		const glm::mat4 world = glm::inverse(m_Matrix);
+
+		m_Position = glm::vec3(world[3]);
+
+		const glm::vec3 right = glm::vec3(world[0]);
+		const glm::vec3 up = glm::vec3(world[1]);
+		const glm::vec3 backward = glm::vec3(world[2]);
+
+		// Normalize the basis: a camera has no meaningful scale, and the columns of an
+		// exported node matrix are not guaranteed to be unit length
+		const float lenRight = glm::length(right);
+		const float lenUp = glm::length(up);
+		const float lenBackward = glm::length(backward);
+		if (lenRight <= glm::epsilon<float>() || lenUp <= glm::epsilon<float>() || lenBackward <= glm::epsilon<float>())
+			return; // Degenerate basis: keep the previous state rather than emitting NaNs
+
+		m_Right = right / lenRight;
+		m_Up = up / lenUp;
+		m_Front = -(backward / lenBackward);
+
+		// Recover the Euler angles using the same convention as CameraProjectionFPS:
+		//   front.x = cos(yaw) * cos(pitch), front.y = sin(pitch), front.z = sin(yaw) * cos(pitch)
+		const float sinPitch = glm::clamp(m_Front.y, -1.0f, 1.0f);
+		m_Pitch = glm::degrees(glm::asin(sinPitch));
+
+		const float cosPitch = glm::sqrt(glm::max(0.0f, 1.0f - sinPitch * sinPitch));
+		if (cosPitch > glm::epsilon<float>()) {
+			m_Yaw = glm::degrees(glm::atan(m_Front.z, m_Front.x));
+
+			// Roll is the rotation of the camera around its own front axis, measured against
+			// the roll-free basis that the world up vector would produce
+			const glm::vec3 rollFreeRight = glm::normalize(glm::cross(m_Front, DEFAULT_CAM_WORLD_UP));
+			const glm::vec3 rollFreeUp = glm::normalize(glm::cross(rollFreeRight, m_Front));
+			m_Roll = glm::degrees(glm::atan(glm::dot(m_Up, rollFreeRight), glm::dot(m_Up, rollFreeUp)));
+		}
+		else {
+			// Looking straight up or down: yaw and roll describe the same rotation, so the
+			// split is arbitrary. Attribute it all to yaw and keep roll at zero, which keeps
+			// the recovered angles stable instead of flipping between frames.
+			m_Yaw = glm::degrees(glm::atan(-m_Up.z * sinPitch, -m_Up.x * sinPitch));
+			m_Roll = 0.0f;
+		}
 	}
 
 }
