@@ -239,11 +239,14 @@ namespace Phoenix {
 			model->PreCalc(m_fAnimationTime);
 		}
 
-		// Publish the camera of the first model that exposes one, so the expressions below can
-		// react to it
+		// Temporarily expose the first available model camera through the active expression
+		// camera so every MathDriver in this section sees the same cam_* values.
+		Camera* previousExprCamera = m_demo.m_cameraManager.getActiveCamera();
+		Camera* modelExprCamera = nullptr;
 		for (const auto& model : m_pModel) {
-			if (model->getModelCamera().valid) {
-				m_pExprPosition->setModelCamera(*model);
+			modelExprCamera = model->getSelectedCamera();
+			if (modelExprCamera) {
+				m_demo.m_cameraManager.setActiveCamera(modelExprCamera);
 				break;
 			}
 		}
@@ -255,16 +258,6 @@ namespace Phoenix {
 		m_pShader->setValue("lightSpaceMatrix", m_demo.m_lightManager.light[0]->spaceMatrix);
 		// End ShadowMapping
 
-		// view/projection transformations
-		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
-		glm::mat4 view = m_demo.m_cameraManager.getActiveView();
-		m_pShader->setValue("projection", projection);	// TODO: Should we send the projection/view matrices here?
-		m_pShader->setValue("view", view);
-
-		// For MotionBlur: send the previous matrix
-		m_pShader->setValue("prev_projection", m_mPrevProjection);
-		m_pShader->setValue("prev_view", m_mPrevView);
-
 		// Set the other shader variable values
 		m_pVars->setValues();
 
@@ -274,6 +267,19 @@ namespace Phoenix {
 		// Update Matrices with instances positions, if required
 		if (m_bUpdateFormulas)
 			updateMatrices(false);
+
+		if (modelExprCamera)
+			m_demo.m_cameraManager.setActiveCamera(previousExprCamera);
+
+		// view/projection transformations
+		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
+		glm::mat4 view = m_demo.m_cameraManager.getActiveView();
+		m_pShader->setValue("projection", projection);	// TODO: Should we send the projection/view matrices here?
+		m_pShader->setValue("view", view);
+
+		// For MotionBlur: send the previous matrix
+		m_pShader->setValue("prev_projection", m_mPrevProjection);
+		m_pShader->setValue("prev_view", m_mPrevView);
 
 		// Draw instances
 		int instance = 0;

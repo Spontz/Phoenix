@@ -93,6 +93,13 @@ namespace Phoenix {
 		m_modelCamera.fov = pCamera->getFov();
 	}
 
+	Camera* Model::getSelectedCamera() const
+	{
+		if (!useCamera || m_currentCamera >= m_camera.size())
+			return nullptr;
+		return m_camera[m_currentCamera];
+	}
+
 	void Model::uploadBoneTransforms(SP_Shader shader)
 	{
 		if (playAnimation && m_pScene && m_pScene->HasAnimations() && !m_boneTransforms.empty())

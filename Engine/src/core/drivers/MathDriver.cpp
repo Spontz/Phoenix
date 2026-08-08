@@ -4,7 +4,6 @@
 
 #include "main.h"
 #include "core/drivers/MathDriver.h"
-#include "core/renderer/Model.h"
 
 namespace Phoenix {
 
@@ -63,25 +62,6 @@ namespace Phoenix {
 			SymbolTable.add_constant("cam_roll", 0);
 			SymbolTable.add_constant("cam_fov", 0);			
 		}
-
-		// Model camera values: filled by the section after Model::PreCalc(), so an expression can
-		// drive the model placement from the camera stored inside the model file
-		SymbolTable.add_variable("modelcam_posX", m_modelCamVars.posX);
-		SymbolTable.add_variable("modelcam_posY", m_modelCamVars.posY);
-		SymbolTable.add_variable("modelcam_posZ", m_modelCamVars.posZ);
-
-		SymbolTable.add_variable("modelcam_frontX", m_modelCamVars.frontX);
-		SymbolTable.add_variable("modelcam_frontY", m_modelCamVars.frontY);
-		SymbolTable.add_variable("modelcam_frontZ", m_modelCamVars.frontZ);
-
-		SymbolTable.add_variable("modelcam_upX", m_modelCamVars.upX);
-		SymbolTable.add_variable("modelcam_upY", m_modelCamVars.upY);
-		SymbolTable.add_variable("modelcam_upZ", m_modelCamVars.upZ);
-
-		SymbolTable.add_variable("modelcam_yaw", m_modelCamVars.yaw);
-		SymbolTable.add_variable("modelcam_pitch", m_modelCamVars.pitch);
-		SymbolTable.add_variable("modelcam_roll", m_modelCamVars.roll);
-		SymbolTable.add_variable("modelcam_fov", m_modelCamVars.fov);
 
 		// Light values
 		for (size_t i = 0; i < DEMO->m_lightManager.light.size(); ++i) {
@@ -178,30 +158,6 @@ namespace Phoenix {
 		SymbolTable.add_constant("fbo23Height", DEMO->m_Window->fboConfig[23].height);
 		SymbolTable.add_constant("fbo24Width", DEMO->m_Window->fboConfig[24].width);
 		SymbolTable.add_constant("fbo24Height", DEMO->m_Window->fboConfig[24].height);
-	}
-
-	void MathDriver::setModelCamera(const Model& model)
-	{
-		const auto& cam = model.getModelCamera();
-		if (!cam.valid)
-			return; // No model camera selected: keep the last published values
-
-		m_modelCamVars.posX = cam.position.x;
-		m_modelCamVars.posY = cam.position.y;
-		m_modelCamVars.posZ = cam.position.z;
-
-		m_modelCamVars.frontX = cam.front.x;
-		m_modelCamVars.frontY = cam.front.y;
-		m_modelCamVars.frontZ = cam.front.z;
-
-		m_modelCamVars.upX = cam.up.x;
-		m_modelCamVars.upY = cam.up.y;
-		m_modelCamVars.upZ = cam.up.z;
-
-		m_modelCamVars.yaw = cam.yaw;
-		m_modelCamVars.pitch = cam.pitch;
-		m_modelCamVars.roll = cam.roll;
-		m_modelCamVars.fov = cam.fov;
 	}
 
 	bool MathDriver::compileFormula()

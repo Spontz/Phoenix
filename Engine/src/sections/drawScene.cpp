@@ -168,9 +168,14 @@ namespace Phoenix {
 		// transformations and the camera stored inside the model file, without drawing anything
 		m_pModel->PreCalc(m_fAnimationTime);
 
-		// Publish the model camera and evaluate the expression again, so the placement values can
-		// react to the camera movement resolved above within this same frame
-		m_pExprPosition->setModelCamera(*m_pModel);
+		// Temporarily expose the model camera through the active expression camera so every
+		// MathDriver in this section sees the same cam_* values.
+		Camera* previousExprCamera = m_demo.m_cameraManager.getActiveCamera();
+		Camera* modelExprCamera = m_pModel->getSelectedCamera();
+		if (modelExprCamera)
+			m_demo.m_cameraManager.setActiveCamera(modelExprCamera);
+
+		// Re-evaluate the expression and shader uniforms with the model camera available.
 		m_pExprPosition->executeFormula();
 
 		// Load shader
@@ -216,6 +221,9 @@ namespace Phoenix {
 
 		// Set the other shader variable values
 		m_pVars->setValues();
+
+		if (modelExprCamera)
+			m_demo.m_cameraManager.setActiveCamera(previousExprCamera);
 
 		m_pModel->Draw(m_pShader, static_cast<uint32_t>(m_pVars->sampler2D.size()));
 

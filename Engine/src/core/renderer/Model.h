@@ -58,6 +58,7 @@ namespace Phoenix {
 
 		// Camera resolved by the last PreCalc() call
 		const ModelCameraState& getModelCamera() const { return m_modelCamera; }
+		Camera* getSelectedCamera() const;
 
 		// Load unique vertices
 		void loadUniqueVertices();

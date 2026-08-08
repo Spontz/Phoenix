@@ -215,8 +215,12 @@ namespace Phoenix {
 		// Precalculate the animated state and upload the instance matrices, without drawing
 		m_pModel->PreCalc(m_fAnimationTime);
 
-		// Publish the model camera, so the expressions evaluated below can react to it
-		m_pExprPosition->setModelCamera(*(m_pModel->m_pModel));
+		// Temporarily expose the model camera through the active expression camera so every
+		// MathDriver in this section sees the same cam_* values.
+		Camera* previousExprCamera = m_demo.m_cameraManager.getActiveCamera();
+		Camera* modelExprCamera = m_pModel->m_pModel->getSelectedCamera();
+		if (modelExprCamera)
+			m_demo.m_cameraManager.setActiveCamera(modelExprCamera);
 
 		// Load shader
 		m_pShader->use();
@@ -224,15 +228,6 @@ namespace Phoenix {
 		// For ShadowMapping
 		m_pShader->setValue("lightSpaceMatrix", m_demo.m_lightManager.light[0]->spaceMatrix);
 		// End ShadowMapping
-
-		// view/projection transformations
-		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
-		glm::mat4 view = m_demo.m_cameraManager.getActiveView();
-		m_pShader->setValue("projection", projection);
-		m_pShader->setValue("view", view);
-		// For MotionBlur: send the previous matrix
-		m_pShader->setValue("prev_projection", m_mPrevProjection);
-		m_pShader->setValue("prev_view", m_mPrevView);
 
 		// Set the other shader variable values
 		m_pVars->setValues();
@@ -243,6 +238,18 @@ namespace Phoenix {
 		// Update Matrices with instance positions, if required
 		if (m_bUpdateFormulas)
 			updateMatrices(false);
+
+		if (modelExprCamera)
+			m_demo.m_cameraManager.setActiveCamera(previousExprCamera);
+
+		// view/projection transformations
+		glm::mat4 projection = m_demo.m_cameraManager.getActiveProjection();
+		glm::mat4 view = m_demo.m_cameraManager.getActiveView();
+		m_pShader->setValue("projection", projection);
+		m_pShader->setValue("view", view);
+		// For MotionBlur: send the previous matrix
+		m_pShader->setValue("prev_projection", m_mPrevProjection);
+		m_pShader->setValue("prev_view", m_mPrevView);
 
 		// Draw instances
 		//int instance = 0;
