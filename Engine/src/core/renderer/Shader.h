@@ -15,6 +15,12 @@ namespace Phoenix{
 
 	using ShaderSources = std::unordered_map<GLenum, std::string>;
 
+	enum class ShaderProgramType
+	{
+		Traditional,
+		Compute
+	};
+
 	class Shader final {
 
 	public:
@@ -23,6 +29,11 @@ namespace Phoenix{
 	public:
 		bool load(std::string_view path, std::vector<std::string> const& feedbackVaryings);
 		void use(); // activate the shader
+
+		bool isCompute() const;
+		glm::uvec3 getComputeWorkGroupSize() const;
+		void dispatch(GLuint groupsX, GLuint groupsY, GLuint groupsZ);
+
 
 		// Get uniform location
 		GLint getUniformLocation(std::string_view name) const;
@@ -60,6 +71,7 @@ namespace Phoenix{
 	private:
 		uint32_t m_id = 0;
 		std::string m_URI;
+		ShaderProgramType m_programType = ShaderProgramType::Traditional;
 		mutable std::unordered_map<std::string, GLint> m_UniformLocationCache;
 	};
 

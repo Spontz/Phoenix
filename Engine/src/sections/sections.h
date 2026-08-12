@@ -34,6 +34,7 @@ namespace Phoenix {
 	Section* instance_drawEmitterSceneEx();
 	Section* instance_drawEmitterSpline();
 	Section* instance_drawParticleMorphing();
+	Section* instance_compute3D();
 	Section* instance_efxAccum();
 	Section* instance_efxBloom();
 	Section* instance_efxBlur();

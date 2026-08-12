@@ -4,6 +4,26 @@
 #include "main.h"
 #include "core/renderer/TextureManager.h"
 
+namespace {
+
+	GLenum getRuntimeTexture3DFormat(std::string_view format)
+	{
+		if (format == "R16F")
+			return GL_R16F;
+
+		if (format == "R32F")
+			return GL_R32F;
+
+		if (format == "RGBA16F")
+			return GL_RGBA16F;
+
+		if (format == "RGBA32F")
+			return GL_RGBA32F;
+
+		return GL_NONE;
+	}
+}
+
 namespace Phoenix {
 
 	// Init vars
@@ -178,6 +198,59 @@ namespace Phoenix {
 		return -1;
 	}
 
+	bool TextureManager::initRuntime3D(int count, int width, int height, int depth, std::string_view format, bool useLinearFilter)
+	{
+		runtime3D.clear();
+
+		if (count <= 0) {
+			Logger::info(LogLevel::low, "Runtime 3D texture pool disabled");
+			return true;
+		}
+
+		if (width <= 0 || height <= 0 || depth <= 0) {
+			Logger::error("Invalid runtime 3D texture dimensions: {}x{}x{}", width, height, depth);
+			return false;
+		}
+
+		const GLenum internalFormat = getRuntimeTexture3DFormat(format);
+
+		if (internalFormat == GL_NONE) {
+			Logger::error("Unknown runtime 3D texture format: {}", format);
+			return false;
+		}
+
+		runtime3D.reserve(count);
+
+		float runtimeMemory = 0.0f;
+
+		for (int i = 0; i < count; ++i) {
+			auto texture = std::make_shared<Texture>();
+			
+			if (!texture->create3D(width, height, depth, internalFormat, useLinearFilter)) {
+				Logger::error("Could not create runtime 3D texture {}", i);
+				runtime3D.clear();
+				return false;
+			}
+
+			runtimeMemory += texture->m_mem;
+			runtime3D.emplace_back(texture);
+		}
+
+		m_mem += runtimeMemory;
+		Logger::info(LogLevel::med, "Runtime 3D texture pool created: {} textures, {}x{}x{}, format {}, {:.3f} Mb", count, width, height, depth, format, runtimeMemory);
+		return true;
+	}
+
+	SP_Texture TextureManager::getRuntime3D(int index) const
+	{
+		if (index < 0 || static_cast<size_t>(index) >= runtime3D.size()) {
+			Logger::error("Runtime 3D texture index out of range: {}", index);
+			return nullptr;
+		}
+
+		return runtime3D[static_cast<size_t>(index)];
+	}
+
 	void TextureManager::initTextureStates()
 	{
 		// Bind no texture in texUnit 0
@@ -189,6 +262,7 @@ namespace Phoenix {
 	{
 		texture.clear();
 		cubemap.clear();
+		runtime3D.clear();
 		m_mem = 0;
 	}
 }

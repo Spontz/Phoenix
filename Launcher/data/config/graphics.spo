@@ -109,3 +109,11 @@ fbo_24_width 32
 fbo_24_height 32
 fbo_24_format RGB
 fbo_24_colorAttachments 1
+
+; Runtime 3D textures used by compute shaders
+volume3d_count 4
+volume3d_width 128
+volume3d_height 128
+volume3d_depth 128
+volume3d_format R16F
+volume3d_useFilter 1

@@ -181,7 +181,14 @@ namespace Phoenix {
 				{"fbo_24_height",			SectionVar::TYPE_FLOAT,			&DEMO->m_Window->fboConfig[24].height	},
 				{"fbo_24_format",			SectionVar::TYPE_STRING,		&DEMO->m_Window->fboConfig[24].format	},
 				{"fbo_24_colorAttachments",	SectionVar::TYPE_INT,			&DEMO->m_Window->fboConfig[24].numColorAttachments },
-				{"fbo_24_useFilter",		SectionVar::TYPE_BOOL,			&DEMO->m_Window->fboConfig[24].useBilinearFilter }
+				{"fbo_24_useFilter",		SectionVar::TYPE_BOOL,			&DEMO->m_Window->fboConfig[24].useBilinearFilter },
+
+				{ "volume3d_count",			SectionVar::TYPE_INT,			&DEMO->m_Window->runtimeTexture3DConfig.count },
+				{ "volume3d_width",			SectionVar::TYPE_INT,			&DEMO->m_Window->runtimeTexture3DConfig.width },
+				{ "volume3d_height",		SectionVar::TYPE_INT,			&DEMO->m_Window->runtimeTexture3DConfig.height },
+				{ "volume3d_depth",			SectionVar::TYPE_INT,			&DEMO->m_Window->runtimeTexture3DConfig.depth },
+				{ "volume3d_format",		SectionVar::TYPE_STRING,		&DEMO->m_Window->runtimeTexture3DConfig.format },
+				{ "volume3d_useFilter",		SectionVar::TYPE_BOOL,			&DEMO->m_Window->runtimeTexture3DConfig.useBilinearFilter }
 			})
 	{
 	}

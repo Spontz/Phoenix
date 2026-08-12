@@ -53,9 +53,19 @@ namespace Phoenix {
 		void bind(GLuint TexUnit = 0) const;
 		glm::vec4 getColor(int x, int y);
 
+		// Runtime 3D texture
+		bool create3D(int width, int height, int depth,	GLenum internalFormat, bool useLinearFilter);
+		void bindImage(GLuint imageUnit, GLenum access) const;
+
+		int getWidth() const { return m_width; }
+		int getHeight() const { return m_height; }
+		int getDepth() const { return m_depth; }
+
 	private:
 		GLsizei			m_mipmapLevels;
 		unsigned char*	m_textureData;
+
+		GLenum			m_internalFormat = GL_NONE;		// Internal format used by the GPU texture.
 
 		void clear();
 		void upload2DtoGPU(const unsigned char* data);	// Upload 2D texture to GPU

@@ -47,6 +47,7 @@ namespace Phoenix {
 			{"vertex",   GL_VERTEX_SHADER   },
 			{"fragment", GL_FRAGMENT_SHADER },
 			{"geometry", GL_GEOMETRY_SHADER },
+			{"compute",	 GL_COMPUTE_SHADER }
 		};
 
 		const auto it = s.find(type);
@@ -59,6 +60,7 @@ namespace Phoenix {
 			{ GL_VERTEX_SHADER,   "Vertex"   },
 			{ GL_FRAGMENT_SHADER, "Fragment" },
 			{ GL_GEOMETRY_SHADER, "Geometry" },
+			{ GL_COMPUTE_SHADER, "Compute" }
 		};
 
 		const auto it = s.find(type);
@@ -157,6 +159,31 @@ namespace Phoenix {
 	void Shader::use()
 	{
 		glUseProgram(m_id);
+	}
+
+	bool Shader::isCompute() const
+	{
+		return m_programType == ShaderProgramType::Compute;
+	}
+
+	glm::uvec3 Shader::getComputeWorkGroupSize() const
+	{
+		if (!isCompute() || m_id == 0)
+			return glm::uvec3(1);
+
+		GLint workGroupSize[3] = { 1, 1, 1 };
+		glGetProgramiv(m_id, GL_COMPUTE_WORK_GROUP_SIZE, workGroupSize);
+		return glm::uvec3(static_cast<uint32_t>(workGroupSize[0]), static_cast<uint32_t>(workGroupSize[1]), static_cast<uint32_t>(workGroupSize[2]));
+	}
+
+	void Shader::dispatch(GLuint groupsX, GLuint groupsY, GLuint groupsZ)
+	{
+		if (!isCompute()) {
+			Logger::error("Shader '{}' is not a compute shader", m_URI);
+			return;
+		}
+
+		glDispatchCompute(groupsX, groupsY, groupsZ);
 	}
 
 	GLint Shader::getUniformLocation(std::string_view name) const
@@ -280,8 +307,31 @@ namespace Phoenix {
 		const std::vector<std::string>& feedbackVaryings
 	)
 	{
-		if (shaderSources.size() < 2) {
-			return false;
+		// Detect if the shader is a traditional shader (vertex + fragment + geometry) or a compute shader
+		const bool hasVertex =	 shaderSources.contains(GL_VERTEX_SHADER);
+		const bool hasFragment = shaderSources.contains(GL_FRAGMENT_SHADER);
+		const bool hasGeometry = shaderSources.contains(GL_GEOMETRY_SHADER);
+		const bool hasCompute =  shaderSources.contains(GL_COMPUTE_SHADER);
+
+		const bool isComputeProgram = hasCompute;
+
+		if (isComputeProgram) {
+			if (hasVertex || hasFragment ||	hasGeometry) {
+				Logger::error("Invalid compute shader '{}': compute shaders cannot contain vertex, fragment or geometry stages", m_URI);
+				return false;
+			}
+			if (!feedbackVaryings.empty()) {
+				Logger::error("Invalid compute shader '{}': transform feedback varyings are not valid for compute shaders", m_URI);
+				return false;
+			}
+			m_programType = ShaderProgramType::Compute;
+		}
+		else {
+			if (!hasVertex || !hasFragment) {
+				Logger::error("Invalid traditional shader '{}': vertex and fragment stages are required", m_URI);
+				return false;
+			}
+			m_programType = ShaderProgramType::Traditional;
 		}
 
 		m_id = glCreateProgram();
