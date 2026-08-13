@@ -1,0 +1,56 @@
+; Draws an emitter for a given Spline, across it's lenght
+; The velocity
+; The initial position of the emitters and particles will be based on
+; the given scene
+; Recommended to use blend mode: SRC_ALPHA - ONE
+
+; Path where the shaders are stored
+sParticleSystemShader /resources/shaders/sections/drawEmitterSpline/update.glsl
+sBillboardShader /resources/shaders/sections/drawEmitterSpline/billboard.glsl
+
+; Spline to cross
+cSpline /resources/splines/random.spline
+
+;Spline time (0=Same as section)
+fSplineTime 0
+; Loop the spline path? (0=no, 1=yes)
+fLoopSpline 0
+; Time between emissions (seconds)
+fEmissionTime 0.001
+; Particles Lifetime (seconds)
+fParticleLifetime 4
+
+; Shader that updates particles position
+[shader]
+path /resources/shaders/sections/drawEmitterSpline/update.glsl
+;uniform vec3 u_pGPosition v1:=sin(t);v1:=0;v1:=0;
+
+; Shader that draws the particle billboard
+[shader]
+path /resources/shaders/sections/drawEmitterSpline/billboard.glsl
+uniform float fParticleSize v1:=0.1;
+uniform sampler2D partTexture /resources/textures/dust.png
+
+[expression:run]
+; Particle system Position
+tx:=0;ty:=0; tz:=0;
+rx:=0; ry:=0; rz:=0;
+sx:=1; sy:=1; sz:=1;
+
+; Particle Parameters
+; ***************************************************
+; Variables that can be used (apart from the typical 't', 'tend', 'beat', etc):
+; nE = Current emitter
+; TnE = Total number of emitters
+
+; Speed variability (it impacts the emission time)
+partSpeed:=1.0;
+; Randomness factor on the generated particles (0 to infnite)
+partRandomness:=0;
+; Particle velocity (if you want to modify this through time, use the Geometry shader, because the velocity value is only passed once)
+velX:=0;velY:=0;velZ:=0;
+; Particle force to be applied (for example, gravity or wind)
+forceX:=0;forceY:=0;forceZ:=0;
+; Emitter color
+colorR:=1;colorG:=0.5+0.5*sin(t);colorB:=0.5+0.5*cos(t);
+;colorR:=1;colorG:=1;colorB:=1;

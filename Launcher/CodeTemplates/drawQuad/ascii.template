@@ -1,0 +1,13 @@
+; Draws a quad onto the screen using an ASCII shader
+
+; Clear the screen buffer before restoring? (1=yes, 0=no)
+fClearScreenBuffer 1
+
+; Clear the depth buffer before restoring? (1=yes, 0=no)
+fClearDepthBuffer 1
+
+[shader]
+path /pool/shaders/ascii/ascii.glsl
+uniform vec2 iResolution v1:=fbo0Width;v2:=fbo0Height;
+uniform float sample v1:=4.0;
+uniform sampler2D screenTexture fbo0

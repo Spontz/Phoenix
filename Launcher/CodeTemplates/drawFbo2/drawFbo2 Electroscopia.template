@@ -1,0 +1,31 @@
+; Draws an FBO with the specified shader
+
+fFbo 0
+fFboAttachment 0
+
+sShaderPath /resources/shaders/sections/drawFbo2-electroscopia.glsl
+
+fClearScreenBuffer 0
+fClearDepthBuffer 0
+
+fFullscreen 0
+fFitToContent 1
+fFilter 0
+
+[shader]
+path /resources/shaders/sections/drawFbo2-electroscopia.glsl
+; The fbo is sent to "uniform Sampler2D screenTexture"
+; The matrix are sent to "uniform mat4 model/view/projection"
+uniform float minXDraw v1:=0;
+uniform float maxXDraw v1:=t/tend;
+uniform float tolerance v1:=0.05;
+; 0 - gradient / 1- electroscopia
+uniform float drawMode v1:=1;
+
+
+[expression:run]
+; FBO position: (tx,ty,tz),(rx,ry,rz)(sx,sy,sz)
+; FBO sizes are captured in variables: (fboWidth) and (fboHeight)
+tx:=0; ty:=0; tz:=0;
+rx:=0; ry:=0; rz:=0;
+sx:=1.0; sy:=1.0; sz:=1.0;

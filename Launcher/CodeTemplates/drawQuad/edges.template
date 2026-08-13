@@ -1,0 +1,30 @@
+; Draws a quad onto the screen using an Edge Detector shader
+
+; Clear the screen buffer before restoring? (1=yes, 0=no)
+fClearScreenBuffer 0
+
+; Clear the depth buffer before restoring? (1=yes, 0=no)
+fClearDepthBuffer 0
+
+[shader]
+path pool/shaders/edges/edges.glsl
+
+uniform float step v1:=1;
+
+; Color mode
+; 1: White edges
+; 2: Colored edges
+; 3: True colored edges
+uniform float colorMode v1:=1;
+
+; Detection mode
+; 1: Kayyali NEWS
+; 2: Kayyali SENW
+; 3: Prewitt
+; 4: Robertscross
+; 5: Sobel
+; 6: Scharr
+uniform float DetectionMode v1:=5;
+
+; Texture to find the edges on
+uniform sampler2D screenTexture fbo0

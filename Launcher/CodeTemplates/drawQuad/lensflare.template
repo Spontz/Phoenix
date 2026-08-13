@@ -1,0 +1,26 @@
+; Draws a quad in fullscreen
+
+; Clear the screen buffer before restoring? (1=yes, 0=no)
+fClearScreenBuffer 1
+
+; Clear the depth buffer before restoring? (1=yes, 0=no)
+fClearDepthBuffer 1
+
+[shader]
+path /resources/shaders/lensflare/lensflare.glsl
+
+uniform float numRays v1:=10;
+uniform float raysDefinition v1:=10;
+uniform float raysRotation v1:=0;
+uniform float raysIntensity v1:=0.3;
+
+uniform vec3 glareColor v1:=0.4;v2:=0.25;v3:=0.2;
+uniform float flareCount v1:=12;
+
+uniform float sunSize v1:=0.1;
+uniform vec2 sunPosition v1:=0.3;v2:=0.3;
+uniform vec3 sunColor v1:=0.5;v2:=0.5;v3:=0.5;
+
+uniform float gain v1:=0.5 + beat;
+
+uniform float aspectRatio v1:=aspectRatio;

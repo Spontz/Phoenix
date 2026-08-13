@@ -1,0 +1,14 @@
+; Draws a Volume inside a cube
+
+fEnableDepthBufferClearing 0
+fDisableDepthTest 0
+fDisableDepthMask 1
+fEnableDrawWireframe 0
+
+[shader]
+path /resources/shaders/sections/drawVolume/drawVolume-simple.glsl
+
+[expression:run]
+tx:=0; ty:=0; tz:=0;
+rx:=0; ry:=0; rz:=0;
+sx:=1; sy:=1; sz:=1;

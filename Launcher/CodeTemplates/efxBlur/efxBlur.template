@@ -1,0 +1,18 @@
+; NOTE: USE Blending mode "ONE - ZERO", or "ONE - ONE_MINUS_SRC_ALPHA" for better results
+
+; Blur's & Glow's the input FBO with a high quality blur! :)
+
+; Clear the screen buffer before restoring? (1=yes, 0=no)
+fClearScreenBuffer 1
+
+; Clear the depth buffer after restoring? (1=yes, 0=no)
+fClearDepthBuffer 1
+
+; Fbo unit to apply the effect
+fFboUnit 0
+
+[shader]
+path /resources/shaders/sections/efxBlur.glsl
+
+[expression:run]
+BlurAmount:=10.0;

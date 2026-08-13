@@ -1,0 +1,23 @@
+; Draws an FBO with the specified shader
+
+fFbo 0
+fFboAttachment 0
+
+fClearScreenBuffer 0
+fClearDepthBuffer 0
+
+fFullscreen 0
+fFitToContent 1
+fFilter 0
+
+[shader]
+path /resources/shaders/sections/drawFbo2.glsl
+; The fbo is sent to "uniform Sampler2D screenTexture"
+; The matrix are sent to "uniform mat4 model/view/projection"
+
+[expression:run]
+; FBO position: (tx,ty,tz),(rx,ry,rz)(sx,sy,sz)
+; FBO sizes are captured in variables: (fboWidth) and (fboHeight)
+tx:=0; ty:=0; tz:=0;
+rx:=0; ry:=0; rz:=0;
+sx:=1.0; sy:=1.0; sz:=1.0;

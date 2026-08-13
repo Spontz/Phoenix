@@ -1,0 +1,32 @@
+; Specify the model to load and the shader to apply
+sModelFilePath /pool/models/cube/cube.obj
+
+fEnableDepthBufferClearing 0
+fDisableDepthTest 0
+fDisableDepthMask 0
+fEnableDrawWireframe 0
+
+; Animation support for objects, bones and cameras
+fEnableAnimation 0
+fAnimationNumber 0
+
+[shader]
+path /pool/models/cube/normalmapping.glsl
+uniform vec3 lightPos v1:=light_pos_x;v2:=light_pos_y;v3:=light_pos_z;
+uniform vec3 viewPos v1:=cam_posX;v2:=cam_posY;v3:=cam_posZ;
+; Ambient and Specular Strenght between 0.1 and 1.0
+uniform float ambientStrenght v1:=0.9;
+uniform float specularStrenght v1:=0.7;
+
+[expression:run]
+; Object position: (tx,ty,tz),(rx,ry,rz)(sx,sy,sz)
+; Animation time: (AnimationTime)
+; Camera Number: (CameraNumber)
+tx:=0; ty:=0; tz:=0;
+rx:=180*sin(t/2); ry:=180*cos(t/4); rz:=0;
+sx:=1; sy:=1; sz:=1;
+
+; Wich camera to use? (-1 means no camera used)
+CameraNumber:=-1;
+; Animation time (normally 't')
+AnimationTime:=0;

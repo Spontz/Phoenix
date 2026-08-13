@@ -1,0 +1,26 @@
+; Draws an emitter on each pixel of the given image.
+; The position, color and size of each particle should be defined
+; in the shaders, and initial position and color can be retrieved
+; with the "Position" and "Color" variables inside the vertex shader
+; Each pixel will generate a particle
+; Recommended to use blend mode: SRC_ALPHA - ONE
+
+; Image to place the particles
+sImageFilePath /resources/textures/tv.jpg
+
+fFitToContent 1
+fParticlesPerEmitter 0
+fParticleLifetime 1
+
+[shader]
+path /resources/shaders/sections/drawParticlesImage/drawParticlesImage.glsl
+uniform float fTime v1:=t;
+uniform float fParticleSize v1:=1/400;
+uniform sampler2D partTexture /resources/textures/dust.png
+
+[expression:run]
+; Constants: Image size (imageWidth, imageHeight), particles Number (particlesNumber)
+; Variables: Current Emitter (nE)
+tx:=0; ty:=0; tz:=0;
+rx:=0; ry:=0; rz:=0;
+sx:=1; sy:=1; sz:=1;

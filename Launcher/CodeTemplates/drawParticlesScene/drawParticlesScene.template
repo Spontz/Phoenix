@@ -1,0 +1,28 @@
+; Draws a particle on each vertex position of the given scene
+; The position, color and size of each particle should be defined
+; in the shaders
+; The initial position of the emitters and particles will be based on
+; the given scene
+; Recommended to use blend mode: SRC_ALPHA - ONE
+
+; 3D scene Model
+sScene /pool/models/cube/cube.obj
+
+fParticlePerEmitter 300
+fParticleLifeTime 1.0
+
+[shader]
+path /resources/shaders/sections/drawParticlesScene/drawParticlesScene.glsl
+; The following variables are sent to the shader automatically:
+; uniform mat4 m4ViewModel; --> View*Model matrix
+; uniform mat4 m4Projection; --> Projection matrix
+; uniform int iNumParticlesPerEmitter; --> Particles per emitter
+uniform float fTime v1:=t*10;
+uniform float fParticleSize v1:=0.1;
+uniform float fRandomnessFactor v1:=0.2;
+uniform sampler2D partTexture /resources/textures/dust.png
+
+[expression:run]
+tx:=0;	ty:=0;	tz:=0;
+rx:=0;	ry:=0;	rz:=0;
+sx:=1;	sy:=1;	sz:=1;

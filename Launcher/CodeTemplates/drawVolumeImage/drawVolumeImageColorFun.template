@@ -1,0 +1,23 @@
+; Draws a 3d Image Volume inside a cube, with color fun! :D
+
+; Specify the folder where the images are stored and the image format
+sFolder /pool/textures/cthead
+sFormat png
+
+fEnableDepthBufferClearing 0
+fDisableDepthTest 0
+fDisableDepthMask 1
+fEnableDrawWireframe 0
+fFilter 0
+
+[shader]
+path /resources/shaders/sections/drawVolumeImage/drawVolumeImage-colorfun.glsl
+uniform vec3 uCameraPos v1:=cam_posX;v2:=cam_posY;v3:=cam_posZ;
+uniform vec3 u_colorTint v1:=1;v2:=1;v3:=1;
+uniform float u_densityScale v1:=100;         // Factor to scale the values of the image color (you need to play with the value depending on the image used)
+uniform float u_time v1:=t;
+
+[expression:run]
+tx:=0; ty:=0; tz:=0;
+rx:=90; ry:=0; rz:=0;
+sx:=1; sy:=1; sz:=1;

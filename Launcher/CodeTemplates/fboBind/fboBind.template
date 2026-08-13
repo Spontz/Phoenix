@@ -1,0 +1,11 @@
+; Stores the buffer as a texture, for a later use
+
+; Integer representing the FBO texture unit
+; (check graphics.spo for fbo definition)
+fFboNum 0
+
+; Clear the screen buffer after capturing? (1=yes, 0=no)
+fClearScreenBuffer 1
+
+; Clear the depth buffer after capturing? (1=yes, 0=no)
+fClearDepthBuffer 1

@@ -1,0 +1,12 @@
+; Set a formula or expression that will be evaluated
+; Some variables available are "var0" to "var9", but any internal engine variable can be changed also
+; exprTK formulas are accepted (ref. http://www.partow.net/programming/exprtk/)
+
+[expression:run]
+var0:=sin(t);
+if (var0 > 0.5) {
+	var1:=1;
+}
+else {
+	var1:=0;
+};

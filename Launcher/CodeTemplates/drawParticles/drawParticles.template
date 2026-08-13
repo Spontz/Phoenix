@@ -1,0 +1,27 @@
+; Draws particles
+; The initial position, color and life of each particles is defined
+; in this script, and in the shader should be defined the behaviours
+; over time
+; Recommended to use blend mode: SRC_ALPHA - ONE
+
+; Particle number
+fNumParticles 1000
+
+[shader]
+path /resources/shaders/sections/drawParticles/drawParticles.glsl
+uniform float fTime v1:=t;
+uniform float fParticleSize v1:=0.01;
+uniform sampler2D partTexture /resources/textures/dust.png
+
+[expression:run]
+; Variables available: Number of partciles (nPart), Particle Number (nP)
+tx:=0;ty:=0; tz:=0;
+rx:=0; ry:=0; rz:=0;
+sx:=0.1; sy:=0.1; sz:=0.1;
+
+; Particles Initial position
+px:=10*sin(nP/nPart*2*3.1415);py:=1*cos(nP/nPart*80);pz:=10*cos(nP/nPart*2*3.1415);
+; Particles Initial color (0 to 1)
+cr:=1;cg:=1;cb:=1;ca:=nP/nPart;
+; Particles Lifetime (seconds)
+pLife:=1;

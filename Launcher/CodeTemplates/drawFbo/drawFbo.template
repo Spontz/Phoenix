@@ -1,0 +1,15 @@
+; Recovers a previously saved screen buffer and puts
+; it on the screen with the desired parameters
+
+; Integer representing the fbo unit that will be
+; recovered over the current screen contents
+fFboNum 0
+
+; Integer representing the fbo attachment
+fFboAttachment 0
+
+; Clear the screen buffer before restoring? (1=yes, 0=no)
+fClearScreenBuffer 0
+
+; Clear the depth buffer before restoring? (1=yes, 0=no)
+fClearDepthBuffer 1

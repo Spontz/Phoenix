@@ -1,0 +1,25 @@
+; Draws an Image
+
+sImage /resources/textures/tv.jpg
+
+; Clear the screen buffer before restoring? (1=yes, 0=no)
+fClearScreenBuffer 0
+; Clear the depth buffer after restoring? (1=yes, 0=no)
+fClearDepthBuffer 0
+; View image at fullscreen
+fFullscreen 0
+; Fit to content (1=respect image aspect ratio, 0=fill entire window / quad)
+fFitToContent 1
+; Use Bilinear Filter?
+fUseFilter 1
+
+
+[shader]
+; The image is sent to "uniform Sampler2D screenTexture"
+; The matrix are sent to "uniform mat4 model/view/projection"
+path /resources/shaders/sections/drawImage.glsl
+
+[expression:run]
+tx:=0; ty:=0; tz:=0;
+rx:=0; ry:=0; rz:=0;
+sx:=1; sy:=1; sz:=1;

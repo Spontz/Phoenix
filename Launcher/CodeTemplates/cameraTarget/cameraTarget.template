@@ -1,0 +1,21 @@
+; Changes the camera position (type: Target)
+; This camera needs a camera position and a target position (lookAt)
+; The Euler angles can be used optionally as distortion (for example, for "shaking" the camera)
+
+; CameraMode
+; 0=Free Camera: only works in debug mode -> Use "Space" to capture camera file
+; 1=Only spline: Reads only spline file, expression formulas are ignored
+; 2=Only formulas: Reads only formulas from expression block, spline file is ignored
+; 3=Spline+Formulas: Combine spline and formula: Allows you to define a spline, and modify the path via formulas defined in the expressison block (for example, to sync with the beat)
+fCameraMode 0
+
+; Spline file that defines the camera movement
+cCameraFile /pool/cameras/camera_target.cam
+
+[expression:run]
+; Values: PosX/Y/Z, TargetX/Y/Z, Yaw, Pitch, Roll, Fov, Near, Far
+; Values: "cPosX/cPosY/etc..." are values read from the spline file
+PosX:=30*sin(t);	PosY:=0;		PosZ:=15;
+TargetX:=0;			TargetY:=0;		TargetZ:=0;
+Yaw:=-9;			Pitch:=-2;		Roll:=0;	Fov:=45;
+Near:=0.1;			Far:=1000;
