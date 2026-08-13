@@ -784,6 +784,7 @@ namespace Phoenix {
 					ImGui::Text("Executing rendering sections: %d", m_demo.m_sectionManager.m_execRenderSection.size());
 					ImGui::SeparatorText("Texture memory");
 					ImGui::Text("Total textures: %d", m_demo.m_textureManager.texture.size());
+					ImGui::Text("Total runtime 3D textures: %d", m_demo.m_textureManager.runtime3D.size());
 					ImGui::Text("Total cubemaps: %d", m_demo.m_textureManager.cubemap.size());
 					ImGui::Text("Total FBOs: %d", m_demo.m_fboManager.fbo.size());
 					ImGui::Text("Total FBOs (exfAccum): %d", m_demo.m_efxAccumFbo.fbo.size());
@@ -844,7 +845,9 @@ namespace Phoenix {
 					ImGui::SameLine(0, 40);
 					ImGui::Text("Force reload: %d", m_demo.m_textureManager.m_forceLoad);
 					ImGui::Text("Total textures: %d", m_demo.m_textureManager.texture.size());
-					ImGui::SameLine(0, 40);
+					ImGui::SameLine(0, 40); 
+					ImGui::Text("Total runtime 3D textures: %d", m_demo.m_textureManager.runtime3D.size());
+					ImGui::SameLine(0, 40); 
 					ImGui::Text("Total cubemaps: %d", m_demo.m_textureManager.cubemap.size());
 					if (ImGui::BeginTable("Textures", 4, tableFlags)) {
 						// Setup headers
@@ -867,6 +870,28 @@ namespace Phoenix {
 							ImGui::Text("%dx%dx%d", pText->m_width, pText->m_height, pText->m_components);
 
 							ImGui::TableSetColumnIndex(3);
+							ImGui::Text("%.3fMb", pText->m_mem);
+						}
+						ImGui::EndTable();
+					}
+
+					if (ImGui::BeginTable("Runtime 3D textures", 3, tableFlags)) {
+						// Setup headers
+						ImGui::TableSetupColumn("ID");
+						ImGui::TableSetupColumn("Size");
+						ImGui::TableSetupColumn("Mem");
+						ImGui::TableHeadersRow();
+
+						for (auto pText : m_demo.m_textureManager.runtime3D) {
+							ImGui::TableNextRow();
+
+							ImGui::TableSetColumnIndex(0);
+							ImGui::Text("%d", pText->m_textureID);
+
+							ImGui::TableSetColumnIndex(1);
+							ImGui::Text("%dx%dx%dx%d", pText->m_width, pText->m_height, pText->m_depth, pText->m_components);
+
+							ImGui::TableSetColumnIndex(2);
 							ImGui::Text("%.3fMb", pText->m_mem);
 						}
 						ImGui::EndTable();
