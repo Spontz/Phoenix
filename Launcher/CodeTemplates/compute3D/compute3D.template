@@ -1,0 +1,10 @@
+; Executes a Compute Shader on a 3D volume
+; The 3D volume format is defined by the engine in graphics.spo file
+
+; 3D Volume (sampler3D) to be used by the shader
+fVolumeIndex 0
+; Enable this flag id you want to regenerate the sampler3D on each frame
+fRegenerateEveryFrame 1
+
+[shader]
+path resources/shaders/sections/compute3D/compute3D.glsl
