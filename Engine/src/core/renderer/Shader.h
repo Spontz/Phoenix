@@ -63,6 +63,12 @@ namespace Phoenix{
 		uint32_t getId() const;
 
 	private:
+		static bool preprocessShaderSource(
+			std::string_view shaderSource,
+			ShaderSources& shaderSources,
+			std::string& error
+		);
+
 		bool compile(
 			const ShaderSources& shaderSources,
 			std::vector<std::string> const& feedbackVaryings
