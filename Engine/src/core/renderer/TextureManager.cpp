@@ -224,16 +224,16 @@ namespace Phoenix {
 		float runtimeMemory = 0.0f;
 
 		for (int i = 0; i < count; ++i) {
-			auto texture = std::make_shared<Texture>();
+			auto tex = std::make_shared<Texture>();
 			
-			if (!texture->create3D(width, height, depth, internalFormat, useLinearFilter)) {
+			if (!tex->create3D(width, height, depth, internalFormat, useLinearFilter)) {
 				Logger::error("Could not create runtime 3D texture {}", i);
 				runtime3D.clear();
 				return false;
 			}
 
-			runtimeMemory += texture->m_mem;
-			runtime3D.emplace_back(texture);
+			runtimeMemory += tex->m_mem;
+			runtime3D.emplace_back(tex);
 		}
 
 		m_mem += runtimeMemory;
