@@ -43,6 +43,7 @@ namespace Phoenix {
 		Sound,
 		FboBind,
 		FboUnbind,
+		Compute3D,
 		EfxAccum,
 		EfxBloom,
 		EfxBlur,

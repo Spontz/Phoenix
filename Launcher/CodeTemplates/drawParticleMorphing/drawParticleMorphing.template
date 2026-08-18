@@ -1,0 +1,25 @@
+; Draw Particle Morphing
+; Morphing between 2 models drawn with particles
+
+; Recommended to use blend mode: SRC_ALPHA - ONE
+
+; Models to be used in the particles morphing
+sModelStart pool/models/cube/cube.obj
+sModelEnd pool/models/torus/torus.3ds
+
+; Num of particles to draw [greater than 0]
+fNumParticles 10000
+; Duration of the morphing (in seconds) [greater than 0]
+fDuration 10.0
+
+[shader]
+path resources/shaders/sections/drawParticleMorphing/drawParticleMorphing.glsl
+uniform sampler2D partTexture resources/textures/dust.png
+uniform float fParticleSize v1:=0.05;
+;Easing factor: 0.0 = linear, >0 = ease-in-out strength
+uniform float fEasing v1:=1.0;
+
+[expression:run]
+tx:=0; ty:=0; tz:=0;
+rx:=0; ry:=0; rz:=0;
+sx:=1; sy:=1; sz:=1;

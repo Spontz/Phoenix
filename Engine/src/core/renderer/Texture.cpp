@@ -212,6 +212,83 @@ namespace Phoenix {
 		}
 	}
 
+	bool Texture::create3D(int width, int height, int depth, GLenum internalFormat, bool useLinearFilter)
+	{
+		clear();
+
+		if (width <= 0 || height <= 0 || depth <= 0) {
+			Logger::error("Invalid runtime 3D texture dimensions: {}x{}x{}", width, height,	depth);
+			return false;
+		}
+
+		if (internalFormat == GL_NONE) {
+			Logger::error("Invalid runtime 3D texture format");
+			return false;
+		}
+
+		m_width = width;
+		m_height = height;
+		m_depth = depth;
+		m_type = TextureType::SAMPLER3D;
+		m_components = 1;
+		m_mipmapLevels = 1;
+		m_internalFormat = internalFormat;
+
+		switch (internalFormat) {
+		case GL_R16F:
+		case GL_R32F:
+			m_components = 1;
+			break;
+
+		case GL_RGBA16F:
+		case GL_RGBA32F:
+			m_components = 4;
+			break;
+
+		default:
+			Logger::error("Unsupported runtime 3D texture internal format: {}", static_cast<unsigned int>(internalFormat));
+			clear();
+			return false;
+		}
+
+		glCreateTextures(GL_TEXTURE_3D, 1, &m_textureID);
+		glTextureStorage3D(m_textureID, 1, internalFormat, width, height, depth);
+		const GLenum filter = useLinearFilter ? GL_LINEAR : GL_NEAREST;
+		glTextureParameteri(m_textureID, GL_TEXTURE_MIN_FILTER, filter);
+		glTextureParameteri(m_textureID, GL_TEXTURE_MAG_FILTER, filter);
+		glTextureParameteri(m_textureID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(m_textureID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(m_textureID, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		int bytesPerComponent = 1;
+
+		switch (internalFormat) {
+		case GL_R16F:
+		case GL_RGBA16F:
+			bytesPerComponent = 2;
+			break;
+
+		case GL_R32F:
+		case GL_RGBA32F:
+			bytesPerComponent = 4;
+			break;
+		}
+
+		m_mem =	static_cast<float>(width * height * depth * m_components * bytesPerComponent) / 1048576.0f;
+
+		return true;
+	}
+
+	void Texture::bindImage(GLuint imageUnit, GLenum access) const
+	{
+		if (m_textureID == 0 || m_type != TextureType::SAMPLER3D) {
+			Logger::error("Trying to bind an invalid texture as image3D");
+			return;
+		}
+
+		glBindImageTexture(imageUnit, m_textureID, 0, GL_TRUE, 0, access, m_internalFormat);
+	}
+
 	void Texture::clear()
 	{
 		if (m_textureID != 0) {
@@ -253,6 +330,7 @@ namespace Phoenix {
 			dataFormat = GL_RGBA;
 			break;
 		}
+		m_internalFormat = internalFormat;
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_textureID);
 		glBindTexture(GL_TEXTURE_2D, m_textureID);
@@ -314,6 +392,7 @@ namespace Phoenix {
 			dataFormat = GL_RGBA;
 			break;
 		}
+		m_internalFormat = internalFormat;
 
 		glCreateTextures(GL_TEXTURE_3D, 1, &m_textureID);
 		glBindTexture(GL_TEXTURE_3D, m_textureID);

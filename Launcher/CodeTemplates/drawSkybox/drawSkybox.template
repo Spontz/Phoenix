@@ -1,0 +1,15 @@
+fEnableDepthBufferClearing 0
+fEnableDrawWireframe 0
+
+sCubemapRight /pool/skybox/lake/right.jpg
+sCubemapLeft /pool/skybox/lake/left.jpg
+sCubemapTop /pool/skybox/lake/top.jpg
+sCubemapBottom /pool/skybox/lake/bottom.jpg
+sCubemapFront /pool/skybox/lake/front.jpg
+sCubemapBack /pool/skybox/lake/back.jpg
+
+[expression:run]
+; Rotation for skybox
+rx:=0; ry:=t/2; rz:=0;
+; Scale for skybox
+sx:=10; sy:=10; sz:=10;

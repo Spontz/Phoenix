@@ -1,0 +1,12 @@
+; Draws the scene with the motion blur effect
+; The input FBO must have 2 attachments
+; Attachment 0 should contain the normal scene (format: RGBA_16F)
+; Attachment 1 should contain the velocity image (format: RGBA_16F)
+; Final image = Attachment 0 + Motion Blur (Attachment 1)
+fFboUnit 4
+
+; Scale FPS (recommended values 10 to 60)
+fFPSScale 15
+
+[shader]
+path /resources/shaders/sections/efxMotionBlur.glsl

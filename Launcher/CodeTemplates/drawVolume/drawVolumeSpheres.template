@@ -1,0 +1,18 @@
+; Draws a Volume with 3D spheres inside a cube
+
+fEnableDepthBufferClearing 0
+fDisableDepthTest 0
+fDisableDepthMask 1
+fEnableDrawWireframe 0
+
+[shader]
+path /resources/shaders/sections/drawVolume/drawVolume-spheres.glsl
+uniform vec3 uCameraPos v1:=cam_posX;v2:=cam_posY;v3:=cam_posZ;
+uniform vec3 u_colorTint v1:=0.7;v2:=0.2;v3:=0.1;
+uniform float u_density v1:=1;
+uniform float time v1:=t;
+
+[expression:run]
+tx:=0; ty:=0; tz:=0;
+rx:=0; ry:=0; rz:=0;
+sx:=1; sy:=1; sz:=1;

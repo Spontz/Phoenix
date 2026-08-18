@@ -1,0 +1,20 @@
+; Changes the camera position (type: FPS)
+; This camera is like an FPS game: The camera target is calculated just with the Euler angles
+
+; CameraMode
+; 0=Free Camera: only works in debug mode -> Use "Space" to capture camera file
+; 1=Only spline: Reads only spline file, expression formulas are ignored
+; 2=Only formulas: Reads only formulas from expression block, spline file is ignored
+; 3=Spline+Formulas: Combine spline and formula: Allows you to define a spline, and modify the path via formulas defined in the expressison block (for example, to sync with the beat)
+fCameraMode 0
+
+; Spline file that defines the camera movement
+cCameraFile /pool/cameras/camera_fps.cam
+
+[expression:run]
+; Values: PosX/Y/Z, UpX/Y/Z, Yaw, Pitch, Roll, Fov, Near, Far
+; Values: "cPosX/cPosY/etc..." are values read from the spline file
+PosX:=0;	PosY:=0;		PosZ:=15;
+UpX:=0;		UpY:=1;			UpZ:=0;
+Yaw:=-90;	Pitch:=0;		Roll:=0;	Fov:=45;
+Near:=0.1;	Far:=1000;

@@ -89,6 +89,7 @@ namespace Phoenix {
 		{"drawParticleMorphing",			SectionType::DrawParticleMorphing, instance_drawParticleMorphing},
 		{"sound",							SectionType::Sound, instance_sound},
 		{"setExpression",					SectionType::SetExpression, instance_setExpression},
+		{"compute3D",						SectionType::Compute3D, instance_compute3D},
 		{"fboBind",							SectionType::FboBind, instance_fboBind},
 		{"fboUnbind",						SectionType::FboUnbind, instance_fboUnbind},
 		{"efxAccum",						SectionType::EfxAccum, instance_efxAccum},

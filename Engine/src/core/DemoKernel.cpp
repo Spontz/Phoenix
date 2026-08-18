@@ -434,6 +434,17 @@ namespace Phoenix {
 				Logger::info(LogLevel::med, extension);
 		}
 
+		// Initialize the runtime 3D texture pool
+		if (!m_textureManager.initRuntime3D(m_Window->runtimeTexture3DConfig.count,
+			m_Window->runtimeTexture3DConfig.width,
+			m_Window->runtimeTexture3DConfig.height,
+			m_Window->runtimeTexture3DConfig.depth,
+			m_Window->runtimeTexture3DConfig.format,
+			m_Window->runtimeTexture3DConfig.useBilinearFilter
+		)) {
+			Logger::error("Could not initialize runtime 3D texture pool");
+		}
+
 		// Create the intenral engine camera, by default a "projection free"
 		m_cameraManager.init();
 

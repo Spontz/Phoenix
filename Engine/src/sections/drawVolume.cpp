@@ -14,7 +14,7 @@ namespace Phoenix {
 		std::string debug();
 
 	private:
-		bool		m_bFilter = true;			// Use Bilinear filter?
+		int			m_volumeIndex = -1;			// Volume index to draw
 
 		glm::vec3	m_vTranslation = { 0, 0, 0 };
 		glm::vec3	m_vRotation = { 0, 0, 0 };
@@ -51,12 +51,12 @@ namespace Phoenix {
 
 	bool sDrawVolume::load() {
 
-		if ((param.size() != 5) || (shaderBlock.size() != 1)) {
-			Logger::error(
-				"Draw Volume [{}]: 5 param needed (depth buffer clearing, disable depth test, disable depth mask, enable wireframe & filter), "
-				"1 shader and 1 expression",
-				identifier
-			);
+		
+		// 5 params = current/legacy drawVolume
+		// 6 params = current/legacy params + runtime 3D texture index
+		if ((param.size() != 4 && param.size() != 5) || (shaderBlock.size() != 1)) {
+			Logger::error( "Draw Volume [{}]: 4 or 5 params needed " "(depth buffer clearing, disable depth test, disable depth mask & "
+				"enable wireframe [, runtime 3D texture index]), " "1 shader and 1 expression", identifier );
 			return false;
 		}
 
@@ -65,11 +65,24 @@ namespace Phoenix {
 		render_disableDepthTest = static_cast<bool>(param[1]);
 		render_disableDepthMask = static_cast<bool>(param[2]);
 		render_drawWireframe = static_cast<bool>(param[3]);
-		m_bFilter = static_cast<bool>(param[4]);
-
-		// Load the Images
-		Texture::Properties texProps;
-		texProps.m_useLinearFilter = m_bFilter;
+		
+		// Optional runtime 3D texture
+		// param[4] contains the logical index into
+		// TextureManager::runtime3D.
+		// -1 means: do not use a runtime 3D texture
+		m_volumeIndex = -1;
+		if (param.size() == 5) {
+			m_volumeIndex = static_cast<int>(param[4]);
+			if (m_volumeIndex < 0) {
+				Logger::error( "Draw Volume [{}]: invalid runtime 3D texture index {}", identifier, m_volumeIndex );
+				return false;
+			}
+			const auto volume = m_demo.m_textureManager.getRuntime3D( m_volumeIndex );
+			if (!volume) {
+				Logger::error( "Draw Volume [{}]: runtime 3D texture {} not found", identifier, m_volumeIndex );
+				return false;
+			}
+		}
 
 		// Load the Shader
 		m_pShader = m_demo.m_shaderManager.addShader(m_demo.m_dataFolder + shaderBlock[0]->filename);
@@ -107,6 +120,18 @@ namespace Phoenix {
 		// Validate and set shader variables
 		m_pVars->validateAndSetValues();
 
+		// If this drawVolume uses a runtime 3D texture, bind the
+		// sampler to texture unit 0.
+		// The actual texture binding is performed every frame in exec().
+		// Here we only configure the sampler uniform.
+		if (m_volumeIndex >= 0) {
+			if (m_pShader->getUniformLocation("volume") == -1) {
+				Logger::error( "Draw Volume [{}]: runtime 3D texture requested, " "but shader '{}' does not contain the 'volume' sampler3D uniform", identifier, m_pShader->getURI() );
+				return false;
+			}
+			m_pShader->setValue("volume", 0);
+		}
+
 		return !DEMO_checkGLError();
 	}
 
@@ -142,6 +167,16 @@ namespace Phoenix {
 			m_pShader->setValue("view", m_mView);
 			m_pShader->setValue("model", m_mModel);
 			m_pShader->setValue("invModel", m_mInvModel);
+
+			// If we use runtime 3D texture, bind it to texture unit 0 and set the sampler uniform
+			if (m_volumeIndex >= 0) {
+				auto volume = m_demo.m_textureManager.getRuntime3D(m_volumeIndex);
+				if (!volume)
+					return;
+				volume->bind(0);
+				m_pShader->setValue("volume", 0);
+				// TODO: What happens if in the shader we use another Sampler3D uniform? Should we bind the texture to another unit and set the uniform accordingly? For now, we assume that the shader uses the 'volume' uniform for the runtime 3D texture.
+			}
 
 			// Set the other shader uniform variable values
 			m_pVars->setValues();

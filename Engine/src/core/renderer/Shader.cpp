@@ -5,6 +5,8 @@
 #include "core/renderer/Shader.h"
 //#include "core/utils/LoggerDeclarations.h"
 
+#include <cctype>
+
 namespace Phoenix {
 
 	// Helper functions
@@ -47,6 +49,7 @@ namespace Phoenix {
 			{"vertex",   GL_VERTEX_SHADER   },
 			{"fragment", GL_FRAGMENT_SHADER },
 			{"geometry", GL_GEOMETRY_SHADER },
+			{"compute",	 GL_COMPUTE_SHADER }
 		};
 
 		const auto it = s.find(type);
@@ -59,6 +62,7 @@ namespace Phoenix {
 			{ GL_VERTEX_SHADER,   "Vertex"   },
 			{ GL_FRAGMENT_SHADER, "Fragment" },
 			{ GL_GEOMETRY_SHADER, "Geometry" },
+			{ GL_COMPUTE_SHADER, "Compute" }
 		};
 
 		const auto it = s.find(type);
@@ -88,41 +92,87 @@ namespace Phoenix {
 		shaderSource = end_stream.str();
 	}
 
-	ShaderSources preprocessShaderSource(std::string_view shaderSource)
+	bool Shader::preprocessShaderSource(
+		std::string_view shaderSource,
+		ShaderSources& shaderSources,
+		std::string& error
+	)
 	{
-		ShaderSources shaderSources;
+		shaderSources.clear();
+		bool inBlockComment = false;
+		bool hasActiveStage = false;
+		GLenum activeStage = 0;
+		size_t lineStart = 0;
+		uint32_t lineNumber = 1;
 
-		// Split shader by type
-		static constexpr std::string_view typeToken("#type");
+		auto updateBlockCommentState = [&inBlockComment](std::string_view line) {
+			size_t position = 0;
 
-		size_t pos = shaderSource.find(typeToken, 0); // Start of shader type declaration line
+			while (position < line.length()) {
+				if (inBlockComment) {
+					const size_t endComment = line.find("*/", position);
+					if (endComment == std::string_view::npos)
+						return;
 
-		while (pos != std::string::npos) {
-			// End of shader type declaration line
-			const auto eol = shaderSource.find_first_of("\r\n", pos);
-			if (eol == std::string::npos)
-				Logger::error("Shader PreProcess syntax error");
+					inBlockComment = false;
+					position = endComment + 2;
+					continue;
+				}
 
-			// Start of shader type name (after "#type " keyword)
-			const auto begin = pos + typeToken.length() + 1;
-			const auto type = shaderSource.substr(begin, eol - begin);
-			if (getShaderTypeFromString(type) == 0)
-				Logger::error("Invalid shader type specified: {}", type);
+				const size_t lineComment = line.find("//", position);
+				const size_t blockComment = line.find("/*", position);
+				if (lineComment != std::string_view::npos &&
+					(blockComment == std::string_view::npos || lineComment < blockComment))
+					return;
 
-			// Start of shader code after shader type declaration line
-			const auto nextLinePos = shaderSource.find_first_not_of("\r\n", eol);
-			if (nextLinePos == std::string::npos)
-				Logger::error("Shader PreProcess syntax error");
+				if (blockComment == std::string_view::npos)
+					return;
 
-			// Start of next shader type declaration line
-			pos = shaderSource.find(typeToken, nextLinePos);
-			shaderSources[getShaderTypeFromString(type)] = (pos == std::string::npos) ?
-				shaderSource.substr(nextLinePos)
-				:
-				shaderSource.substr(nextLinePos, pos - nextLinePos);
+				inBlockComment = true;
+				position = blockComment + 2;
+			}
+		};
+
+		while (lineStart < shaderSource.length()) {
+			const size_t lineEnd = shaderSource.find('\n', lineStart);
+			const size_t nextLineStart = lineEnd == std::string_view::npos ? shaderSource.length() : lineEnd + 1;
+			const size_t lineLength = (lineEnd == std::string_view::npos ? shaderSource.length() : lineEnd) - lineStart;
+			const std::string_view line = shaderSource.substr(lineStart, lineLength);
+			const bool isDirective = !inBlockComment && line.starts_with("#type") &&
+				(line.length() == 5 || std::isspace(static_cast<unsigned char>(line[5])));
+
+			if (isDirective) {
+				std::istringstream declaration{ std::string(line.substr(5)) };
+				std::string stageName;
+				std::string trailingToken;
+				declaration >> stageName >> trailingToken;
+
+				if (stageName.empty() || !trailingToken.empty()) {
+					error = "Shader PreProcess syntax error at line " + std::to_string(lineNumber);
+					return false;
+				}
+
+				activeStage = getShaderTypeFromString(stageName);
+				if (activeStage == 0) {
+					error = "Invalid shader type specified at line " + std::to_string(lineNumber) + ": " + stageName;
+					return false;
+				}
+
+				shaderSources[activeStage].clear();
+				hasActiveStage = true;
+			}
+			else {
+				if (hasActiveStage)
+					shaderSources[activeStage].append(shaderSource.substr(lineStart, nextLineStart - lineStart));
+
+				updateBlockCommentState(line);
+			}
+
+			lineStart = nextLineStart;
+			++lineNumber;
 		}
 
-		return shaderSources;
+		return true;
 	}
 
 	Shader::~Shader()
@@ -150,13 +200,45 @@ namespace Phoenix {
 		std::string source{ Utils::readASCIIFile(URI) };
 		addLineDirective(source);
 
-		return compile(preprocessShaderSource(source), feedbackVaryings);
+		ShaderSources shaderSources;
+		std::string parseError;
+		if (!preprocessShaderSource(source, shaderSources, parseError)) {
+			Logger::error("Shader '{}' could not be parsed: {}", URI, parseError);
+			return false;
+		}
+
+		return compile(shaderSources, feedbackVaryings);
 	}
 
 	// Activates the shader
 	void Shader::use()
 	{
 		glUseProgram(m_id);
+	}
+
+	bool Shader::isCompute() const
+	{
+		return m_programType == ShaderProgramType::Compute;
+	}
+
+	glm::uvec3 Shader::getComputeWorkGroupSize() const
+	{
+		if (!isCompute() || m_id == 0)
+			return glm::uvec3(1);
+
+		GLint workGroupSize[3] = { 1, 1, 1 };
+		glGetProgramiv(m_id, GL_COMPUTE_WORK_GROUP_SIZE, workGroupSize);
+		return glm::uvec3(static_cast<uint32_t>(workGroupSize[0]), static_cast<uint32_t>(workGroupSize[1]), static_cast<uint32_t>(workGroupSize[2]));
+	}
+
+	void Shader::dispatch(GLuint groupsX, GLuint groupsY, GLuint groupsZ)
+	{
+		if (!isCompute()) {
+			Logger::error("Shader '{}' is not a compute shader", m_URI);
+			return;
+		}
+
+		glDispatchCompute(groupsX, groupsY, groupsZ);
 	}
 
 	GLint Shader::getUniformLocation(std::string_view name) const
@@ -280,8 +362,31 @@ namespace Phoenix {
 		const std::vector<std::string>& feedbackVaryings
 	)
 	{
-		if (shaderSources.size() < 2) {
-			return false;
+		// Detect if the shader is a traditional shader (vertex + fragment + geometry) or a compute shader
+		const bool hasVertex =	 shaderSources.contains(GL_VERTEX_SHADER);
+		const bool hasFragment = shaderSources.contains(GL_FRAGMENT_SHADER);
+		const bool hasGeometry = shaderSources.contains(GL_GEOMETRY_SHADER);
+		const bool hasCompute =  shaderSources.contains(GL_COMPUTE_SHADER);
+
+		const bool isComputeProgram = hasCompute;
+
+		if (isComputeProgram) {
+			if (hasVertex || hasFragment ||	hasGeometry) {
+				Logger::error("Invalid compute shader '{}': compute shaders cannot contain vertex, fragment or geometry stages", m_URI);
+				return false;
+			}
+			if (!feedbackVaryings.empty()) {
+				Logger::error("Invalid compute shader '{}': transform feedback varyings are not valid for compute shaders", m_URI);
+				return false;
+			}
+			m_programType = ShaderProgramType::Compute;
+		}
+		else {
+			if (!hasVertex || !hasFragment) {
+				Logger::error("Invalid traditional shader '{}': vertex and fragment stages are required", m_URI);
+				return false;
+			}
+			m_programType = ShaderProgramType::Traditional;
 		}
 
 		m_id = glCreateProgram();

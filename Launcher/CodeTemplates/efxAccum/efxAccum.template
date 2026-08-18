@@ -1,0 +1,22 @@
+; NOTE: USE Blending mode "ONE - ZERO", or "ONE - ONE_MINUS_SRC_ALPHA" for better results
+
+; Accumulation buffer effect
+
+; Clear the screen buffer before restoring? (1=yes, 0=no)
+fClearScreenBuffer 1
+
+; Clear the depth buffer after restoring? (1=yes, 0=no)
+fClearDepthBuffer 1
+
+; Fbo unit to apply the effect
+fFboUnit 0
+
+[shader]
+path /resources/shaders/sections/efxAccum.glsl
+
+[expression:run]
+; Accumulation influence for source image (fbo) and Accumulation (both from 0 to 1)
+SourceInfluence:=0.1;
+AccumInfluence:=0.05;
+
+

@@ -1,0 +1,12 @@
+; Draws a quad onto the screen using a fast and dirty blur shader (only 1 pass required)
+
+; Clear the screen buffer before restoring? (1=yes, 0=no)
+fClearScreenBuffer 1
+
+; Clear the depth buffer before restoring? (1=yes, 0=no)
+fClearDepthBuffer 1
+
+[shader]
+path  /pool/shaders/blur/fastblur.glsl
+uniform sampler2D screenTexture fbo0
+uniform vec2 direction v1:=3*beat;v2:=1;

@@ -77,6 +77,17 @@ namespace Phoenix {
 		float			AspectRatio;
 	};
 
+	// Runtime 3D texture configuration (Sampler3D) for use in compute shaders, etc.
+	struct RuntimeTexture3DConfig
+	{
+		int			count = 8;
+		int			width = 128;
+		int			height = 128;
+		int			depth = 128;
+		std::string	format = "R16F";
+		bool		useBilinearFilter = true;
+	};
+
 	// The desktop system based Window
 	class Window
 	{
@@ -103,6 +114,9 @@ namespace Phoenix {
 		// Fbo configuration
 		FboConfig		fboConfig[FBO_BUFFERS];
 
+		// Runtime 3D texture configuration
+		RuntimeTexture3DConfig runtimeTexture3DConfig;
+
 		// Window attributes
 		void SetTitle(std::string const& title);
 		void SetWindowPos(int x, int y);
@@ -115,7 +129,7 @@ namespace Phoenix {
 		// FBO Management
 		void	InitFbos();
 		bool	ApplyGraphicsConfig(const WindowProps& properties, const std::array<FboConfig, FBO_BUFFERS>& genericFbos, std::string& error);
-		 
+		
 		// Viewport management
 		ViewportExprTK	m_currentViewportExprTK; // Viewport variables for ExprTk
 		Viewport		GetFramebufferViewport() const;
