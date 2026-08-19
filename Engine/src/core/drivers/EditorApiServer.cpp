@@ -2591,6 +2591,16 @@ namespace Phoenix {
 			response->onAborted([body]() {});
 		});
 
+		app.del("/api/runtime/loop", [this](auto* response, auto*) {
+			Command command{};
+			command.type = CommandType::ClearLoop;
+			{
+				std::lock_guard lock(m_commandMutex);
+				m_commands.push(command);
+			}
+			sendJson(response, "200 OK", "{\"ok\":true}");
+		});
+
 		app.get("/api/sections/manifest", [](auto* response, auto*) {
 			sendJson(response, "200 OK", buildSectionsManifest());
 		});
@@ -3208,10 +3218,24 @@ namespace Phoenix {
 				DEMO->setCurrentTime(command.time);
 				break;
 			case CommandType::SetLoop:
+				if (!m_runtimeLoopOverrideActive) {
+					m_runtimeLoopPreviousEnabled = DEMO->m_loop;
+					m_runtimeLoopPreviousStartTime = DEMO->m_demoStartTime;
+					m_runtimeLoopPreviousEndTime = DEMO->m_demoEndTime;
+					m_runtimeLoopOverrideActive = true;
+				}
 				DEMO->m_loop = true;
 				DEMO->m_demoStartTime = command.time;
 				DEMO->m_demoEndTime = command.endTime;
 				DEMO->setCurrentTime(command.time);
+				break;
+			case CommandType::ClearLoop:
+				if (m_runtimeLoopOverrideActive) {
+					DEMO->m_loop = m_runtimeLoopPreviousEnabled;
+					DEMO->m_demoStartTime = m_runtimeLoopPreviousStartTime;
+					DEMO->m_demoEndTime = m_runtimeLoopPreviousEndTime;
+					m_runtimeLoopOverrideActive = false;
+				}
 				break;
 			case CommandType::MouseMove: {
 				m_remoteMouseActive = true;

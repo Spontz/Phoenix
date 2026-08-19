@@ -41,6 +41,7 @@ namespace Phoenix {
 			Toggle,
 			Seek,
 			SetLoop,
+			ClearLoop,
 			MouseMove,
 			MouseDown,
 			MouseUp,
@@ -127,5 +128,9 @@ namespace Phoenix {
 		std::array<bool, kRemoteKeyCount> m_remoteKeys;
 		std::chrono::steady_clock::time_point m_lastRuntimePublish;
 		int32_t m_port;
+		bool m_runtimeLoopOverrideActive = false;
+		bool m_runtimeLoopPreviousEnabled = false;
+		float m_runtimeLoopPreviousStartTime = 0.0f;
+		float m_runtimeLoopPreviousEndTime = 0.0f;
 	};
 }
