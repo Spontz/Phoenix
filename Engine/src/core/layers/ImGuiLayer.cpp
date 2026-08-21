@@ -849,9 +849,10 @@ namespace Phoenix {
 					ImGui::Text("Total runtime 3D textures: %d", m_demo.m_textureManager.runtime3D.size());
 					ImGui::SameLine(0, 40); 
 					ImGui::Text("Total cubemaps: %d", m_demo.m_textureManager.cubemap.size());
-					if (ImGui::BeginTable("Textures", 4, tableFlags)) {
+					if (ImGui::BeginTable("Textures", 5, tableFlags)) {
 						// Setup headers
-						ImGui::TableSetupColumn("Texture file");
+						ImGui::TableSetupColumn("Type");
+						ImGui::TableSetupColumn("Path");
 						ImGui::TableSetupColumn("ID");
 						ImGui::TableSetupColumn("Size");
 						ImGui::TableSetupColumn("Mem");
@@ -860,23 +861,43 @@ namespace Phoenix {
 						for (auto pText : m_demo.m_textureManager.texture) {
 							ImGui::TableNextRow();
 
-							ImGui::TableSetColumnIndex(0);
-							ImGui::Text(pText->m_filePath.c_str());
+							switch (pText->m_type) {
+								case Texture::TextureType::SAMPLER1D:
+									ImGui::TableSetColumnIndex(0);
+									ImGui::Text("1D");
+									break;
+								case Texture::TextureType::SAMPLER2D:
+									ImGui::TableSetColumnIndex(0);
+									ImGui::Text("2D");
+									break;
+								case Texture::TextureType::SAMPLER3D:
+									ImGui::TableSetColumnIndex(0);
+									ImGui::Text("3D");
+									break;
+								default:
+									ImGui::TableSetColumnIndex(0);
+									ImGui::Text("Unknown");
+									break;
+							}
 
 							ImGui::TableSetColumnIndex(1);
-							ImGui::Text("%d", pText->m_textureID);
+							ImGui::Text(pText->m_filePath.c_str());
 
 							ImGui::TableSetColumnIndex(2);
-							ImGui::Text("%dx%dx%d", pText->m_width, pText->m_height, pText->m_components);
+							ImGui::Text("%d", pText->m_textureID);
 
 							ImGui::TableSetColumnIndex(3);
+							ImGui::Text("%dx%dx%d", pText->m_width, pText->m_height, pText->m_components);
+
+							ImGui::TableSetColumnIndex(4);
 							ImGui::Text("%.3fMb", pText->m_mem);
 						}
 						ImGui::EndTable();
 					}
 
-					if (ImGui::BeginTable("Runtime 3D textures", 3, tableFlags)) {
+					if (ImGui::BeginTable("Runtime 3D textures", 4, tableFlags)) {
 						// Setup headers
+						ImGui::TableSetupColumn("Type");
 						ImGui::TableSetupColumn("ID");
 						ImGui::TableSetupColumn("Size");
 						ImGui::TableSetupColumn("Mem");
@@ -886,12 +907,15 @@ namespace Phoenix {
 							ImGui::TableNextRow();
 
 							ImGui::TableSetColumnIndex(0);
-							ImGui::Text("%d", pText->m_textureID);
+							ImGui::Text("Runtime 3D");
 
 							ImGui::TableSetColumnIndex(1);
-							ImGui::Text("%dx%dx%dx%d", pText->m_width, pText->m_height, pText->m_depth, pText->m_components);
+							ImGui::Text("%d", pText->m_textureID);
 
 							ImGui::TableSetColumnIndex(2);
+							ImGui::Text("%dx%dx%dx%d", pText->m_width, pText->m_height, pText->m_depth, pText->m_components);
+
+							ImGui::TableSetColumnIndex(3);
 							ImGui::Text("%.3fMb", pText->m_mem);
 						}
 						ImGui::EndTable();

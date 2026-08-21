@@ -15,14 +15,14 @@ namespace Phoenix {
 
 	class Texture {
 
+	public:
+
 		enum TextureType {
 			INVALID = 0,
 			SAMPLER1D,
 			SAMPLER2D,
-			SAMPLER3D			
+			SAMPLER3D
 		};
-
-	public:
 
 		struct Properties final {
 			bool				m_flip = true;

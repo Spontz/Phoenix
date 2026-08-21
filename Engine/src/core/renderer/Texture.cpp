@@ -101,7 +101,7 @@ namespace Phoenix {
 		clear();
 
 		stbi_set_flip_vertically_on_load(m_properties.m_flip); // required for loading textures properly
-
+		m_filePath = path[0];
 		m_filesPath = path;
 		m_type = TextureType::SAMPLER3D;
 		m_depth = static_cast<int>(m_filesPath.size());
