@@ -3227,7 +3227,7 @@ namespace Phoenix {
 				DEMO->m_loop = true;
 				DEMO->m_demoStartTime = command.time;
 				DEMO->m_demoEndTime = command.endTime;
-				DEMO->setCurrentTime(command.time);
+				// Updating loop bounds must not seek; callers control transport position explicitly.
 				break;
 			case CommandType::ClearLoop:
 				if (m_runtimeLoopOverrideActive) {
