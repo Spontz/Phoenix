@@ -849,12 +849,13 @@ namespace Phoenix {
 					ImGui::Text("Total runtime 3D textures: %d", m_demo.m_textureManager.runtime3D.size());
 					ImGui::SameLine(0, 40); 
 					ImGui::Text("Total cubemaps: %d", m_demo.m_textureManager.cubemap.size());
-					if (ImGui::BeginTable("Textures", 5, tableFlags)) {
+					if (ImGui::BeginTable("Textures", 6, tableFlags)) {
 						// Setup headers
 						ImGui::TableSetupColumn("Type");
 						ImGui::TableSetupColumn("Path");
 						ImGui::TableSetupColumn("ID");
 						ImGui::TableSetupColumn("Size");
+						ImGui::TableSetupColumn("Bits");
 						ImGui::TableSetupColumn("Mem");
 						ImGui::TableHeadersRow();
 
@@ -890,6 +891,9 @@ namespace Phoenix {
 							ImGui::Text("%dx%dx%d", pText->m_width, pText->m_height, pText->m_components);
 
 							ImGui::TableSetColumnIndex(4);
+							ImGui::Text("%d bits/comp", pText->m_bitDepth);
+
+							ImGui::TableSetColumnIndex(5);
 							ImGui::Text("%.3fMb", pText->m_mem);
 						}
 						ImGui::EndTable();

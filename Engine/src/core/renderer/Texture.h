@@ -37,6 +37,7 @@ namespace Phoenix {
 		int							m_height;
 		int							m_depth;
 		int							m_components;
+		int							m_bitDepth;					// Bits per component of the source files (8 or 16)
 		float						m_mem;						// Size in Mb
 		TextureType					m_type;
 		GLuint						m_textureID;
@@ -69,7 +70,7 @@ namespace Phoenix {
 
 		void clear();
 		void upload2DtoGPU(const unsigned char* data);	// Upload 2D texture to GPU
-		void upload3DtoGPU(const unsigned char* data);	// Upload 3D texture to GPU
-		bool getImageProperties(char const* path, int* width, int* height, int* channels);
+		void upload3DtoGPU(const unsigned char* data, int bitDepth);	// Upload 3D texture to GPU
+		bool getImageProperties(char const* path, int* width, int* height, int* channels, int* bitDepth);
 	};
 }
