@@ -40,8 +40,6 @@ namespace Phoenix {
 			std::string s = (const char*)glGetStringi(GL_EXTENSIONS, i);
 			m_GLExtensions.emplace_back(s);
 		}
-
-		//HZ_CORE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5), "Hazel requires at least OpenGL version 4.5!");
 	}
 
 	void GLContext::SwapBuffers()
