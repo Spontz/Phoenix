@@ -80,6 +80,42 @@ namespace Phoenix {
 		}
 		break;
 
+		case VarType::INT:
+		{
+			auto var = std::make_shared<varInt>();
+			var->name = var_name;
+			var->loc = my_shader->getUniformLocation(var->name.c_str());
+
+			var->eva = std::make_shared<MathDriver>(my_section);
+			var->eva->expression = var_value;
+
+			var->eva->SymbolTable.add_variable("v1", var->expressionValue);
+
+			if (!var->eva->compileFormula())
+				Logger::error("Found in section {} [{}]", my_section->type_str, my_section->identifier);
+
+			vint.emplace_back(var);
+		}
+		break;
+
+		case VarType::UINT:
+		{
+			auto var = std::make_shared<varUint>();
+			var->name = var_name;
+			var->loc = my_shader->getUniformLocation(var->name.c_str());
+
+			var->eva = std::make_shared<MathDriver>(my_section);
+			var->eva->expression = var_value;
+
+			var->eva->SymbolTable.add_variable("v1", var->expressionValue);
+
+			if (!var->eva->compileFormula())
+				Logger::error("Found in section {} [{}]", my_section->type_str, my_section->identifier);
+
+			vuint.emplace_back(var);
+		}
+		break;
+
 		case VarType::VEC2:
 		{
 			auto var = std::make_shared<varVec2>();
@@ -320,7 +356,19 @@ namespace Phoenix {
 			var->eva->executeFormula();
 			my_shader->setValue(var->name.c_str(), var->value);
 		}
-		
+
+		for (auto& var : vint) {
+			var->eva->executeFormula();
+			var->value = static_cast<GLint>(var->expressionValue);
+			my_shader->setValue(var->name.c_str(), var->value);
+		}
+
+		for (auto& var : vuint) {
+			var->eva->executeFormula();
+			var->value = static_cast<GLuint>(std::max(0.0f, var->expressionValue));
+			my_shader->setValue(var->name.c_str(), var->value);
+		}
+
 		for (auto& var : vec2) {
 			var->eva->executeFormula();
 			my_shader->setValue(var->name.c_str(), var->value);
@@ -371,6 +419,11 @@ namespace Phoenix {
 		for (auto& var : vfloat) {
 			if (-1 == my_shader->getUniformLocation(var->name))
 				Logger::error("Variable 'uniform float {}' not found in section {} [{}], shader '{}'", var->name, my_section->type_str, my_section->identifier, my_shader->getURI());
+		}
+
+		for (auto& var : vint) {
+			if (-1 == my_shader->getUniformLocation(var->name))
+				Logger::error("Variable 'uniform int {}' not found in section {} [{}], shader '{}'", var->name, my_section->type_str, my_section->identifier, my_shader->getURI());
 		}
 
 		for (auto& var : vec2) {

@@ -27,6 +27,18 @@ namespace Phoenix {
 	using varMat3 = varBasic<glm::mat3>;
 	using varMat4 = varBasic<glm::mat4>;
 
+	// Int evaluation
+	struct varInt final : public varBase {
+		GLint value = 0;
+		float expressionValue = 0.0f;
+	};
+
+	// Unsigned int evaluation
+	struct varUint final : public varBase {
+		GLuint value = 0;
+		float expressionValue = 0.0f;
+	};
+
 	// Sampler2D (TEXTURE) evaluation
 	struct varSampler2D final : public varBase {
 		SP_Texture	texture;		// Texture
@@ -46,6 +58,8 @@ namespace Phoenix {
 	private:
 		enum class VarType {
 			FLOAT,
+			INT,
+			UINT,
 			VEC2,
 			VEC3,
 			VEC4,
@@ -58,6 +72,8 @@ namespace Phoenix {
 
 		mutable std::unordered_map<std::string, VarType> m_VarTypeMap = {
 			{"float", VarType::FLOAT},
+			{"int", VarType::INT},
+			{"uint", VarType::UINT},
 			{"vec2", VarType::VEC2},
 			{"vec3", VarType::VEC3},
 			{"vec4", VarType::VEC4},
@@ -69,6 +85,8 @@ namespace Phoenix {
 
 	public:
 		std::vector<std::shared_ptr<varFloat>>			vfloat;
+		std::vector<std::shared_ptr<varInt>>			vint;
+		std::vector<std::shared_ptr<varUint>>			vuint;
 		std::vector<std::shared_ptr<varVec2>>			vec2;
 		std::vector<std::shared_ptr<varVec3>>			vec3;
 		std::vector<std::shared_ptr<varVec4>>			vec4;
